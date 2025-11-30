@@ -61,7 +61,8 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "twilio": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22",
@@ -71,9 +72,5 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   },
-  ,
-  "dependencies": {
-    "twilio": "^4.0.0"
-  }
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }

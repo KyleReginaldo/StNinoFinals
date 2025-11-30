@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabaseClient'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendSms } from '@/lib/notifications'
 
 // Timeout mode tracker: stores expiration timestamp for timeout mode
 // Format: Map<timestamp, expirationTime>
@@ -860,6 +861,96 @@ export async function POST(request: Request) {
         scanType: scanType,
         scanTime: formattedRecord.scanTime
       })
+
+      // === SMS Notification: send to student's parent/guardian ===
+      try {
+        // Only notify for student scans (not teachers) and only on time-in
+        if (!isTeacher && scanType === 'timein') {
+          // Attempt to find parent phone number
+          let parentPhone: string | null = null
+
+          // 1) If parents table exists and student has parent_id, query it
+          try {
+            if (personInfo && (personInfo.parent_id || personInfo.parentEmail || personInfo.parent_email)) {
+              const parentId = personInfo.parent_id || personInfo.parentId || null
+              const parentEmail = personInfo.parent_email || personInfo.parentEmail || null
+              if (parentId) {
+                const { data: parentRecord } = await supabaseClient
+                  .from('parents')
+                  .select('phone, mobile, phone_number')
+                  .eq('id', parentId)
+                  .limit(1)
+                  .single()
+                if (parentRecord) {
+                  parentPhone = parentRecord.phone || parentRecord.mobile || parentRecord.phone_number || null
+                }
+              }
+              if (!parentPhone && parentEmail) {
+                const { data: parentRecord2 } = await supabaseClient
+                  .from('parents')
+                  .select('phone, mobile, phone_number')
+                  .ilike('email', parentEmail)
+                  .limit(1)
+                  .single()
+                if (parentRecord2) {
+                  parentPhone = parentRecord2.phone || parentRecord2.mobile || parentRecord2.phone_number || null
+                }
+              }
+            }
+          } catch (parentQueryError) {
+            console.warn('Unable to query parents table for phone number:', parentQueryError)
+          }
+
+          // 2) If not found, try to derive from student record fields
+          if (!parentPhone && personInfo) {
+            const possibleParentFields = [
+              'parent_phone',
+              'parentPhone',
+              'parent_contact',
+              'parentContact',
+              'parent_mobile',
+              'parentMobile',
+              'phone', // this might be the parent's phone depending on schema
+              'emergency_contact',
+              'emergencyContact'
+            ]
+            for (const f of possibleParentFields) {
+              const val = personInfo[f]
+              if (val) {
+                parentPhone = val
+                break
+              }
+            }
+          }
+
+          // Normalize phone if found and send SMS using Twilio (if configured)
+          if (parentPhone) {
+            // Basic normalization: ensure phone starts with + (assume local country code if not) - only light touch
+            let toPhone = parentPhone.toString().trim()
+            if (!toPhone.startsWith('+')) {
+              // Optionally, set default country code if provided in env
+              const defaultCountryCode = process.env.DEFAULT_PHONE_COUNTRY_CODE || ''
+              if (defaultCountryCode) {
+                toPhone = `${defaultCountryCode}${toPhone}`
+              }
+            }
+
+            const smsTemplate = process.env.SMS_ON_SCAN_TEMPLATE || 'Dear parent, {studentName} ({gradeLevel} - {section}) was recorded present at {scanTime}. — Sto Niño Portal'
+            const message = smsTemplate
+              .replace('{studentName}', formattedRecord.studentName)
+              .replace('{gradeLevel}', formattedRecord.gradeLevel || 'N/A')
+              .replace('{section}', formattedRecord.section || 'N/A')
+              .replace('{scanTime}', formattedRecord.scanTime || new Date().toISOString())
+
+            const smsSent = await sendSms(toPhone, message)
+            console.log('SMS notify result:', smsSent)
+          } else {
+            console.log('No parent phone found for student, skipping SMS')
+          }
+        }
+      } catch (smsError) {
+        console.error('SMS notification error:', smsError)
+      }
 
       return NextResponse.json({
         success: true,

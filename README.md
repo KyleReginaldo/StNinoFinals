@@ -17,6 +17,14 @@ pnpm install
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional: SMS / Twilio configuration
+# If you want the system to send SMS to parents when their child scans an RFID card, set the following environment variables:
+# TWILIO_ACCOUNT_SID=your-twilio-account-sid
+# TWILIO_AUTH_TOKEN=your-twilio-auth-token
+# TWILIO_PHONE_NUMBER=your-twilio-phone-number (must be a phone number provisioned in Twilio)
+# DEFAULT_PHONE_COUNTRY_CODE=+63 (optional, used when parent phone numbers are not in E.164 format)
+# SMS_ON_SCAN_TEMPLATE=Optional message template to use. Available tokens: {studentName}, {gradeLevel}, {section}, {scanTime}
 ```
 
 3) Run the dev server
