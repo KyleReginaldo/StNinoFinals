@@ -30,6 +30,26 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/student/dashboard/route.js"
+    ],
+    "/api/teacher/login/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/teacher/login/route.js"
+    ],
+    "/teacher/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/teacher/page.js"
+    ],
+    "/api/admin/login/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/admin/login/route.js"
+    ],
+    "/api/parent/login/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/parent/login/route.js"
     ]
   }
 }

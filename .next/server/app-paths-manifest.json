@@ -1,6 +1,8 @@
 {
-  "/api/student/login/route": "app/api/student/login/route.js",
-  "/api/student/dashboard/route": "app/api/student/dashboard/route.js",
+  "/api/teacher/login/route": "app/api/teacher/login/route.js",
+  "/api/admin/login/route": "app/api/admin/login/route.js",
+  "/api/parent/login/route": "app/api/parent/login/route.js",
   "/page": "app/page.js",
-  "/student/page": "app/student/page.js"
+  "/student/page": "app/student/page.js",
+  "/teacher/page": "app/teacher/page.js"
 }

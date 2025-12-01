@@ -1,14 +1,8 @@
-import type { Twilio } from 'twilio'
-
-let twilioClient: Twilio | null = null
-
-function initTwilioClient() {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken = process.env.TWILIO_AUTH_TOKEN
-  if (!accountSid || !authToken) return null
-  const TwilioPkg = require('twilio')
-  return new TwilioPkg(accountSid, authToken)
-}
+// Simple TextBee notifier using fetch
+// Requires the following environment variables:
+// - TEXTBEE_API_KEY: API key for TextBee
+// - TEXTBEE_API_URL: Base URL for TextBee API (e.g., https://api.textbee.com/v1)
+// - TEXTBEE_SENDER_ID: Sender identifier or phone number assigned to your service
 
 export async function sendSms(phone: string, message: string) {
   if (!phone) {
@@ -16,31 +10,49 @@ export async function sendSms(phone: string, message: string) {
     return false
   }
 
-  // Lazy-init Twilio client
-  if (!twilioClient) {
-    twilioClient = initTwilioClient()
-    if (!twilioClient) {
-      console.warn('Twilio client not configured. Skipping SMS send.')
-      return false
-    }
-  }
+  const apiKey = process.env.TEXTBEE_API_KEY
+  const apiUrl = process.env.TEXTBEE_API_URL || 'https://api.textbee.com/v1'
+  const sender = process.env.TEXTBEE_SENDER_ID || process.env.TEXTBEE_SENDER || process.env.SMS_SENDER || null
 
-  const from = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM
-  if (!from) {
-    console.warn('TWILIO_PHONE_NUMBER is not configured; cannot send SMS')
+  if (!apiKey) {
+    console.warn('TEXTBEE_API_KEY is not configured; skipping SMS send')
     return false
   }
 
   try {
-    const result = await twilioClient.messages.create({
-      from,
+    const url = `${apiUrl.replace(/\/+$/,'')}/messages`
+    const payload: any = {
       to: phone,
-      body: message,
+      message: message,
+    }
+    if (sender) payload.from = sender
+
+    // Use global fetch (available in Node 18+)
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
     })
-    console.log('SMS sent successfully:', result.sid)
+
+    if (!res.ok) {
+      const text = await res.text()
+      console.error('TextBee API error:', res.status, text)
+      return false
+    }
+
+    try {
+      const data = await res.json()
+      console.log('TextBee sent msg, id:', data?.id || 'unknown')
+    } catch (err) {
+      // non-JSON response, still okay
+    }
+
     return true
   } catch (err: any) {
-    console.error('Failed to send SMS:', err?.message || err)
+    console.error('Failed to send SMS using TextBee:', err?.message || err)
     return false
   }
 }

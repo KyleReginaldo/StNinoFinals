@@ -869,33 +869,63 @@ export async function POST(request: Request) {
           // Attempt to find parent phone number
           let parentPhone: string | null = null
 
-          // 1) If parents table exists and student has parent_id, query it
+          // 1) Look up parent(s) from the `parents` table by student parent_id, parent_email, or parent_students linkage
           try {
-            if (personInfo && (personInfo.parent_id || personInfo.parentEmail || personInfo.parent_email)) {
-              const parentId = personInfo.parent_id || personInfo.parentId || null
-              const parentEmail = personInfo.parent_email || personInfo.parentEmail || null
-              if (parentId) {
-                const { data: parentRecord } = await supabaseClient
-                  .from('parents')
-                  .select('phone, mobile, phone_number')
-                  .eq('id', parentId)
-                  .limit(1)
-                  .single()
-                if (parentRecord) {
-                  parentPhone = parentRecord.phone || parentRecord.mobile || parentRecord.phone_number || null
+            const parentRecords: any[] = []
+
+            // If the student record contains a parent_id, prefer that
+            const parentId = personInfo?.parent_id || personInfo?.parentId || null
+            if (parentId) {
+              const { data: parentRecord, error: pErr } = await supabaseClient
+                .from('parents')
+                .select('id, phone, mobile, phone_number, email')
+                .eq('id', parentId)
+                .limit(1)
+                .single()
+              if (!pErr && parentRecord) parentRecords.push(parentRecord)
+            }
+
+            // If parent not found but parent_email exists on student, check parents by email
+            const parentEmail = personInfo?.parent_email || personInfo?.parentEmail || null
+            if (!parentRecords.length && parentEmail) {
+              const { data: parentRecord2, error: pErr2 } = await supabaseClient
+                .from('parents')
+                .select('id, phone, mobile, phone_number, email')
+                .ilike('email', parentEmail)
+                .limit(1)
+                .single()
+              if (!pErr2 && parentRecord2) parentRecords.push(parentRecord2)
+            }
+
+            // If still not found, look up linkage table parent_students (if exists) for this student (match by student id / student_number / uuid)
+            if (!parentRecords.length && (personInfo?.student_id || personInfo?.student_number || personInfo?.id)) {
+              const sId = personInfo?.student_id || personInfo?.student_number || personInfo?.id
+              try {
+                const { data: linkedParentIds } = await supabaseClient
+                  .from('parent_students')
+                  .select('parent_id')
+                  .eq('student_id', sId)
+                  .limit(10)
+                if (linkedParentIds && linkedParentIds.length > 0) {
+                  // fetch parents by those ids
+                  const parentIds = linkedParentIds.map((r: any) => r.parent_id).filter(Boolean)
+                  if (parentIds.length > 0) {
+                    const { data: parentsFromLink } = await supabaseClient
+                      .from('parents')
+                      .select('id, phone, mobile, phone_number, email')
+                      .in('id', parentIds)
+                    if (parentsFromLink) parentRecords.push(...parentsFromLink)
+                  }
                 }
+              } catch (linkError) {
+                // ignore if parent_students doesn't exist
               }
-              if (!parentPhone && parentEmail) {
-                const { data: parentRecord2 } = await supabaseClient
-                  .from('parents')
-                  .select('phone, mobile, phone_number')
-                  .ilike('email', parentEmail)
-                  .limit(1)
-                  .single()
-                if (parentRecord2) {
-                  parentPhone = parentRecord2.phone || parentRecord2.mobile || parentRecord2.phone_number || null
-                }
-              }
+            }
+
+            // If we found any parent records, prefer the first parent's phone
+            if (parentRecords && parentRecords.length > 0) {
+              const p = parentRecords[0]
+              parentPhone = p?.phone || p?.mobile || p?.phone_number || null
             }
           } catch (parentQueryError) {
             console.warn('Unable to query parents table for phone number:', parentQueryError)
@@ -923,27 +953,33 @@ export async function POST(request: Request) {
             }
           }
 
-          // Normalize phone if found and send SMS using Twilio (if configured)
+          // Normalize phone if found and send SMS using TextBee (if configured)
           if (parentPhone) {
-            // Basic normalization: ensure phone starts with + (assume local country code if not) - only light touch
-            let toPhone = parentPhone.toString().trim()
-            if (!toPhone.startsWith('+')) {
-              // Optionally, set default country code if provided in env
-              const defaultCountryCode = process.env.DEFAULT_PHONE_COUNTRY_CODE || ''
-              if (defaultCountryCode) {
-                toPhone = `${defaultCountryCode}${toPhone}`
+            // Respect global toggle to disable SMS in development or if not desired
+            const smsEnabled = (process.env.SMS_ON_SCAN_ENABLED || 'false').toLowerCase()
+            if (smsEnabled !== 'true' && smsEnabled !== '1') {
+              console.log('SMS notifications are disabled (SMS_ON_SCAN_ENABLED is not set to true)')
+            } else {
+              // Basic normalization: ensure phone starts with + (assume local country code if not) - only light touch
+              let toPhone = parentPhone.toString().trim()
+              if (!toPhone.startsWith('+')) {
+                // Optionally, set default country code if provided in env
+                const defaultCountryCode = process.env.DEFAULT_PHONE_COUNTRY_CODE || ''
+                if (defaultCountryCode) {
+                  toPhone = `${defaultCountryCode}${toPhone}`
+                }
               }
+
+              const smsTemplate = process.env.SMS_ON_SCAN_TEMPLATE || 'Dear parent, {studentName} ({gradeLevel} - {section}) was recorded present at {scanTime}. — Sto Niño Portal'
+              const message = smsTemplate
+                .replace('{studentName}', formattedRecord.studentName)
+                .replace('{gradeLevel}', formattedRecord.gradeLevel || 'N/A')
+                .replace('{section}', formattedRecord.section || 'N/A')
+                .replace('{scanTime}', formattedRecord.scanTime || new Date().toISOString())
+
+              const smsSent = await sendSms(toPhone, message)
+              console.log('SMS notify result:', smsSent)
             }
-
-            const smsTemplate = process.env.SMS_ON_SCAN_TEMPLATE || 'Dear parent, {studentName} ({gradeLevel} - {section}) was recorded present at {scanTime}. — Sto Niño Portal'
-            const message = smsTemplate
-              .replace('{studentName}', formattedRecord.studentName)
-              .replace('{gradeLevel}', formattedRecord.gradeLevel || 'N/A')
-              .replace('{section}', formattedRecord.section || 'N/A')
-              .replace('{scanTime}', formattedRecord.scanTime || new Date().toISOString())
-
-            const smsSent = await sendSms(toPhone, message)
-            console.log('SMS notify result:', smsSent)
           } else {
             console.log('No parent phone found for student, skipping SMS')
           }
