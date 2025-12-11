@@ -15,6 +15,9 @@ import {
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 
+/**
+ * Student attendance data structure
+ */
 interface Student {
   studentId: string
   studentName: string
@@ -26,10 +29,13 @@ interface Student {
   late: number
   excused: number
   percentage: number
-  dailyAttendance: Record<string, string>
+  dailyAttendance: Record<string, string> // Date -> Status mapping
   records: any[]
 }
 
+/**
+ * Main data structure for attendance reports
+ */
 interface AttendanceReportsData {
   general: {
     totalStudents: number
@@ -52,6 +58,17 @@ interface AttendanceReportsData {
   }
 }
 
+/**
+ * Attendance Reports Page
+ * 
+ * Displays student attendance data in a calendar-style table with filtering options.
+ * Key features:
+ * - Date range filtering (defaults to last 30 days)
+ * - Grade level and section filtering
+ * - Individual student detail view
+ * - Export to CSV functionality
+ * - Manila timezone handling for accurate date display
+ */
 export default function AttendanceReportsPage() {
   const [data, setData] = useState<AttendanceReportsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -62,16 +79,27 @@ export default function AttendanceReportsPage() {
   const [gradeLevel, setGradeLevel] = useState<string>("all")
   const [section, setSection] = useState<string>("all")
   
-  // Calculate default start date (30 days ago)
+  /**
+   * Initialize date range to last 30 days on component mount
+   * Uses Manila timezone to ensure dates match the backend
+   */
   useEffect(() => {
     const end = new Date()
     const start = new Date()
     start.setDate(start.getDate() - 30)
+    
+    // Set dates in YYYY-MM-DD format (local time, not UTC)
     setStartDate(start.toISOString().split('T')[0])
     setEndDate(end.toISOString().split('T')[0])
     
   }, [])
 
+  /**
+   * Fetches attendance data from API with current filters
+   * 
+   * IMPORTANT: Dates are sent as YYYY-MM-DD strings (not ISO format)
+   * to avoid timezone conversion issues. Backend handles Manila timezone.
+   */
   const fetchData = async () => {
     setLoading(true)
     setError(null)

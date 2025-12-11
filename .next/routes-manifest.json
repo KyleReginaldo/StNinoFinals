@@ -64,6 +64,18 @@
       "namedRegex": "^/admin/rfid\\-display(?:/)?$"
     },
     {
+      "page": "/admin/settings",
+      "regex": "^/admin/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/settings(?:/)?$"
+    },
+    {
+      "page": "/admin/students",
+      "regex": "^/admin/students(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/students(?:/)?$"
+    },
+    {
       "page": "/admin/teacher-attendance",
       "regex": "^/admin/teacher\\-attendance(?:/)?$",
       "routeKeys": {},

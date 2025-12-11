@@ -1,36 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import Image from "next/image"
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import {
-  LayoutDashboard,
-  Users,
-  Clock,
-  BarChart3,
-  Settings,
-  Home,
-  Shield,
-  FileText,
-  Calendar,
-  DollarSign,
-  Lock,
-  Mail,
-  RefreshCcw,
-  AlertCircle,
-  Wifi,
-  Activity,
-  Filter,
-  Radio,
-  Maximize2,
-} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -39,7 +11,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { supabase } from "@/lib/supabaseClient"
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Calendar,
+  Clock,
+  DollarSign,
+  FileText,
+  Filter,
+  Home,
+  LayoutDashboard,
+  Lock,
+  Mail,
+  Maximize2,
+  Radio,
+  RefreshCcw,
+  Settings,
+  Shield,
+  Users,
+  Wifi,
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 
 interface Admin {
   id: number
@@ -51,18 +52,21 @@ interface Admin {
 }
 
 interface Student {
-  id: number
-  name: string
-  student_id: string
-  grade_level: string
-  section: string
-  email?: string
-  phone?: string
-  status?: string
-  created_at?: string
-  rfid_card?: string
-  rfidCard?: string
-  rfid_tag?: string
+  id: string
+  first_name: string
+  last_name: string
+  middle_name?: string | null
+  student_number: string | null
+  grade_level: string | null
+  section: string | null
+  email?: string | null
+  phone_number?: string | null
+  status?: string | null
+  created_at?: string | null
+  rfid?: string | null
+  role?: string | null
+  // Computed field
+  name?: string
 }
 
 interface AttendanceData {
@@ -136,18 +140,21 @@ export default function AdminPortal() {
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [showCredentialsModal, setShowCredentialsModal] = useState(false)
   const [newStudentCredentials, setNewStudentCredentials] = useState<{
-    studentId: string
+    student_number: string
     username: string
     password: string
-    name: string
+    first_name: string
+    last_name: string
   } | null>(null)
   const [newStudent, setNewStudent] = useState({
-    name: "",
-    studentId: "",
-    gradeLevel: "",
+    first_name: "",
+    last_name: "",
+    middle_name: "",
+    student_number: "",
+    grade_level: "",
     section: "",
     email: "",
-    phone: "",
+    phone_number: "",
   })
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -181,15 +188,16 @@ export default function AdminPortal() {
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
+      const fullName = `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim()
       const matchesSearch =
         studentFilters.search.trim().length === 0 ||
-        `${student.name} ${student.student_id}`.toLowerCase().includes(studentFilters.search.toLowerCase())
+        `${fullName} ${student.student_number}`.toLowerCase().includes(studentFilters.search.toLowerCase())
       const matchesGrade =
         studentFilters.grade === "All Grades" ||
         student.grade_level?.toLowerCase() === studentFilters.grade.toLowerCase()
       const matchesStatus =
         studentFilters.status === "all" ||
-        (student.status || "Enrolled").toLowerCase() === studentFilters.status.toLowerCase()
+        (student.status || "Active").toLowerCase() === studentFilters.status.toLowerCase()
       return matchesSearch && matchesGrade && matchesStatus
     })
   }, [students, studentFilters])
@@ -509,8 +517,9 @@ export default function AdminPortal() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm("Are you sure you want to log out?")) {
+      await supabase.auth.signOut();
       localStorage.removeItem("admin")
       setAdmin(null)
       window.location.href = "/"
@@ -523,21 +532,21 @@ export default function AdminPortal() {
       const response = await fetch("/api/admin/students")
       const result = await response.json()
       if (result.success && result.students && result.students.length > 0) {
-        // Find the highest student ID
-        const studentIds = result.students
+        // Find the highest student number
+        const studentNumbers = result.students
           .map((s: any) => {
-            const id = s.student_id || s.studentId || ""
-            // Extract numeric part if ID is in format like "2024-001" or "001"
-            const match = id.match(/\d+/)
+            const num = s.student_number || ""
+            // Extract numeric part if number is in format like "2024-001" or "001"
+            const match = num.match(/\d+/)
             return match ? parseInt(match[0]) : 0
           })
-          .filter((id: number) => id > 0)
+          .filter((num: number) => num > 0)
         
-        const maxId = studentIds.length > 0 ? Math.max(...studentIds) : 0
-        const nextId = maxId + 1
+        const maxNum = studentNumbers.length > 0 ? Math.max(...studentNumbers) : 0
+        const nextNum = maxNum + 1
         // Format as YYYY-XXX (e.g., 2024-001)
         const year = new Date().getFullYear()
-        return `${year}-${String(nextId).padStart(3, "0")}`
+        return `${year}-${String(nextNum).padStart(3, "0")}`
       }
     } catch (error) {
       console.error("Error fetching students for ID generation:", error)
@@ -562,33 +571,37 @@ export default function AdminPortal() {
     e.preventDefault()
     setStudentFormError(null)
 
-    if (!newStudent.name.trim() || !newStudent.section.trim()) {
-      setStudentFormError("Name and Section are required.")
+    if (!newStudent.first_name.trim() || !newStudent.last_name.trim() || !newStudent.section.trim()) {
+      setStudentFormError("First Name, Last Name, and Section are required.")
       return
     }
 
-    if (!newStudent.gradeLevel) {
+    if (!newStudent.grade_level) {
       setStudentFormError("Please select a grade level.")
       return
     }
 
     // Always auto-generate student ID (field is disabled, but ensure it's generated)
-    const studentId = await generateNextStudentId()
+    const studentNumber = await generateNextStudentId()
 
     // Generate login credentials
-    const username = studentId // Use student ID as username
+    const username = studentNumber // Use student number as username
     const password = generatePassword()
     
     try {
-      const response = await fetch("/api/students", {
+      const response = await fetch("/api/admin/students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...newStudent,
-          studentId: studentId,
-          username: username,
+          first_name: newStudent.first_name,
+          last_name: newStudent.last_name,
+          middle_name: newStudent.middle_name || null,
+          student_number: studentNumber,
+          grade_level: newStudent.grade_level,
+          section: newStudent.section,
+          email: newStudent.email,
+          phone_number: newStudent.phone_number || null,
           password: password,
-          firstLogin: true, // Flag for first-time login
         }),
       })
 
@@ -597,20 +610,23 @@ export default function AdminPortal() {
       if (data.success) {
         // Show credentials modal
         setNewStudentCredentials({
-          studentId: studentId,
+          student_number: studentNumber,
           username: username,
           password: password,
-          name: newStudent.name,
+          first_name: newStudent.first_name,
+          last_name: newStudent.last_name,
         })
         setShowAddStudent(false)
         setShowCredentialsModal(true)
         setNewStudent({
-          name: "",
-          studentId: "",
-          gradeLevel: "",
+          first_name: "",
+          last_name: "",
+          middle_name: "",
+          student_number: "",
+          grade_level: "",
           section: "",
           email: "",
-          phone: "",
+          phone_number: "",
         })
         setStudentFormError(null)
         // Refresh the students list
@@ -625,7 +641,7 @@ export default function AdminPortal() {
     }
   }
 
-  const handleStudentStatusChange = (studentId: number, statusValue: string) => {
+  const handleStudentStatusChange = (studentId: string, statusValue: string) => {
     const formattedStatus = statusValue.charAt(0).toUpperCase() + statusValue.slice(1)
     setStudents((prev) =>
       prev.map((student) => (student.id === studentId ? { ...student, status: formattedStatus } : student)),
@@ -1201,20 +1217,39 @@ export default function AdminPortal() {
                           <DialogDescription>Enter the student's information to add them to the system</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleAddStudent} className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="firstName">First Name *</Label>
+                              <Input
+                                id="firstName"
+                                value={newStudent.first_name}
+                                onChange={(e) => setNewStudent({ ...newStudent, first_name: e.target.value })}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="lastName">Last Name *</Label>
+                              <Input
+                                id="lastName"
+                                value={newStudent.last_name}
+                                onChange={(e) => setNewStudent({ ...newStudent, last_name: e.target.value })}
+                                required
+                              />
+                            </div>
+                          </div>
                           <div>
-                            <Label htmlFor="studentName">Full Name *</Label>
+                            <Label htmlFor="middleName">Middle Name</Label>
                             <Input
-                              id="studentName"
-                              value={newStudent.name}
-                              onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-                              required
+                              id="middleName"
+                              value={newStudent.middle_name}
+                              onChange={(e) => setNewStudent({ ...newStudent, middle_name: e.target.value })}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="studentId">Student ID *</Label>
+                            <Label htmlFor="studentNumber">Student Number *</Label>
                             <Input
-                              id="studentId"
-                              value={newStudent.studentId}
+                              id="studentNumber"
+                              value={newStudent.student_number}
                               disabled
                               readOnly
                               className="bg-gray-100 cursor-not-allowed"
@@ -1226,8 +1261,8 @@ export default function AdminPortal() {
                             <div>
                               <Label htmlFor="gradeLevel">Grade Level *</Label>
                               <Select
-                                value={newStudent.gradeLevel}
-                                onValueChange={(value) => setNewStudent({ ...newStudent, gradeLevel: value })}
+                                value={newStudent.grade_level}
+                                onValueChange={(value) => setNewStudent({ ...newStudent, grade_level: value })}
                               >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select grade" />
@@ -1272,8 +1307,8 @@ export default function AdminPortal() {
                             <Input
                               id="phone"
                               type="tel"
-                              value={newStudent.phone}
-                              onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })}
+                              value={newStudent.phone_number}
+                              onChange={(e) => setNewStudent({ ...newStudent, phone_number: e.target.value })}
                             />
                           </div>
                           <div className="flex justify-end space-x-2">
@@ -1305,7 +1340,7 @@ export default function AdminPortal() {
                             <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                               <div>
                                 <Label className="text-sm text-gray-600">Student Name</Label>
-                                <p className="font-semibold text-lg">{newStudentCredentials.name}</p>
+                                <p className="font-semibold text-lg">{newStudentCredentials.first_name} {newStudentCredentials.last_name}</p>
                               </div>
                               <div>
                                 <Label className="text-sm text-gray-600">Student ID / Username</Label>
@@ -1405,12 +1440,12 @@ export default function AdminPortal() {
                       ) : (
                         filteredStudents.map((student) => (
                           <TableRow key={student.id}>
-                            <TableCell>{student.student_id || "N/A"}</TableCell>
-                            <TableCell>{student.name || "N/A"}</TableCell>
+                            <TableCell>{student.student_number || "N/A"}</TableCell>
+                            <TableCell>{`${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || "N/A"}</TableCell>
                             <TableCell>{student.grade_level || "N/A"}</TableCell>
                             <TableCell>{student.section || "N/A"}</TableCell>
                             <TableCell className="font-mono text-sm">
-                              {student.rfid_card || student.rfidCard || student.rfid_tag || (
+                              {student.rfid || (
                                 <span className="text-gray-400 italic">Not assigned</span>
                               )}
                             </TableCell>
@@ -1437,7 +1472,7 @@ export default function AdminPortal() {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedStudentForRfid(student)
-                                  setRfidCardNumber(student.rfid_card || student.rfidCard || student.rfid_tag || "")
+                                  setRfidCardNumber(student.rfid || "")
                                   setShowUpdateRfid(true)
                                 }}
                                 className="text-xs"

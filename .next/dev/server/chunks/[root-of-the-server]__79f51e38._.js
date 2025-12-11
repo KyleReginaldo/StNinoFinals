@@ -80,7 +80,20 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$supabase$2b$supabase$2d$js$40$2$2e$78$2e$0$2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@supabase+supabase-js@2.78.0/node_modules/@supabase/supabase-js/dist/module/index.js [app-route] (ecmascript) <locals>");
 ;
-const supabaseUrl = ("TURBOPACK compile-time value", "https://ulntyefamkxkbynrugop.supabase.co");
+/**
+ * Supabase Admin Client for Server-Side Operations
+ * 
+ * ⚠️ SECURITY WARNING: This client uses the SERVICE ROLE KEY
+ * - Bypasses ALL Row Level Security (RLS) policies
+ * - Full database access with no restrictions
+ * - ONLY use in server-side code (API routes, Server Components)
+ * - NEVER import or use in client-side components
+ * 
+ * Use Cases:
+ * - Admin operations requiring elevated privileges
+ * - System-level database operations
+ * - Background jobs and cron tasks
+ */ const supabaseUrl = ("TURBOPACK compile-time value", "https://ulntyefamkxkbynrugop.supabase.co");
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 function getSupabaseAdmin() {
     if (!supabaseUrl || !serviceRoleKey) {
@@ -115,16 +128,11 @@ async function GET(request) {
     try {
         console.log('📊 Attendance Reports API called');
         const { searchParams } = new URL(request.url);
-        const startDate = searchParams.get('startDate') // Optional: filter by start date
-        ;
-        const endDate = searchParams.get('endDate') // Optional: filter by end date
-        ;
-        const studentId = searchParams.get('studentId') // Optional: filter by specific student
-        ;
-        const gradeLevel = searchParams.get('gradeLevel') // Optional: filter by grade
-        ;
-        const section = searchParams.get('section') // Optional: filter by section
-        ;
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+        const studentId = searchParams.get('studentId');
+        const gradeLevel = searchParams.get('gradeLevel');
+        const section = searchParams.get('section');
         console.log('📅 Date range:', {
             startDate,
             endDate,
@@ -133,21 +141,23 @@ async function GET(request) {
             section
         });
         const admin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseAdmin$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSupabaseAdmin"])();
-        // Calculate date range (default: last 30 days) - Manila timezone
-        // For Manila (UTC+8), we need to query from start of day to end of day in UTC
-        const startDateStr = startDate || (()=>{
+        /**
+     * Calculate date range with Manila timezone handling
+     * Default: Last 30 days
+     * 
+     * Dates are sent as YYYY-MM-DD strings (not ISO) to avoid UTC conversion
+     * Backend converts scan_time to Manila timezone before grouping by date
+     */ const startDateStr = startDate || (()=>{
             const d = new Date();
             d.setDate(d.getDate() - 30);
             return d.toISOString().split('T')[0];
         })();
         const endDateStr = endDate || new Date().toISOString().split('T')[0];
-        // Convert Manila local date to UTC range
-        // Start: YYYY-MM-DD 00:00:00 Manila = YYYY-MM-DD-1 16:00:00 UTC
-        // End: YYYY-MM-DD 23:59:59 Manila = YYYY-MM-DD 15:59:59 UTC
+        // Query range: from start of startDate to end of endDate (inclusive)
         const startISO = `${startDateStr}T00:00:00.000Z`;
         const endISO = `${endDateStr}T23:59:59.999Z`;
         console.log('🔍 Querying students...');
-        // Fetch all students
+        // Fetch all students from database
         const { data: students, error: studentsError } = await admin.from('students').select('*').limit(1000);
         if (studentsError) {
             console.error('❌ Error fetching students:', studentsError);
@@ -160,7 +170,7 @@ async function GET(request) {
             });
         }
         console.log(`✅ Found ${students?.length || 0} students`);
-        // Filter students by grade/section if specified
+        // Apply grade level and section filters
         let filteredStudents = students || [];
         if (gradeLevel && gradeLevel !== 'all') {
             filteredStudents = filteredStudents.filter((s)=>(s.grade_level || '').toString().toLowerCase() === gradeLevel.toLowerCase());
@@ -169,8 +179,10 @@ async function GET(request) {
             filteredStudents = filteredStudents.filter((s)=>(s.section || '').toString().toLowerCase() === section.toLowerCase());
         }
         console.log('🔍 Querying attendance records from', startISO, 'to', endISO);
-        // Fetch attendance records
-        const { data: allAttendanceRecords, error: attendanceError } = await admin.from('attendance_records').select('*').gte('scan_time', startISO).lte('scan_time', endISO).order('scan_time', {
+        /**
+     * Fetch attendance records within date range
+     * Records are stored in UTC but will be converted to Manila timezone
+     */ const { data: allAttendanceRecords, error: attendanceError } = await admin.from('attendance_records').select('*').gte('scan_time', startISO).lte('scan_time', endISO).order('scan_time', {
             ascending: false
         });
         if (attendanceError) {
@@ -185,8 +197,10 @@ async function GET(request) {
         }
         console.log(allAttendanceRecords.map((r)=>r.scan_time));
         console.log(`✅ Found ${allAttendanceRecords?.length || 0} attendance records`);
-        // Build student map for quick lookup
-        const studentMap = {};
+        /**
+     * Build student map for quick lookups
+     * Handles multiple possible field names (student_id, student_number, id)
+     */ const studentMap = {};
         if (students) {
             students.forEach((student)=>{
                 const studentIdStr = (student.student_id || student.student_number || student.id || '').toString().trim();

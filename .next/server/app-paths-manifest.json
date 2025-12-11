@@ -5,6 +5,8 @@
   "/admin/live-attendance/page": "app/admin/live-attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/rfid-display/page": "app/admin/rfid-display/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/admin/teacher-attendance/page": "app/admin/teacher-attendance/page.js",
   "/api/admin/attendance-live/route": "app/api/admin/attendance-live/route.js",
   "/api/admin/attendance-reports/route": "app/api/admin/attendance-reports/route.js",

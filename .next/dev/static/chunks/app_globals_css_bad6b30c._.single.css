@@ -765,10 +765,6 @@ body {
   min-width: 200px;
 }
 
-.min-w-\[70px\] {
-  min-width: 70px;
-}
-
 .min-w-\[80px\] {
   min-width: 80px;
 }
@@ -883,6 +879,10 @@ body {
 
 .cursor-not-allowed {
   cursor: not-allowed;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .select-none {
@@ -1644,11 +1644,6 @@ body {
 .px-1 {
   padding-left: .25rem;
   padding-right: .25rem;
-}
-
-.px-2 {
-  padding-left: .5rem;
-  padding-right: .5rem;
 }
 
 .px-2\.5 {
@@ -2704,6 +2699,10 @@ body {
 
   .sm\:block {
     display: block;
+  }
+
+  .sm\:w-auto {
+    width: auto;
   }
 
   .sm\:max-w-2xl {

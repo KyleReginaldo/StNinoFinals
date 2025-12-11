@@ -5,6 +5,8 @@
   "/admin/live-attendance/page": "/admin/live-attendance",
   "/admin/page": "/admin",
   "/admin/rfid-display/page": "/admin/rfid-display",
+  "/admin/settings/page": "/admin/settings",
+  "/admin/students/page": "/admin/students",
   "/admin/teacher-attendance/page": "/admin/teacher-attendance",
   "/api/admin/attendance-live/route": "/api/admin/attendance-live",
   "/api/admin/attendance-reports/route": "/api/admin/attendance-reports",

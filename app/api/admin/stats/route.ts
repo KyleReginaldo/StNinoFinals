@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabaseClient'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
     // Fetch students count
     const { count: studentsCount, error: studentsError } = await supabase
-      .from('students')
+      .from('users')
+      .eq('role', 'student')
       .select('*', { count: 'exact', head: true })
 
     // Fetch teachers count
     const { count: teachersCount, error: teachersError } = await supabase
-      .from('teachers')
+      .from('users')
+      .eq('role', 'teacher')
       .select('*', { count: 'exact', head: true })
 
     if (studentsError || teachersError) {

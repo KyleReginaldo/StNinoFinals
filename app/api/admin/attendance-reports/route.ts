@@ -1,22 +1,42 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { NextResponse } from 'next/server'
 
+/**
+ * GET /api/admin/attendance-reports
+ * 
+ * Fetches student attendance data for a specified date range.
+ * Returns data in Manila timezone (UTC+8) for accurate date display.
+ * 
+ * Query Parameters:
+ * - startDate: Start date (YYYY-MM-DD, optional, defaults to 30 days ago)
+ * - endDate: End date (YYYY-MM-DD, optional, defaults to today)
+ * - studentId: Filter by specific student (optional)
+ * - gradeLevel: Filter by grade level (optional)
+ * - section: Filter by section (optional)
+ * 
+ * IMPORTANT: All dates in Manila timezone to avoid date shifting issues
+ */
 export async function GET(request: Request) {
   try {
     console.log('📊 Attendance Reports API called')
     const { searchParams } = new URL(request.url)
-    const startDate = searchParams.get('startDate') // Optional: filter by start date
-    const endDate = searchParams.get('endDate') // Optional: filter by end date
-    const studentId = searchParams.get('studentId') // Optional: filter by specific student
-    const gradeLevel = searchParams.get('gradeLevel') // Optional: filter by grade
-    const section = searchParams.get('section') // Optional: filter by section
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
+    const studentId = searchParams.get('studentId')
+    const gradeLevel = searchParams.get('gradeLevel')
+    const section = searchParams.get('section')
     
     console.log('📅 Date range:', { startDate, endDate, studentId, gradeLevel, section })
     
     const admin = getSupabaseAdmin()
     
-    // Calculate date range (default: last 30 days) - Manila timezone
-    // For Manila (UTC+8), we need to query from start of day to end of day in UTC
+    /**
+     * Calculate date range with Manila timezone handling
+     * Default: Last 30 days
+     * 
+     * Dates are sent as YYYY-MM-DD strings (not ISO) to avoid UTC conversion
+     * Backend converts scan_time to Manila timezone before grouping by date
+     */
     const startDateStr = startDate || (() => {
       const d = new Date()
       d.setDate(d.getDate() - 30)
@@ -24,16 +44,16 @@ export async function GET(request: Request) {
     })()
     const endDateStr = endDate || new Date().toISOString().split('T')[0]
     
-    // Convert Manila local date to UTC range
-    // Start: YYYY-MM-DD 00:00:00 Manila = YYYY-MM-DD-1 16:00:00 UTC
-    // End: YYYY-MM-DD 23:59:59 Manila = YYYY-MM-DD 15:59:59 UTC
+    // Query range: from start of startDate to end of endDate (inclusive)
     const startISO = `${startDateStr}T00:00:00.000Z`
     const endISO = `${endDateStr}T23:59:59.999Z`
     
     console.log('🔍 Querying students...')
-    // Fetch all students
+    
+    // Fetch all students from database
     const { data: students, error: studentsError } = await admin
-      .from('students')
+      .from('users')
+      .eq('role', 'student')
       .select('*')
       .limit(1000)
     
@@ -51,7 +71,7 @@ export async function GET(request: Request) {
     
     console.log(`✅ Found ${students?.length || 0} students`)
     
-    // Filter students by grade/section if specified
+    // Apply grade level and section filters
     let filteredStudents = students || []
     if (gradeLevel && gradeLevel !== 'all') {
       filteredStudents = filteredStudents.filter((s: any) => 
@@ -65,7 +85,11 @@ export async function GET(request: Request) {
     }
     
     console.log('🔍 Querying attendance records from', startISO, 'to', endISO)
-    // Fetch attendance records
+    
+    /**
+     * Fetch attendance records within date range
+     * Records are stored in UTC but will be converted to Manila timezone
+     */
     const { data: allAttendanceRecords, error: attendanceError } = await admin
       .from('attendance_records')
       .select('*')
@@ -87,15 +111,25 @@ export async function GET(request: Request) {
     console.log(allAttendanceRecords.map((r) => r.scan_time));
     console.log(`✅ Found ${allAttendanceRecords?.length || 0} attendance records`)
     
-    // Build student map for quick lookup
+    /**
+     * Build student map for quick lookups
+     * Uses student_number or UUID id
+     */
     const studentMap: Record<string, any> = {}
     if (students) {
       students.forEach((student: any) => {
-        const studentIdStr = (student.student_id || student.student_number || student.id || '').toString().trim()
+        const studentIdStr = (student.student_number || student.id || '').toString().trim()
+        const studentUuid = (student.id || '').toString().trim()
         if (studentIdStr) {
           studentMap[studentIdStr] = {
             ...student,
-            fullName: `${student.first_name || student.firstName || ''} ${student.last_name || student.lastName || ''}`.trim() || student.name || 'Unknown',
+            fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown',
+          }
+        }
+        if (studentUuid) {
+          studentMap[studentUuid] = studentMap[studentIdStr] || {
+            ...student,
+            fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown',
           }
         }
       })
@@ -137,7 +171,7 @@ export async function GET(request: Request) {
       
       if (!student) return
       
-      const studentKey = student.student_id || student.student_number || recordId
+      const studentKey = student.student_number || student.id || recordId
       
       if (!studentStats[studentKey]) {
         studentStats[studentKey] = {
@@ -190,9 +224,9 @@ export async function GET(request: Request) {
       stats.percentage = Math.round((stats.present / total) * 100)
       
       return {
-        studentId: stats.student.student_id || stats.student.student_number || stats.student.id,
+        studentId: stats.student.student_number || stats.student.id,
         studentName: stats.student.fullName,
-        gradeLevel: stats.student.grade_level || stats.student.gradeLevel || 'N/A',
+        gradeLevel: stats.student.grade_level || 'N/A',
         section: stats.student.section || 'N/A',
         totalDays: stats.totalDays,
         present: stats.present,
