@@ -131,7 +131,7 @@ export async function GET(request: Request) {
           console.log('Method 2: Trying direct query with explicit columns...')
           let directQuery = supabaseClient
       .from('attendance_records')
-            .select('id, scan_time, scan_type, student_id, rfid, status, time_in, time_out, created_at, device_id')
+            .select('id, scan_time, scan_type, user_id, rfid, status, time_in, time_out, created_at, device_id')
       .order('scan_time', { ascending: false })
       .limit(limit)
 
@@ -315,8 +315,8 @@ export async function GET(request: Request) {
       }
       
       // Get student or teacher info from maps
-      const student = studentMap[record.student_id] || null
-      const teacher = teacherMap[record.student_id] || null
+      const student = studentMap[record.user_id] || null
+      const teacher = teacherMap[record.user_id] || null
       
       // Determine if this is a teacher or student
       const isTeacher = !!teacher || (student && (
@@ -329,7 +329,7 @@ export async function GET(request: Request) {
       
       return {
       id: record.id,
-        studentId: record.student_id,
+        studentId: record.user_id,
         studentName: person
           ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() || 'Unknown'
           : 'Unknown',
@@ -576,7 +576,7 @@ export async function POST(request: Request) {
           if (teachers && teachers.length > 0) {
             matchedTeacher = teachers[0]
             console.log(`✅ Found teacher FIRST: ${matchedTeacher.first_name || 'Unknown'} ${matchedTeacher.last_name || ''}`)
-            // Use UUID id for attendance_records.student_id
+            // Use UUID id for attendance_records.user_id
             studentId = matchedTeacher.id?.toString() || matchedTeacher.employee_number
           }
         }
@@ -618,22 +618,21 @@ export async function POST(request: Request) {
             const matchedStudent = students[0]
             console.log(`Found student: ${matchedStudent.first_name || 'Unknown'} ${matchedStudent.last_name || ''}`)
             
-            // Use UUID id for attendance_records.student_id
+            // Use UUID id for attendance_records.user_id
             studentId = matchedStudent.id?.toString() || matchedStudent.student_number
           }
         }
       }
 
       // Check if student has already scanned in today
-      // student_id is now TEXT type, so we can query directly
-      // But we need to cast to text to avoid UUID comparison errors
+      // user_id is UUID type referencing users.id
       let todayRecords: any[] = []
       let checkError: any = null
       
       // Fetch all records for today, then filter in memory to avoid type mismatch
       const { data: allTodayRecords, error: fetchError } = await supabaseClient
         .from('attendance_records')
-        .select('id, scan_type, scan_time, time_in, time_out, student_id')
+        .select('id, scan_type, scan_time, time_in, time_out, user_id')
         .gte('scan_time', todayStart)
         .lte('scan_time', todayEndISO)
         .order('scan_time', { ascending: true })
@@ -642,11 +641,11 @@ export async function POST(request: Request) {
         checkError = fetchError
         console.error('Error fetching today records:', fetchError)
       } else if (allTodayRecords) {
-        // Filter in memory by student_id (text match) to avoid UUID/TEXT comparison issues
+        // Filter in memory by user_id (UUID match)
         todayRecords = allTodayRecords.filter((r: any) => {
-          const rId = (r.student_id || '').toString().trim()
+          const rId = (r.user_id || '').toString().trim()
           const sId = (studentId || '').toString().trim()
-          return rId === sId || rId === studentId || sId === r.student_id
+          return rId === sId || rId === studentId || sId === r.user_id
         })
       }
 
@@ -730,7 +729,7 @@ export async function POST(request: Request) {
       // Insert the attendance record
       // Build insert object with all required fields
       const attendanceRecord: any = {
-        student_id: studentId,
+        user_id: studentId,
       }
       
       // Add RFID fields - set both rfid_card and rfid_tag to avoid NOT NULL constraint errors
@@ -761,7 +760,7 @@ export async function POST(request: Request) {
       
       // Insert the attendance record (without join to avoid foreign key issues)
       console.log('💾 Inserting attendance record:', {
-        student_id: attendanceRecord.student_id,
+        user_id: attendanceRecord.user_id,
         rfid_card: attendanceRecord.rfid_card,
         scan_type: attendanceRecord.scan_type,
         scan_time: attendanceRecord.scan_time

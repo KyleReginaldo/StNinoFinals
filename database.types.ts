@@ -108,12 +108,12 @@ export type Database = {
           scan_time: string | null
           scan_type: string
           status: string | null
-          student_id: string | null
           temperature: number | null
           time_in: string | null
           time_out: string | null
           type: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -127,12 +127,12 @@ export type Database = {
           scan_time?: string | null
           scan_type: string
           status?: string | null
-          student_id?: string | null
           temperature?: number | null
           time_in?: string | null
           time_out?: string | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -146,14 +146,22 @@ export type Database = {
           scan_time?: string | null
           scan_type?: string
           status?: string | null
-          student_id?: string | null
           temperature?: number | null
           time_in?: string | null
           time_out?: string | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       class_enrollments: {
         Row: {

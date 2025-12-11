@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     }
     
     // Fetch attendance records for teachers
-    // Teachers are identified by checking if student_id matches a teacher_id or email
+    // Teachers are identified by checking if user_id matches a teacher's UUID
     const { data: allAttendanceRecords, error: attendanceError } = await admin
       .from('attendance_records')
       .select('*')
@@ -106,12 +106,12 @@ export async function GET(request: Request) {
     console.log(`🔑 Teacher RFID map has ${Object.keys(teacherRfidMap).length} entries:`, Object.keys(teacherRfidMap))
     
     // Filter attendance records to only include teachers
-    // Check both student_id match AND RFID card match
+    // Check both user_id match AND RFID card match
     const teacherAttendanceRecords = (allAttendanceRecords || []).filter((record: any) => {
-      const recordId = (record.student_id || '').toString().trim()
+      const recordId = (record.user_id || '').toString().trim()
       const recordRfid = (record.rfid_card || record.rfidCard || record.rfid_tag || record.rfidTag || '').toString().trim().toUpperCase().replace(/\s+/g, '')
       
-      // Check if student_id matches a teacher
+      // Check if user_id matches a teacher
       if (teacherMap[recordId] !== undefined) {
         return true
       }
@@ -140,10 +140,10 @@ export async function GET(request: Request) {
     
     // Process each attendance record
     teacherAttendanceRecords.forEach((record: any) => {
-      const recordId = (record.student_id || '').toString().trim()
+      const recordId = (record.user_id || '').toString().trim()
       const recordRfid = (record.rfid_card || record.rfidCard || record.rfid_tag || record.rfidTag || '').toString().trim().toUpperCase().replace(/\s+/g, '')
       
-      // Try to find teacher by student_id first, then by RFID
+      // Try to find teacher by user_id first, then by RFID
       let teacher = teacherMap[recordId]
       if (!teacher && recordRfid) {
         teacher = teacherRfidMap[recordRfid] || teacherMap[recordRfid]

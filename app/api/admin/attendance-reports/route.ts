@@ -48,54 +48,44 @@ export async function GET(request: Request) {
     const startISO = `${startDateStr}T00:00:00.000Z`
     const endISO = `${endDateStr}T23:59:59.999Z`
     
-    console.log('🔍 Querying students...')
-    
-    // Fetch all students from database
-    const { data: students, error: studentsError } = await admin
-      .from('users')
-      .eq('role', 'student')
-      .select('*')
-      .limit(1000)
-    
-    if (studentsError) {
-      console.error('❌ Error fetching students:', studentsError)
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Failed to fetch students: ${studentsError.message}`,
-          data: null,
-        },
-        { status: 200 }
-      )
-    }
-    
-    console.log(`✅ Found ${students?.length || 0} students`)
-    
-    // Apply grade level and section filters
-    let filteredStudents = students || []
-    if (gradeLevel && gradeLevel !== 'all') {
-      filteredStudents = filteredStudents.filter((s: any) => 
-        (s.grade_level || '').toString().toLowerCase() === gradeLevel.toLowerCase()
-      )
-    }
-    if (section && section !== 'all') {
-      filteredStudents = filteredStudents.filter((s: any) => 
-        (s.section || '').toString().toLowerCase() === section.toLowerCase()
-      )
-    }
-    
-    console.log('🔍 Querying attendance records from', startISO, 'to', endISO)
+    console.log('🔍 Querying attendance records with student data...')
     
     /**
-     * Fetch attendance records within date range
-     * Records are stored in UTC but will be converted to Manila timezone
+     * Single optimized query with join to get attendance + student data
+     * Filters applied at database level for better performance
      */
-    const { data: allAttendanceRecords, error: attendanceError } = await admin
+    let query = admin
       .from('attendance_records')
-      .select('*')
+      .select(`
+        *,
+        users!attendance_records_user_id_fkey (
+          id,
+          first_name,
+          middle_name,
+          last_name,
+          student_number,
+          grade_level,
+          section,
+          role
+        )
+      `)
       .gte('scan_time', startISO)
       .lte('scan_time', endISO)
+      .eq('users.role', 'student')
       .order('scan_time', { ascending: false })
+    
+    // Apply filters at database level
+    if (studentId && studentId !== 'all') {
+      query = query.eq('user_id', studentId)
+    }
+    if (gradeLevel && gradeLevel !== 'all') {
+      query = query.eq('users.grade_level', gradeLevel)
+    }
+    if (section && section !== 'all') {
+      query = query.eq('users.section', section)
+    }
+    
+    const { data: attendanceWithStudents, error: attendanceError } = await query
     
     if (attendanceError) {
       console.error('❌ Error fetching attendance records:', attendanceError)
@@ -108,48 +98,11 @@ export async function GET(request: Request) {
         { status: 200 }
       )
     }
-    console.log(allAttendanceRecords.map((r) => r.scan_time));
-    console.log(`✅ Found ${allAttendanceRecords?.length || 0} attendance records`)
     
-    /**
-     * Build student map for quick lookups
-     * Uses student_number or UUID id
-     */
-    const studentMap: Record<string, any> = {}
-    if (students) {
-      students.forEach((student: any) => {
-        const studentIdStr = (student.student_number || student.id || '').toString().trim()
-        const studentUuid = (student.id || '').toString().trim()
-        if (studentIdStr) {
-          studentMap[studentIdStr] = {
-            ...student,
-            fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown',
-          }
-        }
-        if (studentUuid) {
-          studentMap[studentUuid] = studentMap[studentIdStr] || {
-            ...student,
-            fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown',
-          }
-        }
-      })
-    }
+    // Filter out records without valid student data
+    const finalRecords = (attendanceWithStudents || []).filter((record: any) => record.users)
     
-    // Filter attendance records to only include students (not teachers)
-    const studentAttendanceRecords = (allAttendanceRecords || []).filter((record: any) => {
-      const recordId = (record.student_id || '').toString().trim()
-      const student = studentMap[recordId]
-      return student !== undefined
-    })
-    
-    // Filter by specific student if requested
-    let finalRecords = studentAttendanceRecords
-    if (studentId && studentId !== 'all') {
-      finalRecords = studentAttendanceRecords.filter((record: any) => {
-        const recordId = (record.student_id || '').toString().trim()
-        return recordId === studentId.toString().trim()
-      })
-    }
+    console.log(`✅ Found ${finalRecords.length} attendance records with student data`)
     
     // Group attendance by student
     const studentStats: Record<string, {
@@ -166,16 +119,18 @@ export async function GET(request: Request) {
     
     // Process each attendance record
     finalRecords.forEach((record: any) => {
-      const recordId = (record.student_id || '').toString().trim()
-      const student = studentMap[recordId]
+      const student = record.users
       
       if (!student) return
       
-      const studentKey = student.student_number || student.id || recordId
+      const studentKey = student.student_number || student.id
       
       if (!studentStats[studentKey]) {
         studentStats[studentKey] = {
-          student,
+          student: {
+            ...student,
+            fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown',
+          },
           records: [],
           totalDays: 0,
           present: 0,
@@ -256,9 +211,16 @@ export async function GET(request: Request) {
       )
     }
     
-    // Get unique grade levels and sections for filters
-    const gradeLevels = [...new Set((students || []).map((s: any) => s.grade_level || s.gradeLevel).filter(Boolean))]
-    const sections = [...new Set((students || []).map((s: any) => s.section).filter(Boolean))]
+    // Get unique grade levels and sections from the fetched records
+    const uniqueStudents = new Map()
+    finalRecords.forEach((record: any) => {
+      if (record.users) {
+        uniqueStudents.set(record.users.id, record.users)
+      }
+    })
+    const studentsArray = Array.from(uniqueStudents.values())
+    const gradeLevels = [...new Set(studentsArray.map((s: any) => s.grade_level).filter(Boolean))].sort()
+    const sections = [...new Set(studentsArray.map((s: any) => s.section).filter(Boolean))].sort()
     
     console.log(`📈 Returning data: ${studentList.length} students, ${totalDays} total days, ${overallPresentPercentage}% present`)
     
@@ -281,8 +243,8 @@ export async function GET(request: Request) {
           end: endDateStr,
         },
         filters: {
-          gradeLevels: gradeLevels.sort(),
-          sections: sections.sort(),
+          gradeLevels: gradeLevels,
+          sections: sections,
         },
       },
     }, { status: 200 })

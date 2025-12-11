@@ -156,35 +156,36 @@ async function GET(request) {
         // Query range: from start of startDate to end of endDate (inclusive)
         const startISO = `${startDateStr}T00:00:00.000Z`;
         const endISO = `${endDateStr}T23:59:59.999Z`;
-        console.log('🔍 Querying students...');
-        // Fetch all students from database
-        const { data: students, error: studentsError } = await admin.from('students').select('*').limit(1000);
-        if (studentsError) {
-            console.error('❌ Error fetching students:', studentsError);
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                success: false,
-                error: `Failed to fetch students: ${studentsError.message}`,
-                data: null
-            }, {
-                status: 200
-            });
-        }
-        console.log(`✅ Found ${students?.length || 0} students`);
-        // Apply grade level and section filters
-        let filteredStudents = students || [];
-        if (gradeLevel && gradeLevel !== 'all') {
-            filteredStudents = filteredStudents.filter((s)=>(s.grade_level || '').toString().toLowerCase() === gradeLevel.toLowerCase());
-        }
-        if (section && section !== 'all') {
-            filteredStudents = filteredStudents.filter((s)=>(s.section || '').toString().toLowerCase() === section.toLowerCase());
-        }
-        console.log('🔍 Querying attendance records from', startISO, 'to', endISO);
+        console.log('🔍 Querying attendance records with student data...');
         /**
-     * Fetch attendance records within date range
-     * Records are stored in UTC but will be converted to Manila timezone
-     */ const { data: allAttendanceRecords, error: attendanceError } = await admin.from('attendance_records').select('*').gte('scan_time', startISO).lte('scan_time', endISO).order('scan_time', {
+     * Single optimized query with join to get attendance + student data
+     * Filters applied at database level for better performance
+     */ let query = admin.from('attendance_records').select(`
+        *,
+        users!attendance_records_user_id_fkey (
+          id,
+          first_name,
+          middle_name,
+          last_name,
+          student_number,
+          grade_level,
+          section,
+          role
+        )
+      `).gte('scan_time', startISO).lte('scan_time', endISO).eq('users.role', 'student').order('scan_time', {
             ascending: false
         });
+        // Apply filters at database level
+        if (studentId && studentId !== 'all') {
+            query = query.eq('user_id', studentId);
+        }
+        if (gradeLevel && gradeLevel !== 'all') {
+            query = query.eq('users.grade_level', gradeLevel);
+        }
+        if (section && section !== 'all') {
+            query = query.eq('users.section', section);
+        }
+        const { data: attendanceWithStudents, error: attendanceError } = await query;
         if (attendanceError) {
             console.error('❌ Error fetching attendance records:', attendanceError);
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -195,48 +196,22 @@ async function GET(request) {
                 status: 200
             });
         }
-        console.log(allAttendanceRecords.map((r)=>r.scan_time));
-        console.log(`✅ Found ${allAttendanceRecords?.length || 0} attendance records`);
-        /**
-     * Build student map for quick lookups
-     * Handles multiple possible field names (student_id, student_number, id)
-     */ const studentMap = {};
-        if (students) {
-            students.forEach((student)=>{
-                const studentIdStr = (student.student_id || student.student_number || student.id || '').toString().trim();
-                if (studentIdStr) {
-                    studentMap[studentIdStr] = {
-                        ...student,
-                        fullName: `${student.first_name || student.firstName || ''} ${student.last_name || student.lastName || ''}`.trim() || student.name || 'Unknown'
-                    };
-                }
-            });
-        }
-        // Filter attendance records to only include students (not teachers)
-        const studentAttendanceRecords = (allAttendanceRecords || []).filter((record)=>{
-            const recordId = (record.student_id || '').toString().trim();
-            const student = studentMap[recordId];
-            return student !== undefined;
-        });
-        // Filter by specific student if requested
-        let finalRecords = studentAttendanceRecords;
-        if (studentId && studentId !== 'all') {
-            finalRecords = studentAttendanceRecords.filter((record)=>{
-                const recordId = (record.student_id || '').toString().trim();
-                return recordId === studentId.toString().trim();
-            });
-        }
+        // Filter out records without valid student data
+        const finalRecords = (attendanceWithStudents || []).filter((record)=>record.users);
+        console.log(`✅ Found ${finalRecords.length} attendance records with student data`);
         // Group attendance by student
         const studentStats = {};
         // Process each attendance record
         finalRecords.forEach((record)=>{
-            const recordId = (record.student_id || '').toString().trim();
-            const student = studentMap[recordId];
+            const student = record.users;
             if (!student) return;
-            const studentKey = student.student_id || student.student_number || recordId;
+            const studentKey = student.student_number || student.id;
             if (!studentStats[studentKey]) {
                 studentStats[studentKey] = {
-                    student,
+                    student: {
+                        ...student,
+                        fullName: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'Unknown'
+                    },
                     records: [],
                     totalDays: 0,
                     present: 0,
@@ -284,9 +259,9 @@ async function GET(request) {
             ;
             stats.percentage = Math.round(stats.present / total * 100);
             return {
-                studentId: stats.student.student_id || stats.student.student_number || stats.student.id,
+                studentId: stats.student.student_number || stats.student.id,
                 studentName: stats.student.fullName,
-                gradeLevel: stats.student.grade_level || stats.student.gradeLevel || 'N/A',
+                gradeLevel: stats.student.grade_level || 'N/A',
                 section: stats.student.section || 'N/A',
                 totalDays: stats.totalDays,
                 present: stats.present,
@@ -311,13 +286,20 @@ async function GET(request) {
         if (studentId && studentId !== 'all') {
             selectedStudentData = studentList.find((s)=>(s.studentId || '').toString() === studentId.toString());
         }
-        // Get unique grade levels and sections for filters
+        // Get unique grade levels and sections from the fetched records
+        const uniqueStudents = new Map();
+        finalRecords.forEach((record)=>{
+            if (record.users) {
+                uniqueStudents.set(record.users.id, record.users);
+            }
+        });
+        const studentsArray = Array.from(uniqueStudents.values());
         const gradeLevels = [
-            ...new Set((students || []).map((s)=>s.grade_level || s.gradeLevel).filter(Boolean))
-        ];
+            ...new Set(studentsArray.map((s)=>s.grade_level).filter(Boolean))
+        ].sort();
         const sections = [
-            ...new Set((students || []).map((s)=>s.section).filter(Boolean))
-        ];
+            ...new Set(studentsArray.map((s)=>s.section).filter(Boolean))
+        ].sort();
         console.log(`📈 Returning data: ${studentList.length} students, ${totalDays} total days, ${overallPresentPercentage}% present`);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
@@ -338,8 +320,8 @@ async function GET(request) {
                     end: endDateStr
                 },
                 filters: {
-                    gradeLevels: gradeLevels.sort(),
-                    sections: sections.sort()
+                    gradeLevels: gradeLevels,
+                    sections: sections
                 }
             }
         }, {
