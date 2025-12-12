@@ -157,6 +157,16 @@ async function GET(request) {
         const startISO = `${startDateStr}T00:00:00.000Z`;
         const endISO = `${endDateStr}T23:59:59.999Z`;
         console.log('🔍 Querying attendance records with student data...');
+        // If filtering by student, first get their UUID from student_number
+        let userUuid = null;
+        if (studentId && studentId !== 'all') {
+            const { data: student } = await admin.from('users').select('id').eq('role', 'student').or(`id.eq.${studentId},student_number.eq.${studentId}`).single();
+            if (student) {
+                userUuid = student.id;
+            } else {
+                console.warn(`⚠️ No student found with ID/number: ${studentId}`);
+            }
+        }
         /**
      * Single optimized query with join to get attendance + student data
      * Filters applied at database level for better performance
@@ -175,9 +185,9 @@ async function GET(request) {
       `).gte('scan_time', startISO).lte('scan_time', endISO).eq('users.role', 'student').order('scan_time', {
             ascending: false
         });
-        // Apply filters at database level
-        if (studentId && studentId !== 'all') {
-            query = query.eq('user_id', studentId);
+        // Apply filters at database level using UUID
+        if (userUuid) {
+            query = query.eq('user_id', userUuid);
         }
         if (gradeLevel && gradeLevel !== 'all') {
             query = query.eq('users.grade_level', gradeLevel);

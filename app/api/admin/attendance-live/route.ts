@@ -576,8 +576,22 @@ export async function POST(request: Request) {
           if (teachers && teachers.length > 0) {
             matchedTeacher = teachers[0]
             console.log(`✅ Found teacher FIRST: ${matchedTeacher.first_name || 'Unknown'} ${matchedTeacher.last_name || ''}`)
-            // Use UUID id for attendance_records.user_id
-            studentId = matchedTeacher.id?.toString() || matchedTeacher.employee_number
+            // Use UUID id for attendance_records.user_id (must be UUID, not employee_number)
+            studentId = matchedTeacher.id?.toString()
+            
+            if (!studentId) {
+              console.error('❌ Teacher found but has no UUID:', matchedTeacher)
+              return NextResponse.json(
+                { 
+                  success: false, 
+                  error: 'Teacher record is invalid (missing UUID). Please contact administrator.',
+                },
+                { 
+                  status: 200,
+                  headers: postHeaders,
+                }
+              )
+            }
           }
         }
         
@@ -618,8 +632,22 @@ export async function POST(request: Request) {
             const matchedStudent = students[0]
             console.log(`Found student: ${matchedStudent.first_name || 'Unknown'} ${matchedStudent.last_name || ''}`)
             
-            // Use UUID id for attendance_records.user_id
-            studentId = matchedStudent.id?.toString() || matchedStudent.student_number
+            // Use UUID id for attendance_records.user_id (must be UUID, not student_number)
+            studentId = matchedStudent.id?.toString()
+            
+            if (!studentId) {
+              console.error('❌ Student found but has no UUID:', matchedStudent)
+              return NextResponse.json(
+                { 
+                  success: false, 
+                  error: 'Student record is invalid (missing UUID). Please contact administrator.',
+                },
+                { 
+                  status: 200,
+                  headers: postHeaders,
+                }
+              )
+            }
           }
         }
       }

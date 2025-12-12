@@ -150,7 +150,7 @@ async function GET(request) {
             console.error('Error fetching teachers:', teachersError);
         }
         // Fetch attendance records for teachers
-        // Teachers are identified by checking if student_id matches a teacher_id or email
+        // Teachers are identified by checking if user_id matches a teacher's UUID
         const { data: allAttendanceRecords, error: attendanceError } = await admin.from('attendance_records').select('*').gte('scan_time', startISO).lte('scan_time', endISO).order('scan_time', {
             ascending: true
         });
@@ -212,11 +212,11 @@ async function GET(request) {
         console.log(`📊 Found ${teachers?.length || 0} teachers`);
         console.log(`🔑 Teacher RFID map has ${Object.keys(teacherRfidMap).length} entries:`, Object.keys(teacherRfidMap));
         // Filter attendance records to only include teachers
-        // Check both student_id match AND RFID card match
+        // Check both user_id match AND RFID card match
         const teacherAttendanceRecords = (allAttendanceRecords || []).filter((record)=>{
-            const recordId = (record.student_id || '').toString().trim();
+            const recordId = (record.user_id || '').toString().trim();
             const recordRfid = (record.rfid_card || record.rfidCard || record.rfid_tag || record.rfidTag || '').toString().trim().toUpperCase().replace(/\s+/g, '');
-            // Check if student_id matches a teacher
+            // Check if user_id matches a teacher
             if (teacherMap[recordId] !== undefined) {
                 return true;
             }
@@ -231,9 +231,9 @@ async function GET(request) {
         const teacherStats = {};
         // Process each attendance record
         teacherAttendanceRecords.forEach((record)=>{
-            const recordId = (record.student_id || '').toString().trim();
+            const recordId = (record.user_id || '').toString().trim();
             const recordRfid = (record.rfid_card || record.rfidCard || record.rfid_tag || record.rfidTag || '').toString().trim().toUpperCase().replace(/\s+/g, '');
-            // Try to find teacher by student_id first, then by RFID
+            // Try to find teacher by user_id first, then by RFID
             let teacher = teacherMap[recordId];
             if (!teacher && recordRfid) {
                 teacher = teacherRfidMap[recordRfid] || teacherMap[recordRfid];

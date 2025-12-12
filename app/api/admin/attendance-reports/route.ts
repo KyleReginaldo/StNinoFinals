@@ -50,6 +50,23 @@ export async function GET(request: Request) {
     
     console.log('🔍 Querying attendance records with student data...')
     
+    // If filtering by student, first get their UUID from student_number
+    let userUuid: string | null = null
+    if (studentId && studentId !== 'all') {
+      const { data: student } = await admin
+        .from('users')
+        .select('id')
+        .eq('role', 'student')
+        .or(`id.eq.${studentId},student_number.eq.${studentId}`)
+        .single()
+      
+      if (student) {
+        userUuid = student.id
+      } else {
+        console.warn(`⚠️ No student found with ID/number: ${studentId}`)
+      }
+    }
+    
     /**
      * Single optimized query with join to get attendance + student data
      * Filters applied at database level for better performance
@@ -74,9 +91,9 @@ export async function GET(request: Request) {
       .eq('users.role', 'student')
       .order('scan_time', { ascending: false })
     
-    // Apply filters at database level
-    if (studentId && studentId !== 'all') {
-      query = query.eq('user_id', studentId)
+    // Apply filters at database level using UUID
+    if (userUuid) {
+      query = query.eq('user_id', userUuid)
     }
     if (gradeLevel && gradeLevel !== 'all') {
       query = query.eq('users.grade_level', gradeLevel)

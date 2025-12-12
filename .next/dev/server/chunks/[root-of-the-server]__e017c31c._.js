@@ -304,7 +304,7 @@ async function GET(request) {
             if (!querySuccess) {
                 try {
                     console.log('Method 2: Trying direct query with explicit columns...');
-                    let directQuery = supabaseClient.from('attendance_records').select('id, scan_time, scan_type, student_id, rfid, status, time_in, time_out, created_at, device_id').order('scan_time', {
+                    let directQuery = supabaseClient.from('attendance_records').select('id, scan_time, scan_type, user_id, rfid, status, time_in, time_out, created_at, device_id').order('scan_time', {
                         ascending: false
                     }).limit(limit);
                     if (since) {
@@ -458,14 +458,14 @@ async function GET(request) {
                 scanType = record.type.toLowerCase() === 'time_in' || record.type.toLowerCase() === 'timein' ? 'timein' : record.type.toLowerCase() === 'time_out' || record.type.toLowerCase() === 'timeout' ? 'timeout' : null;
             }
             // Get student or teacher info from maps
-            const student = studentMap[record.student_id] || null;
-            const teacher = teacherMap[record.student_id] || null;
+            const student = studentMap[record.user_id] || null;
+            const teacher = teacherMap[record.user_id] || null;
             // Determine if this is a teacher or student
             const isTeacher = !!teacher || student && (student.role === 'teacher' || student.user_type === 'teacher' || !student.student_number);
             const person = teacher || student;
             return {
                 id: record.id,
-                studentId: record.student_id,
+                studentId: record.user_id,
                 studentName: person ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
                 gradeLevel: isTeacher ? null : person?.grade_level || 'N/A',
                 section: isTeacher ? null : person?.section || 'N/A',
@@ -650,8 +650,18 @@ async function POST(request) {
                 if (teachers && teachers.length > 0) {
                     matchedTeacher = teachers[0];
                     console.log(`✅ Found teacher FIRST: ${matchedTeacher.first_name || 'Unknown'} ${matchedTeacher.last_name || ''}`);
-                    // Use UUID id for attendance_records.student_id
-                    studentId = matchedTeacher.id?.toString() || matchedTeacher.employee_number;
+                    // Use UUID id for attendance_records.user_id (must be UUID, not employee_number)
+                    studentId = matchedTeacher.id?.toString();
+                    if (!studentId) {
+                        console.error('❌ Teacher found but has no UUID:', matchedTeacher);
+                        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                            success: false,
+                            error: 'Teacher record is invalid (missing UUID). Please contact administrator.'
+                        }, {
+                            status: 200,
+                            headers: postHeaders
+                        });
+                    }
                 }
             }
             // If no teacher found, check students table
@@ -683,29 +693,38 @@ async function POST(request) {
                     // Found a student
                     const matchedStudent = students[0];
                     console.log(`Found student: ${matchedStudent.first_name || 'Unknown'} ${matchedStudent.last_name || ''}`);
-                    // Use UUID id for attendance_records.student_id
-                    studentId = matchedStudent.id?.toString() || matchedStudent.student_number;
+                    // Use UUID id for attendance_records.user_id (must be UUID, not student_number)
+                    studentId = matchedStudent.id?.toString();
+                    if (!studentId) {
+                        console.error('❌ Student found but has no UUID:', matchedStudent);
+                        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                            success: false,
+                            error: 'Student record is invalid (missing UUID). Please contact administrator.'
+                        }, {
+                            status: 200,
+                            headers: postHeaders
+                        });
+                    }
                 }
             }
         }
         // Check if student has already scanned in today
-        // student_id is now TEXT type, so we can query directly
-        // But we need to cast to text to avoid UUID comparison errors
+        // user_id is UUID type referencing users.id
         let todayRecords = [];
         let checkError = null;
         // Fetch all records for today, then filter in memory to avoid type mismatch
-        const { data: allTodayRecords, error: fetchError } = await supabaseClient.from('attendance_records').select('id, scan_type, scan_time, time_in, time_out, student_id').gte('scan_time', todayStart).lte('scan_time', todayEndISO).order('scan_time', {
+        const { data: allTodayRecords, error: fetchError } = await supabaseClient.from('attendance_records').select('id, scan_type, scan_time, time_in, time_out, user_id').gte('scan_time', todayStart).lte('scan_time', todayEndISO).order('scan_time', {
             ascending: true
         });
         if (fetchError) {
             checkError = fetchError;
             console.error('Error fetching today records:', fetchError);
         } else if (allTodayRecords) {
-            // Filter in memory by student_id (text match) to avoid UUID/TEXT comparison issues
+            // Filter in memory by user_id (UUID match)
             todayRecords = allTodayRecords.filter((r)=>{
-                const rId = (r.student_id || '').toString().trim();
+                const rId = (r.user_id || '').toString().trim();
                 const sId = (studentId || '').toString().trim();
-                return rId === sId || rId === studentId || sId === r.student_id;
+                return rId === sId || rId === studentId || sId === r.user_id;
             });
         }
         if (checkError) {
@@ -768,7 +787,7 @@ async function POST(request) {
         // Insert the attendance record
         // Build insert object with all required fields
         const attendanceRecord = {
-            student_id: studentId
+            user_id: studentId
         };
         // Add RFID fields - set both rfid_card and rfid_tag to avoid NOT NULL constraint errors
         const rfidValue = scanData.rfidCard || '';
@@ -794,7 +813,7 @@ async function POST(request) {
         attendanceRecord.type = scanType;
         // Insert the attendance record (without join to avoid foreign key issues)
         console.log('💾 Inserting attendance record:', {
-            student_id: attendanceRecord.student_id,
+            user_id: attendanceRecord.user_id,
             rfid_card: attendanceRecord.rfid_card,
             scan_type: attendanceRecord.scan_type,
             scan_time: attendanceRecord.scan_time
