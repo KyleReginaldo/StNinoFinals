@@ -78,6 +78,7 @@ export interface AdminSettings {
 export interface Stats {
   totalStudents: number
   totalTeachers: number
+  totalParents: number
   attendanceRate: number
 }
 

@@ -1,3 +1,4 @@
+import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabase } from '@/lib/supabaseClient'; // Keep for fallback
 import { NextResponse } from 'next/server';
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
       phone_number,
       date_of_birth,
       address,
+      rfid,
       password,
     } = body
 
@@ -175,6 +177,7 @@ export async function POST(request: Request) {
       section: section || null,
       date_of_birth: date_of_birth || null,
       address: address || null,
+      rfid: rfid || null,
       role: 'student',
       status: 'Active',
     })
@@ -191,6 +194,22 @@ export async function POST(request: Request) {
         },
         { status: 400 }
       )
+    }
+
+    // Send welcome email with login credentials
+    try {
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/student`;
+      await EmailService.sendLoginCredentials({
+        name: `${first_name} ${last_name}`,
+        email: email,
+        password: password,
+        role: 'student',
+        loginUrl: loginUrl,
+      });
+      console.log('Welcome email sent to student:', email);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the request if email fails, just log it
     }
 
     return NextResponse.json({

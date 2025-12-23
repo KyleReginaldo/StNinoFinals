@@ -1,3 +1,4 @@
+import { EmailService } from '@/lib/services/email-service'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { NextResponse } from 'next/server'
 
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
       department,
       specialization,
       date_hired,
+      date_of_birth,
+      address,
+      rfid,
       password,
     } = body
 
@@ -89,6 +93,9 @@ export async function POST(request: Request) {
       )
     }
 
+    // Store the password to send in email
+    const generatedPassword = password || authData.user.email
+
     // Insert teacher into users table
     const { data: teacher, error: insertError } = await admin
       .from('users')
@@ -104,6 +111,9 @@ export async function POST(request: Request) {
           department: department || null,
           specialization: specialization || null,
           date_hired: date_hired || null,
+          date_of_birth: date_of_birth || null,
+          address: address || null,
+          rfid: rfid || null,
           role: 'teacher',
           status: 'Active',
         },
@@ -119,6 +129,22 @@ export async function POST(request: Request) {
         { success: false, error: `Failed to create teacher: ${insertError.message}` },
         { status: 500 }
       )
+    }
+
+    // Send welcome email with login credentials
+    try {
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/teacher`;
+      await EmailService.sendLoginCredentials({
+        name: `${first_name} ${last_name}`,
+        email: email,
+        password: generatedPassword,
+        role: 'teacher',
+        loginUrl: loginUrl,
+      });
+      console.log('Welcome email sent to teacher:', email);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the request if email fails, just log it
     }
 
     return NextResponse.json({

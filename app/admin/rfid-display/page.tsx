@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Radio, RefreshCcw, X, LogIn, LogOut, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { useAlert } from "@/lib/use-alert"
+import { LogIn, LogOut, Radio, RefreshCcw, User } from "lucide-react"
+import Image from "next/image"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 interface AttendanceRecord {
   id: string
@@ -37,6 +38,7 @@ export default function RfidDisplayPage() {
   const [currentTime, setCurrentTime] = useState<string>("")
   const [timeoutModeActive, setTimeoutModeActive] = useState(false)
   const [timeoutCountdown, setTimeoutCountdown] = useState(0)
+  const { showAlert } = useAlert()
 
   const fetchLiveAttendance = useCallback(async (onlyNew = false) => {
     setLoadingAttendance(true)
@@ -217,11 +219,11 @@ export default function RfidDisplayPage() {
         }, 1000)
       } else {
         console.error('Failed to enable timeout mode:', result.error)
-        alert('Failed to enable timeout mode. Please try again.')
+        showAlert({ message: 'Failed to enable timeout mode. Please try again.', type: 'error' })
       }
     } catch (error) {
       console.error('Error enabling timeout mode:', error)
-      alert('Error enabling timeout mode. Please try again.')
+      showAlert({ message: 'Error enabling timeout mode. Please try again.', type: 'error' })
     }
   }
 

@@ -159,7 +159,7 @@ async function POST(request) {
     try {
         const admin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseAdmin$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSupabaseAdmin"])();
         const body = await request.json();
-        const { first_name, last_name, middle_name, employee_number, email, phone_number, department, specialization, date_hired, password } = body;
+        const { first_name, last_name, middle_name, employee_number, email, phone_number, department, specialization, date_hired, date_of_birth, address, rfid, password } = body;
         // Validation
         if (!first_name || !last_name || !email) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -207,6 +207,9 @@ async function POST(request) {
                 department: department || null,
                 specialization: specialization || null,
                 date_hired: date_hired || null,
+                date_of_birth: date_of_birth || null,
+                address: address || null,
+                rfid: rfid || null,
                 role: 'teacher',
                 status: 'Active'
             }

@@ -1,377 +1,1560 @@
-[00:00:02.063] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
-[00:00:02.236] Server  LOG      ✓ Ready in 1940ms
-[00:00:20.780] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:20.935] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:23.504] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:00:27.875] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:27.875] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:00:27.875] Server  LOG     Origin: "N/A"
-[00:00:27.875] Server  LOG     Host: "localhost:3000"
-[00:00:27.875] Server  LOG     Environment: "development"
-[00:00:27.876] Server  LOG     =========================
-[00:00:27.876] Server  LOG     Attempting to fetch attendance records...
-[00:00:27.876] Server  LOG     Limit: 100
-[00:00:27.877] Server  LOG     Since: null
-[00:00:27.877] Server  LOG     Method 1: Trying RPC function...
-[00:00:28.017] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:28.018] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:28.112] Server  ERROR   ✗ Direct query failed: {}
-[00:00:28.112] Server  LOG     📭 No attendance records found in database
-[00:00:28.113] Server  LOG     💡 This could mean:
-[00:00:28.113] Server  LOG        1. No scans have been recorded yet
-[00:00:28.113] Server  LOG        2. Database table is empty
-[00:00:28.113] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:00:55.676] Server  LOG      ✓ Compiled in 77ms
-[00:01:03.198] Server  LOG      ✓ Compiled in 85ms
-[00:01:03.252] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:01:10.183] Server  LOG      ✓ Compiled in 56ms
-[00:01:10.218] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:01:16.028] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:16.029] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:01:16.029] Server  LOG     Origin: "N/A"
-[00:01:16.029] Server  LOG     Host: "localhost:3000"
-[00:01:16.029] Server  LOG     Environment: "development"
-[00:01:16.029] Server  LOG     =========================
-[00:01:16.030] Server  LOG     Attempting to fetch attendance records...
-[00:01:16.030] Server  LOG     Limit: 100
-[00:01:16.031] Server  LOG     Since: null
-[00:01:16.031] Server  LOG     Method 1: Trying RPC function...
-[00:01:16.223] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:16.224] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:16.424] Server  ERROR   ✗ Direct query failed: {}
-[00:01:16.424] Server  LOG     📭 No attendance records found in database
-[00:01:16.425] Server  LOG     💡 This could mean:
-[00:01:16.425] Server  LOG        1. No scans have been recorded yet
-[00:01:16.425] Server  LOG        2. Database table is empty
-[00:01:16.425] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:01:17.253] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:17.253] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:01:17.254] Server  LOG     Origin: "N/A"
-[00:01:17.254] Server  LOG     Host: "localhost:3000"
-[00:01:17.254] Server  LOG     Environment: "development"
-[00:01:17.254] Server  LOG     =========================
-[00:01:17.255] Server  LOG     Attempting to fetch attendance records...
-[00:01:17.255] Server  LOG     Limit: 100
-[00:01:17.255] Server  LOG     Since: null
-[00:01:17.255] Server  LOG     Method 1: Trying RPC function...
-[00:01:17.319] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:17.319] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:17.408] Server  ERROR   ✗ Direct query failed: {}
-[00:01:17.409] Server  LOG     📭 No attendance records found in database
-[00:01:17.409] Server  LOG     💡 This could mean:
-[00:01:17.409] Server  LOG        1. No scans have been recorded yet
-[00:01:17.409] Server  LOG        2. Database table is empty
-[00:01:17.410] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:01:17.499] Server  LOG      ✓ Compiled in 60ms
-[00:01:17.537] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:01:25.168] Server  LOG      ✓ Compiled in 54ms
-[00:01:25.204] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:01:37.157] Server  LOG      ✓ Compiled in 81ms
-[00:01:37.193] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:01:50.584] Server  LOG      ✓ Compiled in 51ms
-[00:02:20.713] Server  LOG      ✓ Compiled in 59ms
-[00:02:37.590] Server  LOG      ✓ Compiled in 59ms
-[00:02:47.543] Server  LOG      ✓ Compiled in 56ms
-[00:03:19.893] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:03:19.987] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:03:20.118] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:03:20.340] Browser ERROR   Error fetching teachers: {}
-[00:03:35.207] Server  LOG      ✓ Compiled in 96ms
-[00:03:48.680] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:48.681] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:03:48.681] Server  LOG     Origin: "N/A"
-[00:03:48.681] Server  LOG     Host: "localhost:3000"
-[00:03:48.681] Server  LOG     Environment: "development"
-[00:03:48.681] Server  LOG     =========================
-[00:03:48.682] Server  LOG     Attempting to fetch attendance records...
-[00:03:48.682] Server  LOG     Limit: 100
-[00:03:48.682] Server  LOG     Since: null
-[00:03:48.682] Server  LOG     Method 1: Trying RPC function...
-[00:03:48.877] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:48.878] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:49.149] Server  ERROR   ✗ Direct query failed: {}
-[00:03:49.149] Server  LOG     📭 No attendance records found in database
-[00:03:49.150] Server  LOG     💡 This could mean:
-[00:03:49.150] Server  LOG        1. No scans have been recorded yet
-[00:03:49.150] Server  LOG        2. Database table is empty
-[00:03:49.151] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:06:19.349] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:19.350] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:06:19.350] Server  LOG     Origin: "N/A"
-[00:06:19.350] Server  LOG     Host: "localhost:3000"
-[00:06:19.350] Server  LOG     Environment: "development"
-[00:06:19.350] Server  LOG     =========================
-[00:06:19.351] Server  LOG     Attempting to fetch attendance records...
-[00:06:19.351] Server  LOG     Limit: 100
-[00:06:19.351] Server  LOG     Since: null
-[00:06:19.352] Server  LOG     Method 1: Trying RPC function...
-[00:06:19.533] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:19.534] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:19.685] Server  ERROR   ✗ Direct query failed: {}
-[00:06:19.686] Server  LOG     📭 No attendance records found in database
-[00:06:19.686] Server  LOG     💡 This could mean:
-[00:06:19.686] Server  LOG        1. No scans have been recorded yet
-[00:06:19.686] Server  LOG        2. Database table is empty
-[00:06:19.686] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:06:22.050] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:22.051] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:06:22.051] Server  LOG     Origin: "N/A"
-[00:06:22.051] Server  LOG     Host: "localhost:3000"
-[00:06:22.051] Server  LOG     Environment: "development"
-[00:06:22.051] Server  LOG     =========================
-[00:06:22.052] Server  LOG     Attempting to fetch attendance records...
-[00:06:22.052] Server  LOG     Limit: 100
-[00:06:22.052] Server  LOG     Since: null
-[00:06:22.052] Server  LOG     Method 1: Trying RPC function...
-[00:06:22.117] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:22.118] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:22.224] Server  ERROR   ✗ Direct query failed: {}
-[00:06:22.225] Server  LOG     📭 No attendance records found in database
-[00:06:22.225] Server  LOG     💡 This could mean:
-[00:06:22.225] Server  LOG        1. No scans have been recorded yet
-[00:06:22.226] Server  LOG        2. Database table is empty
-[00:06:22.226] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:07:35.027] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:35.027] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:07:35.027] Server  LOG     Origin: "N/A"
-[00:07:35.027] Server  LOG     Host: "localhost:3000"
-[00:07:35.027] Server  LOG     Environment: "development"
-[00:07:35.028] Server  LOG     =========================
-[00:07:35.028] Server  LOG     Attempting to fetch attendance records...
-[00:07:35.028] Server  LOG     Limit: 100
-[00:07:35.028] Server  LOG     Since: null
-[00:07:35.029] Server  LOG     Method 1: Trying RPC function...
-[00:07:35.230] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:35.231] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:35.396] Server  ERROR   ✗ Direct query failed: {}
-[00:07:35.396] Server  LOG     📭 No attendance records found in database
-[00:07:35.397] Server  LOG     💡 This could mean:
-[00:07:35.397] Server  LOG        1. No scans have been recorded yet
-[00:07:35.397] Server  LOG        2. Database table is empty
-[00:07:35.397] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:07:40.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:40.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:07:40.684] Server  LOG     Origin: "N/A"
-[00:07:40.684] Server  LOG     Host: "localhost:3000"
-[00:07:40.684] Server  LOG     Environment: "development"
-[00:07:40.684] Server  LOG     =========================
-[00:07:40.686] Server  LOG     Attempting to fetch attendance records...
-[00:07:40.686] Server  LOG     Limit: 100
-[00:07:40.687] Server  LOG     Since: null
-[00:07:40.687] Server  LOG     Method 1: Trying RPC function...
-[00:07:40.844] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:40.845] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:41.004] Server  ERROR   ✗ Direct query failed: {}
-[00:07:41.005] Server  LOG     📭 No attendance records found in database
-[00:07:41.005] Server  LOG     💡 This could mean:
-[00:07:41.005] Server  LOG        1. No scans have been recorded yet
-[00:07:41.006] Server  LOG        2. Database table is empty
-[00:07:41.006] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:07:45.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:45.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:07:45.683] Server  LOG     Origin: "N/A"
-[00:07:45.684] Server  LOG     Host: "localhost:3000"
-[00:07:45.684] Server  LOG     Environment: "development"
-[00:07:45.684] Server  LOG     =========================
-[00:07:45.686] Server  LOG     Attempting to fetch attendance records...
-[00:07:45.686] Server  LOG     Limit: 100
-[00:07:45.687] Server  LOG     Since: null
-[00:07:45.687] Server  LOG     Method 1: Trying RPC function...
-[00:07:45.864] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:45.865] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:46.019] Server  ERROR   ✗ Direct query failed: {}
-[00:07:46.019] Server  LOG     📭 No attendance records found in database
-[00:07:46.020] Server  LOG     💡 This could mean:
-[00:07:46.020] Server  LOG        1. No scans have been recorded yet
-[00:07:46.020] Server  LOG        2. Database table is empty
-[00:07:46.020] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:07:50.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:50.684] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:07:50.684] Server  LOG     Origin: "N/A"
-[00:07:50.684] Server  LOG     Host: "localhost:3000"
-[00:07:50.686] Server  LOG     Environment: "development"
-[00:07:50.686] Server  LOG     =========================
-[00:07:50.688] Server  LOG     Attempting to fetch attendance records...
-[00:07:50.688] Server  LOG     Limit: 100
-[00:07:50.688] Server  LOG     Since: null
-[00:07:50.689] Server  LOG     Method 1: Trying RPC function...
-[00:07:50.852] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:50.853] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:51.003] Server  ERROR   ✗ Direct query failed: {}
-[00:07:51.003] Server  LOG     📭 No attendance records found in database
-[00:07:51.003] Server  LOG     💡 This could mean:
-[00:07:51.003] Server  LOG        1. No scans have been recorded yet
-[00:07:51.003] Server  LOG        2. Database table is empty
-[00:07:51.004] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:07:55.685] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:55.686] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:07:55.686] Server  LOG     Origin: "N/A"
-[00:07:55.686] Server  LOG     Host: "localhost:3000"
-[00:07:55.686] Server  LOG     Environment: "development"
-[00:07:55.687] Server  LOG     =========================
-[00:07:55.688] Server  LOG     Attempting to fetch attendance records...
-[00:07:55.688] Server  LOG     Limit: 100
-[00:07:55.688] Server  LOG     Since: null
-[00:07:55.688] Server  LOG     Method 1: Trying RPC function...
-[00:07:55.831] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:55.832] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:55.991] Server  ERROR   ✗ Direct query failed: {}
-[00:07:55.991] Server  LOG     📭 No attendance records found in database
-[00:07:55.992] Server  LOG     💡 This could mean:
-[00:07:55.992] Server  LOG        1. No scans have been recorded yet
-[00:07:55.992] Server  LOG        2. Database table is empty
-[00:07:55.992] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:00.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:00.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:00.684] Server  LOG     Origin: "N/A"
-[00:08:00.684] Server  LOG     Host: "localhost:3000"
-[00:08:00.684] Server  LOG     Environment: "development"
-[00:08:00.684] Server  LOG     =========================
-[00:08:00.685] Server  LOG     Attempting to fetch attendance records...
-[00:08:00.685] Server  LOG     Limit: 100
-[00:08:00.686] Server  LOG     Since: null
-[00:08:00.686] Server  LOG     Method 1: Trying RPC function...
-[00:08:00.832] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:00.832] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:01.000] Server  ERROR   ✗ Direct query failed: {}
-[00:08:01.001] Server  LOG     📭 No attendance records found in database
-[00:08:01.001] Server  LOG     💡 This could mean:
-[00:08:01.002] Server  LOG        1. No scans have been recorded yet
-[00:08:01.002] Server  LOG        2. Database table is empty
-[00:08:01.002] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:05.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:05.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:05.683] Server  LOG     Origin: "N/A"
-[00:08:05.684] Server  LOG     Host: "localhost:3000"
-[00:08:05.684] Server  LOG     Environment: "development"
-[00:08:05.684] Server  LOG     =========================
-[00:08:05.685] Server  LOG     Attempting to fetch attendance records...
-[00:08:05.685] Server  LOG     Limit: 100
-[00:08:05.685] Server  LOG     Since: null
-[00:08:05.685] Server  LOG     Method 1: Trying RPC function...
-[00:08:05.856] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:05.857] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:06.198] Server  ERROR   ✗ Direct query failed: {}
-[00:08:06.198] Server  LOG     📭 No attendance records found in database
-[00:08:06.198] Server  LOG     💡 This could mean:
-[00:08:06.199] Server  LOG        1. No scans have been recorded yet
-[00:08:06.199] Server  LOG        2. Database table is empty
-[00:08:06.199] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:10.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:10.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:10.684] Server  LOG     Origin: "N/A"
-[00:08:10.684] Server  LOG     Host: "localhost:3000"
-[00:08:10.684] Server  LOG     Environment: "development"
-[00:08:10.684] Server  LOG     =========================
-[00:08:10.685] Server  LOG     Attempting to fetch attendance records...
-[00:08:10.686] Server  LOG     Limit: 100
-[00:08:10.686] Server  LOG     Since: null
-[00:08:10.686] Server  LOG     Method 1: Trying RPC function...
-[00:08:10.857] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:10.858] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:11.024] Server  ERROR   ✗ Direct query failed: {}
-[00:08:11.025] Server  LOG     📭 No attendance records found in database
-[00:08:11.025] Server  LOG     💡 This could mean:
-[00:08:11.025] Server  LOG        1. No scans have been recorded yet
-[00:08:11.026] Server  LOG        2. Database table is empty
-[00:08:11.026] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:15.682] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:15.683] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:15.683] Server  LOG     Origin: "N/A"
-[00:08:15.683] Server  LOG     Host: "localhost:3000"
-[00:08:15.683] Server  LOG     Environment: "development"
-[00:08:15.684] Server  LOG     =========================
-[00:08:15.684] Server  LOG     Attempting to fetch attendance records...
-[00:08:15.684] Server  LOG     Limit: 100
-[00:08:15.685] Server  LOG     Since: null
-[00:08:15.685] Server  LOG     Method 1: Trying RPC function...
-[00:08:15.834] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:15.835] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:16.009] Server  ERROR   ✗ Direct query failed: {}
-[00:08:16.009] Server  LOG     📭 No attendance records found in database
-[00:08:16.009] Server  LOG     💡 This could mean:
-[00:08:16.010] Server  LOG        1. No scans have been recorded yet
-[00:08:16.010] Server  LOG        2. Database table is empty
-[00:08:16.010] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:20.683] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:20.684] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:20.684] Server  LOG     Origin: "N/A"
-[00:08:20.684] Server  LOG     Host: "localhost:3000"
-[00:08:20.684] Server  LOG     Environment: "development"
-[00:08:20.685] Server  LOG     =========================
-[00:08:20.686] Server  LOG     Attempting to fetch attendance records...
-[00:08:20.686] Server  LOG     Limit: 100
-[00:08:20.686] Server  LOG     Since: null
-[00:08:20.686] Server  LOG     Method 1: Trying RPC function...
-[00:08:20.862] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:20.862] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:21.021] Server  ERROR   ✗ Direct query failed: {}
-[00:08:21.021] Server  LOG     📭 No attendance records found in database
-[00:08:21.021] Server  LOG     💡 This could mean:
-[00:08:21.022] Server  LOG        1. No scans have been recorded yet
-[00:08:21.022] Server  LOG        2. Database table is empty
-[00:08:21.022] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:25.032] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:25.032] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:25.032] Server  LOG     Origin: "N/A"
-[00:08:25.033] Server  LOG     Host: "localhost:3000"
-[00:08:25.033] Server  LOG     Environment: "development"
-[00:08:25.033] Server  LOG     =========================
-[00:08:25.034] Server  LOG     Attempting to fetch attendance records...
-[00:08:25.034] Server  LOG     Limit: 100
-[00:08:25.034] Server  LOG     Since: null
-[00:08:25.034] Server  LOG     Method 1: Trying RPC function...
-[00:08:25.182] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:25.183] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:25.431] Server  ERROR   ✗ Direct query failed: {}
-[00:08:25.432] Server  LOG     📭 No attendance records found in database
-[00:08:25.432] Server  LOG     💡 This could mean:
-[00:08:25.432] Server  LOG        1. No scans have been recorded yet
-[00:08:25.433] Server  LOG        2. Database table is empty
-[00:08:25.433] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:08:27.117] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:27.118] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=100"
-[00:08:27.118] Server  LOG     Origin: "N/A"
-[00:08:27.118] Server  LOG     Host: "localhost:3000"
-[00:08:27.118] Server  LOG     Environment: "development"
-[00:08:27.119] Server  LOG     =========================
-[00:08:27.119] Server  LOG     Attempting to fetch attendance records...
-[00:08:27.120] Server  LOG     Limit: 100
-[00:08:27.120] Server  LOG     Since: null
-[00:08:27.120] Server  LOG     Method 1: Trying RPC function...
-[00:08:27.190] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:27.191] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:27.280] Server  ERROR   ✗ Direct query failed: {}
-[00:08:27.280] Server  LOG     📭 No attendance records found in database
-[00:08:27.281] Server  LOG     💡 This could mean:
-[00:08:27.281] Server  LOG        1. No scans have been recorded yet
-[00:08:27.281] Server  LOG        2. Database table is empty
-[00:08:27.282] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:11:05.414] Server  LOG      ✓ Compiled in 61ms
-[00:11:46.887] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./app/admin/page.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:11:47.078] Server  LOG      ✓ Compiled in 106ms
-[00:11:47.346] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:11:47.796] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:13:13.072] Server  LOG      ✓ Compiled in 70ms
-[00:13:18.511] Server  ERROR   Error in teacher attendance API: TypeError: admin.from(...).eq is not a function
-[00:13:20.471] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:13:20.690] Server  ERROR   Admin stats API error: TypeError: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__.supabase.from(...).eq is not a function
-[00:13:52.237] Server  LOG     📊 Attendance Reports API called
-[00:13:52.237] Server  LOG     📅 Date range: {}
-[00:13:52.237] Server  LOG     🔍 Querying attendance records with student data...
-[00:13:52.265] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-12&endDate=2025-12-12
-[00:13:52.474] Server  LOG     ✅ Found 1 attendance records with student data
-[00:13:52.477] Server  LOG     📈 Returning data: 1 students, 1 total days, 100% present
-[00:13:52.520] Server  LOG     📊 Attendance Reports API called
-[00:13:52.520] Server  LOG     📅 Date range: {}
-[00:13:52.520] Server  LOG     🔍 Querying attendance records with student data...
-[00:13:52.615] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-12","start":"2025-11-12"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":1,"totalLate":0,"totalPresent":1,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":1,"records":["[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldo","totalDays":1}]},"success":true}
-[00:13:52.615] Browser LOG     start date: Wed Nov 12 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Fri Dec 12 2025 08:00:00 GMT+0800 (Philippine Standard Time)
-[00:13:52.615] Browser LOG     start date: Wed Nov 12 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Fri Dec 12 2025 08:00:00 GMT+0800 (Philippine Standard Time)
-[00:13:52.616] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-12&endDate=2025-12-12&studentId=123456789
-[00:13:52.627] Server  WARN    ⚠️ No student found with ID/number: 123456789
-[00:13:52.725] Server  LOG     ✅ Found 1 attendance records with student data
-[00:13:52.727] Server  LOG     📈 Returning data: 1 students, 1 total days, 100% present
-[00:13:52.834] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-12","start":"2025-11-12"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":1,"totalLate":0,"totalPresent":1,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":1,"records":[{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldo","totalDays":1},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":1,"records":["[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldo","totalDays":1}]},"success":true}
-[00:13:52.834] Browser LOG     start date: Wed Nov 12 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Fri Dec 12 2025 08:00:00 GMT+0800 (Philippine Standard Time)
-[00:13:52.834] Browser LOG     start date: Wed Nov 12 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Fri Dec 12 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:00:00.370] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
+[00:00:00.466] Server  LOG      ✓ Ready in 313ms
+[00:00:18.256] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:18.399] Browser LOG     === USER CONTEXT DEBUG ===
+[00:00:18.399] Browser LOG     User object: null
+[00:00:18.399] Browser LOG     User JSON: null
+[00:00:18.399] Browser LOG     User exists? false
+[00:00:18.399] Browser LOG     User has role? undefined
+[00:00:18.399] Browser LOG     ========================
+[00:00:18.399] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:18.399] Browser LOG     Error fetching user: Auth session missing!
+[00:00:32.678] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:38.997] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:03:23.518] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:35.441] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:03:38.125] Server  LOG     📊 Attendance Reports API called
+[00:03:38.126] Server  LOG     📅 Date range: {}
+[00:03:38.127] Server  LOG     🔍 Querying attendance records with student data...
+[00:03:38.162] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:03:38.280] Server  LOG     ✅ Found 2 attendance records with student data
+[00:03:38.281] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:03:38.311] Server  LOG     📊 Attendance Reports API called
+[00:03:38.312] Server  LOG     📅 Date range: {}
+[00:03:38.312] Server  LOG     🔍 Querying attendance records with student data...
+[00:03:38.403] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:03:38.408] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:03:38.408] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:03:38.408] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:03:38.408] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:03:38.493] Server  LOG     ✅ Found 2 attendance records with student data
+[00:03:38.493] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:03:38.598] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:03:38.598] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:03:38.598] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:05:10.760] Server  LOG     📊 Attendance Reports API called
+[00:05:10.761] Server  LOG     📅 Date range: {}
+[00:05:10.762] Server  LOG     🔍 Querying attendance records with student data...
+[00:05:10.850] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:05:11.017] Server  LOG     ✅ Found 2 attendance records with student data
+[00:05:11.018] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:05:11.056] Server  LOG     📊 Attendance Reports API called
+[00:05:11.057] Server  LOG     📅 Date range: {}
+[00:05:11.058] Server  LOG     🔍 Querying attendance records with student data...
+[00:05:11.150] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:05:11.150] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:05:11.150] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:05:11.150] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:05:11.189] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:05:11.352] Server  LOG     ✅ Found 2 attendance records with student data
+[00:05:11.353] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:05:11.460] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:05:11.460] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:05:11.460] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:06:20.894] Server  LOG      ✓ Compiled in 434ms
+[00:06:21.240] Browser ERROR   ./app/admin/attendance-reports/page.tsx:162:9
+Ecmascript file had an error
+  160 |
+  161 |   // Generate date range for table
+> 162 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  163 |     if (!data) return []
+  164 |     const dates: string[] = []
+  165 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:30.852] Server  LOG      ✓ Compiled in 68ms
+[00:06:31.241] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:39.402] Server  ERROR    ⨯ ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+
+[00:06:39.512] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:39.806] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:40.011] Browser ERROR   uncaughtError: Error: ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+
+[00:06:40.186] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:40.186] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:41.837] Server  ERROR    ⨯ ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+
+[00:06:41.923] Browser ERROR   uncaughtError: Error: ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+
+[00:06:42.058] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:06:42.058] Browser ERROR   ./app/admin/attendance-reports/page.tsx:172:9
+Ecmascript file had an error
+  170 |
+  171 |   // Generate date range for table
+> 172 |   const dateRange = useMemo(() => {
+      |         ^^^^^^^^^
+  173 |     if (!data) return []
+  174 |     const dates: string[] = []
+  175 |     const start = new Date(data.dateRange.start)
+
+the name `dateRange` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./app/admin/attendance-reports/page.tsx [Client Component Browser]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/admin/attendance-reports/page.tsx [Client Component SSR]
+    ./app/admin/attendance-reports/page.tsx [Server Component]
+[00:07:11.791] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:11.847] Server  LOG     📊 Attendance Reports API called
+[00:07:11.848] Server  LOG     📅 Date range: {}
+[00:07:11.848] Server  LOG     🔍 Querying attendance records with student data...
+[00:07:12.243] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:07:12.258] Server  LOG     ✅ Found 2 attendance records with student data
+[00:07:12.259] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:07:12.309] Server  LOG     📊 Attendance Reports API called
+[00:07:12.310] Server  LOG     📅 Date range: {}
+[00:07:12.311] Server  LOG     🔍 Querying attendance records with student data...
+[00:07:12.440] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:07:12.543] Server  LOG     ✅ Found 2 attendance records with student data
+[00:07:12.545] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:07:13.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:07:13.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:07:13.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:07:13.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:07:13.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:07:13.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:07:13.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:00.622] Server  LOG     📊 Attendance Reports API called
+[00:08:00.622] Server  LOG     📅 Date range: {}
+[00:08:00.623] Server  LOG     🔍 Querying attendance records with student data...
+[00:08:00.710] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-01&endDate=2025-12-21&studentId=123456789
+[00:08:00.810] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:08:00.922] Server  LOG     ✅ Found 2 attendance records with student data
+[00:08:00.924] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:08:01.035] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-01"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:08:01.035] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:01.035] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:04.285] Server  LOG     📊 Attendance Reports API called
+[00:08:04.286] Server  LOG     📅 Date range: {}
+[00:08:04.287] Server  LOG     🔍 Querying attendance records with student data...
+[00:08:04.378] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-10-01&endDate=2025-12-21&studentId=123456789
+[00:08:04.395] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:08:04.500] Server  LOG     ✅ Found 2 attendance records with student data
+[00:08:04.501] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:08:04.605] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-10-01"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:08:04.605] Browser LOG     start date: Wed Oct 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:04.606] Browser LOG     start date: Wed Oct 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:34.126] Server  LOG     📊 Attendance Reports API called
+[00:08:34.126] Server  LOG     📅 Date range: {}
+[00:08:34.127] Server  LOG     🔍 Querying attendance records with student data...
+[00:08:34.157] Server  LOG      ✓ Compiled in 107ms
+[00:08:34.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:08:34.335] Server  LOG     ✅ Found 2 attendance records with student data
+[00:08:34.335] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:08:34.367] Server  LOG     📊 Attendance Reports API called
+[00:08:34.367] Server  LOG     📅 Date range: {}
+[00:08:34.368] Server  LOG     🔍 Querying attendance records with student data...
+[00:08:34.484] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:08:34.867] Server  LOG     ✅ Found 2 attendance records with student data
+[00:08:34.868] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:08:35.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:08:35.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:35.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:35.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:08:35.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:08:35.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:35.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:44.343] Server  LOG      ✓ Compiled in 67ms
+[00:08:45.240] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:08:45.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:09:46.643] Server  LOG     📊 Attendance Reports API called
+[00:09:46.645] Server  LOG     📅 Date range: {}
+[00:09:46.646] Server  LOG     🔍 Querying attendance records with student data...
+[00:09:46.736] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-01&endDate=2025-12-21&studentId=123456789
+[00:09:47.432] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:09:47.548] Server  LOG     ✅ Found 2 attendance records with student data
+[00:09:47.550] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:09:47.656] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-01"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:09:47.657] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:09:47.657] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:09:51.428] Server  LOG     📊 Attendance Reports API called
+[00:09:51.428] Server  LOG     📅 Date range: {}
+[00:09:51.429] Server  LOG     🔍 Querying attendance records with student data...
+[00:09:51.522] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-10-02&endDate=2025-12-21&studentId=123456789
+[00:09:51.541] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:09:51.653] Server  LOG     ✅ Found 2 attendance records with student data
+[00:09:51.655] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:09:51.762] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-10-02"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:09:51.762] Browser LOG     start date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:09:51.762] Browser LOG     start date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:10:55.751] Server  LOG      ✓ Compiled in 63ms
+[00:10:56.240] Browser LOG     start date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:10:56.240] Browser LOG     start date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:10.255] Server  LOG     📊 Attendance Reports API called
+[00:11:10.255] Server  LOG     📅 Date range: {}
+[00:11:10.256] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:10.348] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-10-01&endDate=2025-12-21&studentId=123456789
+[00:11:10.468] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:11:10.568] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:10.569] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:10.673] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-10-01"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:10.673] Browser LOG     start date: Wed Oct 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:10.673] Browser LOG     start date: Wed Oct 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:13.211] Server  LOG     📊 Attendance Reports API called
+[00:11:13.212] Server  LOG     📅 Date range: {}
+[00:11:13.212] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:13.307] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-09-02&endDate=2025-12-21&studentId=123456789
+[00:11:13.307] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:11:13.406] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:13.407] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:13.513] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-09-02"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:13.514] Browser LOG     start date: Tue Sep 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:13.514] Browser LOG     start date: Tue Sep 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:30.340] Server  LOG      ✓ Compiled in 74ms
+[00:11:31.241] Browser LOG     start date: Tue Sep 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:31.241] Browser LOG     start date: Tue Sep 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:44.148] Server  LOG     📊 Attendance Reports API called
+[00:11:44.148] Server  LOG     📅 Date range: {}
+[00:11:44.148] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:44.179] Server  LOG      ✓ Compiled in 63ms
+[00:11:44.928] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:44.929] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:44.968] Server  LOG     📊 Attendance Reports API called
+[00:11:44.968] Server  LOG     📅 Date range: {}
+[00:11:44.968] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:45.089] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:11:45.209] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:45.210] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:46.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:11:46.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:46.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:46.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:46.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:11:46.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:46.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:46.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:54.568] Server  LOG     📊 Attendance Reports API called
+[00:11:54.568] Server  LOG     📅 Date range: {}
+[00:11:54.569] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:54.659] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-10-31&endDate=2025-12-21&studentId=123456789
+[00:11:54.760] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:11:54.857] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:54.858] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:54.962] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-10-31"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:54.962] Browser LOG     start date: Fri Oct 31 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:54.962] Browser LOG     start date: Fri Oct 31 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:58.725] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:58.750] Server  LOG     📊 Attendance Reports API called
+[00:11:58.751] Server  LOG     📅 Date range: {}
+[00:11:58.751] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:58.848] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:11:58.861] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:58.861] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:58.890] Server  LOG     📊 Attendance Reports API called
+[00:11:58.890] Server  LOG     📅 Date range: {}
+[00:11:58.890] Server  LOG     🔍 Querying attendance records with student data...
+[00:11:58.986] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:11:58.988] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:58.988] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:58.988] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:58.988] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:11:59.089] Server  LOG     ✅ Found 2 attendance records with student data
+[00:11:59.090] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:11:59.196] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:11:59.196] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:11:59.196] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:12:00.728] Server  LOG     📊 Attendance Reports API called
+[00:12:00.729] Server  LOG     📅 Date range: {}
+[00:12:00.729] Server  LOG     🔍 Querying attendance records with student data...
+[00:12:00.827] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-10-30&endDate=2025-12-21&studentId=123456789
+[00:12:00.831] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:12:00.930] Server  LOG     ✅ Found 2 attendance records with student data
+[00:12:00.932] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:12:01.036] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-10-30"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:12:01.036] Browser LOG     start date: Thu Oct 30 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:12:01.036] Browser LOG     start date: Thu Oct 30 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:00.354] Server  LOG     📊 Attendance Reports API called
+[00:14:00.354] Server  LOG     📅 Date range: {}
+[00:14:00.354] Server  LOG     🔍 Querying attendance records with student data...
+[00:14:00.382] Server  LOG      ✓ Compiled in 112ms
+[00:14:00.800] Server  LOG     ✅ Found 2 attendance records with student data
+[00:14:00.800] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:14:00.826] Server  LOG     📊 Attendance Reports API called
+[00:14:00.826] Server  LOG     📅 Date range: {}
+[00:14:00.826] Server  LOG     🔍 Querying attendance records with student data...
+[00:14:00.933] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:14:01.046] Server  LOG     ✅ Found 2 attendance records with student data
+[00:14:01.046] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:14:01.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:14:01.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:14:01.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:01.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:01.241] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:14:01.241] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:14:01.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:01.241] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:11.454] Server  LOG     📊 Attendance Reports API called
+[00:14:11.454] Server  LOG     📅 Date range: {}
+[00:14:11.455] Server  LOG     🔍 Querying attendance records with student data...
+[00:14:11.547] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-01&endDate=2025-12-30&studentId=123456789
+[00:14:11.644] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:14:11.747] Server  LOG     ✅ Found 2 attendance records with student data
+[00:14:11.749] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:14:11.856] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-30","start":"2025-11-01"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:14:11.856] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Tue Dec 30 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:11.856] Browser LOG     start date: Sat Nov 01 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Tue Dec 30 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:23.606] Server  LOG     📊 Attendance Reports API called
+[00:14:23.607] Server  LOG     📅 Date range: {}
+[00:14:23.607] Server  LOG     🔍 Querying attendance records with student data...
+[00:14:23.702] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-08-02&endDate=2025-10-02&studentId=123456789
+[00:14:23.810] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:14:23.995] Server  LOG     ✅ Found 0 attendance records with student data
+[00:14:23.995] Server  LOG     📈 Returning data: 0 students, 0 total days, 0% present
+[00:14:24.101] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-10-02","start":"2025-08-02"},"filters":{"gradeLevels":[],"sections":[]},"general":{"absentPercentage":0,"presentPercentage":0,"totalAbsent":0,"totalDays":0,"totalLate":0,"totalPresent":0,"totalStudents":1},"students":[]},"success":true}
+[00:14:24.101] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:24.101] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Thu Oct 02 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:33.602] Server  LOG     📊 Attendance Reports API called
+[00:14:33.602] Server  LOG     📅 Date range: {}
+[00:14:33.603] Server  LOG     🔍 Querying attendance records with student data...
+[00:14:33.696] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-08-02&endDate=2025-12-31&studentId=123456789
+[00:14:33.853] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:14:34.052] Server  LOG     ✅ Found 2 attendance records with student data
+[00:14:34.054] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:14:34.161] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-31","start":"2025-08-02"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:14:34.161] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:14:34.161] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:23.531] Server  LOG      ✓ Compiled in 88ms
+[00:16:24.240] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:24.240] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:36.775] Server  LOG      ✓ Compiled in 69ms
+[00:16:36.856] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:36.857] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:55.547] Server  LOG     📊 Attendance Reports API called
+[00:16:55.548] Server  LOG     📅 Date range: {}
+[00:16:55.549] Server  LOG     🔍 Querying attendance records with student data...
+[00:16:55.639] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-08-02&endDate=2025-12-31&studentId=123456789&section=A
+[00:16:55.773] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:16:55.895] Server  LOG     ✅ Found 2 attendance records with student data
+[00:16:55.896] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:16:56.002] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-31","start":"2025-08-02"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:16:56.002] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:56.002] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:56.893] Server  LOG     📊 Attendance Reports API called
+[00:16:56.894] Server  LOG     📅 Date range: {}
+[00:16:56.894] Server  LOG     🔍 Querying attendance records with student data...
+[00:16:56.985] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-08-02&endDate=2025-12-31&studentId=123456789
+[00:16:57.000] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:16:57.105] Server  LOG     ✅ Found 2 attendance records with student data
+[00:16:57.106] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:16:57.211] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-31","start":"2025-08-02"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:16:57.211] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:16:57.211] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:17:06.356] Server  LOG      ✓ Compiled in 73ms
+[00:17:07.240] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:17:07.241] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:00.205] Server  LOG      ✓ Compiled in 85ms
+[00:18:01.241] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:01.241] Browser LOG     start date: Sat Aug 02 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Wed Dec 31 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:24.203] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:18:25.647] Server  LOG     📊 Attendance Reports API called
+[00:18:25.647] Server  LOG     📅 Date range: {}
+[00:18:25.648] Server  LOG     🔍 Querying attendance records with student data...
+[00:18:25.739] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21
+[00:18:25.759] Server  LOG     ✅ Found 2 attendance records with student data
+[00:18:25.760] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:18:25.790] Server  LOG     📊 Attendance Reports API called
+[00:18:25.791] Server  LOG     📅 Date range: {}
+[00:18:25.791] Server  LOG     🔍 Querying attendance records with student data...
+[00:18:25.885] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":null,"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:18:25.885] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:25.885] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:25.885] Browser LOG     🔍 Fetching attendance reports with params: startDate=2025-11-21&endDate=2025-12-21&studentId=123456789
+[00:18:25.977] Server  WARN    ⚠️ No student found with ID/number: 123456789
+[00:18:26.094] Server  LOG     ✅ Found 2 attendance records with student data
+[00:18:26.096] Server  LOG     📈 Returning data: 1 students, 2 total days, 100% present
+[00:18:26.201] Browser LOG     📊 API Response: {"data":{"dateRange":{"end":"2025-12-21","start":"2025-11-21"},"filters":{"gradeLevels":["Grade 12"],"sections":["A"]},"general":{"absentPercentage":0,"presentPercentage":100,"totalAbsent":0,"totalDays":2,"totalLate":0,"totalPresent":2,"totalStudents":1},"selectedStudent":{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":[{"created_at":"2025-12-12T06:54:28.457+00:00","device_id":null,"id":"a1efe757-24c2-4129-9c6d-62469c44052a","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-12T06:54:28.588601+00:00","scan_time":"2025-12-12T06:54:28.457+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-12T06:54:28.457+00:00","time_out":null,"type":"timein","updated_at":"2025-12-12T06:54:28.588601+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"},{"created_at":"2025-12-11T14:34:23.34+00:00","device_id":null,"id":"32744196-b91e-4278-8874-27fcb8f6d91c","location":null,"notes":null,"rfid_card":"3206E2AB","rfid_tag":"3206E2AB","scan_datetime":"2025-12-11T14:34:23.974254+00:00","scan_time":"2025-12-11T14:34:23.34+00:00","scan_type":"timein","status":"Present","temperature":null,"time_in":"2025-12-11T14:34:23.34+00:00","time_out":null,"type":"timein","updated_at":"2025-12-11T14:34:23.974254+00:00","user_id":"b47b74d2-ce93-4668-bb7b-176abdb3d55c","users":"[Object]"}],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2},"students":[{"absent":0,"dailyAttendance":{"2025-12-11":"PR","2025-12-12":"PR"},"excused":0,"gradeLevel":"Grade 12","late":0,"percentage":100,"present":2,"records":["[Object]","[Object]"],"section":"A","studentId":"123456789","studentName":"Kyle  Reginaldogs","totalDays":2}]},"success":true}
+[00:18:26.201] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:26.201] Browser LOG     start date: Fri Nov 21 2025 08:00:00 GMT+0800 (Philippine Standard Time), end date: Sun Dec 21 2025 08:00:00 GMT+0800 (Philippine Standard Time)
+[00:18:30.025] Server  ERROR   Error in teacher attendance API: TypeError: admin.from(...).eq is not a function
+[00:19:14.964] Server  LOG      ✓ Compiled in 54ms
+[00:19:17.887] Server  LOG      ✓ Compiled in 48ms
+[00:19:30.774] Server  LOG      ✓ Compiled in 50ms
+[00:19:42.622] Server  LOG      ✓ Compiled in 45ms
+[00:20:08.303] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:08.304] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:08.304] Server  LOG     Origin: "N/A"
+[00:20:08.304] Server  LOG     Host: "localhost:3000"
+[00:20:08.304] Server  LOG     Environment: "development"
+[00:20:08.305] Server  LOG     =========================
+[00:20:08.305] Server  LOG     Attempting to fetch attendance records...
+[00:20:08.305] Server  LOG     Limit: 1
+[00:20:08.305] Server  LOG     Since: null
+[00:20:08.305] Server  LOG     Method 1: Trying RPC function...
+[00:20:08.330] Browser LOG     🔄 Component mounted - fetching initial data...
+[00:20:08.330] Browser LOG     📊 Latest scan cleared
+[00:20:08.330] Browser LOG     🔄 Starting auto-refresh (every 2 seconds)
+[00:20:08.330] Browser LOG     🔄 Page will auto-refresh when new scan is detected
+[00:20:08.330] Browser LOG     🔄 Stopping auto-refresh
+[00:20:08.330] Browser LOG     🔄 Component mounted - fetching initial data...
+[00:20:08.330] Browser LOG     📊 Latest scan cleared
+[00:20:08.330] Browser LOG     🔄 Starting auto-refresh (every 2 seconds)
+[00:20:08.330] Browser LOG     🔄 Page will auto-refresh when new scan is detected
+[00:20:08.496] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:08.498] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:08.642] Server  ERROR   ✗ Direct query failed: {}
+[00:20:08.643] Server  LOG     📭 No attendance records found in database
+[00:20:08.643] Server  LOG     💡 This could mean:
+[00:20:08.643] Server  LOG        1. No scans have been recorded yet
+[00:20:08.643] Server  LOG        2. Database table is empty
+[00:20:08.644] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:08.651] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:08.651] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:08.652] Server  LOG     Origin: "N/A"
+[00:20:08.652] Server  LOG     Host: "localhost:3000"
+[00:20:08.652] Server  LOG     Environment: "development"
+[00:20:08.652] Server  LOG     =========================
+[00:20:08.652] Server  LOG     Attempting to fetch attendance records...
+[00:20:08.652] Server  LOG     Limit: 1
+[00:20:08.653] Server  LOG     Since: null
+[00:20:08.653] Server  LOG     Method 1: Trying RPC function...
+[00:20:08.749] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:08.749] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:08.749] Browser LOG     ⚠️ No records found in response
+[00:20:08.754] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:08.755] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:08.844] Server  ERROR   ✗ Direct query failed: {}
+[00:20:08.844] Server  LOG     📭 No attendance records found in database
+[00:20:08.844] Server  LOG     💡 This could mean:
+[00:20:08.844] Server  LOG        1. No scans have been recorded yet
+[00:20:08.844] Server  LOG        2. Database table is empty
+[00:20:08.844] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:08.947] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:08.947] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:08.947] Browser LOG     ⚠️ No records found in response
+[00:20:10.242] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:10.242] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:10.242] Server  LOG     Origin: "N/A"
+[00:20:10.243] Server  LOG     Host: "localhost:3000"
+[00:20:10.244] Server  LOG     Environment: "development"
+[00:20:10.244] Server  LOG     =========================
+[00:20:10.245] Server  LOG     Attempting to fetch attendance records...
+[00:20:10.245] Server  LOG     Limit: 1
+[00:20:10.246] Server  LOG     Since: null
+[00:20:10.246] Server  LOG     Method 1: Trying RPC function...
+[00:20:10.332] Browser LOG     🔄 Checking for new scans...
+[00:20:10.353] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:10.354] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:10.442] Server  ERROR   ✗ Direct query failed: {}
+[00:20:10.443] Server  LOG     📭 No attendance records found in database
+[00:20:10.443] Server  LOG     💡 This could mean:
+[00:20:10.443] Server  LOG        1. No scans have been recorded yet
+[00:20:10.443] Server  LOG        2. Database table is empty
+[00:20:10.444] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:10.548] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:10.549] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:10.549] Browser LOG     ⚠️ No records found in response
+[00:20:12.237] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:12.238] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:12.238] Server  LOG     Origin: "N/A"
+[00:20:12.238] Server  LOG     Host: "localhost:3000"
+[00:20:12.238] Server  LOG     Environment: "development"
+[00:20:12.238] Server  LOG     =========================
+[00:20:12.239] Server  LOG     Attempting to fetch attendance records...
+[00:20:12.239] Server  LOG     Limit: 1
+[00:20:12.239] Server  LOG     Since: null
+[00:20:12.240] Server  LOG     Method 1: Trying RPC function...
+[00:20:12.332] Browser LOG     🔄 Checking for new scans...
+[00:20:12.344] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:12.345] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:12.435] Server  ERROR   ✗ Direct query failed: {}
+[00:20:12.436] Server  LOG     📭 No attendance records found in database
+[00:20:12.436] Server  LOG     💡 This could mean:
+[00:20:12.436] Server  LOG        1. No scans have been recorded yet
+[00:20:12.437] Server  LOG        2. Database table is empty
+[00:20:12.437] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:12.542] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:12.543] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:12.543] Browser LOG     ⚠️ No records found in response
+[00:20:13.396] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:13.396] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:13.396] Server  LOG     Origin: "N/A"
+[00:20:13.396] Server  LOG     Host: "localhost:3000"
+[00:20:13.397] Server  LOG     Environment: "development"
+[00:20:13.397] Server  LOG     =========================
+[00:20:13.397] Server  LOG     Attempting to fetch attendance records...
+[00:20:13.397] Server  LOG     Limit: 1
+[00:20:13.398] Server  LOG     Since: null
+[00:20:13.398] Server  LOG     Method 1: Trying RPC function...
+[00:20:13.496] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:13.496] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:13.581] Server  ERROR   ✗ Direct query failed: {}
+[00:20:13.581] Server  LOG     📭 No attendance records found in database
+[00:20:13.582] Server  LOG     💡 This could mean:
+[00:20:13.582] Server  LOG        1. No scans have been recorded yet
+[00:20:13.582] Server  LOG        2. Database table is empty
+[00:20:13.583] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:13.688] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:13.688] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:13.688] Browser LOG     ⚠️ No records found in response
+[00:20:14.016] Server  LOG     ⏰ Timeout mode enabled for 5 seconds
+[00:20:14.236] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:14.236] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:14.236] Server  LOG     Origin: "N/A"
+[00:20:14.237] Server  LOG     Host: "localhost:3000"
+[00:20:14.237] Server  LOG     Environment: "development"
+[00:20:14.237] Server  LOG     =========================
+[00:20:14.237] Server  LOG     Attempting to fetch attendance records...
+[00:20:14.237] Server  LOG     Limit: 1
+[00:20:14.237] Server  LOG     Since: null
+[00:20:14.238] Server  LOG     Method 1: Trying RPC function...
+[00:20:14.331] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:14.331] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:14.332] Browser LOG     🔄 Checking for new scans...
+[00:20:14.421] Server  ERROR   ✗ Direct query failed: {}
+[00:20:14.421] Server  LOG     📭 No attendance records found in database
+[00:20:14.422] Server  LOG     💡 This could mean:
+[00:20:14.422] Server  LOG        1. No scans have been recorded yet
+[00:20:14.422] Server  LOG        2. Database table is empty
+[00:20:14.422] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:14.528] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:14.528] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:14.528] Browser LOG     ⚠️ No records found in response
+[00:20:16.244] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:16.244] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:16.245] Server  LOG     Origin: "N/A"
+[00:20:16.245] Server  LOG     Host: "localhost:3000"
+[00:20:16.245] Server  LOG     Environment: "development"
+[00:20:16.245] Server  LOG     =========================
+[00:20:16.246] Server  LOG     Attempting to fetch attendance records...
+[00:20:16.246] Server  LOG     Limit: 1
+[00:20:16.246] Server  LOG     Since: null
+[00:20:16.246] Server  LOG     Method 1: Trying RPC function...
+[00:20:16.332] Browser LOG     🔄 Checking for new scans...
+[00:20:16.348] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:16.348] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:16.433] Server  ERROR   ✗ Direct query failed: {}
+[00:20:16.434] Server  LOG     📭 No attendance records found in database
+[00:20:16.435] Server  LOG     💡 This could mean:
+[00:20:16.435] Server  LOG        1. No scans have been recorded yet
+[00:20:16.435] Server  LOG        2. Database table is empty
+[00:20:16.436] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:16.542] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:16.542] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:16.542] Browser LOG     ⚠️ No records found in response
+[00:20:18.243] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:18.244] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:18.244] Server  LOG     Origin: "N/A"
+[00:20:18.244] Server  LOG     Host: "localhost:3000"
+[00:20:18.244] Server  LOG     Environment: "development"
+[00:20:18.244] Server  LOG     =========================
+[00:20:18.245] Server  LOG     Attempting to fetch attendance records...
+[00:20:18.245] Server  LOG     Limit: 1
+[00:20:18.246] Server  LOG     Since: null
+[00:20:18.246] Server  LOG     Method 1: Trying RPC function...
+[00:20:18.332] Browser LOG     🔄 Checking for new scans...
+[00:20:18.348] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:18.349] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:18.446] Server  ERROR   ✗ Direct query failed: {}
+[00:20:18.447] Server  LOG     📭 No attendance records found in database
+[00:20:18.448] Server  LOG     💡 This could mean:
+[00:20:18.448] Server  LOG        1. No scans have been recorded yet
+[00:20:18.448] Server  LOG        2. Database table is empty
+[00:20:18.449] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:18.556] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:18.556] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:18.556] Browser LOG     ⚠️ No records found in response
+[00:20:20.240] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:20.241] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:20.241] Server  LOG     Origin: "N/A"
+[00:20:20.241] Server  LOG     Host: "localhost:3000"
+[00:20:20.242] Server  LOG     Environment: "development"
+[00:20:20.242] Server  LOG     =========================
+[00:20:20.242] Server  LOG     Attempting to fetch attendance records...
+[00:20:20.242] Server  LOG     Limit: 1
+[00:20:20.243] Server  LOG     Since: null
+[00:20:20.243] Server  LOG     Method 1: Trying RPC function...
+[00:20:20.331] Browser LOG     🔄 Checking for new scans...
+[00:20:20.344] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:20.345] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:20.442] Server  ERROR   ✗ Direct query failed: {}
+[00:20:20.443] Server  LOG     📭 No attendance records found in database
+[00:20:20.443] Server  LOG     💡 This could mean:
+[00:20:20.443] Server  LOG        1. No scans have been recorded yet
+[00:20:20.444] Server  LOG        2. Database table is empty
+[00:20:20.444] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:20.549] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:20.549] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:20.549] Browser LOG     ⚠️ No records found in response
+[00:20:22.246] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:22.246] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:22.246] Server  LOG     Origin: "N/A"
+[00:20:22.247] Server  LOG     Host: "localhost:3000"
+[00:20:22.247] Server  LOG     Environment: "development"
+[00:20:22.247] Server  LOG     =========================
+[00:20:22.248] Server  LOG     Attempting to fetch attendance records...
+[00:20:22.248] Server  LOG     Limit: 1
+[00:20:22.248] Server  LOG     Since: null
+[00:20:22.248] Server  LOG     Method 1: Trying RPC function...
+[00:20:22.331] Browser LOG     🔄 Checking for new scans...
+[00:20:22.347] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:22.348] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:22.432] Server  ERROR   ✗ Direct query failed: {}
+[00:20:22.433] Server  LOG     📭 No attendance records found in database
+[00:20:22.433] Server  LOG     💡 This could mean:
+[00:20:22.433] Server  LOG        1. No scans have been recorded yet
+[00:20:22.434] Server  LOG        2. Database table is empty
+[00:20:22.434] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:22.539] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:22.539] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:22.539] Browser LOG     ⚠️ No records found in response
+[00:20:24.241] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:24.241] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:24.241] Server  LOG     Origin: "N/A"
+[00:20:24.242] Server  LOG     Host: "localhost:3000"
+[00:20:24.242] Server  LOG     Environment: "development"
+[00:20:24.242] Server  LOG     =========================
+[00:20:24.243] Server  LOG     Attempting to fetch attendance records...
+[00:20:24.243] Server  LOG     Limit: 1
+[00:20:24.243] Server  LOG     Since: null
+[00:20:24.244] Server  LOG     Method 1: Trying RPC function...
+[00:20:24.332] Browser LOG     🔄 Checking for new scans...
+[00:20:24.346] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:24.347] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:24.427] Server  ERROR   ✗ Direct query failed: {}
+[00:20:24.428] Server  LOG     📭 No attendance records found in database
+[00:20:24.428] Server  LOG     💡 This could mean:
+[00:20:24.428] Server  LOG        1. No scans have been recorded yet
+[00:20:24.428] Server  LOG        2. Database table is empty
+[00:20:24.429] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:24.535] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:24.535] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:24.535] Browser LOG     ⚠️ No records found in response
+[00:20:26.243] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:26.244] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:20:26.244] Server  LOG     Origin: "N/A"
+[00:20:26.244] Server  LOG     Host: "localhost:3000"
+[00:20:26.245] Server  LOG     Environment: "development"
+[00:20:26.245] Server  LOG     =========================
+[00:20:26.245] Server  LOG     Attempting to fetch attendance records...
+[00:20:26.246] Server  LOG     Limit: 1
+[00:20:26.246] Server  LOG     Since: null
+[00:20:26.246] Server  LOG     Method 1: Trying RPC function...
+[00:20:26.331] Browser LOG     🔄 Checking for new scans...
+[00:20:26.346] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:26.346] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:26.438] Server  ERROR   ✗ Direct query failed: {}
+[00:20:26.439] Server  LOG     📭 No attendance records found in database
+[00:20:26.439] Server  LOG     💡 This could mean:
+[00:20:26.440] Server  LOG        1. No scans have been recorded yet
+[00:20:26.440] Server  LOG        2. Database table is empty
+[00:20:26.440] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:26.546] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:26.547] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:20:26.547] Browser LOG     ⚠️ No records found in response
+[00:20:28.279] Browser LOG     🔄 Stopping auto-refresh
+[00:20:44.210] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:44.210] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:44.211] Server  LOG     Origin: "N/A"
+[00:20:44.211] Server  LOG     Host: "localhost:3000"
+[00:20:44.211] Server  LOG     Environment: "development"
+[00:20:44.211] Server  LOG     =========================
+[00:20:44.212] Server  LOG     Attempting to fetch attendance records...
+[00:20:44.212] Server  LOG     Limit: 50
+[00:20:44.212] Server  LOG     Since: null
+[00:20:44.213] Server  LOG     Method 1: Trying RPC function...
+[00:20:44.302] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:20:44.373] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:44.373] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:44.514] Server  ERROR   ✗ Direct query failed: {}
+[00:20:44.515] Server  LOG     📭 No attendance records found in database
+[00:20:44.515] Server  LOG     💡 This could mean:
+[00:20:44.515] Server  LOG        1. No scans have been recorded yet
+[00:20:44.516] Server  LOG        2. Database table is empty
+[00:20:44.516] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:44.527] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:44.528] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:44.528] Server  LOG     Origin: "N/A"
+[00:20:44.528] Server  LOG     Host: "localhost:3000"
+[00:20:44.528] Server  LOG     Environment: "development"
+[00:20:44.528] Server  LOG     =========================
+[00:20:44.529] Server  LOG     Attempting to fetch attendance records...
+[00:20:44.529] Server  LOG     Limit: 50
+[00:20:44.529] Server  LOG     Since: null
+[00:20:44.529] Server  LOG     Method 1: Trying RPC function...
+[00:20:44.613] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:44.613] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:44.698] Server  ERROR   ✗ Direct query failed: {}
+[00:20:44.699] Server  LOG     📭 No attendance records found in database
+[00:20:44.699] Server  LOG     💡 This could mean:
+[00:20:44.699] Server  LOG        1. No scans have been recorded yet
+[00:20:44.699] Server  LOG        2. Database table is empty
+[00:20:44.699] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:46.210] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:46.211] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:46.211] Server  LOG     Origin: "N/A"
+[00:20:46.211] Server  LOG     Host: "localhost:3000"
+[00:20:46.211] Server  LOG     Environment: "development"
+[00:20:46.211] Server  LOG     =========================
+[00:20:46.212] Server  LOG     Attempting to fetch attendance records...
+[00:20:46.212] Server  LOG     Limit: 50
+[00:20:46.213] Server  LOG     Since: null
+[00:20:46.213] Server  LOG     Method 1: Trying RPC function...
+[00:20:46.303] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:46.304] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:46.394] Server  ERROR   ✗ Direct query failed: {}
+[00:20:46.395] Server  LOG     📭 No attendance records found in database
+[00:20:46.395] Server  LOG     💡 This could mean:
+[00:20:46.395] Server  LOG        1. No scans have been recorded yet
+[00:20:46.396] Server  LOG        2. Database table is empty
+[00:20:46.396] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:48.213] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:48.213] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:48.213] Server  LOG     Origin: "N/A"
+[00:20:48.214] Server  LOG     Host: "localhost:3000"
+[00:20:48.214] Server  LOG     Environment: "development"
+[00:20:48.214] Server  LOG     =========================
+[00:20:48.215] Server  LOG     Attempting to fetch attendance records...
+[00:20:48.215] Server  LOG     Limit: 50
+[00:20:48.215] Server  LOG     Since: null
+[00:20:48.215] Server  LOG     Method 1: Trying RPC function...
+[00:20:48.299] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:48.300] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:48.389] Server  ERROR   ✗ Direct query failed: {}
+[00:20:48.389] Server  LOG     📭 No attendance records found in database
+[00:20:48.390] Server  LOG     💡 This could mean:
+[00:20:48.390] Server  LOG        1. No scans have been recorded yet
+[00:20:48.390] Server  LOG        2. Database table is empty
+[00:20:48.390] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:50.247] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:50.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:50.247] Server  LOG     Origin: "N/A"
+[00:20:50.247] Server  LOG     Host: "localhost:3000"
+[00:20:50.247] Server  LOG     Environment: "development"
+[00:20:50.247] Server  LOG     =========================
+[00:20:50.247] Server  LOG     Attempting to fetch attendance records...
+[00:20:50.247] Server  LOG     Limit: 50
+[00:20:50.247] Server  LOG     Since: null
+[00:20:50.247] Server  LOG     Method 1: Trying RPC function...
+[00:20:50.338] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:50.338] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:50.423] Server  ERROR   ✗ Direct query failed: {}
+[00:20:50.424] Server  LOG     📭 No attendance records found in database
+[00:20:50.424] Server  LOG     💡 This could mean:
+[00:20:50.424] Server  LOG        1. No scans have been recorded yet
+[00:20:50.424] Server  LOG        2. Database table is empty
+[00:20:50.424] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:52.245] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:52.245] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:52.245] Server  LOG     Origin: "N/A"
+[00:20:52.245] Server  LOG     Host: "localhost:3000"
+[00:20:52.245] Server  LOG     Environment: "development"
+[00:20:52.245] Server  LOG     =========================
+[00:20:52.245] Server  LOG     Attempting to fetch attendance records...
+[00:20:52.245] Server  LOG     Limit: 50
+[00:20:52.245] Server  LOG     Since: null
+[00:20:52.245] Server  LOG     Method 1: Trying RPC function...
+[00:20:52.342] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:52.343] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:52.437] Server  ERROR   ✗ Direct query failed: {}
+[00:20:52.437] Server  LOG     📭 No attendance records found in database
+[00:20:52.437] Server  LOG     💡 This could mean:
+[00:20:52.438] Server  LOG        1. No scans have been recorded yet
+[00:20:52.438] Server  LOG        2. Database table is empty
+[00:20:52.438] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:54.247] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:54.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:54.247] Server  LOG     Origin: "N/A"
+[00:20:54.247] Server  LOG     Host: "localhost:3000"
+[00:20:54.247] Server  LOG     Environment: "development"
+[00:20:54.247] Server  LOG     =========================
+[00:20:54.248] Server  LOG     Attempting to fetch attendance records...
+[00:20:54.248] Server  LOG     Limit: 50
+[00:20:54.248] Server  LOG     Since: null
+[00:20:54.248] Server  LOG     Method 1: Trying RPC function...
+[00:20:54.337] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:54.337] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:54.424] Server  ERROR   ✗ Direct query failed: {}
+[00:20:54.424] Server  LOG     📭 No attendance records found in database
+[00:20:54.424] Server  LOG     💡 This could mean:
+[00:20:54.424] Server  LOG        1. No scans have been recorded yet
+[00:20:54.424] Server  LOG        2. Database table is empty
+[00:20:54.424] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:56.257] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:56.257] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:56.257] Server  LOG     Origin: "N/A"
+[00:20:56.258] Server  LOG     Host: "localhost:3000"
+[00:20:56.258] Server  LOG     Environment: "development"
+[00:20:56.258] Server  LOG     =========================
+[00:20:56.259] Server  LOG     Attempting to fetch attendance records...
+[00:20:56.259] Server  LOG     Limit: 50
+[00:20:56.259] Server  LOG     Since: null
+[00:20:56.260] Server  LOG     Method 1: Trying RPC function...
+[00:20:56.346] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:56.346] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:56.439] Server  ERROR   ✗ Direct query failed: {}
+[00:20:56.440] Server  LOG     📭 No attendance records found in database
+[00:20:56.440] Server  LOG     💡 This could mean:
+[00:20:56.441] Server  LOG        1. No scans have been recorded yet
+[00:20:56.441] Server  LOG        2. Database table is empty
+[00:20:56.441] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:20:58.253] Server  LOG     === GET REQUEST DEBUG ===
+[00:20:58.254] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:20:58.254] Server  LOG     Origin: "N/A"
+[00:20:58.254] Server  LOG     Host: "localhost:3000"
+[00:20:58.255] Server  LOG     Environment: "development"
+[00:20:58.255] Server  LOG     =========================
+[00:20:58.255] Server  LOG     Attempting to fetch attendance records...
+[00:20:58.256] Server  LOG     Limit: 50
+[00:20:58.256] Server  LOG     Since: null
+[00:20:58.256] Server  LOG     Method 1: Trying RPC function...
+[00:20:58.365] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:20:58.366] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:20:58.454] Server  ERROR   ✗ Direct query failed: {}
+[00:20:58.455] Server  LOG     📭 No attendance records found in database
+[00:20:58.455] Server  LOG     💡 This could mean:
+[00:20:58.456] Server  LOG        1. No scans have been recorded yet
+[00:20:58.456] Server  LOG        2. Database table is empty
+[00:20:58.456] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:00.247] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:00.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:21:00.247] Server  LOG     Origin: "N/A"
+[00:21:00.247] Server  LOG     Host: "localhost:3000"
+[00:21:00.247] Server  LOG     Environment: "development"
+[00:21:00.247] Server  LOG     =========================
+[00:21:00.247] Server  LOG     Attempting to fetch attendance records...
+[00:21:00.248] Server  LOG     Limit: 50
+[00:21:00.248] Server  LOG     Since: null
+[00:21:00.248] Server  LOG     Method 1: Trying RPC function...
+[00:21:00.329] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:00.329] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:00.418] Server  ERROR   ✗ Direct query failed: {}
+[00:21:00.418] Server  LOG     📭 No attendance records found in database
+[00:21:00.418] Server  LOG     💡 This could mean:
+[00:21:00.419] Server  LOG        1. No scans have been recorded yet
+[00:21:00.419] Server  LOG        2. Database table is empty
+[00:21:00.419] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:02.254] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:02.254] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:21:02.254] Server  LOG     Origin: "N/A"
+[00:21:02.254] Server  LOG     Host: "localhost:3000"
+[00:21:02.255] Server  LOG     Environment: "development"
+[00:21:02.255] Server  LOG     =========================
+[00:21:02.256] Server  LOG     Attempting to fetch attendance records...
+[00:21:02.256] Server  LOG     Limit: 50
+[00:21:02.256] Server  LOG     Since: null
+[00:21:02.256] Server  LOG     Method 1: Trying RPC function...
+[00:21:02.350] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:02.351] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:02.463] Server  ERROR   ✗ Direct query failed: {}
+[00:21:02.464] Server  LOG     📭 No attendance records found in database
+[00:21:02.464] Server  LOG     💡 This could mean:
+[00:21:02.466] Server  LOG        1. No scans have been recorded yet
+[00:21:02.466] Server  LOG        2. Database table is empty
+[00:21:02.466] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:04.208] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:04.208] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
+[00:21:04.208] Server  LOG     Origin: "N/A"
+[00:21:04.208] Server  LOG     Host: "localhost:3000"
+[00:21:04.209] Server  LOG     Environment: "development"
+[00:21:04.209] Server  LOG     =========================
+[00:21:04.209] Server  LOG     Attempting to fetch attendance records...
+[00:21:04.210] Server  LOG     Limit: 50
+[00:21:04.210] Server  LOG     Since: null
+[00:21:04.210] Server  LOG     Method 1: Trying RPC function...
+[00:21:04.292] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:04.293] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:04.382] Server  ERROR   ✗ Direct query failed: {}
+[00:21:04.383] Server  LOG     📭 No attendance records found in database
+[00:21:04.383] Server  LOG     💡 This could mean:
+[00:21:04.383] Server  LOG        1. No scans have been recorded yet
+[00:21:04.384] Server  LOG        2. Database table is empty
+[00:21:04.385] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:06.447] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:06.447] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:06.447] Server  LOG     Origin: "N/A"
+[00:21:06.447] Server  LOG     Host: "localhost:3000"
+[00:21:06.447] Server  LOG     Environment: "development"
+[00:21:06.447] Server  LOG     =========================
+[00:21:06.447] Server  LOG     Attempting to fetch attendance records...
+[00:21:06.447] Server  LOG     Limit: 1
+[00:21:06.447] Server  LOG     Since: null
+[00:21:06.447] Server  LOG     Method 1: Trying RPC function...
+[00:21:06.542] Browser LOG     🔄 Component mounted - fetching initial data...
+[00:21:06.542] Browser LOG     📊 Latest scan cleared
+[00:21:06.542] Browser LOG     🔄 Starting auto-refresh (every 2 seconds)
+[00:21:06.542] Browser LOG     🔄 Page will auto-refresh when new scan is detected
+[00:21:06.542] Browser LOG     🔄 Stopping auto-refresh
+[00:21:06.542] Browser LOG     🔄 Component mounted - fetching initial data...
+[00:21:06.542] Browser LOG     📊 Latest scan cleared
+[00:21:06.542] Browser LOG     🔄 Starting auto-refresh (every 2 seconds)
+[00:21:06.542] Browser LOG     🔄 Page will auto-refresh when new scan is detected
+[00:21:06.603] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:06.603] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:06.692] Server  ERROR   ✗ Direct query failed: {}
+[00:21:06.692] Server  LOG     📭 No attendance records found in database
+[00:21:06.692] Server  LOG     💡 This could mean:
+[00:21:06.693] Server  LOG        1. No scans have been recorded yet
+[00:21:06.693] Server  LOG        2. Database table is empty
+[00:21:06.693] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:06.701] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:06.701] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:06.701] Server  LOG     Origin: "N/A"
+[00:21:06.702] Server  LOG     Host: "localhost:3000"
+[00:21:06.702] Server  LOG     Environment: "development"
+[00:21:06.702] Server  LOG     =========================
+[00:21:06.702] Server  LOG     Attempting to fetch attendance records...
+[00:21:06.703] Server  LOG     Limit: 1
+[00:21:06.703] Server  LOG     Since: null
+[00:21:06.703] Server  LOG     Method 1: Trying RPC function...
+[00:21:06.785] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:06.785] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:06.797] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:06.797] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:06.797] Browser LOG     ⚠️ No records found in response
+[00:21:06.881] Server  ERROR   ✗ Direct query failed: {}
+[00:21:06.881] Server  LOG     📭 No attendance records found in database
+[00:21:06.881] Server  LOG     💡 This could mean:
+[00:21:06.882] Server  LOG        1. No scans have been recorded yet
+[00:21:06.882] Server  LOG        2. Database table is empty
+[00:21:06.882] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:06.986] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:06.986] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:06.986] Browser LOG     ⚠️ No records found in response
+[00:21:08.457] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:08.458] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:08.458] Server  LOG     Origin: "N/A"
+[00:21:08.458] Server  LOG     Host: "localhost:3000"
+[00:21:08.458] Server  LOG     Environment: "development"
+[00:21:08.458] Server  LOG     =========================
+[00:21:08.459] Server  LOG     Attempting to fetch attendance records...
+[00:21:08.459] Server  LOG     Limit: 1
+[00:21:08.459] Server  LOG     Since: null
+[00:21:08.460] Server  LOG     Method 1: Trying RPC function...
+[00:21:08.544] Browser LOG     🔄 Checking for new scans...
+[00:21:08.600] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:08.600] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:08.684] Server  ERROR   ✗ Direct query failed: {}
+[00:21:08.684] Server  LOG     📭 No attendance records found in database
+[00:21:08.685] Server  LOG     💡 This could mean:
+[00:21:08.685] Server  LOG        1. No scans have been recorded yet
+[00:21:08.686] Server  LOG        2. Database table is empty
+[00:21:08.686] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:08.792] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:08.792] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:08.792] Browser LOG     ⚠️ No records found in response
+[00:21:10.453] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:10.454] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:10.454] Server  LOG     Origin: "N/A"
+[00:21:10.454] Server  LOG     Host: "localhost:3000"
+[00:21:10.454] Server  LOG     Environment: "development"
+[00:21:10.454] Server  LOG     =========================
+[00:21:10.455] Server  LOG     Attempting to fetch attendance records...
+[00:21:10.456] Server  LOG     Limit: 1
+[00:21:10.456] Server  LOG     Since: null
+[00:21:10.456] Server  LOG     Method 1: Trying RPC function...
+[00:21:10.544] Browser LOG     🔄 Checking for new scans...
+[00:21:10.592] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:10.593] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:10.680] Server  ERROR   ✗ Direct query failed: {}
+[00:21:10.680] Server  LOG     📭 No attendance records found in database
+[00:21:10.680] Server  LOG     💡 This could mean:
+[00:21:10.681] Server  LOG        1. No scans have been recorded yet
+[00:21:10.681] Server  LOG        2. Database table is empty
+[00:21:10.681] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:11.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:11.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:11.242] Browser LOG     ⚠️ No records found in response
+[00:21:13.252] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:13.253] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:13.253] Server  LOG     Origin: "N/A"
+[00:21:13.253] Server  LOG     Host: "localhost:3000"
+[00:21:13.253] Server  LOG     Environment: "development"
+[00:21:13.253] Server  LOG     =========================
+[00:21:13.254] Server  LOG     Attempting to fetch attendance records...
+[00:21:13.254] Server  LOG     Limit: 1
+[00:21:13.254] Server  LOG     Since: null
+[00:21:13.255] Server  LOG     Method 1: Trying RPC function...
+[00:21:13.405] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:13.406] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:13.495] Server  ERROR   ✗ Direct query failed: {}
+[00:21:13.496] Server  LOG     📭 No attendance records found in database
+[00:21:13.496] Server  LOG     💡 This could mean:
+[00:21:13.496] Server  LOG        1. No scans have been recorded yet
+[00:21:13.496] Server  LOG        2. Database table is empty
+[00:21:13.497] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:14.241] Browser LOG     🔄 Checking for new scans...
+[00:21:14.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:14.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:14.241] Browser LOG     ⚠️ No records found in response
+[00:21:15.247] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:15.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:15.247] Server  LOG     Origin: "N/A"
+[00:21:15.247] Server  LOG     Host: "localhost:3000"
+[00:21:15.247] Server  LOG     Environment: "development"
+[00:21:15.247] Server  LOG     =========================
+[00:21:15.247] Server  LOG     Attempting to fetch attendance records...
+[00:21:15.247] Server  LOG     Limit: 1
+[00:21:15.248] Server  LOG     Since: null
+[00:21:15.248] Server  LOG     Method 1: Trying RPC function...
+[00:21:15.384] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:15.384] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:15.469] Server  ERROR   ✗ Direct query failed: {}
+[00:21:15.469] Server  LOG     📭 No attendance records found in database
+[00:21:15.470] Server  LOG     💡 This could mean:
+[00:21:15.470] Server  LOG        1. No scans have been recorded yet
+[00:21:15.470] Server  LOG        2. Database table is empty
+[00:21:15.470] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:16.242] Browser LOG     🔄 Checking for new scans...
+[00:21:16.243] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:16.243] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:16.243] Browser LOG     ⚠️ No records found in response
+[00:21:17.248] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:17.248] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:17.248] Server  LOG     Origin: "N/A"
+[00:21:17.248] Server  LOG     Host: "localhost:3000"
+[00:21:17.248] Server  LOG     Environment: "development"
+[00:21:17.248] Server  LOG     =========================
+[00:21:17.249] Server  LOG     Attempting to fetch attendance records...
+[00:21:17.249] Server  LOG     Limit: 1
+[00:21:17.249] Server  LOG     Since: null
+[00:21:17.249] Server  LOG     Method 1: Trying RPC function...
+[00:21:17.382] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:17.382] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:17.463] Server  ERROR   ✗ Direct query failed: {}
+[00:21:17.463] Server  LOG     📭 No attendance records found in database
+[00:21:17.464] Server  LOG     💡 This could mean:
+[00:21:17.464] Server  LOG        1. No scans have been recorded yet
+[00:21:17.464] Server  LOG        2. Database table is empty
+[00:21:17.464] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:18.241] Browser LOG     🔄 Checking for new scans...
+[00:21:18.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:18.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:18.241] Browser LOG     ⚠️ No records found in response
+[00:21:19.256] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:19.256] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:19.256] Server  LOG     Origin: "N/A"
+[00:21:19.257] Server  LOG     Host: "localhost:3000"
+[00:21:19.257] Server  LOG     Environment: "development"
+[00:21:19.257] Server  LOG     =========================
+[00:21:19.258] Server  LOG     Attempting to fetch attendance records...
+[00:21:19.258] Server  LOG     Limit: 1
+[00:21:19.258] Server  LOG     Since: null
+[00:21:19.258] Server  LOG     Method 1: Trying RPC function...
+[00:21:19.398] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:19.399] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:19.506] Server  ERROR   ✗ Direct query failed: {}
+[00:21:19.506] Server  LOG     📭 No attendance records found in database
+[00:21:19.507] Server  LOG     💡 This could mean:
+[00:21:19.507] Server  LOG        1. No scans have been recorded yet
+[00:21:19.507] Server  LOG        2. Database table is empty
+[00:21:19.508] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:20.240] Browser LOG     🔄 Checking for new scans...
+[00:21:20.240] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:20.240] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:20.240] Browser LOG     ⚠️ No records found in response
+[00:21:21.256] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:21.257] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:21.257] Server  LOG     Origin: "N/A"
+[00:21:21.257] Server  LOG     Host: "localhost:3000"
+[00:21:21.257] Server  LOG     Environment: "development"
+[00:21:21.257] Server  LOG     =========================
+[00:21:21.258] Server  LOG     Attempting to fetch attendance records...
+[00:21:21.258] Server  LOG     Limit: 1
+[00:21:21.258] Server  LOG     Since: null
+[00:21:21.258] Server  LOG     Method 1: Trying RPC function...
+[00:21:21.413] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:21.413] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:21.529] Server  ERROR   ✗ Direct query failed: {}
+[00:21:21.530] Server  LOG     📭 No attendance records found in database
+[00:21:21.531] Server  LOG     💡 This could mean:
+[00:21:21.532] Server  LOG        1. No scans have been recorded yet
+[00:21:21.532] Server  LOG        2. Database table is empty
+[00:21:21.532] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:22.241] Browser LOG     🔄 Checking for new scans...
+[00:21:22.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:22.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:22.241] Browser LOG     ⚠️ No records found in response
+[00:21:23.253] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:23.253] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:23.253] Server  LOG     Origin: "N/A"
+[00:21:23.253] Server  LOG     Host: "localhost:3000"
+[00:21:23.254] Server  LOG     Environment: "development"
+[00:21:23.254] Server  LOG     =========================
+[00:21:23.255] Server  LOG     Attempting to fetch attendance records...
+[00:21:23.255] Server  LOG     Limit: 1
+[00:21:23.255] Server  LOG     Since: null
+[00:21:23.255] Server  LOG     Method 1: Trying RPC function...
+[00:21:23.402] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:23.402] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:23.496] Server  ERROR   ✗ Direct query failed: {}
+[00:21:23.496] Server  LOG     📭 No attendance records found in database
+[00:21:23.497] Server  LOG     💡 This could mean:
+[00:21:23.497] Server  LOG        1. No scans have been recorded yet
+[00:21:23.497] Server  LOG        2. Database table is empty
+[00:21:23.497] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:24.242] Browser LOG     🔄 Checking for new scans...
+[00:21:24.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:24.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:24.242] Browser LOG     ⚠️ No records found in response
+[00:21:25.245] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:25.245] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:25.245] Server  LOG     Origin: "N/A"
+[00:21:25.245] Server  LOG     Host: "localhost:3000"
+[00:21:25.245] Server  LOG     Environment: "development"
+[00:21:25.245] Server  LOG     =========================
+[00:21:25.246] Server  LOG     Attempting to fetch attendance records...
+[00:21:25.246] Server  LOG     Limit: 1
+[00:21:25.246] Server  LOG     Since: null
+[00:21:25.246] Server  LOG     Method 1: Trying RPC function...
+[00:21:25.397] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:25.397] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:25.500] Server  ERROR   ✗ Direct query failed: {}
+[00:21:25.501] Server  LOG     📭 No attendance records found in database
+[00:21:25.501] Server  LOG     💡 This could mean:
+[00:21:25.501] Server  LOG        1. No scans have been recorded yet
+[00:21:25.501] Server  LOG        2. Database table is empty
+[00:21:25.501] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:26.242] Browser LOG     🔄 Checking for new scans...
+[00:21:26.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:26.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:26.242] Browser LOG     ⚠️ No records found in response
+[00:21:27.259] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:27.259] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:27.259] Server  LOG     Origin: "N/A"
+[00:21:27.259] Server  LOG     Host: "localhost:3000"
+[00:21:27.260] Server  LOG     Environment: "development"
+[00:21:27.260] Server  LOG     =========================
+[00:21:27.260] Server  LOG     Attempting to fetch attendance records...
+[00:21:27.261] Server  LOG     Limit: 1
+[00:21:27.261] Server  LOG     Since: null
+[00:21:27.261] Server  LOG     Method 1: Trying RPC function...
+[00:21:27.401] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:27.401] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:27.489] Server  ERROR   ✗ Direct query failed: {}
+[00:21:27.490] Server  LOG     📭 No attendance records found in database
+[00:21:27.490] Server  LOG     💡 This could mean:
+[00:21:27.491] Server  LOG        1. No scans have been recorded yet
+[00:21:27.491] Server  LOG        2. Database table is empty
+[00:21:27.491] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:28.241] Browser LOG     🔄 Checking for new scans...
+[00:21:28.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:28.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:28.241] Browser LOG     ⚠️ No records found in response
+[00:21:29.249] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:29.250] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:29.250] Server  LOG     Origin: "N/A"
+[00:21:29.250] Server  LOG     Host: "localhost:3000"
+[00:21:29.250] Server  LOG     Environment: "development"
+[00:21:29.250] Server  LOG     =========================
+[00:21:29.251] Server  LOG     Attempting to fetch attendance records...
+[00:21:29.251] Server  LOG     Limit: 1
+[00:21:29.251] Server  LOG     Since: null
+[00:21:29.252] Server  LOG     Method 1: Trying RPC function...
+[00:21:29.390] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:29.390] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:29.722] Server  ERROR   ✗ Direct query failed: {}
+[00:21:29.723] Server  LOG     📭 No attendance records found in database
+[00:21:29.723] Server  LOG     💡 This could mean:
+[00:21:29.724] Server  LOG        1. No scans have been recorded yet
+[00:21:29.724] Server  LOG        2. Database table is empty
+[00:21:29.724] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:30.241] Browser LOG     🔄 Checking for new scans...
+[00:21:30.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:30.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:30.242] Browser LOG     ⚠️ No records found in response
+[00:21:31.245] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:31.245] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:31.245] Server  LOG     Origin: "N/A"
+[00:21:31.245] Server  LOG     Host: "localhost:3000"
+[00:21:31.245] Server  LOG     Environment: "development"
+[00:21:31.245] Server  LOG     =========================
+[00:21:31.245] Server  LOG     Attempting to fetch attendance records...
+[00:21:31.246] Server  LOG     Limit: 1
+[00:21:31.246] Server  LOG     Since: null
+[00:21:31.246] Server  LOG     Method 1: Trying RPC function...
+[00:21:31.384] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:31.384] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:31.470] Server  ERROR   ✗ Direct query failed: {}
+[00:21:31.471] Server  LOG     📭 No attendance records found in database
+[00:21:31.471] Server  LOG     💡 This could mean:
+[00:21:31.471] Server  LOG        1. No scans have been recorded yet
+[00:21:31.471] Server  LOG        2. Database table is empty
+[00:21:31.471] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:32.241] Browser LOG     🔄 Checking for new scans...
+[00:21:32.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:32.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:32.241] Browser LOG     ⚠️ No records found in response
+[00:21:33.250] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:33.250] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:33.250] Server  LOG     Origin: "N/A"
+[00:21:33.250] Server  LOG     Host: "localhost:3000"
+[00:21:33.250] Server  LOG     Environment: "development"
+[00:21:33.250] Server  LOG     =========================
+[00:21:33.250] Server  LOG     Attempting to fetch attendance records...
+[00:21:33.250] Server  LOG     Limit: 1
+[00:21:33.251] Server  LOG     Since: null
+[00:21:33.251] Server  LOG     Method 1: Trying RPC function...
+[00:21:33.382] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:33.383] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:33.466] Server  ERROR   ✗ Direct query failed: {}
+[00:21:33.466] Server  LOG     📭 No attendance records found in database
+[00:21:33.467] Server  LOG     💡 This could mean:
+[00:21:33.467] Server  LOG        1. No scans have been recorded yet
+[00:21:33.467] Server  LOG        2. Database table is empty
+[00:21:33.467] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:34.242] Browser LOG     🔄 Checking for new scans...
+[00:21:34.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:34.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:34.242] Browser LOG     ⚠️ No records found in response
+[00:21:35.249] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:35.249] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:35.250] Server  LOG     Origin: "N/A"
+[00:21:35.250] Server  LOG     Host: "localhost:3000"
+[00:21:35.250] Server  LOG     Environment: "development"
+[00:21:35.250] Server  LOG     =========================
+[00:21:35.250] Server  LOG     Attempting to fetch attendance records...
+[00:21:35.250] Server  LOG     Limit: 1
+[00:21:35.250] Server  LOG     Since: null
+[00:21:35.250] Server  LOG     Method 1: Trying RPC function...
+[00:21:35.388] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:35.388] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:35.470] Server  ERROR   ✗ Direct query failed: {}
+[00:21:35.470] Server  LOG     📭 No attendance records found in database
+[00:21:35.470] Server  LOG     💡 This could mean:
+[00:21:35.471] Server  LOG        1. No scans have been recorded yet
+[00:21:35.471] Server  LOG        2. Database table is empty
+[00:21:35.471] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:36.241] Browser LOG     🔄 Checking for new scans...
+[00:21:36.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:36.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:36.241] Browser LOG     ⚠️ No records found in response
+[00:21:37.246] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:37.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:37.247] Server  LOG     Origin: "N/A"
+[00:21:37.247] Server  LOG     Host: "localhost:3000"
+[00:21:37.247] Server  LOG     Environment: "development"
+[00:21:37.248] Server  LOG     =========================
+[00:21:37.248] Server  LOG     Attempting to fetch attendance records...
+[00:21:37.248] Server  LOG     Limit: 1
+[00:21:37.248] Server  LOG     Since: null
+[00:21:37.249] Server  LOG     Method 1: Trying RPC function...
+[00:21:37.402] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:37.403] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:37.489] Server  ERROR   ✗ Direct query failed: {}
+[00:21:37.490] Server  LOG     📭 No attendance records found in database
+[00:21:37.490] Server  LOG     💡 This could mean:
+[00:21:37.491] Server  LOG        1. No scans have been recorded yet
+[00:21:37.491] Server  LOG        2. Database table is empty
+[00:21:37.491] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:38.242] Browser LOG     🔄 Checking for new scans...
+[00:21:38.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:38.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:38.242] Browser LOG     ⚠️ No records found in response
+[00:21:39.254] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:39.254] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:39.255] Server  LOG     Origin: "N/A"
+[00:21:39.255] Server  LOG     Host: "localhost:3000"
+[00:21:39.255] Server  LOG     Environment: "development"
+[00:21:39.255] Server  LOG     =========================
+[00:21:39.256] Server  LOG     Attempting to fetch attendance records...
+[00:21:39.256] Server  LOG     Limit: 1
+[00:21:39.256] Server  LOG     Since: null
+[00:21:39.257] Server  LOG     Method 1: Trying RPC function...
+[00:21:39.397] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:39.398] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:39.485] Server  ERROR   ✗ Direct query failed: {}
+[00:21:39.485] Server  LOG     📭 No attendance records found in database
+[00:21:39.486] Server  LOG     💡 This could mean:
+[00:21:39.486] Server  LOG        1. No scans have been recorded yet
+[00:21:39.486] Server  LOG        2. Database table is empty
+[00:21:39.486] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:40.241] Browser LOG     🔄 Checking for new scans...
+[00:21:40.241] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:40.241] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:40.241] Browser LOG     ⚠️ No records found in response
+[00:21:41.254] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:41.254] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:41.254] Server  LOG     Origin: "N/A"
+[00:21:41.254] Server  LOG     Host: "localhost:3000"
+[00:21:41.255] Server  LOG     Environment: "development"
+[00:21:41.255] Server  LOG     =========================
+[00:21:41.255] Server  LOG     Attempting to fetch attendance records...
+[00:21:41.255] Server  LOG     Limit: 1
+[00:21:41.255] Server  LOG     Since: null
+[00:21:41.255] Server  LOG     Method 1: Trying RPC function...
+[00:21:41.391] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:41.391] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:41.469] Server  ERROR   ✗ Direct query failed: {}
+[00:21:41.470] Server  LOG     📭 No attendance records found in database
+[00:21:41.470] Server  LOG     💡 This could mean:
+[00:21:41.470] Server  LOG        1. No scans have been recorded yet
+[00:21:41.470] Server  LOG        2. Database table is empty
+[00:21:41.470] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:42.242] Browser LOG     🔄 Checking for new scans...
+[00:21:42.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:42.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:42.242] Browser LOG     ⚠️ No records found in response
+[00:21:43.253] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:43.253] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:43.254] Server  LOG     Origin: "N/A"
+[00:21:43.254] Server  LOG     Host: "localhost:3000"
+[00:21:43.254] Server  LOG     Environment: "development"
+[00:21:43.254] Server  LOG     =========================
+[00:21:43.255] Server  LOG     Attempting to fetch attendance records...
+[00:21:43.255] Server  LOG     Limit: 1
+[00:21:43.255] Server  LOG     Since: null
+[00:21:43.256] Server  LOG     Method 1: Trying RPC function...
+[00:21:43.393] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:43.393] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:43.477] Server  ERROR   ✗ Direct query failed: {}
+[00:21:43.478] Server  LOG     📭 No attendance records found in database
+[00:21:43.478] Server  LOG     💡 This could mean:
+[00:21:43.478] Server  LOG        1. No scans have been recorded yet
+[00:21:43.479] Server  LOG        2. Database table is empty
+[00:21:43.479] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:44.242] Browser LOG     🔄 Checking for new scans...
+[00:21:44.242] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:44.242] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:44.242] Browser LOG     ⚠️ No records found in response
+[00:21:45.247] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:45.247] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:45.247] Server  LOG     Origin: "N/A"
+[00:21:45.247] Server  LOG     Host: "localhost:3000"
+[00:21:45.247] Server  LOG     Environment: "development"
+[00:21:45.247] Server  LOG     =========================
+[00:21:45.248] Server  LOG     Attempting to fetch attendance records...
+[00:21:45.248] Server  LOG     Limit: 1
+[00:21:45.248] Server  LOG     Since: null
+[00:21:45.248] Server  LOG     Method 1: Trying RPC function...
+[00:21:45.393] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:45.393] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:45.507] Server  ERROR   ✗ Direct query failed: {}
+[00:21:45.507] Server  LOG     📭 No attendance records found in database
+[00:21:45.507] Server  LOG     💡 This could mean:
+[00:21:45.508] Server  LOG        1. No scans have been recorded yet
+[00:21:45.508] Server  LOG        2. Database table is empty
+[00:21:45.508] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:45.632] Browser LOG     🔄 Checking for new scans...
+[00:21:45.632] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:45.632] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:45.632] Browser LOG     ⚠️ No records found in response
+[00:21:46.453] Server  LOG     === GET REQUEST DEBUG ===
+[00:21:46.453] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=1"
+[00:21:46.454] Server  LOG     Origin: "N/A"
+[00:21:46.454] Server  LOG     Host: "localhost:3000"
+[00:21:46.454] Server  LOG     Environment: "development"
+[00:21:46.454] Server  LOG     =========================
+[00:21:46.455] Server  LOG     Attempting to fetch attendance records...
+[00:21:46.455] Server  LOG     Limit: 1
+[00:21:46.455] Server  LOG     Since: null
+[00:21:46.455] Server  LOG     Method 1: Trying RPC function...
+[00:21:46.543] Browser LOG     🔄 Checking for new scans...
+[00:21:46.606] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
+[00:21:46.607] Server  LOG     Method 2: Trying direct query with explicit columns...
+[00:21:46.704] Server  ERROR   ✗ Direct query failed: {}
+[00:21:46.705] Server  LOG     📭 No attendance records found in database
+[00:21:46.705] Server  LOG     💡 This could mean:
+[00:21:46.705] Server  LOG        1. No scans have been recorded yet
+[00:21:46.706] Server  LOG        2. Database table is empty
+[00:21:46.706] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
+[00:21:46.810] Browser LOG     API Response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:46.810] Browser LOG     ❌ No records in response: {"message":"No attendance records found. Scans will appear here once recorded.","records":[],"success":true}
+[00:21:46.810] Browser LOG     ⚠️ No records found in response
+[00:21:47.327] Browser LOG     🔄 Stopping auto-refresh

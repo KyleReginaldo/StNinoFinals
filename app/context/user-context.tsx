@@ -9,6 +9,9 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 export interface User {
     id: string;
     email: string;
+    role?: string;
+    first_name?: string;
+    last_name?: string;
 }
 
 /**
@@ -38,12 +41,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
      * Sets user state or null if not authenticated
      */
     const getUser = async () => {
-        const {data, error} = await supabase.auth.getUser();
-        if(error){
-            console.log("Error fetching user:", error.message);
+        const {data: authData, error: authError} = await supabase.auth.getUser();
+        if(authError || !authData.user){
+            console.log("Error fetching user:", authError?.message);
             setUser(null);
         } else {
-            setUser(data.user as User);
+            // Fetch full user profile from users table to get role
+            const { data: profileData, error: profileError } = await supabase
+                .from('users')
+                .select('id, email, role, first_name, last_name')
+                .eq('id', authData.user.id)
+                .single();
+            
+            if (profileError || !profileData) {
+                console.log("Error fetching user profile:", profileError?.message);
+                setUser({
+                    id: authData.user.id,
+                    email: authData.user.email || '',
+                });
+            } else {
+                setUser(profileData);
+            }
         }
     }
     

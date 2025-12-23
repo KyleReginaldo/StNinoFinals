@@ -7,8 +7,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { TabsContent } from "@/components/ui/tabs"
+import { useAlert } from "@/lib/use-alert"
+import { Eye } from "lucide-react"
 import { useMemo, useState } from "react"
 import type { Teacher, TeacherFilters } from "../types"
 import { generatePassword } from "../utils/helpers"
@@ -23,8 +32,11 @@ interface TeacherManagementTabProps {
 export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded, onTeacherUpdated }: TeacherManagementTabProps) {
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showTeacherCredentialsModal, setShowTeacherCredentialsModal] = useState(false)
+  const [showViewSheet, setShowViewSheet] = useState(false)
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
   const [newTeacherCredentials, setNewTeacherCredentials] = useState<any>(null)
   const [teacherFormError, setTeacherFormError] = useState<string | null>(null)
+  const { showAlert } = useAlert()
   
   const [newTeacher, setNewTeacher] = useState({
     first_name: "",
@@ -123,11 +135,11 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
         setTeacherFormError(null)
         onTeacherAdded()
       } else {
-        alert(data.error || "Failed to add teacher. Please try again.")
+        showAlert({ message: data.error || "Failed to add teacher. Please try again.", type: "error" })
       }
     } catch (error) {
       console.error("Add teacher error:", error)
-      alert("Error adding teacher. Please try again.")
+      showAlert({ message: "Error adding teacher. Please try again.", type: "error" })
     }
   }
 
@@ -357,6 +369,7 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
                       <TableHead>Specialization</TableHead>
                       <TableHead>RFID</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -395,6 +408,20 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
                             </SelectContent>
                           </Select>
                         </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => {
+                                setSelectedTeacher(teacher)
+                                setShowViewSheet(true)
+                              }}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -408,6 +435,88 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
           </div>
         </CardContent>
       </Card>
+
+      {/* View Teacher Sheet */}
+      <Sheet open={showViewSheet} onOpenChange={setShowViewSheet}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-red-800">Teacher Details</SheetTitle>
+            <SheetDescription>View complete teacher information</SheetDescription>
+          </SheetHeader>
+          {selectedTeacher && (
+            <div className="space-y-6 mt-6">
+              <div className="space-y-4">
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Full Name</h3>
+                  <p className="text-base font-semibold">
+                    {`${selectedTeacher.first_name} ${selectedTeacher.middle_name ? selectedTeacher.middle_name + ' ' : ''}${selectedTeacher.last_name}`.trim()}
+                  </p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Employee Number</h3>
+                  <p className="text-base font-mono">{selectedTeacher.employee_number || 'N/A'}</p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Email</h3>
+                  <p className="text-base">{selectedTeacher.email || 'N/A'}</p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Phone Number</h3>
+                  <p className="text-base">{selectedTeacher.phone_number || 'N/A'}</p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Department</h3>
+                  <p className="text-base">{selectedTeacher.department || 'N/A'}</p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Specialization</h3>
+                  <p className="text-base">{selectedTeacher.specialization || 'N/A'}</p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Date Hired</h3>
+                  <p className="text-base">
+                    {selectedTeacher.date_hired 
+                      ? new Date(selectedTeacher.date_hired).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">RFID Status</h3>
+                  {selectedTeacher.rfid ? (
+                    <div className="space-y-1">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Assigned
+                      </Badge>
+                      <p className="text-sm text-gray-600 font-mono">{selectedTeacher.rfid}</p>
+                    </div>
+                  ) : (
+                    <Badge variant="outline" className="bg-gray-50 text-gray-600">
+                      Not Assigned
+                    </Badge>
+                  )}
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Status</h3>
+                  <Badge className={
+                    (selectedTeacher.status || "Active").toLowerCase() === "active" 
+                      ? "bg-green-100 text-green-800" 
+                      : (selectedTeacher.status || "").toLowerCase() === "on leave"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }>
+                    {selectedTeacher.status || "Active"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </TabsContent>
   )
 }

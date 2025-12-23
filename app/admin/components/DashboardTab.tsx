@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TabsContent } from "@/components/ui/tabs"
 import { Activity, DollarSign, Shield, Users } from "lucide-react"
 import type { Stats } from "../types"
 
@@ -12,7 +11,7 @@ interface DashboardTabProps {
 
 export function DashboardTab({ stats, loadingStats }: DashboardTabProps) {
   return (
-    <TabsContent value="dashboard" className="space-y-6">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-red-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -64,6 +63,6 @@ export function DashboardTab({ stats, loadingStats }: DashboardTabProps) {
           </CardContent>
         </Card>
       </div>
-    </TabsContent>
+    </div>
   )
 }

@@ -18,10 +18,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/lib/supabaseClient"
+import { useAlert } from "@/lib/use-alert"
 import { Award, BookOpen, GraduationCap, Mail, MapPin, Menu, Phone, Users, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useUser } from "./context/user-context"
 
 export default function HomePage() {
@@ -31,7 +32,8 @@ export default function HomePage() {
   const [loginError, setLoginError] = useState("")
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user} = useUser();
+  const { user } = useUser();
+  const { showAlert } = useAlert()
   const [admissionForm, setAdmissionForm] = useState({
     studentName: "",
     parentName: "",
@@ -45,28 +47,25 @@ export default function HomePage() {
   const handleAdmissionSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Admission form submitted:", admissionForm)
-    alert("Thank you for your interest! We will contact you soon.")
+    showAlert({ message: "Thank you for your interest! We will contact you soon.", type: "success" })
   }
 
-  /**
-   * Handles user login authentication
-   * 
-   * Process:
-   * 1. Authenticates with Supabase Auth using email/password
-   * 2. Fetches user profile from appropriate table (teachers, students, Admin, parents)
-   * 3. Stores profile in localStorage for quick access
-   * 4. For parents, also fetches child information via student_parents junction table
-   * 5. Redirects to role-specific dashboard
-   * 
-   * @param e - Form submit event
-   */
+  useEffect(() => {
+    console.log("=== USER CONTEXT DEBUG ===");
+    console.log("User object:", user);
+    console.log("User JSON:", JSON.stringify(user, null, 2));
+    console.log("User exists?", !!user);
+    console.log("User has role?", user?.role);
+    console.log("========================");
+  }, [user]);
+ 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError("")
     setIsLoggingIn(true)
 
     try {
-      // Authenticate with Supabase Auth
+      
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
@@ -84,11 +83,11 @@ export default function HomePage() {
         return
       }
 
-      // Fetch user profile from unified users table (automatically detect role)
+      
       let userProfile = null
       let redirectPath = "/"
 
-      // Fetch user from users table by email (case-insensitive) - role will be auto-detected
+      
       const { data, error: profileError } = await supabase
         .from("users")
         .select("*")
@@ -108,7 +107,7 @@ export default function HomePage() {
       userProfile = data
       const userRole = data.role
 
-      // Store profile and set redirect path based on detected role
+      
       if (userRole === "teacher") {
         localStorage.setItem("teacher", JSON.stringify(data))
         redirectPath = "/teacher"
@@ -121,7 +120,7 @@ export default function HomePage() {
       } else if (userRole === "parent") {
         localStorage.setItem("parent", JSON.stringify(data))
         
-        // Fetch children through user_relationships table
+        
         const { data: relationships } = await supabase
           .from("user_relationships")
           .select("related_user_id, users!user_relationships_related_user_id_fkey(*)")
@@ -135,7 +134,7 @@ export default function HomePage() {
           localStorage.setItem("parentChildren", JSON.stringify(children))
         }
         
-        redirectPath = "/parent"
+        redirectPath = "/parent-dashboard"
       } else {
         setLoginError(`Invalid user role: ${userRole}. Please contact the administrator.`)
         await supabase.auth.signOut()
@@ -143,7 +142,7 @@ export default function HomePage() {
         return
       }
 
-      // Verify profile exists
+      
       if (!userProfile) {
         setLoginError("Profile not found. Please contact the administrator.")
         await supabase.auth.signOut()
@@ -151,7 +150,7 @@ export default function HomePage() {
         return
       }
 
-      // Keep loading state during redirect
+      
       setLoginOpen(false)
       window.location.href = redirectPath
     } catch (error: any) {
@@ -160,7 +159,7 @@ export default function HomePage() {
       setIsLoggingIn(false)
     }
   }
-
+  const link = user?.role === 'parent' ? '/parent-dashboard' : `/${user?.role || ''}`;
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 transition-all scroll-smooth">
       {/* Loading Overlay */}
@@ -203,7 +202,7 @@ export default function HomePage() {
               <a href="#contact" className="text-red-800 hover:text-red-600 font-medium">
                 Contact
               </a>
-              {user ? <Link href="/admin"><Button className="bg-red-800 hover:bg-red-700 text-white">Dashboard</Button></Link> : (<Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+              {user && user.role ? <Link href={link}><Button className="bg-red-800 hover:bg-red-700 text-white">Dashboard</Button></Link> : (<Dialog open={loginOpen} onOpenChange={setLoginOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-red-800 hover:bg-red-700 text-white">Login</Button>
                 </DialogTrigger>
@@ -219,6 +218,7 @@ export default function HomePage() {
                         id="email"
                         type="email"
                         value={loginEmail}
+                        placeholder="Enter email address"
                         onChange={(e) => setLoginEmail(e.target.value)}
                         required
                         disabled={isLoggingIn}
@@ -230,6 +230,7 @@ export default function HomePage() {
                         id="password"
                         type="password"
                         value={loginPassword}
+                        placeholder="Enter password"
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
                         disabled={isLoggingIn}
@@ -303,15 +304,15 @@ export default function HomePage() {
                 >
                   Contact
                 </a>
-                <Button
-                  className="bg-red-800 hover:bg-red-700 text-white w-full mt-2"
+                {user && user.role ? <Link href={link} onClick={() => setMobileMenuOpen(false)}><Button className="w-full bg-red-800 hover:bg-red-700 text-white">Dashboard</Button></Link> : (<Button 
+                  className="w-full bg-red-800 hover:bg-red-700 text-white" 
                   onClick={() => {
-                    setMobileMenuOpen(false)
                     setLoginOpen(true)
+                    setMobileMenuOpen(false)
                   }}
                 >
                   Login
-                </Button>
+                </Button>)}
               </nav>
             </div>
           )}
@@ -421,16 +422,16 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Tabs defaultValue="inquiry" className="w-full">
+            <Tabs defaultValue="requirements" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="inquiry" className="data-[state=active]:bg-red-800 data-[state=active]:text-white">
-                  Admission Inquiry
-                </TabsTrigger>
                 <TabsTrigger
                   value="requirements"
                   className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
                 >
-                  Requirements
+                  Admission Requirements
+                </TabsTrigger>
+                <TabsTrigger value="inquiry" className="data-[state=active]:bg-red-800 data-[state=active]:text-white">
+                  Submit Your Inquiry
                 </TabsTrigger>
               </TabsList>
 
@@ -450,6 +451,7 @@ export default function HomePage() {
                           <Input
                             id="studentName"
                             value={admissionForm.studentName}
+                            placeholder="Enter student name"
                             onChange={(e) => setAdmissionForm({ ...admissionForm, studentName: e.target.value })}
                             required
                           />
@@ -459,6 +461,7 @@ export default function HomePage() {
                           <Input
                             id="parentName"
                             value={admissionForm.parentName}
+                            placeholder="Enter parent name"
                             onChange={(e) => setAdmissionForm({ ...admissionForm, parentName: e.target.value })}
                             required
                           />
@@ -472,6 +475,7 @@ export default function HomePage() {
                             id="email"
                             type="email"
                             value={admissionForm.email}
+                            placeholder="Enter email address"
                             onChange={(e) => setAdmissionForm({ ...admissionForm, email: e.target.value })}
                             required
                           />
@@ -482,6 +486,7 @@ export default function HomePage() {
                             id="phone"
                             type="tel"
                             value={admissionForm.phone}
+                            placeholder="Enter phone number"
                             onChange={(e) => setAdmissionForm({ ...admissionForm, phone: e.target.value })}
                             required
                           />
@@ -517,6 +522,7 @@ export default function HomePage() {
                           <Input
                             id="previousSchool"
                             value={admissionForm.previousSchool}
+                            placeholder="Enter previos school name"
                             onChange={(e) => setAdmissionForm({ ...admissionForm, previousSchool: e.target.value })}
                           />
                         </div>
