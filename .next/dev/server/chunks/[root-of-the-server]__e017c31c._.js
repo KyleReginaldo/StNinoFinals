@@ -304,7 +304,7 @@ async function GET(request) {
             if (!querySuccess) {
                 try {
                     console.log('Method 2: Trying direct query with explicit columns...');
-                    let directQuery = supabaseClient.from('attendance_records').select('id, scan_time, scan_type, user_id, rfid, status, time_in, time_out, created_at, device_id').order('scan_time', {
+                    let directQuery = supabaseClient.from('attendance_records').select('id, scan_time, scan_type, user_id, rfid_card, rfid_tag, status, time_in, time_out, created_at, device_id').order('scan_time', {
                         ascending: false
                     }).limit(limit);
                     if (since) {
@@ -387,7 +387,7 @@ async function GET(request) {
         }
         // Fetch student and teacher information for all records
         const studentIds = [
-            ...new Set((data || []).map((r)=>r.student_id).filter(Boolean))
+            ...new Set((data || []).map((r)=>r.user_id).filter(Boolean))
         ];
         const studentMap = {};
         const teacherMap = {};
@@ -463,6 +463,15 @@ async function GET(request) {
             // Determine if this is a teacher or student
             const isTeacher = !!teacher || student && (student.role === 'teacher' || student.user_type === 'teacher' || !student.student_number);
             const person = teacher || student;
+            // Debug: Log the record to see what RFID fields are populated
+            console.log('📋 Formatting record:', {
+                id: record.id,
+                user_id: record.user_id,
+                rfid_card: record.rfid_card,
+                rfid_tag: record.rfid_tag,
+                person_found: !!person,
+                person_name: person ? `${person.first_name} ${person.last_name}` : 'None'
+            });
             return {
                 id: record.id,
                 studentId: record.user_id,
@@ -471,7 +480,7 @@ async function GET(request) {
                 section: isTeacher ? null : person?.section || 'N/A',
                 scanTime: record.scan_time || record.created_at,
                 status: record.status || 'Present',
-                rfidCard: record.rfid || 'N/A',
+                rfidCard: record.rfid_card || record.rfid_tag || 'N/A',
                 studentPhoto: person?.photo_url || null,
                 scanType: scanType,
                 timeIn: record.time_in || null,
@@ -820,7 +829,7 @@ async function POST(request) {
         });
         const { data: newRecord, error: insertError } = await supabaseClient.from('attendance_records').insert([
             attendanceRecord
-        ]).select('*').single();
+        ]).select('*, users(*)').single();
         if (insertError) {
             console.error('❌ Insert failed:', insertError);
             console.error('Database error:', insertError);
@@ -885,7 +894,7 @@ async function POST(request) {
         // Format the response
         const formattedRecord = {
             id: newRecord.id,
-            studentId: newRecord.student_id || studentId,
+            studentId: newRecord.users?.student_number || studentId,
             studentName: personInfo ? `${personInfo.first_name || personInfo.firstName || ''} ${personInfo.last_name || personInfo.lastName || ''}`.trim() || personInfo.name || 'Unknown' : 'Unknown',
             gradeLevel: isTeacher ? null : personInfo?.grade_level || personInfo?.gradeLevel || 'N/A',
             section: isTeacher ? null : personInfo?.section || 'N/A',
@@ -917,13 +926,13 @@ async function POST(request) {
                     // If the student record contains a parent_id, prefer that
                     const parentId = personInfo?.parent_id || personInfo?.parentId || null;
                     if (parentId) {
-                        const { data: parentRecord, error: pErr } = await supabaseClient.from('parents').select('id, phone, mobile, phone_number, email').eq('id', parentId).limit(1).single();
+                        const { data: parentRecord, error: pErr } = await supabaseClient.from('users').select('id, phone, mobile, phone_number, email').eq('id', parentId).eq('role', 'parent').limit(1).single();
                         if (!pErr && parentRecord) parentRecords.push(parentRecord);
                     }
                     // If parent not found but parent_email exists on student, check parents by email
                     const parentEmail = personInfo?.parent_email || personInfo?.parentEmail || null;
                     if (!parentRecords.length && parentEmail) {
-                        const { data: parentRecord2, error: pErr2 } = await supabaseClient.from('parents').select('id, phone, mobile, phone_number, email').ilike('email', parentEmail).limit(1).single();
+                        const { data: parentRecord2, error: pErr2 } = await supabaseClient.from('users').select('id, phone, mobile, phone_number, email').ilike('email', parentEmail).limit(1).single();
                         if (!pErr2 && parentRecord2) parentRecords.push(parentRecord2);
                     }
                     // If still not found, look up linkage table parent_students (if exists) for this student (match by student id / student_number / uuid)

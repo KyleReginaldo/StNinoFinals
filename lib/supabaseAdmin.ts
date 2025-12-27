@@ -32,7 +32,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
  * const { data } = await supabaseAdmin.from('users').select('*');
  * ```
  */
-export function getSupabaseAdmin(): SupabaseClient {
+export function getSupabaseAdmin(): SupabaseClient<Database> {
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Missing Supabase admin env. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (server-only).')
   }

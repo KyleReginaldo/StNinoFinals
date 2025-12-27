@@ -137,6 +137,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ne
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/badge.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/card.tsx [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/supabaseClient.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$use$2d$alert$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/use-alert.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$log$2d$in$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__LogIn$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.1/node_modules/lucide-react/dist/esm/icons/log-in.js [app-ssr] (ecmascript) <export default as LogIn>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$1$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$log$2d$out$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__LogOut$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.1/node_modules/lucide-react/dist/esm/icons/log-out.js [app-ssr] (ecmascript) <export default as LogOut>");
@@ -146,6 +147,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$lu
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/next@16.0.8_react-dom@19.2.1_react@19.2.1__react@19.2.1/node_modules/next/image.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/next@16.0.8_react-dom@19.2.1_react@19.2.1__react@19.2.1/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -167,7 +169,7 @@ function RfidDisplayPage() {
     const fetchLiveAttendance = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async (onlyNew = false)=>{
         setLoadingAttendance(true);
         try {
-            const url = onlyNew && lastScanTime ? `/api/admin/attendance-live?since=${lastScanTime}&limit=1` : `/api/admin/attendance-live?limit=1`;
+            const url = onlyNew && lastScanTime ? `/api/admin/attendance-live?since=${encodeURIComponent(lastScanTime)}&limit=1` : `/api/admin/attendance-live?limit=1`;
             const response = await fetch(url);
             // Check if response is OK
             if (!response.ok) {
@@ -189,38 +191,34 @@ function RfidDisplayPage() {
             if (result.success && result.records && result.records.length > 0) {
                 const latest = result.records[0];
                 console.log('✅ Latest scan:', latest);
-                // Check if this is a NEW scan (different from current latest scan)
-                const isNewScan = !latestScan || latest.id !== latestScan.id || latest.scanTime !== latestScan.scanTime;
-                if (isNewScan) {
-                    console.log('🆕 NEW SCAN DETECTED!');
-                    console.log('  Previous scan ID:', latestScan?.id || 'none');
-                    console.log('  New scan ID:', latest.id);
-                    console.log('  Previous scan time:', latestScan?.scanTime || 'none');
-                    console.log('  New scan time:', latest.scanTime);
-                    // Update latest scan display immediately (no page reload needed)
-                    setLatestScan(latest);
-                    // Update records list - add new scan to the top
-                    setAttendanceRecords((prev)=>{
-                        // Check if this record already exists
-                        const exists = prev.some((p)=>p.id === latest.id);
-                        if (exists) {
-                            // Update existing record
-                            return prev.map((p)=>p.id === latest.id ? latest : p);
-                        } else {
-                            // Add new record at the top
-                            return [
-                                latest,
-                                ...prev
-                            ].slice(0, 50);
-                        }
-                    });
-                    // Update last scan time for polling
-                    setLastScanTime(latest.scanTime);
-                } else {
-                    console.log('ℹ️ No new scan - same as current');
-                    // Still update in case data changed
-                    setLatestScan(latest);
-                }
+                // Update using functional state updates to avoid dependency on latestScan
+                setLatestScan((prevLatest)=>{
+                    const isNewScan = !prevLatest || latest.id !== prevLatest.id || latest.scanTime !== prevLatest.scanTime;
+                    if (isNewScan) {
+                        console.log('🆕 NEW SCAN DETECTED!');
+                        console.log('  Previous scan ID:', prevLatest?.id || 'none');
+                        console.log('  New scan ID:', latest.id);
+                        console.log('  Previous scan time:', prevLatest?.scanTime || 'none');
+                        console.log('  New scan time:', latest.scanTime);
+                    } else {
+                        console.log('ℹ️ No new scan - same as current');
+                    }
+                    return latest;
+                });
+                // Update records list - add new scan to the top
+                setAttendanceRecords((prev)=>{
+                    const exists = prev.some((p)=>p.id === latest.id);
+                    if (exists) {
+                        return prev.map((p)=>p.id === latest.id ? latest : p);
+                    } else {
+                        return [
+                            latest,
+                            ...prev
+                        ].slice(0, 50);
+                    }
+                });
+                // Update last scan time for polling
+                setLastScanTime(latest.scanTime);
             } else {
                 console.log('❌ No records in response:', result);
                 if (!result.success) {
@@ -236,8 +234,7 @@ function RfidDisplayPage() {
             setLoadingAttendance(false);
         }
     }, [
-        lastScanTime,
-        latestScan
+        lastScanTime
     ]);
     // Initial load
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
@@ -256,18 +253,54 @@ function RfidDisplayPage() {
     }, [
         latestScan
     ]);
-    // Auto-refresh: Poll for new records every 2 seconds
-    // If a new scan is detected, the entire page will refresh
+    // Auto-clear display after 10 seconds
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        console.log('🔄 Starting auto-refresh (every 2 seconds)');
-        console.log('🔄 Page will auto-refresh when new scan is detected');
+        if (latestScan) {
+            console.log('⏰ Starting 10-second timer to clear display...');
+            const clearTimer = setTimeout(()=>{
+                console.log('⏰ 10 seconds elapsed - clearing display');
+                setLatestScan(null);
+            }, 10000) // 10 seconds
+            ;
+            return ()=>{
+                console.log('⏰ Clearing timer (new scan detected or component unmounting)');
+                clearTimeout(clearTimer);
+            };
+        }
+    }, [
+        latestScan
+    ]);
+    // Supabase Realtime: Listen for new attendance records
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        console.log('🔴 Setting up Supabase realtime subscription...');
+        const channel = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["supabase"].channel('attendance-changes').on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'attendance_records'
+        }, (payload)=>{
+            console.log('🔴 REALTIME: New attendance record inserted!', payload);
+            // Fetch the latest attendance immediately when new record is detected
+            fetchLiveAttendance(false);
+        }).subscribe((status)=>{
+            console.log('🔴 Realtime subscription status:', status);
+        });
+        return ()=>{
+            console.log('🔴 Cleaning up Supabase realtime subscription');
+            __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["supabase"].removeChannel(channel);
+        };
+    }, [
+        fetchLiveAttendance
+    ]);
+    // Auto-refresh: Poll for new records every 10 seconds as fallback
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        console.log('🔄 Starting fallback polling (every 10 seconds)');
         const interval = setInterval(()=>{
-            console.log('🔄 Checking for new scans...');
+            console.log('🔄 Fallback check for new scans...');
             fetchLiveAttendance(true);
-        }, 2000) // 2 seconds = 2000ms
+        }, 10000) // 10 seconds as fallback
         ;
         return ()=>{
-            console.log('🔄 Stopping auto-refresh');
+            console.log('🔄 Stopping fallback polling');
             clearInterval(interval);
         };
     }, [
@@ -373,7 +406,7 @@ function RfidDisplayPage() {
                                     className: "w-8 h-8 text-red-500"
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 247,
+                                    lineNumber: 287,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -383,7 +416,7 @@ function RfidDisplayPage() {
                                             children: "RFID Scan Display"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 249,
+                                            lineNumber: 289,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -391,19 +424,19 @@ function RfidDisplayPage() {
                                             children: "Live attendance monitoring"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 250,
+                                            lineNumber: 290,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 248,
+                                    lineNumber: 288,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                            lineNumber: 246,
+                            lineNumber: 286,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -420,7 +453,7 @@ function RfidDisplayPage() {
                                             children: "All"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 256,
+                                            lineNumber: 296,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -433,14 +466,14 @@ function RfidDisplayPage() {
                                                     className: "w-4 h-4 mr-1"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 278,
+                                                    lineNumber: 318,
                                                     columnNumber: 17
                                                 }, this),
                                                 "Time In"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 268,
+                                            lineNumber: 308,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -453,20 +486,20 @@ function RfidDisplayPage() {
                                                     className: "w-4 h-4 mr-1"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 291,
+                                                    lineNumber: 331,
                                                     columnNumber: 17
                                                 }, this),
                                                 "Time Out"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 281,
+                                            lineNumber: 321,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 255,
+                                    lineNumber: 295,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -477,7 +510,7 @@ function RfidDisplayPage() {
                                             children: "Last Updated"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 296,
+                                            lineNumber: 336,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -486,13 +519,13 @@ function RfidDisplayPage() {
                                             children: currentTime || "--:--:--"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 297,
+                                            lineNumber: 337,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 295,
+                                    lineNumber: 335,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -504,14 +537,14 @@ function RfidDisplayPage() {
                                             className: "w-5 h-5 mr-2"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 311,
+                                            lineNumber: 351,
                                             columnNumber: 15
                                         }, this),
                                         timeoutModeActive ? `Time Out Mode: ${timeoutCountdown}s` : "Record Time Out (5s)"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 302,
+                                    lineNumber: 342,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -525,26 +558,26 @@ function RfidDisplayPage() {
                                             className: `w-4 h-4 mr-2 ${loadingAttendance ? "animate-spin" : ""}`
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 321,
+                                            lineNumber: 361,
                                             columnNumber: 15
                                         }, this),
                                         "Refresh"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 314,
+                                    lineNumber: 354,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                            lineNumber: 253,
+                            lineNumber: 293,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                    lineNumber: 245,
+                    lineNumber: 285,
                     columnNumber: 9
                 }, this),
                 latestScan ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -564,7 +597,7 @@ function RfidDisplayPage() {
                                         className: "rounded-full border-4 border-red-500 shadow-2xl object-cover"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                        lineNumber: 335,
+                                        lineNumber: 375,
                                         columnNumber: 21
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "w-[200px] h-[200px] rounded-full border-4 border-red-500 bg-gray-700 flex items-center justify-center shadow-2xl",
@@ -572,17 +605,17 @@ function RfidDisplayPage() {
                                             className: "w-24 h-24 text-gray-400"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 344,
+                                            lineNumber: 384,
                                             columnNumber: 23
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                        lineNumber: 343,
+                                        lineNumber: 383,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 333,
+                                    lineNumber: 373,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -596,7 +629,7 @@ function RfidDisplayPage() {
                                                     children: "Name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 352,
+                                                    lineNumber: 392,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -604,13 +637,13 @@ function RfidDisplayPage() {
                                                     children: latestScan.studentName || "Unknown"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 353,
+                                                    lineNumber: 393,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 351,
+                                            lineNumber: 391,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -625,7 +658,7 @@ function RfidDisplayPage() {
                                                                     children: "Grade Level"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                                    lineNumber: 361,
+                                                                    lineNumber: 401,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -633,13 +666,13 @@ function RfidDisplayPage() {
                                                                     children: latestScan.gradeLevel || "N/A"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                                    lineNumber: 362,
+                                                                    lineNumber: 402,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 360,
+                                                            lineNumber: 400,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -649,7 +682,7 @@ function RfidDisplayPage() {
                                                                     children: "Section"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                                    lineNumber: 365,
+                                                                    lineNumber: 405,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -657,13 +690,13 @@ function RfidDisplayPage() {
                                                                     children: latestScan.section || "N/A"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                                    lineNumber: 366,
+                                                                    lineNumber: 406,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 364,
+                                                            lineNumber: 404,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
@@ -676,7 +709,7 @@ function RfidDisplayPage() {
                                                             children: "Subject"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 374,
+                                                            lineNumber: 414,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -684,19 +717,19 @@ function RfidDisplayPage() {
                                                             children: latestScan.subject || "N/A"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 375,
+                                                            lineNumber: 415,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 373,
+                                                    lineNumber: 413,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 356,
+                                            lineNumber: 396,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -709,7 +742,7 @@ function RfidDisplayPage() {
                                                             children: "Date"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 382,
+                                                            lineNumber: 422,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -717,13 +750,13 @@ function RfidDisplayPage() {
                                                             children: formatDate(latestScan.scanTime)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 383,
+                                                            lineNumber: 423,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 381,
+                                                    lineNumber: 421,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -733,7 +766,7 @@ function RfidDisplayPage() {
                                                             children: "Time"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 386,
+                                                            lineNumber: 426,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -741,19 +774,19 @@ function RfidDisplayPage() {
                                                             children: formatTime(latestScan.scanTime)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                            lineNumber: 387,
+                                                            lineNumber: 427,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                    lineNumber: 385,
+                                                    lineNumber: 425,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 380,
+                                            lineNumber: 420,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -763,34 +796,34 @@ function RfidDisplayPage() {
                                                 children: latestScan.scanType === "timein" ? "TIME IN" : latestScan.scanType === "timeout" ? "TIME OUT" : "SCAN RECORDED"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                                lineNumber: 393,
+                                                lineNumber: 433,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                            lineNumber: 392,
+                                            lineNumber: 432,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 350,
+                                    lineNumber: 390,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                            lineNumber: 331,
+                            lineNumber: 371,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/admin/rfid-display/page.tsx",
-                        lineNumber: 330,
+                        lineNumber: 370,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                    lineNumber: 329,
+                    lineNumber: 369,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                     className: "mb-6 bg-gray-800 border-gray-700",
@@ -803,7 +836,7 @@ function RfidDisplayPage() {
                                     className: "w-24 h-24 mx-auto mb-6 opacity-50"
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 415,
+                                    lineNumber: 455,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -811,7 +844,7 @@ function RfidDisplayPage() {
                                     children: "Waiting for RFID scan..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 416,
+                                    lineNumber: 456,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -819,34 +852,34 @@ function RfidDisplayPage() {
                                     children: "Scan an RFID card to see the latest attendance record"
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                                    lineNumber: 417,
+                                    lineNumber: 457,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/rfid-display/page.tsx",
-                            lineNumber: 414,
+                            lineNumber: 454,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/admin/rfid-display/page.tsx",
-                        lineNumber: 413,
+                        lineNumber: 453,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/admin/rfid-display/page.tsx",
-                    lineNumber: 412,
+                    lineNumber: 452,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/admin/rfid-display/page.tsx",
-            lineNumber: 243,
+            lineNumber: 283,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/admin/rfid-display/page.tsx",
-        lineNumber: 242,
+        lineNumber: 282,
         columnNumber: 5
     }, this);
 }

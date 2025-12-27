@@ -4,9 +4,7 @@
   "/admin/live-attendance/page": "app/admin/live-attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/parents/page": "app/admin/parents/page.js",
-  "/admin/reports/page": "app/admin/reports/page.js",
   "/admin/rfid-display/page": "app/admin/rfid-display/page.js",
-  "/admin/teacher-attendance/page": "app/admin/teacher-attendance/page.js",
   "/admin/teachers/page": "app/admin/teachers/page.js",
   "/api/admin/attendance-live/route": "app/api/admin/attendance-live/route.js",
   "/api/admin/attendance-reports/route": "app/api/admin/attendance-reports/route.js",
@@ -15,7 +13,6 @@
   "/api/admin/settings/route": "app/api/admin/settings/route.js",
   "/api/admin/stats/route": "app/api/admin/stats/route.js",
   "/api/admin/students/route": "app/api/admin/students/route.js",
-  "/api/admin/teacher-attendance/route": "app/api/admin/teacher-attendance/route.js",
   "/api/admin/teachers/route": "app/api/admin/teachers/route.js",
   "/page": "app/page.js"
 }
