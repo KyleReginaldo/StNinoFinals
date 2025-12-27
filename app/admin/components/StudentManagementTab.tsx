@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { TabsContent } from "@/components/ui/tabs"
@@ -174,6 +174,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                         <Input
                           id="firstName"
                           value={newStudent.first_name}
+                          placeholder="Enter first name"
                           onChange={(e) => setNewStudent({ ...newStudent, first_name: e.target.value })}
                           required
                         />
@@ -182,6 +183,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                         <Label htmlFor="lastName">Last Name *</Label>
                         <Input
                           id="lastName"
+                          placeholder="Enter last name"
                           value={newStudent.last_name}
                           onChange={(e) => setNewStudent({ ...newStudent, last_name: e.target.value })}
                           required
@@ -192,6 +194,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                       <Label htmlFor="middleName">Middle Name</Label>
                       <Input
                         id="middleName"
+                        placeholder="Enter middle name"
                         value={newStudent.middle_name}
                         onChange={(e) => setNewStudent({ ...newStudent, middle_name: e.target.value })}
                       />
@@ -214,6 +217,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                       <Input
                         id="section"
                         value={newStudent.section}
+                        placeholder="Enter section"
                         onChange={(e) => setNewStudent({ ...newStudent, section: e.target.value })}
                         required
                       />
@@ -224,6 +228,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                         id="email"
                         type="email"
                         value={newStudent.email}
+                        placeholder="Enter email"
                         onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
                       />
                     </div>
@@ -233,6 +238,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                         id="phone"
                         type="tel"
                         value={newStudent.phone_number}
+                        placeholder="Enter phone number"
                         onChange={(e) => setNewStudent({ ...newStudent, phone_number: e.target.value })}
                       />
                     </div>

@@ -1,25 +1,26 @@
 "use client"
 
+import { AddressData, AddressSelector } from "@/components/ui/address-selector"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAlert } from "@/lib/use-alert"
@@ -42,6 +43,9 @@ interface Student {
   phone_number?: string
   date_of_birth?: string
   address?: string
+  barangay?: string
+  barangay_name?: string
+  street_details?: string
   rfid?: string
   status: string
 }
@@ -70,6 +74,11 @@ export default function StudentManagementPage() {
     address: "",
     rfid: "",
   })
+  const [newStudentAddress, setNewStudentAddress] = useState<AddressData>({
+    barangay: "",
+    barangayName: "",
+    streetDetails: "",
+  })
   const [editStudent, setEditStudent] = useState({
     id: "",
     first_name: "",
@@ -83,6 +92,11 @@ export default function StudentManagementPage() {
     date_of_birth: "",
     address: "",
     rfid: "",
+  })
+  const [editStudentAddress, setEditStudentAddress] = useState<AddressData>({
+    barangay: "",
+    barangayName: "",
+    streetDetails: "",
   })
   const [addingStudent, setAddingStudent] = useState(false)
   const [updatingStudent, setUpdatingStudent] = useState(false)
@@ -123,10 +137,20 @@ export default function StudentManagementPage() {
     try {
       const tempPassword = `Student${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 100)}`
 
+      // Combine address data into a single string
+      const fullAddress = [newStudentAddress.streetDetails, newStudentAddress.barangayName, "Trece Martires City", "Cavite"].filter(Boolean).join(", ")
+
       const response = await fetch("/api/admin/students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newStudent, password: tempPassword }),
+        body: JSON.stringify({ 
+          ...newStudent, 
+          password: tempPassword,
+          address: fullAddress,
+          barangay: newStudentAddress.barangay,
+          barangay_name: newStudentAddress.barangayName,
+          street_details: newStudentAddress.streetDetails,
+        }),
       })
 
       const result = await response.json()
@@ -145,6 +169,11 @@ export default function StudentManagementPage() {
         date_of_birth: "",
         address: "",
         rfid: "",
+      })
+      setNewStudentAddress({
+        barangay: "",
+        barangayName: "",
+        streetDetails: "",
       })
       setShowAddDialog(false)
 
@@ -165,10 +194,19 @@ export default function StudentManagementPage() {
     setEditError("")
 
     try {
+      // Combine address data into a single string
+      const fullAddress = [editStudentAddress.streetDetails, editStudentAddress.barangayName, "Trece Martires City", "Cavite"].filter(Boolean).join(", ")
+
       const response = await fetch(`/api/admin/students/${editStudent.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editStudent),
+        body: JSON.stringify({
+          ...editStudent,
+          address: fullAddress,
+          barangay: editStudentAddress.barangay,
+          barangay_name: editStudentAddress.barangayName,
+          street_details: editStudentAddress.streetDetails,
+        }),
       })
 
       const result = await response.json()
@@ -224,6 +262,11 @@ export default function StudentManagementPage() {
       address: student.address || "",
       rfid: student.rfid || "",
     })
+    setEditStudentAddress({
+      barangay: student.barangay || "",
+      barangayName: student.barangay_name || "",
+      streetDetails: student.street_details || "",
+    })
     setShowEditDialog(true)
   }
 
@@ -275,19 +318,19 @@ export default function StudentManagementPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>First Name *</Label>
-                    <Input value={newStudent.first_name} onChange={(e) => setNewStudent({ ...newStudent, first_name: e.target.value })} required />
+                    <Input value={newStudent.first_name} placeholder="Enter first name" onChange={(e) => setNewStudent({ ...newStudent, first_name: e.target.value })} required />
                   </div>
                   <div>
                     <Label>Last Name *</Label>
-                    <Input value={newStudent.last_name} onChange={(e) => setNewStudent({ ...newStudent, last_name: e.target.value })} required />
+                    <Input value={newStudent.last_name} placeholder="Enter last name" onChange={(e) => setNewStudent({ ...newStudent, last_name: e.target.value })} required />
                   </div>
                   <div>
                     <Label>Middle Name</Label>
-                    <Input value={newStudent.middle_name} onChange={(e) => setNewStudent({ ...newStudent, middle_name: e.target.value })} />
+                    <Input value={newStudent.middle_name} placeholder="Enter middle name" onChange={(e) => setNewStudent({ ...newStudent, middle_name: e.target.value })} />
                   </div>
                   <div>
                     <Label>Student Number *</Label>
-                    <Input value={newStudent.student_number} onChange={(e) => setNewStudent({ ...newStudent, student_number: e.target.value })} required />
+                    <Input value={newStudent.student_number} placeholder="Enter student number" onChange={(e) => setNewStudent({ ...newStudent, student_number: e.target.value })} required />
                   </div>
                   <div>
                     <Label>Grade Level *</Label>
@@ -302,32 +345,36 @@ export default function StudentManagementPage() {
                   </div>
                   <div>
                     <Label>Section</Label>
-                    <Input value={newStudent.section} onChange={(e) => setNewStudent({ ...newStudent, section: e.target.value })} />
+                    <Input value={newStudent.section} placeholder="Enter section" onChange={(e) => setNewStudent({ ...newStudent, section: e.target.value })} />
                   </div>
                   <div>
                     <Label>Email *</Label>
-                    <Input type="email" value={newStudent.email} onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })} required />
+                    <Input type="email" value={newStudent.email} placeholder="Enter email" onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })} required />
                   </div>
                   <div>
                     <Label>Phone Number</Label>
-                    <Input value={newStudent.phone_number} onChange={(e) => setNewStudent({ ...newStudent, phone_number: e.target.value })} />
+                    <Input value={newStudent.phone_number} placeholder="Enter phone number" onChange={(e) => setNewStudent({ ...newStudent, phone_number: e.target.value })} />
                   </div>
                   <div>
                     <Label>Date of Birth</Label>
-                    <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} />
+                    <Input type="date" value={newStudent.date_of_birth} placeholder="Select date of birth" onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} />
                   </div>
                   <div>
                     <Label>RFID Card Number</Label>
                     <Input 
                       value={newStudent.rfid} 
+
                       onChange={(e) => setNewStudent({ ...newStudent, rfid: e.target.value })} 
                       placeholder="Enter RFID card number"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <Label>Address</Label>
-                    <Input value={newStudent.address} onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })} />
-                  </div>
+                </div>
+                <div>
+                  <Label>Address</Label>
+                  <AddressSelector
+                    value={newStudentAddress}
+                    onChange={setNewStudentAddress}
+                  />
                 </div>
                 {addError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{addError}</div>}
                 <div className="flex justify-end gap-2">
@@ -399,10 +446,13 @@ export default function StudentManagementPage() {
                     placeholder="Enter RFID card number"
                   />
                 </div>
-                <div className="col-span-2">
-                  <Label>Address</Label>
-                  <Input value={editStudent.address} onChange={(e) => setEditStudent({ ...editStudent, address: e.target.value })} />
-                </div>
+              </div>
+              <div>
+                <Label>Address</Label>
+                <AddressSelector
+                  value={editStudentAddress}
+                  onChange={setEditStudentAddress}
+                />
               </div>
               {editError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{editError}</div>}
               <div className="flex justify-end gap-2">

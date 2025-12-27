@@ -983,18 +983,6 @@ p {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.scale-100 {
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.scale-95 {
-  --tw-scale-x: .95;
-  --tw-scale-y: .95;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
@@ -2577,10 +2565,6 @@ p {
   opacity: 0;
 }
 
-.opacity-100 {
-  opacity: 1;
-}
-
 .opacity-50 {
   opacity: .5;
 }
@@ -2649,14 +2633,6 @@ p {
   --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity, 1));
 }
 
-.ring-opacity-50 {
-  --tw-ring-opacity: .5;
-}
-
-.ring-opacity-75 {
-  --tw-ring-opacity: .75;
-}
-
 .ring-offset-background {
   --tw-ring-offset-color: hsl(var(--background));
 }
@@ -2701,14 +2677,6 @@ p {
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 
-.delay-100 {
-  transition-delay: .1s;
-}
-
-.delay-200 {
-  transition-delay: .2s;
-}
-
 .duration-200 {
   transition-duration: .2s;
 }
@@ -2743,36 +2711,6 @@ p {
   }
 }
 
-.animate-in {
-  --tw-enter-opacity: initial;
-  --tw-enter-scale: initial;
-  --tw-enter-rotate: initial;
-  --tw-enter-translate-x: initial;
-  --tw-enter-translate-y: initial;
-  animation-name: enter;
-  animation-duration: .15s;
-}
-
-.fade-in {
-  --tw-enter-opacity: 0;
-}
-
-.zoom-in {
-  --tw-enter-scale: 0;
-}
-
-.slide-in-from-bottom-4 {
-  --tw-enter-translate-y: 1rem;
-}
-
-.slide-in-from-left-4 {
-  --tw-enter-translate-x: -1rem;
-}
-
-.slide-in-from-right-4 {
-  --tw-enter-translate-x: 1rem;
-}
-
 .duration-200 {
   animation-duration: .2s;
 }
@@ -2783,14 +2721,6 @@ p {
 
 .duration-500 {
   animation-duration: .5s;
-}
-
-.delay-100 {
-  animation-delay: .1s;
-}
-
-.delay-200 {
-  animation-delay: .2s;
 }
 
 .ease-in-out {

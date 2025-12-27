@@ -807,7 +807,7 @@ export async function POST(request: Request) {
       const { data: newRecord, error: insertError } = await supabaseClient
         .from('attendance_records')
         .insert([attendanceRecord])
-        .select('*, users(*)')
+        .select('*, user_id(*)')
         .single()
 
       if (insertError) {
@@ -901,7 +901,7 @@ export async function POST(request: Request) {
       
       const formattedRecord = {
         id: newRecord.id,
-        studentId: newRecord.users?.student_number || studentId,
+        studentId: newRecord.user_id?.student_number || studentId,
         studentName: personInfo
           ? `${personInfo.first_name || personInfo.firstName || ''} ${personInfo.last_name || personInfo.lastName || ''}`.trim() || personInfo.name || 'Unknown'
           : 'Unknown',
