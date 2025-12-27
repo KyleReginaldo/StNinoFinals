@@ -810,7 +810,7 @@ async function POST(request) {
         }
         const formattedRecord = {
             id: newRecord.id,
-            studentId: newRecord.user_id?.student_number || studentId,
+            studentId: personInfo?.student_number || personInfo?.employee_number || studentId,
             studentName: personInfo ? `${personInfo.first_name || personInfo.firstName || ''} ${personInfo.last_name || personInfo.lastName || ''}`.trim() || personInfo.name || 'Unknown' : 'Unknown',
             gradeLevel: isTeacher ? null : personInfo?.grade_level || personInfo?.gradeLevel || 'N/A',
             section: isTeacher ? null : personInfo?.section || 'N/A',
@@ -822,7 +822,8 @@ async function POST(request) {
             timeIn: newRecord.time_in || null,
             timeOut: newRecord.time_out || null,
             isTeacher: isTeacher,
-            subject: isTeacher ? personInfo?.subject || personInfo?.subjects || personInfo?.subject_taught || 'N/A' : null
+            subject: isTeacher ? personInfo?.subject || personInfo?.subjects || personInfo?.subject_taught || 'N/A' : null,
+            role: personInfo?.role || null
         };
         console.log('✅ Scan saved successfully!', {
             id: newRecord.id,

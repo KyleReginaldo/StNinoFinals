@@ -54,6 +54,7 @@ export default function LiveAttendancePage() {
           const newest = result.records[0]
           if (lastFetchedIdRef.current !== newest.id) {
             lastFetchedIdRef.current = newest.id
+            console.log(`live attendance results: ${JSON.stringify(newest)}`);
             showLatestRecord(newest)
           }
         }

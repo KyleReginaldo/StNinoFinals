@@ -901,7 +901,7 @@ export async function POST(request: Request) {
       
       const formattedRecord = {
         id: newRecord.id,
-        studentId: newRecord.user_id?.student_number || studentId,
+        studentId: personInfo?.student_number || personInfo?.employee_number || studentId,
         studentName: personInfo
           ? `${personInfo.first_name || personInfo.firstName || ''} ${personInfo.last_name || personInfo.lastName || ''}`.trim() || personInfo.name || 'Unknown'
           : 'Unknown',
@@ -916,6 +916,7 @@ export async function POST(request: Request) {
         timeOut: newRecord.time_out || null,
         isTeacher: isTeacher,
         subject: isTeacher ? (personInfo?.subject || personInfo?.subjects || personInfo?.subject_taught || 'N/A') : null,
+        role: personInfo?.role || null,
       }
 
       console.log('✅ Scan saved successfully!', {
