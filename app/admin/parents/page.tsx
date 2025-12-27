@@ -1,25 +1,26 @@
 "use client"
 
+import { AddressData, AddressSelector } from "@/components/ui/address-selector"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAlert } from "@/lib/use-alert"
@@ -67,13 +68,15 @@ export default function ParentManagementPage() {
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null)
   const { showAlert } = useAlert()
   const { showConfirm } = useConfirm()
+  const initialAddress: AddressData = { barangay: "", barangayName: "", streetDetails: "" }
+
   const [newParent, setNewParent] = useState({
     first_name: "",
     last_name: "",
     middle_name: "",
     email: "",
     phone_number: "",
-    address: "",
+    address: initialAddress,
   })
   const [editParent, setEditParent] = useState({
     id: "",
@@ -82,7 +85,7 @@ export default function ParentManagementPage() {
     middle_name: "",
     email: "",
     phone_number: "",
-    address: "",
+    address: initialAddress,
   })
   const [linkData, setLinkData] = useState({
     parent_id: "",
@@ -144,10 +147,12 @@ export default function ParentManagementPage() {
     try {
       const tempPassword = `Parent${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 100)}`
 
+      const addressString = `${newParent.address.streetDetails}${newParent.address.barangayName ? ', ' + newParent.address.barangayName : ''}, Trece Martires City, Cavite`
+
       const response = await fetch("/api/admin/parents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newParent, password: tempPassword }),
+        body: JSON.stringify({ ...newParent, address: addressString, password: tempPassword }),
       })
 
       const result = await response.json()
@@ -160,7 +165,7 @@ export default function ParentManagementPage() {
         middle_name: "",
         email: "",
         phone_number: "",
-        address: "",
+        address: initialAddress,
       })
       setShowAddDialog(false)
 
@@ -181,10 +186,12 @@ export default function ParentManagementPage() {
     setEditError("")
 
     try {
+      const addressString = `${editParent.address.streetDetails}${editParent.address.barangayName ? ', ' + editParent.address.barangayName : ''}, Trece Martires City, Cavite`
+
       const response = await fetch(`/api/admin/parents/${editParent.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editParent),
+        body: JSON.stringify({ ...editParent, address: addressString }),
       })
 
       const result = await response.json()
@@ -264,7 +271,7 @@ export default function ParentManagementPage() {
       middle_name: parent.middle_name || "",
       email: parent.email,
       phone_number: parent.phone_number || "",
-      address: parent.address || "",
+      address: { barangay: "", barangayName: "", streetDetails: parent.address || "" },
     })
     setShowEditDialog(true)
   }
@@ -347,7 +354,7 @@ export default function ParentManagementPage() {
                   </div>
                   <div className="col-span-2">
                     <Label>Address</Label>
-                    <Input value={newParent.address} onChange={(e) => setNewParent({ ...newParent, address: e.target.value })} placeholder="Enter complete address" />
+                    <AddressSelector value={newParent.address} onChange={(addr) => setNewParent({ ...newParent, address: addr })} />
                   </div>
                 </div>
                 {addError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{addError}</div>}
@@ -391,7 +398,7 @@ export default function ParentManagementPage() {
                 </div>
                 <div className="col-span-2">
                   <Label>Address</Label>
-                  <Input value={editParent.address} onChange={(e) => setEditParent({ ...editParent, address: e.target.value })} placeholder="Enter complete address" />
+                  <AddressSelector value={editParent.address} onChange={(addr) => setEditParent({ ...editParent, address: addr })} />
                 </div>
               </div>
               {editError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{editError}</div>}

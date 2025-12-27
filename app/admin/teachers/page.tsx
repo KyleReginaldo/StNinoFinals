@@ -1,8 +1,10 @@
 "use client"
 
+import { AddressData, AddressSelector } from "@/components/ui/address-selector"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import DatePicker from "@/components/ui/date-picker"
 import {
     Dialog,
     DialogContent,
@@ -58,6 +60,8 @@ export default function TeacherManagementPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
   const { showAlert } = useAlert()
   const { showConfirm } = useConfirm()
+  const initialAddress: AddressData = { barangay: "", barangayName: "", streetDetails: "" }
+
   const [newTeacher, setNewTeacher] = useState({
     first_name: "",
     last_name: "",
@@ -69,7 +73,7 @@ export default function TeacherManagementPage() {
     phone_number: "",
     date_of_birth: "",
     date_hired: "",
-    address: "",
+    address: initialAddress,
     rfid: "",
   })
   const [editTeacher, setEditTeacher] = useState({
@@ -84,7 +88,7 @@ export default function TeacherManagementPage() {
     phone_number: "",
     date_of_birth: "",
     date_hired: "",
-    address: "",
+    address: initialAddress,
     rfid: "",
   })
   const [addingTeacher, setAddingTeacher] = useState(false)
@@ -126,10 +130,12 @@ export default function TeacherManagementPage() {
     try {
       const tempPassword = `Teacher${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 100)}`
 
+      const addressString = `${newTeacher.address.streetDetails}${newTeacher.address.barangayName ? ', ' + newTeacher.address.barangayName : ''}, Trece Martires City, Cavite`
+
       const response = await fetch("/api/admin/teachers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newTeacher, password: tempPassword }),
+        body: JSON.stringify({ ...newTeacher, address: addressString, password: tempPassword }),
       })
 
       const result = await response.json()
@@ -147,7 +153,7 @@ export default function TeacherManagementPage() {
         phone_number: "",
         date_of_birth: "",
         date_hired: "",
-        address: "",
+        address: initialAddress,
         rfid: "",
       })
       setShowAddDialog(false)
@@ -169,10 +175,12 @@ export default function TeacherManagementPage() {
     setEditError("")
 
     try {
+      const addressString = `${editTeacher.address.streetDetails}${editTeacher.address.barangayName ? ', ' + editTeacher.address.barangayName : ''}, Trece Martires City, Cavite`
+
       const response = await fetch(`/api/admin/teachers/${editTeacher.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editTeacher),
+        body: JSON.stringify({ ...editTeacher, address: addressString }),
       })
 
       const result = await response.json()
@@ -226,7 +234,7 @@ export default function TeacherManagementPage() {
       phone_number: teacher.phone_number || "",
       date_of_birth: teacher.date_of_birth || "",
       date_hired: teacher.date_hired || "",
-      address: teacher.address || "",
+      address: { barangay: "", barangayName: "", streetDetails: teacher.address || "" },
       rfid: teacher.rfid || "",
     })
     setShowEditDialog(true)
@@ -328,11 +336,11 @@ export default function TeacherManagementPage() {
                   </div>
                   <div>
                     <Label>Date of Birth</Label>
-                    <Input type="date" value={newTeacher.date_of_birth} onChange={(e) => setNewTeacher({ ...newTeacher, date_of_birth: e.target.value })} />
+                    <DatePicker value={newTeacher.date_of_birth} onChange={(v) => setNewTeacher({ ...newTeacher, date_of_birth: v })} />
                   </div>
                   <div>
                     <Label>Date Hired</Label>
-                    <Input type="date" value={newTeacher.date_hired} onChange={(e) => setNewTeacher({ ...newTeacher, date_hired: e.target.value })} />
+                    <DatePicker value={newTeacher.date_hired} onChange={(v) => setNewTeacher({ ...newTeacher, date_hired: v })} />
                   </div>
                   <div>
                     <Label>RFID Card Number</Label>
@@ -344,7 +352,7 @@ export default function TeacherManagementPage() {
                   </div>
                   <div className="col-span-2">
                     <Label>Address</Label>
-                    <Input value={newTeacher.address} onChange={(e) => setNewTeacher({ ...newTeacher, address: e.target.value })} placeholder="Enter complete address" />
+                    <AddressSelector value={newTeacher.address} onChange={(addr) => setNewTeacher({ ...newTeacher, address: addr })} />
                   </div>
                 </div>
                 {addError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{addError}</div>}
@@ -416,11 +424,11 @@ export default function TeacherManagementPage() {
                 </div>
                 <div>
                   <Label>Date of Birth</Label>
-                  <Input type="date" value={editTeacher.date_of_birth} onChange={(e) => setEditTeacher({ ...editTeacher, date_of_birth: e.target.value })} />
+                  <DatePicker value={editTeacher.date_of_birth} onChange={(v) => setEditTeacher({ ...editTeacher, date_of_birth: v })} />
                 </div>
                 <div>
                   <Label>Date Hired</Label>
-                  <Input type="date" value={editTeacher.date_hired} onChange={(e) => setEditTeacher({ ...editTeacher, date_hired: e.target.value })} />
+                  <DatePicker value={editTeacher.date_hired} onChange={(v) => setEditTeacher({ ...editTeacher, date_hired: v })} />
                 </div>
                 <div>
                   <Label>RFID Card Number</Label>
@@ -432,7 +440,7 @@ export default function TeacherManagementPage() {
                 </div>
                 <div className="col-span-2">
                   <Label>Address</Label>
-                  <Input value={editTeacher.address} onChange={(e) => setEditTeacher({ ...editTeacher, address: e.target.value })} placeholder="Enter complete address" />
+                  <AddressSelector value={editTeacher.address} onChange={(addr) => setEditTeacher({ ...editTeacher, address: addr })} />
                 </div>
               </div>
               {editError && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{editError}</div>}

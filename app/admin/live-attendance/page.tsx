@@ -31,6 +31,7 @@ interface AttendanceRecord {
   status: string
   rfidCard: string
   studentPhoto?: string
+  role?: string
 }
 
 export default function LiveAttendancePage() {
@@ -278,7 +279,9 @@ export default function LiveAttendancePage() {
                                 </div>
                                 <div>
                                   <p className="font-semibold text-sm">{record.studentName}</p>
-                                  <p className="text-xs text-gray-500">ID: {record.studentId}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {record.role === 'teacher' ? 'Employee Number' : 'Student ID'}: {record.studentId}
+                                  </p>
                                 </div>
                               </div>
                               <div className="grid grid-cols-2 gap-2 pt-2 border-t">
@@ -358,7 +361,9 @@ export default function LiveAttendancePage() {
                         <h2 className="text-3xl font-bold text-gray-900 mb-2">
                           {latestRecord.studentName}
                         </h2>
-                        <p className="text-lg text-gray-600">Student ID: {latestRecord.studentId}</p>
+                        <p className="text-lg text-gray-600">
+                          {latestRecord.role === 'teacher' ? 'Employee Number' : 'Student ID'}: {latestRecord.studentId}
+                        </p>
                       </div>
 
                       {/* Student Details */}

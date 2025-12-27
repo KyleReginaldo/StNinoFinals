@@ -377,6 +377,14 @@ p {
   overflow: hidden;
 }
 
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.pointer-events-auto {
+  pointer-events: auto;
+}
+
 .invisible {
   visibility: hidden;
 }
@@ -3118,6 +3126,10 @@ p {
 
 .data-\[disabled\]\:pointer-events-none[data-disabled] {
   pointer-events: none;
+}
+
+.data-\[state\=open\]\:pointer-events-auto[data-state="open"] {
+  pointer-events: auto;
 }
 
 .data-\[side\=bottom\]\:translate-y-1[data-side="bottom"] {

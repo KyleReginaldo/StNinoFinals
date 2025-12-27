@@ -1,4 +1,26 @@
 {
-  "/admin/live-attendance/page": "app/admin/live-attendance/page.js",
-  "/api/admin/attendance-live/route": "app/api/admin/attendance-live/route.js"
+  "/admin/page": "app/admin/page.js",
+  "/admin/parents/page": "app/admin/parents/page.js",
+  "/admin/teachers/page": "app/admin/teachers/page.js",
+  "/api/admin/attendance/route": "app/api/admin/attendance/route.js",
+  "/api/admin/parents/link-student/route": "app/api/admin/parents/link-student/route.js",
+  "/api/admin/parents/route": "app/api/admin/parents/route.js",
+  "/api/admin/settings/route": "app/api/admin/settings/route.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/api/admin/students/route": "app/api/admin/students/route.js",
+  "/api/admin/teachers/route": "app/api/admin/teachers/route.js",
+  "/api/parent/announcements/route": "app/api/parent/announcements/route.js",
+  "/api/parent/children/route": "app/api/parent/children/route.js",
+  "/api/parent/student-attendance/route": "app/api/parent/student-attendance/route.js",
+  "/api/parent/student-grades/route": "app/api/parent/student-grades/route.js",
+  "/api/parent/student-stats/route": "app/api/parent/student-stats/route.js",
+  "/api/student/dashboard/route": "app/api/student/dashboard/route.js",
+  "/api/teacher/grades/route": "app/api/teacher/grades/route.js",
+  "/api/teacher/journal/route": "app/api/teacher/journal/route.js",
+  "/api/teacher/schedule/route": "app/api/teacher/schedule/route.js",
+  "/api/teacher/stats/route": "app/api/teacher/stats/route.js",
+  "/page": "app/page.js",
+  "/parent-dashboard/page": "app/parent-dashboard/page.js",
+  "/student/page": "app/student/page.js",
+  "/teacher/page": "app/teacher/page.js"
 }

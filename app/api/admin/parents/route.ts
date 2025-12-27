@@ -115,7 +115,7 @@ export async function POST(request: Request) {
 
     // Send welcome email with login credentials
     try {
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent`;
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}`;
       await EmailService.sendLoginCredentials({
         name: `${first_name} ${last_name}`,
         email: email,

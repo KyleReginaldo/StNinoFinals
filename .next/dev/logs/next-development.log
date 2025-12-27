@@ -1,2354 +1,269 @@
-[00:00:00.414] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
-[00:00:00.514] Server  LOG      ✓ Ready in 340ms
-[00:00:02.596] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:02.862] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:02.863] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:02.863] Server  LOG     Origin: "N/A"
-[00:00:02.863] Server  LOG     Host: "localhost:3000"
-[00:00:02.863] Server  LOG     Environment: "development"
-[00:00:02.863] Server  LOG     =========================
-[00:00:02.865] Server  LOG     Attempting to fetch attendance records...
-[00:00:02.865] Server  LOG     Limit: 50
-[00:00:02.865] Server  LOG     Since: null
-[00:00:02.865] Server  LOG     Method 1: Trying RPC function...
-[00:00:03.172] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:03.174] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:03.345] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:03.499] Server  LOG     ✅ Found 2 attendance records
-[00:00:03.501] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:03.501] Server  LOG     📋 Formatting record: {}
-[00:00:03.502] Server  LOG     📋 Formatting record: {}
-[00:00:03.502] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:03.502] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:03.502] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:06.472] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:07.663] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:07.663] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:07.664] Server  LOG     Origin: "N/A"
-[00:00:07.664] Server  LOG     Host: "localhost:3000"
-[00:00:07.664] Server  LOG     Environment: "development"
-[00:00:07.664] Server  LOG     =========================
-[00:00:07.665] Server  LOG     Attempting to fetch attendance records...
-[00:00:07.666] Server  LOG     Limit: 50
-[00:00:07.666] Server  LOG     Since: null
-[00:00:07.667] Server  LOG     Method 1: Trying RPC function...
-[00:00:07.925] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:07.926] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:08.098] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:08.240] Server  LOG     ✅ Found 2 attendance records
-[00:00:08.241] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:08.242] Server  LOG     📋 Formatting record: {}
-[00:00:08.242] Server  LOG     📋 Formatting record: {}
-[00:00:08.243] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:08.243] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:08.243] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:13.557] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:13.557] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:13.557] Server  LOG     Origin: "N/A"
-[00:00:13.557] Server  LOG     Host: "localhost:3000"
-[00:00:13.558] Server  LOG     Environment: "development"
-[00:00:13.558] Server  LOG     =========================
-[00:00:13.559] Server  LOG     Attempting to fetch attendance records...
-[00:00:13.559] Server  LOG     Limit: 50
-[00:00:13.559] Server  LOG     Since: null
-[00:00:13.559] Server  LOG     Method 1: Trying RPC function...
-[00:00:13.763] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:13.764] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:13.928] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:14.122] Server  LOG     ✅ Found 2 attendance records
-[00:00:14.122] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:14.123] Server  LOG     📋 Formatting record: {}
-[00:00:14.123] Server  LOG     📋 Formatting record: {}
-[00:00:14.123] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:14.123] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:14.123] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:17.954] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:17.954] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:17.955] Server  LOG     Origin: "N/A"
-[00:00:17.955] Server  LOG     Host: "localhost:3000"
-[00:00:17.955] Server  LOG     Environment: "development"
-[00:00:17.955] Server  LOG     =========================
-[00:00:17.956] Server  LOG     Attempting to fetch attendance records...
-[00:00:17.957] Server  LOG     Limit: 50
-[00:00:17.957] Server  LOG     Since: null
-[00:00:17.957] Server  LOG     Method 1: Trying RPC function...
-[00:00:18.029] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:18.029] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:18.202] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:18.387] Server  LOG     ✅ Found 2 attendance records
-[00:00:18.388] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:18.388] Server  LOG     📋 Formatting record: {}
-[00:00:18.388] Server  LOG     📋 Formatting record: {}
-[00:00:18.391] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:18.391] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:18.392] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:19.493] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:19.520] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:19.520] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:19.520] Server  LOG     Origin: "N/A"
-[00:00:19.520] Server  LOG     Host: "localhost:3000"
-[00:00:19.520] Server  LOG     Environment: "development"
-[00:00:19.520] Server  LOG     =========================
-[00:00:19.521] Server  LOG     Attempting to fetch attendance records...
-[00:00:19.521] Server  LOG     Limit: 50
-[00:00:19.521] Server  LOG     Since: null
-[00:00:19.521] Server  LOG     Method 1: Trying RPC function...
-[00:00:19.584] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:19.584] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:19.616] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:19.658] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:19.794] Server  LOG     ✅ Found 2 attendance records
-[00:00:19.795] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:19.796] Server  LOG     📋 Formatting record: {}
-[00:00:19.797] Server  LOG     📋 Formatting record: {}
-[00:00:19.797] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:19.797] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:19.797] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:24.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:24.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:24.553] Server  LOG     Origin: "N/A"
-[00:00:24.554] Server  LOG     Host: "localhost:3000"
-[00:00:24.554] Server  LOG     Environment: "development"
-[00:00:24.554] Server  LOG     =========================
-[00:00:24.555] Server  LOG     Attempting to fetch attendance records...
-[00:00:24.555] Server  LOG     Limit: 50
-[00:00:24.555] Server  LOG     Since: null
-[00:00:24.556] Server  LOG     Method 1: Trying RPC function...
-[00:00:24.781] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:24.781] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:24.941] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:00:25.134] Server  LOG     ✅ Found 2 attendance records
-[00:00:25.135] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:00:25.135] Server  LOG     📋 Formatting record: {}
-[00:00:25.136] Server  LOG     📋 Formatting record: {}
-[00:00:25.136] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:00:25.136] Server  LOG     📅 First record scan time: "2025-12-27T15:23:44.945+00:00"
-[00:00:25.137] Server  LOG     📅 Last record scan time: "2025-12-27T15:23:16.33+00:00"
-[00:00:29.534] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:29.535] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:29.535] Server  LOG     Origin: "N/A"
-[00:00:29.535] Server  LOG     Host: "localhost:3000"
-[00:00:29.535] Server  LOG     Environment: "development"
-[00:00:29.535] Server  LOG     =========================
-[00:00:29.536] Server  LOG     Attempting to fetch attendance records...
-[00:00:29.536] Server  LOG     Limit: 50
-[00:00:29.536] Server  LOG     Since: null
-[00:00:29.536] Server  LOG     Method 1: Trying RPC function...
-[00:00:29.706] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:29.707] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:29.930] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:00:29.931] Server  LOG     📭 No attendance records found in database
-[00:00:29.931] Server  LOG     💡 This could mean:
-[00:00:29.931] Server  LOG        1. No scans have been recorded yet
-[00:00:29.932] Server  LOG        2. Database table is empty
-[00:00:29.932] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:00:31.441] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:31.441] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:31.442] Server  LOG     Origin: "N/A"
-[00:00:31.442] Server  LOG     Host: "localhost:3000"
-[00:00:31.442] Server  LOG     Environment: "development"
-[00:00:31.442] Server  LOG     =========================
-[00:00:31.443] Server  LOG     Attempting to fetch attendance records...
-[00:00:31.443] Server  LOG     Limit: 50
-[00:00:31.444] Server  LOG     Since: null
-[00:00:31.444] Server  LOG     Method 1: Trying RPC function...
-[00:00:31.513] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:31.514] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:31.580] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:31.726] Server  LOG     ✅ Found 1 attendance records
-[00:00:31.727] Server  LOG     📅 Sample record times: [{...}]
-[00:00:31.727] Server  LOG     📋 Formatting record: {}
-[00:00:31.728] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:31.728] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:31.728] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:34.529] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:34.530] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:34.530] Server  LOG     Origin: "N/A"
-[00:00:34.530] Server  LOG     Host: "localhost:3000"
-[00:00:34.530] Server  LOG     Environment: "development"
-[00:00:34.530] Server  LOG     =========================
-[00:00:34.533] Server  LOG     Attempting to fetch attendance records...
-[00:00:34.533] Server  LOG     Limit: 50
-[00:00:34.533] Server  LOG     Since: null
-[00:00:34.533] Server  LOG     Method 1: Trying RPC function...
-[00:00:34.628] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:34.629] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:34.884] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:35.098] Server  LOG     ✅ Found 1 attendance records
-[00:00:35.099] Server  LOG     📅 Sample record times: [{...}]
-[00:00:35.100] Server  LOG     📋 Formatting record: {}
-[00:00:35.100] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:35.100] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:35.101] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:39.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:39.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:39.553] Server  LOG     Origin: "N/A"
-[00:00:39.553] Server  LOG     Host: "localhost:3000"
-[00:00:39.554] Server  LOG     Environment: "development"
-[00:00:39.554] Server  LOG     =========================
-[00:00:39.555] Server  LOG     Attempting to fetch attendance records...
-[00:00:39.555] Server  LOG     Limit: 50
-[00:00:39.556] Server  LOG     Since: null
-[00:00:39.556] Server  LOG     Method 1: Trying RPC function...
-[00:00:39.718] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:39.718] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:39.929] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:40.081] Server  LOG     ✅ Found 1 attendance records
-[00:00:40.082] Server  LOG     📅 Sample record times: [{...}]
-[00:00:40.082] Server  LOG     📋 Formatting record: {}
-[00:00:40.083] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:40.083] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:40.083] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:44.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:44.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:44.544] Server  LOG     Origin: "N/A"
-[00:00:44.544] Server  LOG     Host: "localhost:3000"
-[00:00:44.544] Server  LOG     Environment: "development"
-[00:00:44.544] Server  LOG     =========================
-[00:00:44.545] Server  LOG     Attempting to fetch attendance records...
-[00:00:44.545] Server  LOG     Limit: 50
-[00:00:44.545] Server  LOG     Since: null
-[00:00:44.545] Server  LOG     Method 1: Trying RPC function...
-[00:00:44.685] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:44.686] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:44.849] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:45.062] Server  LOG     ✅ Found 1 attendance records
-[00:00:45.063] Server  LOG     📅 Sample record times: [{...}]
-[00:00:45.064] Server  LOG     📋 Formatting record: {}
-[00:00:45.064] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:45.065] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:45.065] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:49.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:49.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:49.551] Server  LOG     Origin: "N/A"
-[00:00:49.551] Server  LOG     Host: "localhost:3000"
-[00:00:49.552] Server  LOG     Environment: "development"
-[00:00:49.552] Server  LOG     =========================
-[00:00:49.553] Server  LOG     Attempting to fetch attendance records...
-[00:00:49.553] Server  LOG     Limit: 50
-[00:00:49.553] Server  LOG     Since: null
-[00:00:49.553] Server  LOG     Method 1: Trying RPC function...
-[00:00:49.784] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:49.785] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:49.946] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:50.090] Server  LOG     ✅ Found 1 attendance records
-[00:00:50.090] Server  LOG     📅 Sample record times: [{...}]
-[00:00:50.091] Server  LOG     📋 Formatting record: {}
-[00:00:50.091] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:50.091] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:50.091] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:54.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:54.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:54.552] Server  LOG     Origin: "N/A"
-[00:00:54.552] Server  LOG     Host: "localhost:3000"
-[00:00:54.552] Server  LOG     Environment: "development"
-[00:00:54.552] Server  LOG     =========================
-[00:00:54.553] Server  LOG     Attempting to fetch attendance records...
-[00:00:54.553] Server  LOG     Limit: 50
-[00:00:54.553] Server  LOG     Since: null
-[00:00:54.553] Server  LOG     Method 1: Trying RPC function...
-[00:00:54.698] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:54.699] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:54.847] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:00:54.989] Server  LOG     ✅ Found 1 attendance records
-[00:00:54.990] Server  LOG     📅 Sample record times: [{...}]
-[00:00:54.991] Server  LOG     📋 Formatting record: {}
-[00:00:54.991] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:00:54.991] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:54.992] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:00:59.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:00:59.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:00:59.551] Server  LOG     Origin: "N/A"
-[00:00:59.553] Server  LOG     Host: "localhost:3000"
-[00:00:59.553] Server  LOG     Environment: "development"
-[00:00:59.553] Server  LOG     =========================
-[00:00:59.554] Server  LOG     Attempting to fetch attendance records...
-[00:00:59.554] Server  LOG     Limit: 50
-[00:00:59.554] Server  LOG     Since: null
-[00:00:59.554] Server  LOG     Method 1: Trying RPC function...
-[00:00:59.713] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:00:59.714] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:00:59.879] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:00.079] Server  LOG     ✅ Found 1 attendance records
-[00:01:00.080] Server  LOG     📅 Sample record times: [{...}]
-[00:01:00.080] Server  LOG     📋 Formatting record: {}
-[00:01:00.080] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:00.080] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:00.080] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:04.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:04.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:04.550] Server  LOG     Origin: "N/A"
-[00:01:04.551] Server  LOG     Host: "localhost:3000"
-[00:01:04.551] Server  LOG     Environment: "development"
-[00:01:04.551] Server  LOG     =========================
-[00:01:04.552] Server  LOG     Attempting to fetch attendance records...
-[00:01:04.552] Server  LOG     Limit: 50
-[00:01:04.552] Server  LOG     Since: null
-[00:01:04.552] Server  LOG     Method 1: Trying RPC function...
-[00:01:04.720] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:04.721] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:04.880] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:05.030] Server  LOG     ✅ Found 1 attendance records
-[00:01:05.030] Server  LOG     📅 Sample record times: [{...}]
-[00:01:05.030] Server  LOG     📋 Formatting record: {}
-[00:01:05.030] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:05.031] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:05.031] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:09.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:09.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:09.551] Server  LOG     Origin: "N/A"
-[00:01:09.553] Server  LOG     Host: "localhost:3000"
-[00:01:09.553] Server  LOG     Environment: "development"
-[00:01:09.553] Server  LOG     =========================
-[00:01:09.554] Server  LOG     Attempting to fetch attendance records...
-[00:01:09.555] Server  LOG     Limit: 50
-[00:01:09.555] Server  LOG     Since: null
-[00:01:09.555] Server  LOG     Method 1: Trying RPC function...
-[00:01:09.712] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:09.713] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:09.887] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:10.037] Server  LOG     ✅ Found 1 attendance records
-[00:01:10.037] Server  LOG     📅 Sample record times: [{...}]
-[00:01:10.038] Server  LOG     📋 Formatting record: {}
-[00:01:10.038] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:10.038] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:10.038] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:14.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:14.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:14.552] Server  LOG     Origin: "N/A"
-[00:01:14.552] Server  LOG     Host: "localhost:3000"
-[00:01:14.552] Server  LOG     Environment: "development"
-[00:01:14.553] Server  LOG     =========================
-[00:01:14.554] Server  LOG     Attempting to fetch attendance records...
-[00:01:14.554] Server  LOG     Limit: 50
-[00:01:14.555] Server  LOG     Since: null
-[00:01:14.555] Server  LOG     Method 1: Trying RPC function...
-[00:01:14.752] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:14.753] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:14.920] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:15.074] Server  LOG     ✅ Found 1 attendance records
-[00:01:15.075] Server  LOG     📅 Sample record times: [{...}]
-[00:01:15.075] Server  LOG     📋 Formatting record: {}
-[00:01:15.075] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:15.076] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:15.076] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:19.547] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:19.547] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:19.547] Server  LOG     Origin: "N/A"
-[00:01:19.547] Server  LOG     Host: "localhost:3000"
-[00:01:19.548] Server  LOG     Environment: "development"
-[00:01:19.548] Server  LOG     =========================
-[00:01:19.548] Server  LOG     Attempting to fetch attendance records...
-[00:01:19.549] Server  LOG     Limit: 50
-[00:01:19.549] Server  LOG     Since: null
-[00:01:19.549] Server  LOG     Method 1: Trying RPC function...
-[00:01:19.699] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:19.699] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:19.855] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:20.029] Server  LOG     ✅ Found 1 attendance records
-[00:01:20.030] Server  LOG     📅 Sample record times: [{...}]
-[00:01:20.030] Server  LOG     📋 Formatting record: {}
-[00:01:20.030] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:20.031] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:20.031] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:24.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:24.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:24.546] Server  LOG     Origin: "N/A"
-[00:01:24.547] Server  LOG     Host: "localhost:3000"
-[00:01:24.547] Server  LOG     Environment: "development"
-[00:01:24.547] Server  LOG     =========================
-[00:01:24.547] Server  LOG     Attempting to fetch attendance records...
-[00:01:24.547] Server  LOG     Limit: 50
-[00:01:24.547] Server  LOG     Since: null
-[00:01:24.547] Server  LOG     Method 1: Trying RPC function...
-[00:01:24.705] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:24.705] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:24.851] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:24.981] Server  LOG     ✅ Found 1 attendance records
-[00:01:24.981] Server  LOG     📅 Sample record times: [{...}]
-[00:01:24.981] Server  LOG     📋 Formatting record: {}
-[00:01:24.982] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:24.982] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:24.982] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:29.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:29.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:29.551] Server  LOG     Origin: "N/A"
-[00:01:29.553] Server  LOG     Host: "localhost:3000"
-[00:01:29.553] Server  LOG     Environment: "development"
-[00:01:29.553] Server  LOG     =========================
-[00:01:29.554] Server  LOG     Attempting to fetch attendance records...
-[00:01:29.555] Server  LOG     Limit: 50
-[00:01:29.555] Server  LOG     Since: null
-[00:01:29.555] Server  LOG     Method 1: Trying RPC function...
-[00:01:29.745] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:29.746] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:29.895] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:30.037] Server  LOG     ✅ Found 1 attendance records
-[00:01:30.038] Server  LOG     📅 Sample record times: [{...}]
-[00:01:30.038] Server  LOG     📋 Formatting record: {}
-[00:01:30.038] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:30.039] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:30.039] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:34.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:01:34.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:01:34.546] Server  LOG     Origin: "N/A"
-[00:01:34.546] Server  LOG     Host: "localhost:3000"
-[00:01:34.546] Server  LOG     Environment: "development"
-[00:01:34.546] Server  LOG     =========================
-[00:01:34.547] Server  LOG     Attempting to fetch attendance records...
-[00:01:34.547] Server  LOG     Limit: 50
-[00:01:34.547] Server  LOG     Since: null
-[00:01:34.547] Server  LOG     Method 1: Trying RPC function...
-[00:01:34.711] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:01:34.712] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:01:34.872] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:01:35.027] Server  LOG     ✅ Found 1 attendance records
-[00:01:35.027] Server  LOG     📅 Sample record times: [{...}]
-[00:01:35.027] Server  LOG     📋 Formatting record: {}
-[00:01:35.028] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:01:35.028] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:35.028] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:01:59.965] Server  LOG      ✓ Compiled in 64ms
-[00:02:01.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:01.545] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:01.545] Server  LOG     Origin: "N/A"
-[00:02:01.545] Server  LOG     Host: "localhost:3000"
-[00:02:01.545] Server  LOG     Environment: "development"
-[00:02:01.545] Server  LOG     =========================
-[00:02:01.545] Server  LOG     Attempting to fetch attendance records...
-[00:02:01.545] Server  LOG     Limit: 50
-[00:02:01.545] Server  LOG     Since: null
-[00:02:01.545] Server  LOG     Method 1: Trying RPC function...
-[00:02:01.707] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:01.707] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:01.862] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:01.993] Server  LOG     ✅ Found 1 attendance records
-[00:02:01.993] Server  LOG     📅 Sample record times: [{...}]
-[00:02:01.993] Server  LOG     📋 Formatting record: {}
-[00:02:01.994] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:01.994] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:01.994] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:05.463] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:05.463] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:05.463] Server  LOG     Origin: "N/A"
-[00:02:05.463] Server  LOG     Host: "localhost:3000"
-[00:02:05.464] Server  LOG     Environment: "development"
-[00:02:05.464] Server  LOG     =========================
-[00:02:05.465] Server  LOG     Attempting to fetch attendance records...
-[00:02:05.465] Server  LOG     Limit: 50
-[00:02:05.465] Server  LOG     Since: null
-[00:02:05.465] Server  LOG     Method 1: Trying RPC function...
-[00:02:05.534] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:05.535] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:05.600] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:05.741] Server  LOG     ✅ Found 1 attendance records
-[00:02:05.742] Server  LOG     📅 Sample record times: [{...}]
-[00:02:05.742] Server  LOG     📋 Formatting record: {}
-[00:02:05.743] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:05.743] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:05.743] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:06.333] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:02:06.357] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:06.357] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:06.357] Server  LOG     Origin: "N/A"
-[00:02:06.358] Server  LOG     Host: "localhost:3000"
-[00:02:06.358] Server  LOG     Environment: "development"
-[00:02:06.358] Server  LOG     =========================
-[00:02:06.358] Server  LOG     Attempting to fetch attendance records...
-[00:02:06.358] Server  LOG     Limit: 50
-[00:02:06.358] Server  LOG     Since: null
-[00:02:06.358] Server  LOG     Method 1: Trying RPC function...
-[00:02:06.435] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:06.435] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:06.456] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:02:06.497] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:06.635] Server  LOG     ✅ Found 1 attendance records
-[00:02:06.636] Server  LOG     📅 Sample record times: [{...}]
-[00:02:06.636] Server  LOG     📋 Formatting record: {}
-[00:02:06.637] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:06.637] Server  LOG     📅 First record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:06.637] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:06.743] Browser LOG     live attendance results: [object Object]
-[00:02:10.670] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:10.670] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:10.670] Server  LOG     Origin: "N/A"
-[00:02:10.670] Server  LOG     Host: "localhost:3000"
-[00:02:10.670] Server  LOG     Environment: "development"
-[00:02:10.670] Server  LOG     =========================
-[00:02:10.671] Server  LOG     Attempting to fetch attendance records...
-[00:02:10.672] Server  LOG     Limit: 50
-[00:02:10.672] Server  LOG     Since: null
-[00:02:10.673] Server  LOG     Method 1: Trying RPC function...
-[00:02:10.829] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:10.829] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:11.041] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:11.175] Server  LOG     ✅ Found 2 attendance records
-[00:02:11.176] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:11.177] Server  LOG     📋 Formatting record: {}
-[00:02:11.177] Server  LOG     📋 Formatting record: {}
-[00:02:11.178] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:11.178] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:11.178] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:11.281] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:11.360] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:11.361] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:11.361] Server  LOG     Origin: "N/A"
-[00:02:11.361] Server  LOG     Host: "localhost:3000"
-[00:02:11.362] Server  LOG     Environment: "development"
-[00:02:11.362] Server  LOG     =========================
-[00:02:11.362] Server  LOG     Attempting to fetch attendance records...
-[00:02:11.363] Server  LOG     Limit: 50
-[00:02:11.363] Server  LOG     Since: null
-[00:02:11.363] Server  LOG     Method 1: Trying RPC function...
-[00:02:11.425] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:11.426] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:11.516] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:11.657] Server  LOG     ✅ Found 2 attendance records
-[00:02:11.658] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:11.658] Server  LOG     📋 Formatting record: {}
-[00:02:11.659] Server  LOG     📋 Formatting record: {}
-[00:02:11.659] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:11.659] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:11.659] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:11.764] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:16.366] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:16.367] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:16.367] Server  LOG     Origin: "N/A"
-[00:02:16.367] Server  LOG     Host: "localhost:3000"
-[00:02:16.368] Server  LOG     Environment: "development"
-[00:02:16.368] Server  LOG     =========================
-[00:02:16.369] Server  LOG     Attempting to fetch attendance records...
-[00:02:16.369] Server  LOG     Limit: 50
-[00:02:16.370] Server  LOG     Since: null
-[00:02:16.370] Server  LOG     Method 1: Trying RPC function...
-[00:02:16.551] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:16.552] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:16.713] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:16.863] Server  LOG     ✅ Found 2 attendance records
-[00:02:16.864] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:16.864] Server  LOG     📋 Formatting record: {}
-[00:02:16.865] Server  LOG     📋 Formatting record: {}
-[00:02:16.865] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:16.865] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:16.866] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:16.971] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:21.545] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:21.545] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:21.545] Server  LOG     Origin: "N/A"
-[00:02:21.545] Server  LOG     Host: "localhost:3000"
-[00:02:21.545] Server  LOG     Environment: "development"
-[00:02:21.545] Server  LOG     =========================
-[00:02:21.546] Server  LOG     Attempting to fetch attendance records...
-[00:02:21.546] Server  LOG     Limit: 50
-[00:02:21.546] Server  LOG     Since: null
-[00:02:21.546] Server  LOG     Method 1: Trying RPC function...
-[00:02:21.730] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:21.730] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:21.892] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:22.022] Server  LOG     ✅ Found 2 attendance records
-[00:02:22.022] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:22.023] Server  LOG     📋 Formatting record: {}
-[00:02:22.023] Server  LOG     📋 Formatting record: {}
-[00:02:22.023] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:22.023] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:22.023] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:22.539] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:23.340] Server  LOG      ✓ Compiled in 48ms
-[00:02:26.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:26.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:26.544] Server  LOG     Origin: "N/A"
-[00:02:26.544] Server  LOG     Host: "localhost:3000"
-[00:02:26.544] Server  LOG     Environment: "development"
-[00:02:26.545] Server  LOG     =========================
-[00:02:26.545] Server  LOG     Attempting to fetch attendance records...
-[00:02:26.545] Server  LOG     Limit: 50
-[00:02:26.545] Server  LOG     Since: null
-[00:02:26.545] Server  LOG     Method 1: Trying RPC function...
-[00:02:26.699] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:26.699] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:26.853] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:27.016] Server  LOG     ✅ Found 2 attendance records
-[00:02:27.017] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:27.017] Server  LOG     📋 Formatting record: {}
-[00:02:27.018] Server  LOG     📋 Formatting record: {}
-[00:02:27.018] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:27.018] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:27.018] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:27.540] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:29.188] Server  LOG      ✓ Compiled in 48ms
-[00:02:31.559] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:31.559] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:31.559] Server  LOG     Origin: "N/A"
-[00:02:31.559] Server  LOG     Host: "localhost:3000"
-[00:02:31.559] Server  LOG     Environment: "development"
-[00:02:31.559] Server  LOG     =========================
-[00:02:31.560] Server  LOG     Attempting to fetch attendance records...
-[00:02:31.560] Server  LOG     Limit: 50
-[00:02:31.560] Server  LOG     Since: null
-[00:02:31.560] Server  LOG     Method 1: Trying RPC function...
-[00:02:31.713] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:31.714] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:31.860] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:31.994] Server  LOG     ✅ Found 2 attendance records
-[00:02:31.994] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:31.994] Server  LOG     📋 Formatting record: {}
-[00:02:31.995] Server  LOG     📋 Formatting record: {}
-[00:02:31.995] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:31.995] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:31.995] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:32.539] Browser LOG     live attendance results: [object Object],[object Object]
-[00:02:33.257] Server  LOG      ✓ Compiled in 49ms
-[00:02:36.424] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:36.424] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:36.424] Server  LOG     Origin: "N/A"
-[00:02:36.425] Server  LOG     Host: "localhost:3000"
-[00:02:36.425] Server  LOG     Environment: "development"
-[00:02:36.425] Server  LOG     =========================
-[00:02:36.426] Server  LOG     Attempting to fetch attendance records...
-[00:02:36.426] Server  LOG     Limit: 50
-[00:02:36.426] Server  LOG     Since: null
-[00:02:36.426] Server  LOG     Method 1: Trying RPC function...
-[00:02:36.612] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:36.613] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:36.627] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:02:36.763] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:36.763] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:36.764] Server  LOG     Origin: "N/A"
-[00:02:36.764] Server  LOG     Host: "localhost:3000"
-[00:02:36.764] Server  LOG     Environment: "development"
-[00:02:36.764] Server  LOG     =========================
-[00:02:36.765] Server  LOG     Attempting to fetch attendance records...
-[00:02:36.765] Server  LOG     Limit: 50
-[00:02:36.765] Server  LOG     Since: null
-[00:02:36.766] Server  LOG     Method 1: Trying RPC function...
-[00:02:36.795] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:36.847] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:36.847] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:36.964] Server  LOG     ✅ Found 2 attendance records
-[00:02:36.965] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:36.965] Server  LOG     📋 Formatting record: {}
-[00:02:36.966] Server  LOG     📋 Formatting record: {}
-[00:02:36.966] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:36.966] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:36.967] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:37.022] Server  LOG     ✓ Direct query (minimal) successful, records: 2
-[00:02:37.176] Server  LOG     ✅ Found 2 attendance records
-[00:02:37.177] Server  LOG     📅 Sample record times: [{...},{...}]
-[00:02:37.177] Server  LOG     📋 Formatting record: {}
-[00:02:37.177] Server  LOG     📋 Formatting record: {}
-[00:02:37.178] Server  LOG     📤 Returning 2 formatted records to frontend
-[00:02:37.178] Server  LOG     📅 First record scan time: "2025-12-27T15:29:03.929+00:00"
-[00:02:37.178] Server  LOG     📅 Last record scan time: "2025-12-27T15:27:24.552+00:00"
-[00:02:37.541] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:02:37.541] Browser LOG     live attendance results: {"id":"7c545c35-7784-4b3f-bc7b-9b5b5fa0f8c4","studentId":"88d0bfc2-4085-4912-a36f-b229172a628c","studentName":"Kyle Dennis Senaris Reginaldo","gradeLevel":"Grade 9","section":"A","scanTime":"2025-12-27T15:29:03.929+00:00","status":"Present","rfidCard":"3206E2AB","studentPhoto":null,"scanType":"timeout","timeIn":"2025-12-27T15:27:24.552+00:00","timeOut":"2025-12-27T15:29:03.929+00:00","isTeacher":false,"subject":null,"role":"student"}
-[00:02:40.848] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:02:40.984] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:40.984] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:40.984] Server  LOG     Origin: "N/A"
-[00:02:40.985] Server  LOG     Host: "localhost:3000"
-[00:02:40.985] Server  LOG     Environment: "development"
-[00:02:40.986] Server  LOG     =========================
-[00:02:40.986] Server  LOG     Attempting to fetch attendance records...
-[00:02:40.987] Server  LOG     Limit: 50
-[00:02:40.987] Server  LOG     Since: null
-[00:02:40.987] Server  LOG     Method 1: Trying RPC function...
-[00:02:41.058] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:41.059] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:41.087] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:02:41.242] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:02:41.243] Server  LOG     📭 No attendance records found in database
-[00:02:41.243] Server  LOG     💡 This could mean:
-[00:02:41.244] Server  LOG        1. No scans have been recorded yet
-[00:02:41.244] Server  LOG        2. Database table is empty
-[00:02:41.245] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:02:45.977] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:45.978] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:45.978] Server  LOG     Origin: "N/A"
-[00:02:45.978] Server  LOG     Host: "localhost:3000"
-[00:02:45.979] Server  LOG     Environment: "development"
-[00:02:45.979] Server  LOG     =========================
-[00:02:45.980] Server  LOG     Attempting to fetch attendance records...
-[00:02:45.980] Server  LOG     Limit: 50
-[00:02:45.980] Server  LOG     Since: null
-[00:02:45.981] Server  LOG     Method 1: Trying RPC function...
-[00:02:46.128] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:46.128] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:46.332] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:02:46.333] Server  LOG     📭 No attendance records found in database
-[00:02:46.333] Server  LOG     💡 This could mean:
-[00:02:46.334] Server  LOG        1. No scans have been recorded yet
-[00:02:46.334] Server  LOG        2. Database table is empty
-[00:02:46.334] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:02:46.489] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:46.490] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:46.490] Server  LOG     Origin: "N/A"
-[00:02:46.490] Server  LOG     Host: "localhost:3000"
-[00:02:46.490] Server  LOG     Environment: "development"
-[00:02:46.490] Server  LOG     =========================
-[00:02:46.491] Server  LOG     Attempting to fetch attendance records...
-[00:02:46.492] Server  LOG     Limit: 50
-[00:02:46.492] Server  LOG     Since: null
-[00:02:46.492] Server  LOG     Method 1: Trying RPC function...
-[00:02:46.562] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:46.563] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:46.629] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:46.778] Server  LOG     ✅ Found 1 attendance records
-[00:02:46.779] Server  LOG     📅 Sample record times: [{...}]
-[00:02:46.780] Server  LOG     📋 Formatting record: {}
-[00:02:46.780] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:46.780] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:02:46.781] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:02:46.886] Browser LOG     live attendance results: {"id":"c6cb562a-c0aa-40cb-9f59-35a1f3fc2924","studentId":"88d0bfc2-4085-4912-a36f-b229172a628c","studentName":"Kyle Dennis Senaris Reginaldo","gradeLevel":"Grade 9","section":"A","scanTime":"2025-12-27T15:29:39.758+00:00","status":"Present","rfidCard":"3206E2AB","studentPhoto":null,"scanType":"timein","timeIn":"2025-12-27T15:29:39.758+00:00","timeOut":null,"isTeacher":false,"subject":null,"role":"student"}
-[00:02:50.986] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:50.986] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:50.987] Server  LOG     Origin: "N/A"
-[00:02:50.987] Server  LOG     Host: "localhost:3000"
-[00:02:50.987] Server  LOG     Environment: "development"
-[00:02:50.987] Server  LOG     =========================
-[00:02:50.988] Server  LOG     Attempting to fetch attendance records...
-[00:02:50.988] Server  LOG     Limit: 50
-[00:02:50.988] Server  LOG     Since: null
-[00:02:50.988] Server  LOG     Method 1: Trying RPC function...
-[00:02:51.132] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:51.133] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:51.282] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:51.437] Server  LOG     ✅ Found 1 attendance records
-[00:02:51.437] Server  LOG     📅 Sample record times: [{...}]
-[00:02:51.438] Server  LOG     📋 Formatting record: {}
-[00:02:51.438] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:51.438] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:02:51.438] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:02:55.985] Server  LOG     === GET REQUEST DEBUG ===
-[00:02:55.986] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:02:55.986] Server  LOG     Origin: "N/A"
-[00:02:55.986] Server  LOG     Host: "localhost:3000"
-[00:02:55.987] Server  LOG     Environment: "development"
-[00:02:55.987] Server  LOG     =========================
-[00:02:55.987] Server  LOG     Attempting to fetch attendance records...
-[00:02:55.988] Server  LOG     Limit: 50
-[00:02:55.988] Server  LOG     Since: null
-[00:02:55.988] Server  LOG     Method 1: Trying RPC function...
-[00:02:56.748] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:02:56.750] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:02:57.275] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:02:57.424] Server  LOG     ✅ Found 1 attendance records
-[00:02:57.425] Server  LOG     📅 Sample record times: [{...}]
-[00:02:57.425] Server  LOG     📋 Formatting record: {}
-[00:02:57.426] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:02:57.426] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:02:57.426] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:00.982] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:00.982] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:00.983] Server  LOG     Origin: "N/A"
-[00:03:00.983] Server  LOG     Host: "localhost:3000"
-[00:03:00.983] Server  LOG     Environment: "development"
-[00:03:00.983] Server  LOG     =========================
-[00:03:00.984] Server  LOG     Attempting to fetch attendance records...
-[00:03:00.984] Server  LOG     Limit: 50
-[00:03:00.984] Server  LOG     Since: null
-[00:03:00.984] Server  LOG     Method 1: Trying RPC function...
-[00:03:01.049] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:01.049] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:01.128] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:01.345] Server  LOG     ✅ Found 1 attendance records
-[00:03:01.346] Server  LOG     📅 Sample record times: [{...}]
-[00:03:01.346] Server  LOG     📋 Formatting record: {}
-[00:03:01.347] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:01.347] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:01.347] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:06.545] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:06.545] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:06.545] Server  LOG     Origin: "N/A"
-[00:03:06.546] Server  LOG     Host: "localhost:3000"
-[00:03:06.546] Server  LOG     Environment: "development"
-[00:03:06.546] Server  LOG     =========================
-[00:03:06.546] Server  LOG     Attempting to fetch attendance records...
-[00:03:06.546] Server  LOG     Limit: 50
-[00:03:06.547] Server  LOG     Since: null
-[00:03:06.547] Server  LOG     Method 1: Trying RPC function...
-[00:03:07.039] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:07.039] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:07.230] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:07.376] Server  LOG     ✅ Found 1 attendance records
-[00:03:07.376] Server  LOG     📅 Sample record times: [{...}]
-[00:03:07.376] Server  LOG     📋 Formatting record: {}
-[00:03:07.376] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:07.376] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:07.376] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:10.983] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:10.984] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:10.984] Server  LOG     Origin: "N/A"
-[00:03:10.984] Server  LOG     Host: "localhost:3000"
-[00:03:10.984] Server  LOG     Environment: "development"
-[00:03:10.984] Server  LOG     =========================
-[00:03:10.985] Server  LOG     Attempting to fetch attendance records...
-[00:03:10.985] Server  LOG     Limit: 50
-[00:03:10.985] Server  LOG     Since: null
-[00:03:10.986] Server  LOG     Method 1: Trying RPC function...
-[00:03:11.059] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:11.059] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:11.135] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:11.321] Server  LOG     ✅ Found 1 attendance records
-[00:03:11.322] Server  LOG     📅 Sample record times: [{...}]
-[00:03:11.323] Server  LOG     📋 Formatting record: {}
-[00:03:11.324] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:11.324] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:11.324] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:15.982] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:15.983] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:15.983] Server  LOG     Origin: "N/A"
-[00:03:15.984] Server  LOG     Host: "localhost:3000"
-[00:03:15.984] Server  LOG     Environment: "development"
-[00:03:15.984] Server  LOG     =========================
-[00:03:15.985] Server  LOG     Attempting to fetch attendance records...
-[00:03:15.985] Server  LOG     Limit: 50
-[00:03:15.985] Server  LOG     Since: null
-[00:03:15.985] Server  LOG     Method 1: Trying RPC function...
-[00:03:16.209] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:16.209] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:16.360] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:16.541] Server  LOG     ✅ Found 1 attendance records
-[00:03:16.541] Server  LOG     📅 Sample record times: [{...}]
-[00:03:16.541] Server  LOG     📋 Formatting record: {}
-[00:03:16.541] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:16.541] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:16.542] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:21.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:21.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:21.544] Server  LOG     Origin: "N/A"
-[00:03:21.544] Server  LOG     Host: "localhost:3000"
-[00:03:21.544] Server  LOG     Environment: "development"
-[00:03:21.545] Server  LOG     =========================
-[00:03:21.545] Server  LOG     Attempting to fetch attendance records...
-[00:03:21.545] Server  LOG     Limit: 50
-[00:03:21.545] Server  LOG     Since: null
-[00:03:21.545] Server  LOG     Method 1: Trying RPC function...
-[00:03:21.722] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:21.723] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:21.915] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:22.113] Server  LOG     ✅ Found 1 attendance records
-[00:03:22.115] Server  LOG     📅 Sample record times: [{...}]
-[00:03:22.115] Server  LOG     📋 Formatting record: {}
-[00:03:22.115] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:22.116] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:22.116] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:26.549] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:26.549] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:26.549] Server  LOG     Origin: "N/A"
-[00:03:26.549] Server  LOG     Host: "localhost:3000"
-[00:03:26.550] Server  LOG     Environment: "development"
-[00:03:26.550] Server  LOG     =========================
-[00:03:26.550] Server  LOG     Attempting to fetch attendance records...
-[00:03:26.550] Server  LOG     Limit: 50
-[00:03:26.551] Server  LOG     Since: null
-[00:03:26.551] Server  LOG     Method 1: Trying RPC function...
-[00:03:26.779] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:26.779] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:26.963] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:27.150] Server  LOG     ✅ Found 1 attendance records
-[00:03:27.150] Server  LOG     📅 Sample record times: [{...}]
-[00:03:27.151] Server  LOG     📋 Formatting record: {}
-[00:03:27.151] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:27.151] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:27.151] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:31.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:31.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:31.544] Server  LOG     Origin: "N/A"
-[00:03:31.545] Server  LOG     Host: "localhost:3000"
-[00:03:31.545] Server  LOG     Environment: "development"
-[00:03:31.545] Server  LOG     =========================
-[00:03:31.545] Server  LOG     Attempting to fetch attendance records...
-[00:03:31.545] Server  LOG     Limit: 50
-[00:03:31.545] Server  LOG     Since: null
-[00:03:31.545] Server  LOG     Method 1: Trying RPC function...
-[00:03:31.753] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:31.753] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:31.977] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:32.206] Server  LOG     ✅ Found 1 attendance records
-[00:03:32.207] Server  LOG     📅 Sample record times: [{...}]
-[00:03:32.207] Server  LOG     📋 Formatting record: {}
-[00:03:32.208] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:32.208] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:32.209] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:36.545] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:36.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:36.546] Server  LOG     Origin: "N/A"
-[00:03:36.546] Server  LOG     Host: "localhost:3000"
-[00:03:36.546] Server  LOG     Environment: "development"
-[00:03:36.546] Server  LOG     =========================
-[00:03:36.547] Server  LOG     Attempting to fetch attendance records...
-[00:03:36.547] Server  LOG     Limit: 50
-[00:03:36.547] Server  LOG     Since: null
-[00:03:36.547] Server  LOG     Method 1: Trying RPC function...
-[00:03:36.791] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:36.791] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:37.121] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:37.265] Server  LOG     ✅ Found 1 attendance records
-[00:03:37.266] Server  LOG     📅 Sample record times: [{...}]
-[00:03:37.266] Server  LOG     📋 Formatting record: {}
-[00:03:37.266] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:37.267] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:37.267] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:41.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:41.547] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:41.547] Server  LOG     Origin: "N/A"
-[00:03:41.547] Server  LOG     Host: "localhost:3000"
-[00:03:41.547] Server  LOG     Environment: "development"
-[00:03:41.547] Server  LOG     =========================
-[00:03:41.548] Server  LOG     Attempting to fetch attendance records...
-[00:03:41.548] Server  LOG     Limit: 50
-[00:03:41.548] Server  LOG     Since: null
-[00:03:41.548] Server  LOG     Method 1: Trying RPC function...
-[00:03:41.830] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:41.830] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:41.983] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:42.161] Server  LOG     ✅ Found 1 attendance records
-[00:03:42.161] Server  LOG     📅 Sample record times: [{...}]
-[00:03:42.162] Server  LOG     📋 Formatting record: {}
-[00:03:42.162] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:42.162] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:42.162] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:46.545] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:46.545] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:46.545] Server  LOG     Origin: "N/A"
-[00:03:46.545] Server  LOG     Host: "localhost:3000"
-[00:03:46.546] Server  LOG     Environment: "development"
-[00:03:46.546] Server  LOG     =========================
-[00:03:46.546] Server  LOG     Attempting to fetch attendance records...
-[00:03:46.546] Server  LOG     Limit: 50
-[00:03:46.546] Server  LOG     Since: null
-[00:03:46.546] Server  LOG     Method 1: Trying RPC function...
-[00:03:46.701] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:46.701] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:46.888] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:47.074] Server  LOG     ✅ Found 1 attendance records
-[00:03:47.074] Server  LOG     📅 Sample record times: [{...}]
-[00:03:47.075] Server  LOG     📋 Formatting record: {}
-[00:03:47.075] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:47.075] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:47.075] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:51.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:51.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:51.544] Server  LOG     Origin: "N/A"
-[00:03:51.544] Server  LOG     Host: "localhost:3000"
-[00:03:51.544] Server  LOG     Environment: "development"
-[00:03:51.544] Server  LOG     =========================
-[00:03:51.544] Server  LOG     Attempting to fetch attendance records...
-[00:03:51.544] Server  LOG     Limit: 50
-[00:03:51.544] Server  LOG     Since: null
-[00:03:51.545] Server  LOG     Method 1: Trying RPC function...
-[00:03:51.793] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:51.794] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:51.976] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:52.191] Server  LOG     ✅ Found 1 attendance records
-[00:03:52.191] Server  LOG     📅 Sample record times: [{...}]
-[00:03:52.191] Server  LOG     📋 Formatting record: {}
-[00:03:52.191] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:52.192] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:52.192] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:56.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:03:56.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:03:56.546] Server  LOG     Origin: "N/A"
-[00:03:56.546] Server  LOG     Host: "localhost:3000"
-[00:03:56.546] Server  LOG     Environment: "development"
-[00:03:56.546] Server  LOG     =========================
-[00:03:56.547] Server  LOG     Attempting to fetch attendance records...
-[00:03:56.547] Server  LOG     Limit: 50
-[00:03:56.547] Server  LOG     Since: null
-[00:03:56.547] Server  LOG     Method 1: Trying RPC function...
-[00:03:56.710] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:03:56.711] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:03:56.876] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:03:57.011] Server  LOG     ✅ Found 1 attendance records
-[00:03:57.011] Server  LOG     📅 Sample record times: [{...}]
-[00:03:57.011] Server  LOG     📋 Formatting record: {}
-[00:03:57.011] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:03:57.011] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:03:57.012] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:01.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:01.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:01.546] Server  LOG     Origin: "N/A"
-[00:04:01.546] Server  LOG     Host: "localhost:3000"
-[00:04:01.546] Server  LOG     Environment: "development"
-[00:04:01.546] Server  LOG     =========================
-[00:04:01.547] Server  LOG     Attempting to fetch attendance records...
-[00:04:01.547] Server  LOG     Limit: 50
-[00:04:01.547] Server  LOG     Since: null
-[00:04:01.547] Server  LOG     Method 1: Trying RPC function...
-[00:04:01.723] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:01.723] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:01.878] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:02.019] Server  LOG     ✅ Found 1 attendance records
-[00:04:02.019] Server  LOG     📅 Sample record times: [{...}]
-[00:04:02.020] Server  LOG     📋 Formatting record: {}
-[00:04:02.020] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:02.021] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:02.021] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:06.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:06.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:06.550] Server  LOG     Origin: "N/A"
-[00:04:06.550] Server  LOG     Host: "localhost:3000"
-[00:04:06.550] Server  LOG     Environment: "development"
-[00:04:06.550] Server  LOG     =========================
-[00:04:06.551] Server  LOG     Attempting to fetch attendance records...
-[00:04:06.551] Server  LOG     Limit: 50
-[00:04:06.551] Server  LOG     Since: null
-[00:04:06.551] Server  LOG     Method 1: Trying RPC function...
-[00:04:06.713] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:06.713] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:06.895] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:07.097] Server  LOG     ✅ Found 1 attendance records
-[00:04:07.098] Server  LOG     📅 Sample record times: [{...}]
-[00:04:07.098] Server  LOG     📋 Formatting record: {}
-[00:04:07.098] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:07.099] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:07.099] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:11.543] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:11.543] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:11.543] Server  LOG     Origin: "N/A"
-[00:04:11.543] Server  LOG     Host: "localhost:3000"
-[00:04:11.543] Server  LOG     Environment: "development"
-[00:04:11.543] Server  LOG     =========================
-[00:04:11.543] Server  LOG     Attempting to fetch attendance records...
-[00:04:11.543] Server  LOG     Limit: 50
-[00:04:11.543] Server  LOG     Since: null
-[00:04:11.543] Server  LOG     Method 1: Trying RPC function...
-[00:04:11.705] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:11.705] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:11.856] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:12.006] Server  LOG     ✅ Found 1 attendance records
-[00:04:12.007] Server  LOG     📅 Sample record times: [{...}]
-[00:04:12.008] Server  LOG     📋 Formatting record: {}
-[00:04:12.008] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:12.008] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:12.009] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:16.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:16.547] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:16.547] Server  LOG     Origin: "N/A"
-[00:04:16.547] Server  LOG     Host: "localhost:3000"
-[00:04:16.547] Server  LOG     Environment: "development"
-[00:04:16.548] Server  LOG     =========================
-[00:04:16.550] Server  LOG     Attempting to fetch attendance records...
-[00:04:16.550] Server  LOG     Limit: 50
-[00:04:16.550] Server  LOG     Since: null
-[00:04:16.550] Server  LOG     Method 1: Trying RPC function...
-[00:04:17.060] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:17.060] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:17.979] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:18.498] Server  LOG     ✅ Found 1 attendance records
-[00:04:18.499] Server  LOG     📅 Sample record times: [{...}]
-[00:04:18.499] Server  LOG     📋 Formatting record: {}
-[00:04:18.500] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:18.500] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:18.500] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:21.637] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:21.638] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:21.638] Server  LOG     Origin: "N/A"
-[00:04:21.638] Server  LOG     Host: "localhost:3000"
-[00:04:21.638] Server  LOG     Environment: "development"
-[00:04:21.638] Server  LOG     =========================
-[00:04:21.640] Server  LOG     Attempting to fetch attendance records...
-[00:04:21.640] Server  LOG     Limit: 50
-[00:04:21.640] Server  LOG     Since: null
-[00:04:21.640] Server  LOG     Method 1: Trying RPC function...
-[00:04:21.729] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:21.730] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:21.805] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:22.037] Server  LOG     ✅ Found 1 attendance records
-[00:04:22.037] Server  LOG     📅 Sample record times: [{...}]
-[00:04:22.038] Server  LOG     📋 Formatting record: {}
-[00:04:22.038] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:22.038] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:22.038] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:26.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:26.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:26.547] Server  LOG     Origin: "N/A"
-[00:04:26.547] Server  LOG     Host: "localhost:3000"
-[00:04:26.547] Server  LOG     Environment: "development"
-[00:04:26.547] Server  LOG     =========================
-[00:04:26.548] Server  LOG     Attempting to fetch attendance records...
-[00:04:26.548] Server  LOG     Limit: 50
-[00:04:26.548] Server  LOG     Since: null
-[00:04:26.549] Server  LOG     Method 1: Trying RPC function...
-[00:04:26.761] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:26.762] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:26.997] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:27.210] Server  LOG     ✅ Found 1 attendance records
-[00:04:27.211] Server  LOG     📅 Sample record times: [{...}]
-[00:04:27.211] Server  LOG     📋 Formatting record: {}
-[00:04:27.212] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:27.212] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:27.212] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:31.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:31.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:31.550] Server  LOG     Origin: "N/A"
-[00:04:31.551] Server  LOG     Host: "localhost:3000"
-[00:04:31.551] Server  LOG     Environment: "development"
-[00:04:31.551] Server  LOG     =========================
-[00:04:31.552] Server  LOG     Attempting to fetch attendance records...
-[00:04:31.552] Server  LOG     Limit: 50
-[00:04:31.553] Server  LOG     Since: null
-[00:04:31.553] Server  LOG     Method 1: Trying RPC function...
-[00:04:31.711] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:31.711] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:31.867] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:32.013] Server  LOG     ✅ Found 1 attendance records
-[00:04:32.013] Server  LOG     📅 Sample record times: [{...}]
-[00:04:32.014] Server  LOG     📋 Formatting record: {}
-[00:04:32.015] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:32.015] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:32.015] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:36.554] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:36.555] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:36.555] Server  LOG     Origin: "N/A"
-[00:04:36.555] Server  LOG     Host: "localhost:3000"
-[00:04:36.556] Server  LOG     Environment: "development"
-[00:04:36.556] Server  LOG     =========================
-[00:04:36.557] Server  LOG     Attempting to fetch attendance records...
-[00:04:36.558] Server  LOG     Limit: 50
-[00:04:36.558] Server  LOG     Since: null
-[00:04:36.558] Server  LOG     Method 1: Trying RPC function...
-[00:04:36.706] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:36.706] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:36.868] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:37.025] Server  LOG     ✅ Found 1 attendance records
-[00:04:37.026] Server  LOG     📅 Sample record times: [{...}]
-[00:04:37.026] Server  LOG     📋 Formatting record: {}
-[00:04:37.026] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:37.027] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:37.027] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:41.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:41.554] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:41.554] Server  LOG     Origin: "N/A"
-[00:04:41.554] Server  LOG     Host: "localhost:3000"
-[00:04:41.554] Server  LOG     Environment: "development"
-[00:04:41.554] Server  LOG     =========================
-[00:04:41.555] Server  LOG     Attempting to fetch attendance records...
-[00:04:41.555] Server  LOG     Limit: 50
-[00:04:41.555] Server  LOG     Since: null
-[00:04:41.555] Server  LOG     Method 1: Trying RPC function...
-[00:04:41.945] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:41.946] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:42.137] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:42.360] Server  LOG     ✅ Found 1 attendance records
-[00:04:42.361] Server  LOG     📅 Sample record times: [{...}]
-[00:04:42.361] Server  LOG     📋 Formatting record: {}
-[00:04:42.362] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:42.362] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:42.362] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:46.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:46.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:46.552] Server  LOG     Origin: "N/A"
-[00:04:46.552] Server  LOG     Host: "localhost:3000"
-[00:04:46.553] Server  LOG     Environment: "development"
-[00:04:46.553] Server  LOG     =========================
-[00:04:46.553] Server  LOG     Attempting to fetch attendance records...
-[00:04:46.554] Server  LOG     Limit: 50
-[00:04:46.554] Server  LOG     Since: null
-[00:04:46.554] Server  LOG     Method 1: Trying RPC function...
-[00:04:46.717] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:46.717] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:46.899] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:47.068] Server  LOG     ✅ Found 1 attendance records
-[00:04:47.070] Server  LOG     📅 Sample record times: [{...}]
-[00:04:47.070] Server  LOG     📋 Formatting record: {}
-[00:04:47.071] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:47.071] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:47.071] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:51.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:51.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:51.546] Server  LOG     Origin: "N/A"
-[00:04:51.546] Server  LOG     Host: "localhost:3000"
-[00:04:51.547] Server  LOG     Environment: "development"
-[00:04:51.547] Server  LOG     =========================
-[00:04:51.547] Server  LOG     Attempting to fetch attendance records...
-[00:04:51.548] Server  LOG     Limit: 50
-[00:04:51.548] Server  LOG     Since: null
-[00:04:51.548] Server  LOG     Method 1: Trying RPC function...
-[00:04:52.483] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:52.483] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:53.535] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:54.055] Server  LOG     ✅ Found 1 attendance records
-[00:04:54.055] Server  LOG     📅 Sample record times: [{...}]
-[00:04:54.055] Server  LOG     📋 Formatting record: {}
-[00:04:54.056] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:54.056] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:54.056] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:56.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:04:56.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:04:56.554] Server  LOG     Origin: "N/A"
-[00:04:56.554] Server  LOG     Host: "localhost:3000"
-[00:04:56.554] Server  LOG     Environment: "development"
-[00:04:56.554] Server  LOG     =========================
-[00:04:56.555] Server  LOG     Attempting to fetch attendance records...
-[00:04:56.555] Server  LOG     Limit: 50
-[00:04:56.556] Server  LOG     Since: null
-[00:04:56.556] Server  LOG     Method 1: Trying RPC function...
-[00:04:56.677] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:04:56.678] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:04:56.765] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:04:56.914] Server  LOG     ✅ Found 1 attendance records
-[00:04:56.916] Server  LOG     📅 Sample record times: [{...}]
-[00:04:56.916] Server  LOG     📋 Formatting record: {}
-[00:04:56.917] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:04:56.917] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:04:56.917] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:01.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:01.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:01.552] Server  LOG     Origin: "N/A"
-[00:05:01.553] Server  LOG     Host: "localhost:3000"
-[00:05:01.553] Server  LOG     Environment: "development"
-[00:05:01.553] Server  LOG     =========================
-[00:05:01.555] Server  LOG     Attempting to fetch attendance records...
-[00:05:01.555] Server  LOG     Limit: 50
-[00:05:01.555] Server  LOG     Since: null
-[00:05:01.556] Server  LOG     Method 1: Trying RPC function...
-[00:05:01.802] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:01.802] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:02.029] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:02.260] Server  LOG     ✅ Found 1 attendance records
-[00:05:02.260] Server  LOG     📅 Sample record times: [{...}]
-[00:05:02.261] Server  LOG     📋 Formatting record: {}
-[00:05:02.261] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:02.262] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:02.262] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:06.548] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:06.548] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:06.548] Server  LOG     Origin: "N/A"
-[00:05:06.548] Server  LOG     Host: "localhost:3000"
-[00:05:06.549] Server  LOG     Environment: "development"
-[00:05:06.549] Server  LOG     =========================
-[00:05:06.550] Server  LOG     Attempting to fetch attendance records...
-[00:05:06.550] Server  LOG     Limit: 50
-[00:05:06.550] Server  LOG     Since: null
-[00:05:06.550] Server  LOG     Method 1: Trying RPC function...
-[00:05:06.778] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:06.779] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:06.973] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:07.162] Server  LOG     ✅ Found 1 attendance records
-[00:05:07.163] Server  LOG     📅 Sample record times: [{...}]
-[00:05:07.163] Server  LOG     📋 Formatting record: {}
-[00:05:07.164] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:07.164] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:07.164] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:11.555] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:11.555] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:11.556] Server  LOG     Origin: "N/A"
-[00:05:11.556] Server  LOG     Host: "localhost:3000"
-[00:05:11.556] Server  LOG     Environment: "development"
-[00:05:11.557] Server  LOG     =========================
-[00:05:11.557] Server  LOG     Attempting to fetch attendance records...
-[00:05:11.557] Server  LOG     Limit: 50
-[00:05:11.558] Server  LOG     Since: null
-[00:05:11.558] Server  LOG     Method 1: Trying RPC function...
-[00:05:11.874] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:11.875] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:12.038] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:12.282] Server  LOG     ✅ Found 1 attendance records
-[00:05:12.283] Server  LOG     📅 Sample record times: [{...}]
-[00:05:12.284] Server  LOG     📋 Formatting record: {}
-[00:05:12.284] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:12.284] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:12.284] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:16.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:16.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:16.552] Server  LOG     Origin: "N/A"
-[00:05:16.552] Server  LOG     Host: "localhost:3000"
-[00:05:16.552] Server  LOG     Environment: "development"
-[00:05:16.552] Server  LOG     =========================
-[00:05:16.553] Server  LOG     Attempting to fetch attendance records...
-[00:05:16.553] Server  LOG     Limit: 50
-[00:05:16.553] Server  LOG     Since: null
-[00:05:16.554] Server  LOG     Method 1: Trying RPC function...
-[00:05:16.746] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:16.747] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:16.931] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:17.122] Server  LOG     ✅ Found 1 attendance records
-[00:05:17.122] Server  LOG     📅 Sample record times: [{...}]
-[00:05:17.123] Server  LOG     📋 Formatting record: {}
-[00:05:17.123] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:17.124] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:17.124] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:21.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:21.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:21.546] Server  LOG     Origin: "N/A"
-[00:05:21.547] Server  LOG     Host: "localhost:3000"
-[00:05:21.547] Server  LOG     Environment: "development"
-[00:05:21.547] Server  LOG     =========================
-[00:05:21.547] Server  LOG     Attempting to fetch attendance records...
-[00:05:21.547] Server  LOG     Limit: 50
-[00:05:21.548] Server  LOG     Since: null
-[00:05:21.548] Server  LOG     Method 1: Trying RPC function...
-[00:05:21.844] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:21.845] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:22.017] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:22.247] Server  LOG     ✅ Found 1 attendance records
-[00:05:22.248] Server  LOG     📅 Sample record times: [{...}]
-[00:05:22.248] Server  LOG     📋 Formatting record: {}
-[00:05:22.249] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:22.249] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:22.249] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:26.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:26.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:26.554] Server  LOG     Origin: "N/A"
-[00:05:26.554] Server  LOG     Host: "localhost:3000"
-[00:05:26.554] Server  LOG     Environment: "development"
-[00:05:26.554] Server  LOG     =========================
-[00:05:26.555] Server  LOG     Attempting to fetch attendance records...
-[00:05:26.555] Server  LOG     Limit: 50
-[00:05:26.555] Server  LOG     Since: null
-[00:05:26.555] Server  LOG     Method 1: Trying RPC function...
-[00:05:26.717] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:26.718] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:26.956] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:27.153] Server  LOG     ✅ Found 1 attendance records
-[00:05:27.154] Server  LOG     📅 Sample record times: [{...}]
-[00:05:27.154] Server  LOG     📋 Formatting record: {}
-[00:05:27.154] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:27.155] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:27.155] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:31.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:31.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:31.552] Server  LOG     Origin: "N/A"
-[00:05:31.552] Server  LOG     Host: "localhost:3000"
-[00:05:31.552] Server  LOG     Environment: "development"
-[00:05:31.553] Server  LOG     =========================
-[00:05:31.553] Server  LOG     Attempting to fetch attendance records...
-[00:05:31.554] Server  LOG     Limit: 50
-[00:05:31.554] Server  LOG     Since: null
-[00:05:31.554] Server  LOG     Method 1: Trying RPC function...
-[00:05:32.466] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:32.466] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:32.659] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:32.848] Server  LOG     ✅ Found 1 attendance records
-[00:05:32.848] Server  LOG     📅 Sample record times: [{...}]
-[00:05:32.848] Server  LOG     📋 Formatting record: {}
-[00:05:32.849] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:32.849] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:32.849] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:36.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:36.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:36.552] Server  LOG     Origin: "N/A"
-[00:05:36.553] Server  LOG     Host: "localhost:3000"
-[00:05:36.553] Server  LOG     Environment: "development"
-[00:05:36.553] Server  LOG     =========================
-[00:05:36.554] Server  LOG     Attempting to fetch attendance records...
-[00:05:36.554] Server  LOG     Limit: 50
-[00:05:36.554] Server  LOG     Since: null
-[00:05:36.554] Server  LOG     Method 1: Trying RPC function...
-[00:05:36.620] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:36.621] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:36.693] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:36.856] Server  LOG     ✅ Found 1 attendance records
-[00:05:36.858] Server  LOG     📅 Sample record times: [{...}]
-[00:05:36.858] Server  LOG     📋 Formatting record: {}
-[00:05:36.858] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:36.859] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:36.859] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:41.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:41.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:41.552] Server  LOG     Origin: "N/A"
-[00:05:41.552] Server  LOG     Host: "localhost:3000"
-[00:05:41.553] Server  LOG     Environment: "development"
-[00:05:41.553] Server  LOG     =========================
-[00:05:41.553] Server  LOG     Attempting to fetch attendance records...
-[00:05:41.554] Server  LOG     Limit: 50
-[00:05:41.554] Server  LOG     Since: null
-[00:05:41.554] Server  LOG     Method 1: Trying RPC function...
-[00:05:41.768] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:41.769] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:41.944] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:42.151] Server  LOG     ✅ Found 1 attendance records
-[00:05:42.152] Server  LOG     📅 Sample record times: [{...}]
-[00:05:42.153] Server  LOG     📋 Formatting record: {}
-[00:05:42.153] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:42.153] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:42.154] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:46.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:46.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:46.550] Server  LOG     Origin: "N/A"
-[00:05:46.551] Server  LOG     Host: "localhost:3000"
-[00:05:46.551] Server  LOG     Environment: "development"
-[00:05:46.551] Server  LOG     =========================
-[00:05:46.551] Server  LOG     Attempting to fetch attendance records...
-[00:05:46.552] Server  LOG     Limit: 50
-[00:05:46.552] Server  LOG     Since: null
-[00:05:46.552] Server  LOG     Method 1: Trying RPC function...
-[00:05:46.694] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:46.695] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:47.013] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:47.395] Server  LOG     ✅ Found 1 attendance records
-[00:05:47.396] Server  LOG     📅 Sample record times: [{...}]
-[00:05:47.396] Server  LOG     📋 Formatting record: {}
-[00:05:47.396] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:47.397] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:47.397] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:51.554] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:51.554] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:51.554] Server  LOG     Origin: "N/A"
-[00:05:51.555] Server  LOG     Host: "localhost:3000"
-[00:05:51.555] Server  LOG     Environment: "development"
-[00:05:51.555] Server  LOG     =========================
-[00:05:51.556] Server  LOG     Attempting to fetch attendance records...
-[00:05:51.556] Server  LOG     Limit: 50
-[00:05:51.556] Server  LOG     Since: null
-[00:05:51.556] Server  LOG     Method 1: Trying RPC function...
-[00:05:51.867] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:51.868] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:52.587] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:52.725] Server  LOG     ✅ Found 1 attendance records
-[00:05:52.725] Server  LOG     📅 Sample record times: [{...}]
-[00:05:52.726] Server  LOG     📋 Formatting record: {}
-[00:05:52.726] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:52.726] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:52.726] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:56.547] Server  LOG     === GET REQUEST DEBUG ===
-[00:05:56.547] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:05:56.547] Server  LOG     Origin: "N/A"
-[00:05:56.547] Server  LOG     Host: "localhost:3000"
-[00:05:56.547] Server  LOG     Environment: "development"
-[00:05:56.548] Server  LOG     =========================
-[00:05:56.548] Server  LOG     Attempting to fetch attendance records...
-[00:05:56.548] Server  LOG     Limit: 50
-[00:05:56.548] Server  LOG     Since: null
-[00:05:56.548] Server  LOG     Method 1: Trying RPC function...
-[00:05:56.626] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:05:56.626] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:05:56.788] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:05:56.915] Server  LOG     ✅ Found 1 attendance records
-[00:05:56.916] Server  LOG     📅 Sample record times: [{...}]
-[00:05:56.916] Server  LOG     📋 Formatting record: {}
-[00:05:56.916] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:05:56.916] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:05:56.916] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:01.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:01.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:01.544] Server  LOG     Origin: "N/A"
-[00:06:01.544] Server  LOG     Host: "localhost:3000"
-[00:06:01.544] Server  LOG     Environment: "development"
-[00:06:01.544] Server  LOG     =========================
-[00:06:01.544] Server  LOG     Attempting to fetch attendance records...
-[00:06:01.544] Server  LOG     Limit: 50
-[00:06:01.544] Server  LOG     Since: null
-[00:06:01.544] Server  LOG     Method 1: Trying RPC function...
-[00:06:01.696] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:01.696] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:01.881] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:02.017] Server  LOG     ✅ Found 1 attendance records
-[00:06:02.018] Server  LOG     📅 Sample record times: [{...}]
-[00:06:02.018] Server  LOG     📋 Formatting record: {}
-[00:06:02.018] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:02.018] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:02.018] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:06.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:06.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:06.551] Server  LOG     Origin: "N/A"
-[00:06:06.551] Server  LOG     Host: "localhost:3000"
-[00:06:06.552] Server  LOG     Environment: "development"
-[00:06:06.552] Server  LOG     =========================
-[00:06:06.553] Server  LOG     Attempting to fetch attendance records...
-[00:06:06.553] Server  LOG     Limit: 50
-[00:06:06.553] Server  LOG     Since: null
-[00:06:06.553] Server  LOG     Method 1: Trying RPC function...
-[00:06:06.702] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:06.702] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:06.868] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:07.018] Server  LOG     ✅ Found 1 attendance records
-[00:06:07.019] Server  LOG     📅 Sample record times: [{...}]
-[00:06:07.020] Server  LOG     📋 Formatting record: {}
-[00:06:07.020] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:07.021] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:07.021] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:43.555] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:43.556] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:43.556] Server  LOG     Origin: "N/A"
-[00:06:43.556] Server  LOG     Host: "localhost:3000"
-[00:06:43.556] Server  LOG     Environment: "development"
-[00:06:43.556] Server  LOG     =========================
-[00:06:43.557] Server  LOG     Attempting to fetch attendance records...
-[00:06:43.557] Server  LOG     Limit: 50
-[00:06:43.557] Server  LOG     Since: null
-[00:06:43.557] Server  LOG     Method 1: Trying RPC function...
-[00:06:43.695] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:43.696] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:43.847] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:43.987] Server  LOG     ✅ Found 1 attendance records
-[00:06:43.988] Server  LOG     📅 Sample record times: [{...}]
-[00:06:43.989] Server  LOG     📋 Formatting record: {}
-[00:06:43.989] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:43.989] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:43.990] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:45.984] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:45.984] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:45.984] Server  LOG     Origin: "N/A"
-[00:06:45.985] Server  LOG     Host: "localhost:3000"
-[00:06:45.985] Server  LOG     Environment: "development"
-[00:06:45.985] Server  LOG     =========================
-[00:06:45.986] Server  LOG     Attempting to fetch attendance records...
-[00:06:45.986] Server  LOG     Limit: 50
-[00:06:45.987] Server  LOG     Since: null
-[00:06:45.987] Server  LOG     Method 1: Trying RPC function...
-[00:06:46.053] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:46.054] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:46.132] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:46.285] Server  LOG     ✅ Found 1 attendance records
-[00:06:46.286] Server  LOG     📅 Sample record times: [{...}]
-[00:06:46.287] Server  LOG     📋 Formatting record: {}
-[00:06:46.287] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:46.287] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:46.288] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:51.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:51.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:51.546] Server  LOG     Origin: "N/A"
-[00:06:51.546] Server  LOG     Host: "localhost:3000"
-[00:06:51.546] Server  LOG     Environment: "development"
-[00:06:51.546] Server  LOG     =========================
-[00:06:51.546] Server  LOG     Attempting to fetch attendance records...
-[00:06:51.546] Server  LOG     Limit: 50
-[00:06:51.546] Server  LOG     Since: null
-[00:06:51.547] Server  LOG     Method 1: Trying RPC function...
-[00:06:51.708] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:51.709] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:51.892] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:52.037] Server  LOG     ✅ Found 1 attendance records
-[00:06:52.037] Server  LOG     📅 Sample record times: [{...}]
-[00:06:52.038] Server  LOG     📋 Formatting record: {}
-[00:06:52.038] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:52.038] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:52.038] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:56.544] Server  LOG     === GET REQUEST DEBUG ===
-[00:06:56.544] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:06:56.544] Server  LOG     Origin: "N/A"
-[00:06:56.544] Server  LOG     Host: "localhost:3000"
-[00:06:56.545] Server  LOG     Environment: "development"
-[00:06:56.545] Server  LOG     =========================
-[00:06:56.545] Server  LOG     Attempting to fetch attendance records...
-[00:06:56.545] Server  LOG     Limit: 50
-[00:06:56.545] Server  LOG     Since: null
-[00:06:56.545] Server  LOG     Method 1: Trying RPC function...
-[00:06:56.697] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:06:56.698] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:06:57.254] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:06:57.391] Server  LOG     ✅ Found 1 attendance records
-[00:06:57.393] Server  LOG     📅 Sample record times: [{...}]
-[00:06:57.393] Server  LOG     📋 Formatting record: {}
-[00:06:57.393] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:06:57.394] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:06:57.394] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:01.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:01.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:01.547] Server  LOG     Origin: "N/A"
-[00:07:01.547] Server  LOG     Host: "localhost:3000"
-[00:07:01.547] Server  LOG     Environment: "development"
-[00:07:01.547] Server  LOG     =========================
-[00:07:01.548] Server  LOG     Attempting to fetch attendance records...
-[00:07:01.548] Server  LOG     Limit: 50
-[00:07:01.548] Server  LOG     Since: null
-[00:07:01.548] Server  LOG     Method 1: Trying RPC function...
-[00:07:01.696] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:01.696] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:01.841] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:01.974] Server  LOG     ✅ Found 1 attendance records
-[00:07:01.975] Server  LOG     📅 Sample record times: [{...}]
-[00:07:01.975] Server  LOG     📋 Formatting record: {}
-[00:07:01.975] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:01.976] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:01.976] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:06.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:06.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:06.546] Server  LOG     Origin: "N/A"
-[00:07:06.547] Server  LOG     Host: "localhost:3000"
-[00:07:06.547] Server  LOG     Environment: "development"
-[00:07:06.547] Server  LOG     =========================
-[00:07:06.548] Server  LOG     Attempting to fetch attendance records...
-[00:07:06.548] Server  LOG     Limit: 50
-[00:07:06.548] Server  LOG     Since: null
-[00:07:06.549] Server  LOG     Method 1: Trying RPC function...
-[00:07:06.699] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:06.700] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:06.849] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:07.176] Server  LOG     ✅ Found 1 attendance records
-[00:07:07.176] Server  LOG     📅 Sample record times: [{...}]
-[00:07:07.176] Server  LOG     📋 Formatting record: {}
-[00:07:07.176] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:07.177] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:07.177] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:11.614] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:11.615] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:11.615] Server  LOG     Origin: "N/A"
-[00:07:11.615] Server  LOG     Host: "localhost:3000"
-[00:07:11.615] Server  LOG     Environment: "development"
-[00:07:11.615] Server  LOG     =========================
-[00:07:11.616] Server  LOG     Attempting to fetch attendance records...
-[00:07:11.616] Server  LOG     Limit: 50
-[00:07:11.616] Server  LOG     Since: null
-[00:07:11.617] Server  LOG     Method 1: Trying RPC function...
-[00:07:11.775] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:11.776] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:11.924] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:12.067] Server  LOG     ✅ Found 1 attendance records
-[00:07:12.068] Server  LOG     📅 Sample record times: [{...}]
-[00:07:12.069] Server  LOG     📋 Formatting record: {}
-[00:07:12.069] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:12.069] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:12.069] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:16.546] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:16.546] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:16.546] Server  LOG     Origin: "N/A"
-[00:07:16.546] Server  LOG     Host: "localhost:3000"
-[00:07:16.546] Server  LOG     Environment: "development"
-[00:07:16.546] Server  LOG     =========================
-[00:07:16.547] Server  LOG     Attempting to fetch attendance records...
-[00:07:16.547] Server  LOG     Limit: 50
-[00:07:16.547] Server  LOG     Since: null
-[00:07:16.548] Server  LOG     Method 1: Trying RPC function...
-[00:07:16.705] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:16.705] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:17.300] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:17.461] Server  LOG     ✅ Found 1 attendance records
-[00:07:17.462] Server  LOG     📅 Sample record times: [{...}]
-[00:07:17.462] Server  LOG     📋 Formatting record: {}
-[00:07:17.463] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:17.463] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:17.463] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:21.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:21.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:21.552] Server  LOG     Origin: "N/A"
-[00:07:21.552] Server  LOG     Host: "localhost:3000"
-[00:07:21.552] Server  LOG     Environment: "development"
-[00:07:21.552] Server  LOG     =========================
-[00:07:21.553] Server  LOG     Attempting to fetch attendance records...
-[00:07:21.553] Server  LOG     Limit: 50
-[00:07:21.553] Server  LOG     Since: null
-[00:07:21.553] Server  LOG     Method 1: Trying RPC function...
-[00:07:21.749] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:21.750] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:21.900] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:22.054] Server  LOG     ✅ Found 1 attendance records
-[00:07:22.054] Server  LOG     📅 Sample record times: [{...}]
-[00:07:22.054] Server  LOG     📋 Formatting record: {}
-[00:07:22.054] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:22.054] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:22.054] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:26.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:26.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:26.551] Server  LOG     Origin: "N/A"
-[00:07:26.551] Server  LOG     Host: "localhost:3000"
-[00:07:26.551] Server  LOG     Environment: "development"
-[00:07:26.551] Server  LOG     =========================
-[00:07:26.552] Server  LOG     Attempting to fetch attendance records...
-[00:07:26.552] Server  LOG     Limit: 50
-[00:07:26.553] Server  LOG     Since: null
-[00:07:26.553] Server  LOG     Method 1: Trying RPC function...
-[00:07:26.726] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:26.727] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:26.884] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:27.028] Server  LOG     ✅ Found 1 attendance records
-[00:07:27.029] Server  LOG     📅 Sample record times: [{...}]
-[00:07:27.029] Server  LOG     📋 Formatting record: {}
-[00:07:27.030] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:27.030] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:27.030] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:31.542] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:31.543] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:31.543] Server  LOG     Origin: "N/A"
-[00:07:31.543] Server  LOG     Host: "localhost:3000"
-[00:07:31.543] Server  LOG     Environment: "development"
-[00:07:31.543] Server  LOG     =========================
-[00:07:31.543] Server  LOG     Attempting to fetch attendance records...
-[00:07:31.543] Server  LOG     Limit: 50
-[00:07:31.543] Server  LOG     Since: null
-[00:07:31.543] Server  LOG     Method 1: Trying RPC function...
-[00:07:31.702] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:31.703] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:31.858] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:32.003] Server  LOG     ✅ Found 1 attendance records
-[00:07:32.004] Server  LOG     📅 Sample record times: [{...}]
-[00:07:32.004] Server  LOG     📋 Formatting record: {}
-[00:07:32.004] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:32.004] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:32.004] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:36.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:36.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:36.553] Server  LOG     Origin: "N/A"
-[00:07:36.553] Server  LOG     Host: "localhost:3000"
-[00:07:36.554] Server  LOG     Environment: "development"
-[00:07:36.554] Server  LOG     =========================
-[00:07:36.555] Server  LOG     Attempting to fetch attendance records...
-[00:07:36.555] Server  LOG     Limit: 50
-[00:07:36.555] Server  LOG     Since: null
-[00:07:36.555] Server  LOG     Method 1: Trying RPC function...
-[00:07:36.751] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:36.752] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:36.906] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:37.080] Server  LOG     ✅ Found 1 attendance records
-[00:07:37.081] Server  LOG     📅 Sample record times: [{...}]
-[00:07:37.082] Server  LOG     📋 Formatting record: {}
-[00:07:37.082] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:37.082] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:37.083] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:41.556] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:41.556] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:41.557] Server  LOG     Origin: "N/A"
-[00:07:41.557] Server  LOG     Host: "localhost:3000"
-[00:07:41.557] Server  LOG     Environment: "development"
-[00:07:41.557] Server  LOG     =========================
-[00:07:41.558] Server  LOG     Attempting to fetch attendance records...
-[00:07:41.558] Server  LOG     Limit: 50
-[00:07:41.558] Server  LOG     Since: null
-[00:07:41.558] Server  LOG     Method 1: Trying RPC function...
-[00:07:41.717] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:41.718] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:41.864] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:42.005] Server  LOG     ✅ Found 1 attendance records
-[00:07:42.006] Server  LOG     📅 Sample record times: [{...}]
-[00:07:42.006] Server  LOG     📋 Formatting record: {}
-[00:07:42.006] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:42.007] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:42.007] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:46.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:46.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:46.551] Server  LOG     Origin: "N/A"
-[00:07:46.551] Server  LOG     Host: "localhost:3000"
-[00:07:46.551] Server  LOG     Environment: "development"
-[00:07:46.551] Server  LOG     =========================
-[00:07:46.552] Server  LOG     Attempting to fetch attendance records...
-[00:07:46.552] Server  LOG     Limit: 50
-[00:07:46.552] Server  LOG     Since: null
-[00:07:46.552] Server  LOG     Method 1: Trying RPC function...
-[00:07:46.746] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:46.747] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:46.913] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:47.094] Server  LOG     ✅ Found 1 attendance records
-[00:07:47.095] Server  LOG     📅 Sample record times: [{...}]
-[00:07:47.095] Server  LOG     📋 Formatting record: {}
-[00:07:47.095] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:47.096] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:47.096] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:52.018] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:52.019] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:52.019] Server  LOG     Origin: "N/A"
-[00:07:52.020] Server  LOG     Host: "localhost:3000"
-[00:07:52.021] Server  LOG     Environment: "development"
-[00:07:52.021] Server  LOG     =========================
-[00:07:52.023] Server  LOG     Attempting to fetch attendance records...
-[00:07:52.023] Server  LOG     Limit: 50
-[00:07:52.023] Server  LOG     Since: null
-[00:07:52.023] Server  LOG     Method 1: Trying RPC function...
-[00:07:52.161] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:52.162] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:52.308] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:52.444] Server  LOG     ✅ Found 1 attendance records
-[00:07:52.445] Server  LOG     📅 Sample record times: [{...}]
-[00:07:52.446] Server  LOG     📋 Formatting record: {}
-[00:07:52.446] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:52.447] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:52.447] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:56.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:07:56.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:07:56.552] Server  LOG     Origin: "N/A"
-[00:07:56.552] Server  LOG     Host: "localhost:3000"
-[00:07:56.552] Server  LOG     Environment: "development"
-[00:07:56.553] Server  LOG     =========================
-[00:07:56.554] Server  LOG     Attempting to fetch attendance records...
-[00:07:56.554] Server  LOG     Limit: 50
-[00:07:56.554] Server  LOG     Since: null
-[00:07:56.554] Server  LOG     Method 1: Trying RPC function...
-[00:07:56.714] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:07:56.715] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:07:56.879] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:07:57.068] Server  LOG     ✅ Found 1 attendance records
-[00:07:57.068] Server  LOG     📅 Sample record times: [{...}]
-[00:07:57.069] Server  LOG     📋 Formatting record: {}
-[00:07:57.069] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:07:57.070] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:07:57.070] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:01.547] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:01.547] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:01.547] Server  LOG     Origin: "N/A"
-[00:08:01.548] Server  LOG     Host: "localhost:3000"
-[00:08:01.548] Server  LOG     Environment: "development"
-[00:08:01.548] Server  LOG     =========================
-[00:08:01.548] Server  LOG     Attempting to fetch attendance records...
-[00:08:01.549] Server  LOG     Limit: 50
-[00:08:01.549] Server  LOG     Since: null
-[00:08:01.549] Server  LOG     Method 1: Trying RPC function...
-[00:08:01.696] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:01.697] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:01.856] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:02.007] Server  LOG     ✅ Found 1 attendance records
-[00:08:02.008] Server  LOG     📅 Sample record times: [{...}]
-[00:08:02.008] Server  LOG     📋 Formatting record: {}
-[00:08:02.009] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:02.009] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:02.009] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:06.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:06.554] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:06.554] Server  LOG     Origin: "N/A"
-[00:08:06.554] Server  LOG     Host: "localhost:3000"
-[00:08:06.554] Server  LOG     Environment: "development"
-[00:08:06.554] Server  LOG     =========================
-[00:08:06.557] Server  LOG     Attempting to fetch attendance records...
-[00:08:06.557] Server  LOG     Limit: 50
-[00:08:06.558] Server  LOG     Since: null
-[00:08:06.558] Server  LOG     Method 1: Trying RPC function...
-[00:08:06.860] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:06.861] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:07.775] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:07.920] Server  LOG     ✅ Found 1 attendance records
-[00:08:07.921] Server  LOG     📅 Sample record times: [{...}]
-[00:08:07.921] Server  LOG     📋 Formatting record: {}
-[00:08:07.921] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:07.922] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:07.922] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:11.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:11.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:11.553] Server  LOG     Origin: "N/A"
-[00:08:11.553] Server  LOG     Host: "localhost:3000"
-[00:08:11.553] Server  LOG     Environment: "development"
-[00:08:11.554] Server  LOG     =========================
-[00:08:11.554] Server  LOG     Attempting to fetch attendance records...
-[00:08:11.554] Server  LOG     Limit: 50
-[00:08:11.554] Server  LOG     Since: null
-[00:08:11.555] Server  LOG     Method 1: Trying RPC function...
-[00:08:11.645] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:11.646] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:11.768] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:11.958] Server  LOG     ✅ Found 1 attendance records
-[00:08:11.958] Server  LOG     📅 Sample record times: [{...}]
-[00:08:11.959] Server  LOG     📋 Formatting record: {}
-[00:08:11.959] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:11.959] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:11.959] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:16.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:16.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:16.553] Server  LOG     Origin: "N/A"
-[00:08:16.554] Server  LOG     Host: "localhost:3000"
-[00:08:16.554] Server  LOG     Environment: "development"
-[00:08:16.554] Server  LOG     =========================
-[00:08:16.555] Server  LOG     Attempting to fetch attendance records...
-[00:08:16.555] Server  LOG     Limit: 50
-[00:08:16.555] Server  LOG     Since: null
-[00:08:16.555] Server  LOG     Method 1: Trying RPC function...
-[00:08:16.796] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:16.797] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:17.014] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:17.205] Server  LOG     ✅ Found 1 attendance records
-[00:08:17.206] Server  LOG     📅 Sample record times: [{...}]
-[00:08:17.206] Server  LOG     📋 Formatting record: {}
-[00:08:17.207] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:17.207] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:17.208] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:21.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:21.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:21.552] Server  LOG     Origin: "N/A"
-[00:08:21.553] Server  LOG     Host: "localhost:3000"
-[00:08:21.553] Server  LOG     Environment: "development"
-[00:08:21.553] Server  LOG     =========================
-[00:08:21.554] Server  LOG     Attempting to fetch attendance records...
-[00:08:21.554] Server  LOG     Limit: 50
-[00:08:21.554] Server  LOG     Since: null
-[00:08:21.554] Server  LOG     Method 1: Trying RPC function...
-[00:08:21.827] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:21.828] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:22.069] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:22.255] Server  LOG     ✅ Found 1 attendance records
-[00:08:22.255] Server  LOG     📅 Sample record times: [{...}]
-[00:08:22.256] Server  LOG     📋 Formatting record: {}
-[00:08:22.256] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:22.256] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:22.257] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:26.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:26.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:26.553] Server  LOG     Origin: "N/A"
-[00:08:26.553] Server  LOG     Host: "localhost:3000"
-[00:08:26.553] Server  LOG     Environment: "development"
-[00:08:26.553] Server  LOG     =========================
-[00:08:26.554] Server  LOG     Attempting to fetch attendance records...
-[00:08:26.554] Server  LOG     Limit: 50
-[00:08:26.554] Server  LOG     Since: null
-[00:08:26.555] Server  LOG     Method 1: Trying RPC function...
-[00:08:26.793] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:26.794] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:27.062] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:27.238] Server  LOG     ✅ Found 1 attendance records
-[00:08:27.239] Server  LOG     📅 Sample record times: [{...}]
-[00:08:27.240] Server  LOG     📋 Formatting record: {}
-[00:08:27.240] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:27.241] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:27.241] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:31.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:31.553] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:31.553] Server  LOG     Origin: "N/A"
-[00:08:31.553] Server  LOG     Host: "localhost:3000"
-[00:08:31.553] Server  LOG     Environment: "development"
-[00:08:31.553] Server  LOG     =========================
-[00:08:31.555] Server  LOG     Attempting to fetch attendance records...
-[00:08:31.555] Server  LOG     Limit: 50
-[00:08:31.555] Server  LOG     Since: null
-[00:08:31.555] Server  LOG     Method 1: Trying RPC function...
-[00:08:31.884] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:31.885] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:32.049] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:32.484] Server  LOG     ✅ Found 1 attendance records
-[00:08:32.485] Server  LOG     📅 Sample record times: [{...}]
-[00:08:32.485] Server  LOG     📋 Formatting record: {}
-[00:08:32.485] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:32.486] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:32.486] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:36.549] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:36.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:36.550] Server  LOG     Origin: "N/A"
-[00:08:36.550] Server  LOG     Host: "localhost:3000"
-[00:08:36.550] Server  LOG     Environment: "development"
-[00:08:36.550] Server  LOG     =========================
-[00:08:36.551] Server  LOG     Attempting to fetch attendance records...
-[00:08:36.551] Server  LOG     Limit: 50
-[00:08:36.552] Server  LOG     Since: null
-[00:08:36.552] Server  LOG     Method 1: Trying RPC function...
-[00:08:37.129] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:37.130] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:37.293] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:37.536] Server  LOG     ✅ Found 1 attendance records
-[00:08:37.537] Server  LOG     📅 Sample record times: [{...}]
-[00:08:37.538] Server  LOG     📋 Formatting record: {}
-[00:08:37.538] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:37.538] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:37.539] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:41.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:41.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:41.552] Server  LOG     Origin: "N/A"
-[00:08:41.553] Server  LOG     Host: "localhost:3000"
-[00:08:41.553] Server  LOG     Environment: "development"
-[00:08:41.553] Server  LOG     =========================
-[00:08:41.554] Server  LOG     Attempting to fetch attendance records...
-[00:08:41.554] Server  LOG     Limit: 50
-[00:08:41.554] Server  LOG     Since: null
-[00:08:41.554] Server  LOG     Method 1: Trying RPC function...
-[00:08:41.846] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:41.846] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:42.005] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:42.251] Server  LOG     ✅ Found 1 attendance records
-[00:08:42.252] Server  LOG     📅 Sample record times: [{...}]
-[00:08:42.252] Server  LOG     📋 Formatting record: {}
-[00:08:42.252] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:42.253] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:42.253] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:46.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:46.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:46.552] Server  LOG     Origin: "N/A"
-[00:08:46.553] Server  LOG     Host: "localhost:3000"
-[00:08:46.553] Server  LOG     Environment: "development"
-[00:08:46.553] Server  LOG     =========================
-[00:08:46.554] Server  LOG     Attempting to fetch attendance records...
-[00:08:46.554] Server  LOG     Limit: 50
-[00:08:46.554] Server  LOG     Since: null
-[00:08:46.554] Server  LOG     Method 1: Trying RPC function...
-[00:08:46.765] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:46.766] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:47.088] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:47.306] Server  LOG     ✅ Found 1 attendance records
-[00:08:47.309] Server  LOG     📅 Sample record times: [{...}]
-[00:08:47.310] Server  LOG     📋 Formatting record: {}
-[00:08:47.310] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:47.312] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:47.312] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:51.549] Server  LOG     === GET REQUEST DEBUG ===
-[00:08:51.549] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:08:51.549] Server  LOG     Origin: "N/A"
-[00:08:51.550] Server  LOG     Host: "localhost:3000"
-[00:08:51.550] Server  LOG     Environment: "development"
-[00:08:51.550] Server  LOG     =========================
-[00:08:51.551] Server  LOG     Attempting to fetch attendance records...
-[00:08:51.551] Server  LOG     Limit: 50
-[00:08:51.551] Server  LOG     Since: null
-[00:08:51.551] Server  LOG     Method 1: Trying RPC function...
-[00:08:51.808] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:08:51.809] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:08:51.977] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:08:52.205] Server  LOG     ✅ Found 1 attendance records
-[00:08:52.206] Server  LOG     📅 Sample record times: [{...}]
-[00:08:52.207] Server  LOG     📋 Formatting record: {}
-[00:08:52.207] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:08:52.207] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:08:52.208] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:09:01.554] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:01.554] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:01.554] Server  LOG     Origin: "N/A"
-[00:09:01.554] Server  LOG     Host: "localhost:3000"
-[00:09:01.555] Server  LOG     Environment: "development"
-[00:09:01.555] Server  LOG     =========================
-[00:09:01.556] Server  LOG     Attempting to fetch attendance records...
-[00:09:01.556] Server  LOG     Limit: 50
-[00:09:01.556] Server  LOG     Since: null
-[00:09:01.556] Server  LOG     Method 1: Trying RPC function...
-[00:09:01.765] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:01.766] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:01.925] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:02.096] Server  LOG     ✅ Found 1 attendance records
-[00:09:02.097] Server  LOG     📅 Sample record times: [{...}]
-[00:09:02.098] Server  LOG     📋 Formatting record: {}
-[00:09:02.098] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:02.098] Server  LOG     📅 First record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:09:02.098] Server  LOG     📅 Last record scan time: "2025-12-27T15:29:39.758+00:00"
-[00:09:28.084] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:28.084] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:28.085] Server  LOG     Origin: "N/A"
-[00:09:28.085] Server  LOG     Host: "localhost:3000"
-[00:09:28.085] Server  LOG     Environment: "development"
-[00:09:28.085] Server  LOG     =========================
-[00:09:28.086] Server  LOG     Attempting to fetch attendance records...
-[00:09:28.086] Server  LOG     Limit: 50
-[00:09:28.086] Server  LOG     Since: null
-[00:09:28.086] Server  LOG     Method 1: Trying RPC function...
-[00:09:28.242] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:28.243] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:28.394] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:09:28.395] Server  LOG     📭 No attendance records found in database
-[00:09:28.395] Server  LOG     💡 This could mean:
-[00:09:28.396] Server  LOG        1. No scans have been recorded yet
-[00:09:28.396] Server  LOG        2. Database table is empty
-[00:09:28.396] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:09:29.170] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:09:29.293] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:29.293] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:29.293] Server  LOG     Origin: "N/A"
-[00:09:29.293] Server  LOG     Host: "localhost:3000"
-[00:09:29.293] Server  LOG     Environment: "development"
-[00:09:29.293] Server  LOG     =========================
-[00:09:29.295] Server  LOG     Attempting to fetch attendance records...
-[00:09:29.295] Server  LOG     Limit: 50
-[00:09:29.296] Server  LOG     Since: null
-[00:09:29.296] Server  LOG     Method 1: Trying RPC function...
-[00:09:29.371] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:09:29.388] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:29.388] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:29.467] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:09:29.467] Server  LOG     📭 No attendance records found in database
-[00:09:29.468] Server  LOG     💡 This could mean:
-[00:09:29.468] Server  LOG        1. No scans have been recorded yet
-[00:09:29.468] Server  LOG        2. Database table is empty
-[00:09:29.468] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:09:34.275] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:34.275] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:34.275] Server  LOG     Origin: "N/A"
-[00:09:34.276] Server  LOG     Host: "localhost:3000"
-[00:09:34.276] Server  LOG     Environment: "development"
-[00:09:34.276] Server  LOG     =========================
-[00:09:34.276] Server  LOG     Attempting to fetch attendance records...
-[00:09:34.277] Server  LOG     Limit: 50
-[00:09:34.277] Server  LOG     Since: null
-[00:09:34.277] Server  LOG     Method 1: Trying RPC function...
-[00:09:34.442] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:34.443] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:34.599] Server  LOG     ✓ Direct query (minimal) successful, records: 0
-[00:09:34.600] Server  LOG     📭 No attendance records found in database
-[00:09:34.600] Server  LOG     💡 This could mean:
-[00:09:34.600] Server  LOG        1. No scans have been recorded yet
-[00:09:34.601] Server  LOG        2. Database table is empty
-[00:09:34.601] Server  LOG        3. ESP32 scans are not being saved (check POST endpoint logs)
-[00:09:37.400] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:37.400] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:37.401] Server  LOG     Origin: "N/A"
-[00:09:37.401] Server  LOG     Host: "localhost:3000"
-[00:09:37.401] Server  LOG     Environment: "development"
-[00:09:37.401] Server  LOG     =========================
-[00:09:37.402] Server  LOG     Attempting to fetch attendance records...
-[00:09:37.402] Server  LOG     Limit: 50
-[00:09:37.402] Server  LOG     Since: null
-[00:09:37.403] Server  LOG     Method 1: Trying RPC function...
-[00:09:37.654] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:37.655] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:37.745] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:37.909] Server  LOG     ✅ Found 1 attendance records
-[00:09:37.910] Server  LOG     📅 Sample record times: [{...}]
-[00:09:37.910] Server  LOG     📋 Formatting record: {}
-[00:09:37.911] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:37.911] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:37.911] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:38.017] Browser LOG     live attendance results: {"id":"342a65ef-7f3e-43f6-abdf-188b3725a408","studentId":"88d0bfc2-4085-4912-a36f-b229172a628c","studentName":"Kyle Dennis Senaris Reginaldo","gradeLevel":"Grade 9","section":"A","scanTime":"2025-12-27T15:36:30.618+00:00","status":"Present","rfidCard":"3206E2AB","studentPhoto":null,"scanType":"timein","timeIn":"2025-12-27T15:36:30.618+00:00","timeOut":null,"isTeacher":false,"subject":null,"role":"student"}
-[00:09:39.271] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:39.271] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:39.271] Server  LOG     Origin: "N/A"
-[00:09:39.272] Server  LOG     Host: "localhost:3000"
-[00:09:39.272] Server  LOG     Environment: "development"
-[00:09:39.272] Server  LOG     =========================
-[00:09:39.272] Server  LOG     Attempting to fetch attendance records...
-[00:09:39.272] Server  LOG     Limit: 50
-[00:09:39.273] Server  LOG     Since: null
-[00:09:39.273] Server  LOG     Method 1: Trying RPC function...
-[00:09:39.348] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:39.348] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:39.445] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:39.592] Server  LOG     ✅ Found 1 attendance records
-[00:09:39.593] Server  LOG     📅 Sample record times: [{...}]
-[00:09:39.595] Server  LOG     📋 Formatting record: {}
-[00:09:39.596] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:39.596] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:39.596] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:44.274] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:44.275] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:44.275] Server  LOG     Origin: "N/A"
-[00:09:44.275] Server  LOG     Host: "localhost:3000"
-[00:09:44.275] Server  LOG     Environment: "development"
-[00:09:44.275] Server  LOG     =========================
-[00:09:44.276] Server  LOG     Attempting to fetch attendance records...
-[00:09:44.276] Server  LOG     Limit: 50
-[00:09:44.276] Server  LOG     Since: null
-[00:09:44.276] Server  LOG     Method 1: Trying RPC function...
-[00:09:44.461] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:44.461] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:44.616] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:44.771] Server  LOG     ✅ Found 1 attendance records
-[00:09:44.772] Server  LOG     📅 Sample record times: [{...}]
-[00:09:44.773] Server  LOG     📋 Formatting record: {}
-[00:09:44.773] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:44.773] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:44.773] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:49.272] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:49.272] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:49.273] Server  LOG     Origin: "N/A"
-[00:09:49.273] Server  LOG     Host: "localhost:3000"
-[00:09:49.273] Server  LOG     Environment: "development"
-[00:09:49.273] Server  LOG     =========================
-[00:09:49.273] Server  LOG     Attempting to fetch attendance records...
-[00:09:49.274] Server  LOG     Limit: 50
-[00:09:49.275] Server  LOG     Since: null
-[00:09:49.275] Server  LOG     Method 1: Trying RPC function...
-[00:09:49.429] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:49.432] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:49.604] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:49.756] Server  LOG     ✅ Found 1 attendance records
-[00:09:49.758] Server  LOG     📅 Sample record times: [{...}]
-[00:09:49.759] Server  LOG     📋 Formatting record: {}
-[00:09:49.759] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:49.760] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:49.760] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:54.552] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:54.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:54.552] Server  LOG     Origin: "N/A"
-[00:09:54.552] Server  LOG     Host: "localhost:3000"
-[00:09:54.553] Server  LOG     Environment: "development"
-[00:09:54.553] Server  LOG     =========================
-[00:09:54.553] Server  LOG     Attempting to fetch attendance records...
-[00:09:54.554] Server  LOG     Limit: 50
-[00:09:54.554] Server  LOG     Since: null
-[00:09:54.554] Server  LOG     Method 1: Trying RPC function...
-[00:09:54.708] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:54.708] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:54.878] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:09:55.036] Server  LOG     ✅ Found 1 attendance records
-[00:09:55.036] Server  LOG     📅 Sample record times: [{...}]
-[00:09:55.037] Server  LOG     📋 Formatting record: {}
-[00:09:55.037] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:09:55.037] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:55.037] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:09:59.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:09:59.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:09:59.551] Server  LOG     Origin: "N/A"
-[00:09:59.551] Server  LOG     Host: "localhost:3000"
-[00:09:59.551] Server  LOG     Environment: "development"
-[00:09:59.552] Server  LOG     =========================
-[00:09:59.552] Server  LOG     Attempting to fetch attendance records...
-[00:09:59.552] Server  LOG     Limit: 50
-[00:09:59.552] Server  LOG     Since: null
-[00:09:59.552] Server  LOG     Method 1: Trying RPC function...
-[00:09:59.718] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:09:59.718] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:09:59.876] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:00.022] Server  LOG     ✅ Found 1 attendance records
-[00:10:00.023] Server  LOG     📅 Sample record times: [{...}]
-[00:10:00.024] Server  LOG     📋 Formatting record: {}
-[00:10:00.024] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:00.024] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:00.024] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:04.550] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:04.550] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:04.551] Server  LOG     Origin: "N/A"
-[00:10:04.551] Server  LOG     Host: "localhost:3000"
-[00:10:04.551] Server  LOG     Environment: "development"
-[00:10:04.551] Server  LOG     =========================
-[00:10:04.552] Server  LOG     Attempting to fetch attendance records...
-[00:10:04.552] Server  LOG     Limit: 50
-[00:10:04.552] Server  LOG     Since: null
-[00:10:04.552] Server  LOG     Method 1: Trying RPC function...
-[00:10:04.716] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:04.716] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:04.872] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:05.032] Server  LOG     ✅ Found 1 attendance records
-[00:10:05.033] Server  LOG     📅 Sample record times: [{...}]
-[00:10:05.033] Server  LOG     📋 Formatting record: {}
-[00:10:05.034] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:05.034] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:05.034] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:09.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:09.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:09.552] Server  LOG     Origin: "N/A"
-[00:10:09.552] Server  LOG     Host: "localhost:3000"
-[00:10:09.552] Server  LOG     Environment: "development"
-[00:10:09.552] Server  LOG     =========================
-[00:10:09.553] Server  LOG     Attempting to fetch attendance records...
-[00:10:09.553] Server  LOG     Limit: 50
-[00:10:09.553] Server  LOG     Since: null
-[00:10:09.554] Server  LOG     Method 1: Trying RPC function...
-[00:10:09.729] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:09.729] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:09.917] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:10.065] Server  LOG     ✅ Found 1 attendance records
-[00:10:10.066] Server  LOG     📅 Sample record times: [{...}]
-[00:10:10.066] Server  LOG     📋 Formatting record: {}
-[00:10:10.067] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:10.067] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:10.067] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:14.621] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:14.621] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:14.621] Server  LOG     Origin: "N/A"
-[00:10:14.621] Server  LOG     Host: "localhost:3000"
-[00:10:14.621] Server  LOG     Environment: "development"
-[00:10:14.621] Server  LOG     =========================
-[00:10:14.623] Server  LOG     Attempting to fetch attendance records...
-[00:10:14.623] Server  LOG     Limit: 50
-[00:10:14.623] Server  LOG     Since: null
-[00:10:14.623] Server  LOG     Method 1: Trying RPC function...
-[00:10:14.789] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:14.790] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:14.968] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:15.107] Server  LOG     ✅ Found 1 attendance records
-[00:10:15.108] Server  LOG     📅 Sample record times: [{...}]
-[00:10:15.108] Server  LOG     📋 Formatting record: {}
-[00:10:15.108] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:15.109] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:15.109] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:19.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:19.551] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:19.552] Server  LOG     Origin: "N/A"
-[00:10:19.552] Server  LOG     Host: "localhost:3000"
-[00:10:19.552] Server  LOG     Environment: "development"
-[00:10:19.552] Server  LOG     =========================
-[00:10:19.553] Server  LOG     Attempting to fetch attendance records...
-[00:10:19.553] Server  LOG     Limit: 50
-[00:10:19.553] Server  LOG     Since: null
-[00:10:19.553] Server  LOG     Method 1: Trying RPC function...
-[00:10:19.713] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:19.713] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:19.864] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:20.025] Server  LOG     ✅ Found 1 attendance records
-[00:10:20.026] Server  LOG     📅 Sample record times: [{...}]
-[00:10:20.026] Server  LOG     📋 Formatting record: {}
-[00:10:20.026] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:20.026] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:20.026] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:24.551] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:24.552] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:24.552] Server  LOG     Origin: "N/A"
-[00:10:24.552] Server  LOG     Host: "localhost:3000"
-[00:10:24.552] Server  LOG     Environment: "development"
-[00:10:24.552] Server  LOG     =========================
-[00:10:24.553] Server  LOG     Attempting to fetch attendance records...
-[00:10:24.554] Server  LOG     Limit: 50
-[00:10:24.554] Server  LOG     Since: null
-[00:10:24.554] Server  LOG     Method 1: Trying RPC function...
-[00:10:24.724] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:24.725] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:24.888] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:25.036] Server  LOG     ✅ Found 1 attendance records
-[00:10:25.037] Server  LOG     📅 Sample record times: [{...}]
-[00:10:25.038] Server  LOG     📋 Formatting record: {}
-[00:10:25.038] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:25.038] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:25.039] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:29.560] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:29.561] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:29.561] Server  LOG     Origin: "N/A"
-[00:10:29.562] Server  LOG     Host: "localhost:3000"
-[00:10:29.562] Server  LOG     Environment: "development"
-[00:10:29.563] Server  LOG     =========================
-[00:10:29.564] Server  LOG     Attempting to fetch attendance records...
-[00:10:29.564] Server  LOG     Limit: 50
-[00:10:29.564] Server  LOG     Since: null
-[00:10:29.565] Server  LOG     Method 1: Trying RPC function...
-[00:10:29.708] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:29.709] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:29.979] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:30.121] Server  LOG     ✅ Found 1 attendance records
-[00:10:30.121] Server  LOG     📅 Sample record times: [{...}]
-[00:10:30.121] Server  LOG     📋 Formatting record: {}
-[00:10:30.121] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:30.121] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:30.121] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:34.548] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:34.548] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:34.549] Server  LOG     Origin: "N/A"
-[00:10:34.549] Server  LOG     Host: "localhost:3000"
-[00:10:34.549] Server  LOG     Environment: "development"
-[00:10:34.549] Server  LOG     =========================
-[00:10:34.549] Server  LOG     Attempting to fetch attendance records...
-[00:10:34.550] Server  LOG     Limit: 50
-[00:10:34.550] Server  LOG     Since: null
-[00:10:34.550] Server  LOG     Method 1: Trying RPC function...
-[00:10:34.710] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:34.710] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:34.883] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:35.032] Server  LOG     ✅ Found 1 attendance records
-[00:10:35.033] Server  LOG     📅 Sample record times: [{...}]
-[00:10:35.033] Server  LOG     📋 Formatting record: {}
-[00:10:35.033] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:35.033] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:35.033] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:39.557] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:39.558] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:39.558] Server  LOG     Origin: "N/A"
-[00:10:39.558] Server  LOG     Host: "localhost:3000"
-[00:10:39.558] Server  LOG     Environment: "development"
-[00:10:39.558] Server  LOG     =========================
-[00:10:39.559] Server  LOG     Attempting to fetch attendance records...
-[00:10:39.559] Server  LOG     Limit: 50
-[00:10:39.559] Server  LOG     Since: null
-[00:10:39.559] Server  LOG     Method 1: Trying RPC function...
-[00:10:39.717] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:39.718] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:39.867] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:40.030] Server  LOG     ✅ Found 1 attendance records
-[00:10:40.031] Server  LOG     📅 Sample record times: [{...}]
-[00:10:40.031] Server  LOG     📋 Formatting record: {}
-[00:10:40.032] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:40.032] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:40.032] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:44.548] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:44.549] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:44.549] Server  LOG     Origin: "N/A"
-[00:10:44.549] Server  LOG     Host: "localhost:3000"
-[00:10:44.549] Server  LOG     Environment: "development"
-[00:10:44.549] Server  LOG     =========================
-[00:10:44.550] Server  LOG     Attempting to fetch attendance records...
-[00:10:44.550] Server  LOG     Limit: 50
-[00:10:44.550] Server  LOG     Since: null
-[00:10:44.550] Server  LOG     Method 1: Trying RPC function...
-[00:10:44.708] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:44.709] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:44.884] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:45.023] Server  LOG     ✅ Found 1 attendance records
-[00:10:45.023] Server  LOG     📅 Sample record times: [{...}]
-[00:10:45.023] Server  LOG     📋 Formatting record: {}
-[00:10:45.023] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:45.024] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:45.024] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:49.553] Server  LOG     === GET REQUEST DEBUG ===
-[00:10:49.554] Server  LOG     Request URL: "http://0.0.0.0:3000/api/admin/attendance-live?limit=50"
-[00:10:49.555] Server  LOG     Origin: "N/A"
-[00:10:49.556] Server  LOG     Host: "localhost:3000"
-[00:10:49.557] Server  LOG     Environment: "development"
-[00:10:49.557] Server  LOG     =========================
-[00:10:49.557] Server  LOG     Attempting to fetch attendance records...
-[00:10:49.558] Server  LOG     Limit: 50
-[00:10:49.558] Server  LOG     Since: null
-[00:10:49.558] Server  LOG     Method 1: Trying RPC function...
-[00:10:49.719] Server  LOG     ✗ RPC failed: "column ar.student_id does not exist"
-[00:10:49.720] Server  LOG     Method 2: Trying direct query with explicit columns...
-[00:10:49.881] Server  LOG     ✓ Direct query (minimal) successful, records: 1
-[00:10:50.021] Server  LOG     ✅ Found 1 attendance records
-[00:10:50.022] Server  LOG     📅 Sample record times: [{...}]
-[00:10:50.023] Server  LOG     📋 Formatting record: {}
-[00:10:50.023] Server  LOG     📤 Returning 1 formatted records to frontend
-[00:10:50.024] Server  LOG     📅 First record scan time: "2025-12-27T15:36:30.618+00:00"
-[00:10:50.024] Server  LOG     📅 Last record scan time: "2025-12-27T15:36:30.618+00:00"
+[00:00:00.534] Server  WARN     ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 5.0.2
+[00:00:00.649] Server  LOG      ✓ Ready in 418ms
+[00:00:17.371] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:21.010] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:02:12.364] Server  LOG      ✓ Compiled in 126ms
+[00:06:00.906] Server  LOG      ✓ Compiled in 530ms
+[00:06:19.094] Server  LOG      ✓ Compiled in 102ms
+[00:07:40.788] Server  LOG      ✓ Compiled in 59ms
+[00:07:50.568] Server  LOG      ✓ Compiled in 59ms
+[00:08:51.770] Server  LOG      ✓ Compiled in 55ms
+[00:08:58.241] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:09:37.482] Server  LOG      ✓ Compiled in 58ms
+[00:09:56.395] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:22.993] Server  LOG      ✓ Compiled in 44ms
+[00:10:34.022] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:06.139] Server  LOG      ✓ Compiled in 43ms
+[00:11:12.772] Server  LOG      ✓ Compiled in 42ms
+[00:12:52.758] Server  LOG     Email sent: <3e29328b-0b68-40d6-d942-19cec831f1fb@gmail.com>
+[00:12:52.760] Server  LOG     Welcome email sent to teacher: "dennissenaris09@gmail.com"
+[00:13:02.770] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:02.912] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:02.912] Browser LOG     User object: null
+[00:13:02.912] Browser LOG     User JSON: null
+[00:13:02.912] Browser LOG     User exists? false
+[00:13:02.912] Browser LOG     User has role? undefined
+[00:13:02.913] Browser LOG     ========================
+[00:13:02.913] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:13:04.427] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:04.427] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:04.427] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:04.427] Browser LOG     User exists? true
+[00:13:04.427] Browser LOG     User has role? admin
+[00:13:04.427] Browser LOG     ========================
+[00:13:04.427] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:04.427] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:04.427] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:04.427] Browser LOG     User exists? true
+[00:13:04.427] Browser LOG     User has role? admin
+[00:13:04.427] Browser LOG     ========================
+[00:13:04.427] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:04.427] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:04.427] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:04.427] Browser LOG     User exists? true
+[00:13:04.427] Browser LOG     User has role? admin
+[00:13:04.427] Browser LOG     ========================
+[00:13:04.427] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:04.427] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:04.427] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:04.427] Browser LOG     User exists? true
+[00:13:04.427] Browser LOG     User has role? admin
+[00:13:04.427] Browser LOG     ========================
+[00:13:04.849] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:04.849] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:04.849] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:04.849] Browser LOG     User exists? true
+[00:13:04.849] Browser LOG     User has role? admin
+[00:13:04.849] Browser LOG     ========================
+[00:13:05.585] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:05.585] Browser LOG     User object: {"email":"rovicdeguzman@gmail.com","first_name":"Rovic","id":"8cabd1bc-6306-46fc-9464-54dd54c22643","last_name":"De Guzman","role":"admin"}
+[00:13:05.585] Browser LOG     User JSON: {
+  "id": "8cabd1bc-6306-46fc-9464-54dd54c22643",
+  "email": "rovicdeguzman@gmail.com",
+  "role": "admin",
+  "first_name": "Rovic",
+  "last_name": "De Guzman"
+}
+[00:13:05.585] Browser LOG     User exists? true
+[00:13:05.585] Browser LOG     User has role? admin
+[00:13:05.585] Browser LOG     ========================
+[00:13:05.585] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:13:06.863] Browser LOG     Error fetching user: Auth session missing!
+[00:13:07.009] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:07.144] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:07.144] Browser LOG     User object: null
+[00:13:07.144] Browser LOG     User JSON: null
+[00:13:07.144] Browser LOG     User exists? false
+[00:13:07.144] Browser LOG     User has role? undefined
+[00:13:07.144] Browser LOG     ========================
+[00:13:07.144] Browser LOG     Error fetching user: Auth session missing!
+[00:13:07.144] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:13:07.427] Browser LOG     Error fetching user: Auth session missing!
+[00:13:07.427] Browser LOG     Error fetching user: Auth session missing!
+[00:13:15.991] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:16.174] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:13:16.174] Browser WARN    Image with src "/logo.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:13:35.338] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:35.473] Browser LOG     === USER CONTEXT DEBUG ===
+[00:13:35.473] Browser LOG     User object: null
+[00:13:35.473] Browser LOG     User JSON: null
+[00:13:35.473] Browser LOG     User exists? false
+[00:13:35.473] Browser LOG     User has role? undefined
+[00:13:35.473] Browser LOG     ========================
+[00:13:35.473] Browser LOG     Error fetching user: Auth session missing!
+[00:13:35.473] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:13:42.686] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:43.997] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:14:31.266] Server  LOG     Email sent: <14b243da-569b-4f7c-2631-8298a871a629@gmail.com>
+[00:14:31.267] Server  LOG     Welcome email sent to parent: "kyledennisreginaldo299@gmail.com"
+[00:14:37.821] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:00.893] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:01.785] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:01.937] Browser LOG     === USER CONTEXT DEBUG ===
+[00:15:01.937] Browser LOG     User object: null
+[00:15:01.937] Browser LOG     User JSON: null
+[00:15:01.937] Browser LOG     User exists? false
+[00:15:01.937] Browser LOG     User has role? undefined
+[00:15:01.937] Browser LOG     ========================
+[00:15:01.937] Browser LOG     Error fetching user: Auth session missing!
+[00:15:01.937] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:15:28.690] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:15:28.856] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:19:06.910] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:19:06.910] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:06.910] Browser LOG     User object: null
+[00:19:06.910] Browser LOG     User JSON: null
+[00:19:06.910] Browser LOG     User exists? false
+[00:19:06.910] Browser LOG     User has role? undefined
+[00:19:06.910] Browser LOG     ========================
+[00:19:06.910] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:19:07.556] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:07.556] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:07.556] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:07.556] Browser LOG     User exists? true
+[00:19:07.556] Browser LOG     User has role? parent
+[00:19:07.556] Browser LOG     ========================
+[00:19:07.746] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:07.746] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:07.746] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:07.746] Browser LOG     User exists? true
+[00:19:07.746] Browser LOG     User has role? parent
+[00:19:07.746] Browser LOG     ========================
+[00:19:07.932] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:07.932] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:07.932] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:07.932] Browser LOG     User exists? true
+[00:19:07.932] Browser LOG     User has role? parent
+[00:19:07.932] Browser LOG     ========================
+[00:19:08.079] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:08.079] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:08.079] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:08.079] Browser LOG     User exists? true
+[00:19:08.079] Browser LOG     User has role? parent
+[00:19:08.079] Browser LOG     ========================
+[00:19:08.276] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:08.276] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:08.276] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:08.276] Browser LOG     User exists? true
+[00:19:08.276] Browser LOG     User has role? parent
+[00:19:08.276] Browser LOG     ========================
+[00:19:08.421] Browser LOG     === USER CONTEXT DEBUG ===
+[00:19:08.421] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:19:08.421] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:19:08.421] Browser LOG     User exists? true
+[00:19:08.421] Browser LOG     User has role? parent
+[00:19:08.421] Browser LOG     ========================
+[00:19:08.421] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:19:23.103] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:19:23.311] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:20:05.168] Browser LOG     === USER CONTEXT DEBUG ===
+[00:20:05.168] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:20:05.168] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:20:05.168] Browser LOG     User exists? true
+[00:20:05.168] Browser LOG     User has role? parent
+[00:20:05.168] Browser LOG     ========================
+[00:20:05.168] Browser LOG     === USER CONTEXT DEBUG ===
+[00:20:05.168] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:20:05.168] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:20:05.168] Browser LOG     User exists? true
+[00:20:05.168] Browser LOG     User has role? parent
+[00:20:05.168] Browser LOG     ========================
+[00:20:05.169] Browser LOG     === USER CONTEXT DEBUG ===
+[00:20:05.169] Browser LOG     User object: {"email":"kyledennisreginaldo299@gmail.com","first_name":"Tatay","id":"8ea34144-81a0-4370-a012-b73ddeb01ab5","last_name":"MalakiEti","role":"parent"}
+[00:20:05.169] Browser LOG     User JSON: {
+  "id": "8ea34144-81a0-4370-a012-b73ddeb01ab5",
+  "email": "kyledennisreginaldo299@gmail.com",
+  "role": "parent",
+  "first_name": "Tatay",
+  "last_name": "MalakiEti"
+}
+[00:20:05.169] Browser LOG     User exists? true
+[00:20:05.169] Browser LOG     User has role? parent
+[00:20:05.169] Browser LOG     ========================
+[00:20:05.169] Browser LOG     Error fetching user: Auth session missing!
+[00:20:05.169] Browser LOG     === USER CONTEXT DEBUG ===
+[00:20:05.169] Browser LOG     User object: null
+[00:20:05.169] Browser LOG     User JSON: null
+[00:20:05.169] Browser LOG     User exists? false
+[00:20:05.169] Browser LOG     User has role? undefined
+[00:20:05.169] Browser LOG     ========================
+[00:20:05.169] Browser LOG     Error fetching user: Auth session missing!
