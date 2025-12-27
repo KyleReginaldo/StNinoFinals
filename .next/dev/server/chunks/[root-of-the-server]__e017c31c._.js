@@ -443,7 +443,7 @@ async function GET(request) {
             });
             return {
                 id: record.id,
-                studentId: record.user_id,
+                studentId: person?.student_number || person?.employee_number || record.user_id,
                 studentName: person ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
                 gradeLevel: isTeacher ? null : person?.grade_level || 'N/A',
                 section: isTeacher ? null : person?.section || 'N/A',

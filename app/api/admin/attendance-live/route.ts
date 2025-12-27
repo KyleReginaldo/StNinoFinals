@@ -339,12 +339,12 @@ export async function GET(request: Request) {
       
       return {
       id: record.id,
-        studentId: record.user_id,
-        studentName: person
-          ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() || 'Unknown'
-          : 'Unknown',
-        gradeLevel: isTeacher ? null : (person?.grade_level || 'N/A'),
-        section: isTeacher ? null : (person?.section || 'N/A'),
+      studentId: person?.student_number || person?.employee_number || record.user_id,
+      studentName: person
+        ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown',
+      gradeLevel: isTeacher ? null : (person?.grade_level || 'N/A'),
+      section: isTeacher ? null : (person?.section || 'N/A'),
       scanTime: record.scan_time || record.created_at,
       status: record.status || 'Present',
       rfidCard: record.rfid_card || record.rfid_tag || 'N/A',
