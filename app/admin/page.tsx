@@ -16,7 +16,6 @@ import {
   Users
 } from "lucide-react"
 import Link from "next/link"
-import { AdminHeader } from "./components/AdminHeader"
 import { useAdminData } from "./hooks/useAdminData"
 import { useAuth } from "./hooks/useAuth"
 
@@ -37,7 +36,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader admin={admin} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">

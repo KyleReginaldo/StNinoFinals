@@ -4,7 +4,7 @@
 type AppRoutes = "/" | "/admin" | "/admin/attendance" | "/admin/attendance-reports" | "/admin/live-attendance" | "/admin/parents" | "/admin/reports" | "/admin/rfid-display" | "/admin/settings" | "/admin/students" | "/admin/teacher-attendance" | "/admin/teachers" | "/guardian" | "/parent" | "/parent-dashboard" | "/student" | "/teacher"
 type AppRouteHandlerRoutes = "/api/admin/attendance" | "/api/admin/attendance-live" | "/api/admin/attendance-reports" | "/api/admin/check-rfid" | "/api/admin/diagnostics" | "/api/admin/login" | "/api/admin/parents" | "/api/admin/parents/[id]" | "/api/admin/parents/link-student" | "/api/admin/settings" | "/api/admin/stats" | "/api/admin/students" | "/api/admin/students/[id]" | "/api/admin/teacher-attendance" | "/api/admin/teachers" | "/api/admin/teachers/[id]" | "/api/admin/update-teacher-rfid" | "/api/admissions" | "/api/auth/login" | "/api/debug/database" | "/api/debug/env" | "/api/grades" | "/api/health/supabase" | "/api/journal" | "/api/parent/announcements" | "/api/parent/children" | "/api/parent/link-student" | "/api/parent/login" | "/api/parent/student-attendance" | "/api/parent/student-grades" | "/api/parent/student-stats" | "/api/student/dashboard" | "/api/student/login" | "/api/student/update-profile" | "/api/students" | "/api/students/update-rfid" | "/api/teacher/grades" | "/api/teacher/journal" | "/api/teacher/login" | "/api/teacher/schedule" | "/api/teacher/stats" | "/api/teacher/students"
 type PageRoutes = never
-type LayoutRoutes = "/"
+type LayoutRoutes = "/" | "/admin"
 type RedirectRoutes = never
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
@@ -77,6 +77,7 @@ export type ParamsOf<Route extends Routes> = ParamMap[Route]
 
 interface LayoutSlotMap {
   "/": never
+  "/admin": never
 }
 
 

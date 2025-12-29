@@ -1,20 +1,24 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabaseClient"
 import { useAlert } from "@/lib/use-alert"
+import { ArrowLeft } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { Admin } from "../types"
 
 interface AdminHeaderProps {
   admin: Admin
+  canPop?: boolean;
 }
 
-export function AdminHeader({ admin }: AdminHeaderProps) {
+export function AdminHeader({ admin, canPop }: AdminHeaderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { showAlert } = useAlert()
-
+const router = useRouter();
   const adminName = admin.first_name && admin.last_name 
     ? `${admin.first_name} ${admin.last_name}`
     : admin.name || admin.email.split("@")[0]
@@ -62,13 +66,15 @@ export function AdminHeader({ admin }: AdminHeaderProps) {
                 Administrator
               </Badge>
             </div>
-            <button
+           {canPop ? <Button className="bg-white text-red-800" onClick={() => {
+            router.back();
+           }}><ArrowLeft /> Back</Button>: <button
               onClick={handleLogout}
               disabled={isLoggingOut}
               className="px-4 py-2 bg-white text-red-800 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isLoggingOut ? "Logging out..." : "Logout"}
-            </button>
+            </button>}
           </div>
         </div>
       </div>

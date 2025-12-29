@@ -282,15 +282,15 @@ export default function RfidDisplayPage() {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Radio className="w-8 h-8 text-red-500" />
-            <div>
-              <h1 className="text-3xl font-bold">RFID Scan Display</h1>
-              <p className="text-gray-400">Live attendance monitoring</p>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <Radio className="w-8 h-8 text-red-500" />
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold">RFID Scan Display</h1>
+                <p className="text-sm md:text-base text-gray-400">Live attendance monitoring</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
             {/* Time In/Out Toggle */}
             <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-1 border border-gray-700">
               <Button
@@ -332,9 +332,9 @@ export default function RfidDisplayPage() {
                 Time Out
               </Button>
             </div>
-            <div className="text-right">
+            <div className="text-center md:text-right w-full md:w-auto">
               <div className="text-sm text-gray-400">Last Updated</div>
-              <div className="text-lg font-semibold" suppressHydrationWarning>
+              <div className="text-lg md:text-xl font-semibold" suppressHydrationWarning>
                 {currentTime || "--:--:--"}
               </div>
             </div>
@@ -346,7 +346,7 @@ export default function RfidDisplayPage() {
                 timeoutModeActive
                   ? "bg-orange-600 text-white hover:bg-orange-700"
                   : "bg-orange-500 text-white hover:bg-orange-600"
-              } font-bold text-lg px-6 py-3 shadow-lg`}
+              } font-bold text-base px-4 py-2 md:px-6 md:py-3 shadow-lg w-full md:w-auto`}
             >
               <LogOut className="w-5 h-5 mr-2" />
               {timeoutModeActive ? `Time Out Mode: ${timeoutCountdown}s` : "Record Time Out (5s)"}
@@ -356,7 +356,7 @@ export default function RfidDisplayPage() {
               size="sm"
               onClick={() => fetchLiveAttendance(false)}
               disabled={loadingAttendance}
-              className="border-gray-700 text-white hover:bg-gray-800"
+              className="border-gray-700 bg-gray-600 text-white hover:bg-gray-800 w-full md:w-auto"
             >
               <RefreshCcw className={`w-4 h-4 mr-2 ${loadingAttendance ? "animate-spin" : ""}`} />
               Refresh
@@ -367,8 +367,8 @@ export default function RfidDisplayPage() {
         {/* Latest Scan Display - Large Prominent Display */}
         {latestScan ? (
           <Card className="mb-6 border-4 border-red-500 bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl animate-pulse">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-center gap-8">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                 {/* Photo */}
                 <div className="flex-shrink-0">
                   {latestScan.studentPhoto ? (
@@ -377,66 +377,66 @@ export default function RfidDisplayPage() {
                       alt={latestScan.studentName || "Person"}
                       width={200}
                       height={200}
-                      className="rounded-full border-4 border-red-500 shadow-2xl object-cover"
+                      className="rounded-full border-4 border-red-500 shadow-2xl object-cover w-40 h-40 md:w-[200px] md:h-[200px]"
                     />
                   ) : (
-                    <div className="w-[200px] h-[200px] rounded-full border-4 border-red-500 bg-gray-700 flex items-center justify-center shadow-2xl">
-                      <User className="w-24 h-24 text-gray-400" />
+                    <div className="w-40 h-40 md:w-[200px] md:h-[200px] rounded-full border-4 border-red-500 bg-gray-700 flex items-center justify-center shadow-2xl">
+                      <User className="w-16 h-16 md:w-24 md:h-24 text-gray-400" />
                     </div>
                   )}
                 </div>
-                
+
                 {/* Information */}
-                <div className="flex-1 text-center">
-                  <div className="mb-6">
-                    <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Name</div>
-                    <div className="text-5xl font-bold text-white mb-4">{latestScan.studentName || "Unknown"}</div>
+                <div className="flex-1 text-center md:text-left">
+                  <div className="mb-4 md:mb-6">
+                    <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Name</div>
+                    <div className="text-3xl md:text-5xl font-bold text-white">{latestScan.studentName || "Unknown"}</div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                     {/* For Students: Grade & Section */}
                     {!latestScan.isTeacher && (
                       <>
                         <div>
-                          <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Grade Level</div>
-                          <div className="text-3xl font-bold text-white">{latestScan.gradeLevel || "N/A"}</div>
+                          <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Grade Level</div>
+                          <div className="text-2xl md:text-3xl font-bold text-white">{latestScan.gradeLevel || "N/A"}</div>
                         </div>
                         <div>
-                          <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Section</div>
-                          <div className="text-3xl font-bold text-white">{latestScan.section || "N/A"}</div>
+                          <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Section</div>
+                          <div className="text-2xl md:text-3xl font-bold text-white">{latestScan.section || "N/A"}</div>
                         </div>
                       </>
                     )}
-                    
+
                     {/* For Teachers: Subject */}
                     {latestScan.isTeacher && (
-                      <div className="col-span-2">
-                        <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Subject</div>
-                        <div className="text-3xl font-bold text-white">{latestScan.subject || "N/A"}</div>
+                      <div className="col-span-1 sm:col-span-2">
+                        <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Subject</div>
+                        <div className="text-2xl md:text-3xl font-bold text-white">{latestScan.subject || "N/A"}</div>
                       </div>
                     )}
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Date</div>
-                      <div className="text-2xl font-bold text-white">{formatDate(latestScan.scanTime)}</div>
+                      <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Date</div>
+                      <div className="text-xl md:text-2xl font-bold text-white">{formatDate(latestScan.scanTime)}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-400 mb-2 uppercase tracking-wider">Time</div>
-                      <div className="text-2xl font-bold text-white">{formatTime(latestScan.scanTime)}</div>
+                      <div className="text-sm text-gray-400 mb-1 uppercase tracking-wider">Time</div>
+                      <div className="text-xl md:text-2xl font-bold text-white">{formatTime(latestScan.scanTime)}</div>
                     </div>
                   </div>
-                  
+
                   {/* Scan Type Badge */}
-                  <div className="mt-6">
+                  <div className="mt-4 md:mt-6">
                     <Badge
                       className={
                         latestScan.scanType === "timein"
-                          ? "bg-green-600 text-white text-xl px-6 py-2"
+                          ? "bg-green-600 text-white text-lg md:text-xl px-4 py-2 md:px-6 md:py-2"
                           : latestScan.scanType === "timeout"
-                          ? "bg-orange-600 text-white text-xl px-6 py-2"
-                          : "bg-gray-600 text-white text-xl px-6 py-2"
+                          ? "bg-orange-600 text-white text-lg md:text-xl px-4 py-2 md:px-6 md:py-2"
+                          : "bg-gray-600 text-white text-lg md:text-xl px-4 py-2 md:px-6 md:py-2"
                       }
                     >
                       {latestScan.scanType === "timein" ? "TIME IN" : 

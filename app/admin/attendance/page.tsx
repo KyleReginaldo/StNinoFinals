@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "lucide-react"
-import { AdminHeader } from "../components/AdminHeader"
 import { useAuth } from "../hooks/useAuth"
 
 export default function AttendancePage() {
@@ -21,7 +20,6 @@ export default function AttendancePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader admin={admin} />
       
       <main className="container mx-auto px-4 py-8">
         <Card>

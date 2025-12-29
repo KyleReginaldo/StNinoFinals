@@ -5,30 +5,28 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAlert } from "@/lib/use-alert"
 import { useConfirm } from "@/lib/use-confirm"
-import { ArrowLeft, Edit, Eye, Search, Trash2, UserPlus, Users } from "lucide-react"
-import Link from "next/link"
+import { Edit, Eye, Search, Trash2, UserPlus, Users } from "lucide-react"
 import { useEffect, useState } from "react"
-import { AdminHeader } from "../components/AdminHeader"
 import { useAuth } from "../hooks/useAuth"
 
 interface Parent {
@@ -304,16 +302,10 @@ export default function ParentManagementPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-red-50">
-      <AdminHeader admin={admin} />
 
       <div className="container mx-auto px-6 py-8">
         <div className="mb-6 flex items-center gap-4">
-          <Link href="/admin">
-            <Button variant="ghost" size="sm" className="hover:bg-red-50">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </Link>
+         
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-red-800">Parent/Guardian Management</h2>
             <p className="text-gray-600 mt-1">Manage parent and guardian accounts</p>

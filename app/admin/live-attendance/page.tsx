@@ -10,15 +10,12 @@ import {
 } from "@/components/ui/popover"
 import { supabase } from "@/lib/supabaseClient"
 import {
-  ArrowLeft,
   Clock,
   Radio,
   User,
-  Users,
-  X
+  Users
 } from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 
 interface AttendanceRecord {
@@ -149,54 +146,11 @@ export default function LiveAttendancePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-md border-b-4 border-red-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Image
-                src="/logo.png"
-                alt="Sto Niño de Praga Academy Logo"
-                width={60}
-                height={60}
-                className="rounded-full"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-red-800 flex items-center gap-2">
-                  <Radio className="w-5 h-5 text-red-600" />
-                  Live Attendance Monitoring
-                </h1>
-                <p className="text-sm text-gray-600">Sto Niño de Praga Academy</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/admin">
-                <Button
-                  variant="outline"
-                  className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Admin
-                </Button>
-              </Link>
-              <Button
-                onClick={handleClose}
-                variant="outline"
-                size="sm"
-                className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - Split Layout */}
-      <div className="container mx-auto px-4 py-8 h-[calc(100vh-140px)]">
-        <div className="grid grid-cols-4 gap-4 h-full">
+     
+      <div className="container mx-auto px-4 py-8 min-h-[calc(100vh-140px)]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-full">
           {/* Left Side - Today's Attendance List (1/4 = 25%) */}
-          <div className="col-span-1 flex flex-col">
+          <div className="col-span-1 md:col-span-1 flex flex-col">
             <Card className="flex-1 flex flex-col overflow-hidden">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-red-800 flex items-center gap-2">
@@ -322,7 +276,7 @@ export default function LiveAttendancePage() {
           </div>
 
           {/* Right Side - Student Details (3/4 = 75%) */}
-          <div className="col-span-3 flex flex-col">
+          <div className="col-span-1 md:col-span-3 flex flex-col">
             <Card className="flex-1 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-red-800">User Information</CardTitle>
@@ -330,7 +284,7 @@ export default function LiveAttendancePage() {
                   Displays for 10 seconds when a new RFID scan is detected. Click any record to view details.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex items-center justify-center">
+              <CardContent className="flex-1 flex items-center justify-center p-4">
                 {latestRecord ? (
                   <div className="w-full max-w-2xl">
                     <div className="text-center space-y-6">
@@ -343,11 +297,11 @@ export default function LiveAttendancePage() {
                               alt={latestRecord.studentName}
                               width={200}
                               height={200}
-                              className="rounded-full border-4 border-red-800 shadow-lg"
+                              className="rounded-full border-4 border-red-800 shadow-lg w-40 h-40 md:w-48 md:h-48 object-cover"
                             />
                           ) : (
-                            <div className="w-48 h-48 rounded-full border-4 border-red-800 bg-red-100 flex items-center justify-center shadow-lg">
-                              <User className="w-24 h-24 text-red-600" />
+                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-4 border-red-800 bg-red-100 flex items-center justify-center shadow-lg">
+                              <User className="w-20 h-20 md:w-24 md:h-24 text-red-600" />
                             </div>
                           )}
                           <div className="absolute -bottom-2 -right-2 bg-green-500 border-4 border-white rounded-full w-8 h-8 flex items-center justify-center animate-pulse">

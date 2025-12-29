@@ -8,11 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
-  ArrowLeft,
   Download,
   RefreshCcw
 } from "lucide-react"
-import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 
 interface Teacher {
@@ -220,49 +218,49 @@ export default function TeacherAttendancePage() {
       {/* Header */}
       <header className="bg-white shadow-md border-b-4 border-red-800">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-red-800">Teacher Attendance Analytics</h1>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+            <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full md:w-auto">
+              
+              <div className="flex-1">
+                <h1 className="text-xl md:text-2xl font-bold text-red-800">Teacher Attendance Analytics</h1>
                 <p className="text-sm text-gray-600">Track and analyze teacher attendance records</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 flex-wrap">
-              <div className="flex items-center space-x-2">
+
+            <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full md:w-auto">
+              <div className="flex items-center space-x-2 w-full md:w-auto">
                 <Label htmlFor="startDate" className="text-sm">Start Date:</Label>
                 <Input
                   id="startDate"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-40"
+                  className="w-full md:w-40"
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 w-full md:w-auto">
                 <Label htmlFor="endDate" className="text-sm">End Date:</Label>
                 <Input
                   id="endDate"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-40"
+                  className="w-full md:w-40"
                 />
               </div>
-              <Button onClick={fetchData} variant="outline" size="sm">
-                <RefreshCcw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-              {data && data.teachers.length > 0 && (
-                <Button onClick={exportToCSV} variant="outline" size="sm" className="bg-green-50 hover:bg-green-100">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
+              <div className="w-full md:w-auto">
+                <Button onClick={fetchData} variant="outline" size="sm" className="w-full md:w-auto">
+                  <RefreshCcw className="w-4 h-4 mr-2" />
+                  Refresh
                 </Button>
+              </div>
+              {data && data.teachers.length > 0 && (
+                <div className="w-full md:w-auto">
+                  <Button onClick={exportToCSV} variant="outline" size="sm" className="bg-green-50 hover:bg-green-100 w-full md:w-auto">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </div>
               )}
             </div>
           </div>

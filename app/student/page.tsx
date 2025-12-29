@@ -34,14 +34,13 @@ import {
   EyeOff,
   FileText,
   GraduationCap,
-  Home,
   LayoutDashboard,
   Lock,
   LogOut,
   Mail,
   RefreshCcw,
   Search,
-  User,
+  User
 } from "lucide-react"
 
 // Extend jsPDF type to include autoTable
@@ -1435,14 +1434,7 @@ export default function StudentDashboard() {
               >
                 {isLoggingIn ? "Logging in..." : "Login"}
               </Button>
-              <div className="text-center">
-                <Link href="/">
-                  <Button type="button" variant="outline" className="border-gray-300 text-gray-700">
-                    <Home className="w-4 h-4 mr-2" />
-                    Back to Home
-                  </Button>
-                </Link>
-              </div>
+             
             </form>
           </CardContent>
         </Card>
@@ -1673,14 +1665,7 @@ export default function StudentDashboard() {
                 )
               })}
             </div>
-            <div className="mt-8 px-4">
-              <Link href="/">
-                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-50" size="sm">
-                  <Home className="w-4 h-4 mr-3" />
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
+            
           </nav>
         </aside>
 

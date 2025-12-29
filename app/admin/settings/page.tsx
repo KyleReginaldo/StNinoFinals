@@ -17,6 +17,9 @@ interface SystemSettings {
   teacherPortal: boolean
 }
 
+type StringSettingKey = "schoolName" | "academicYear"
+type BoolSettingKey = "automaticBackup" | "rfidIntegration" | "emailNotifications" | "studentPortal" | "teacherPortal"
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>({
     schoolName: "Sto Niño de Praga Academy",
@@ -30,11 +33,11 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
 
-  const handleInputChange = (field: keyof SystemSettings, value: string) => {
+  const handleInputChange = (field: StringSettingKey, value: string) => {
     setSettings((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleToggle = (field: keyof SystemSettings) => {
+  const handleToggle = (field: BoolSettingKey) => {
     setSettings((prev) => ({ ...prev, [field]: !prev[field] }))
   }
 
@@ -54,16 +57,19 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-red-800">System Settings</h2>
-          <p className="text-gray-600">Configure system preferences and integrations</p>
+    <div className="space-y-6 max-w-5xl mx-auto px-4 mt-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <SettingsIcon className="w-10 h-10 text-red-800" />
+          <div>
+            <h2 className="text-3xl font-bold text-red-800">System Settings</h2>
+            <p className="text-gray-600">Global preferences and integrations for your school system</p>
+          </div>
         </div>
-        <SettingsIcon className="w-8 h-8 text-red-800" />
+        <div className="text-sm text-gray-500">Changes apply after saving — review before submitting</div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-red-800">School Information</CardTitle>
@@ -95,63 +101,49 @@ export default function SettingsPage() {
             <CardDescription>Enable or disable system features</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  label: "Automatic Backup",
-                  field: "automaticBackup" as keyof SystemSettings,
-                  description: "Daily off-site backups",
-                },
-                {
-                  label: "RFID Integration",
-                  field: "rfidIntegration" as keyof SystemSettings,
-                  description: "Sync attendance readers",
-                },
-                {
-                  label: "Email Notifications",
-                  field: "emailNotifications" as keyof SystemSettings,
-                  description: "Send alerts to guardians",
-                },
-                {
-                  label: "Student Portal Access",
-                  field: "studentPortal" as keyof SystemSettings,
-                  description: "Allow student logins",
-                },
-                {
-                  label: "Teacher Portal Access",
-                  field: "teacherPortal" as keyof SystemSettings,
-                  description: "Enable teacher dashboard",
-                },
-              ].map((item) => (
-                <label key={item.field} className="flex items-start justify-between gap-4 cursor-pointer">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(
+                [
+                  { label: "Automatic Backup", field: "automaticBackup" as BoolSettingKey, description: "Daily off-site backups and retention" },
+                  { label: "RFID Integration", field: "rfidIntegration" as BoolSettingKey, description: "Use RFID readers for attendance" },
+                  { label: "Email Notifications", field: "emailNotifications" as BoolSettingKey, description: "Send alerts to guardians and staff" },
+                  { label: "Student Portal Access", field: "studentPortal" as BoolSettingKey, description: "Allow students to view records" },
+                  { label: "Teacher Portal Access", field: "teacherPortal" as BoolSettingKey, description: "Enable teacher dashboard and tools" },
+                ]
+              ).map((item) => (
+                <div key={String(item.field)} className="flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-gray-50">
                   <div>
-                    <span className="block font-medium text-sm">{item.label}</span>
-                    <span className="text-xs text-gray-500">{item.description}</span>
+                    <div className="font-medium text-sm text-gray-900">{item.label}</div>
+                    <div className="text-xs text-gray-500">{item.description}</div>
                   </div>
                   <input
                     type="checkbox"
+                    aria-label={item.label}
                     className="h-5 w-5 rounded border-gray-300 text-red-700 focus:ring-red-500 cursor-pointer"
                     checked={settings[item.field] as boolean}
                     onChange={() => handleToggle(item.field)}
                   />
-                </label>
+                </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {feedback && (
-          <div
-            className={`text-sm p-3 rounded-md ${
-              feedback.includes("Error")
-                ? "text-red-700 bg-red-50 border border-red-100"
-                : "text-green-700 bg-green-50 border border-green-100"
-            }`}
-          >
-            {feedback}
-          </div>
-        )}
+      </div>
 
+      {feedback && (
+        <div
+          className={`text-sm p-3 rounded-md ${
+            feedback.includes("Error")
+              ? "text-red-700 bg-red-50 border border-red-100"
+              : "text-green-700 bg-green-50 border border-green-100"
+          }`}
+        >
+          {feedback}
+        </div>
+      )}
+
+      <div className="flex justify-end">
         <Button
           className="bg-red-800 hover:bg-red-700 w-full sm:w-auto"
           onClick={handleSave}
@@ -161,6 +153,7 @@ export default function SettingsPage() {
           {saving ? "Saving..." : "Save Settings"}
         </Button>
       </div>
-    </div>
+      </div>
+    
   )
 }
