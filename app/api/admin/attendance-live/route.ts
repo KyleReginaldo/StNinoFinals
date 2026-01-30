@@ -1020,14 +1020,13 @@ export async function POST(request: Request) {
     console.log('🔍 CHECKING SMS CONDITIONS:');
     console.log('🔍 isTeacher:', isTeacher);
     console.log('🔍 scanType:', scanType);
-    console.log(
-      '🔍 Will enter SMS block:',
-      !isTeacher && scanType === 'timein'
-    );
+    console.log('🔍 Will enter SMS block:', !isTeacher);
 
     try {
-      if (!isTeacher && scanType === 'timein') {
-        console.log('🔔 SMS CHECK: Student time-in detected');
+      if (!isTeacher) {
+        console.log(
+          '🔔 SMS CHECK: Student scan detected (time-in or time-out)'
+        );
         console.log('🔔 isTeacher:', isTeacher);
         console.log('🔔 scanType:', scanType);
 
@@ -1195,17 +1194,32 @@ export async function POST(request: Request) {
             const toPhone = '+639930162099';
             console.log('📱 Sending SMS to:', toPhone);
 
+            // Format date as "January 30, 2026, 10:00 AM"
+            const scanDate = new Date(formattedRecord.scanTime || new Date());
+            const formattedDate = scanDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            });
+            const formattedTime = scanDate.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            });
+            const readableDateTime = `${formattedDate}, ${formattedTime}`;
+
             const smsTemplate =
               process.env.SMS_ON_SCAN_TEMPLATE ||
-              'Dear parent, {studentName} ({gradeLevel} - {section}) was recorded present at {scanTime}. — Sto Niño Portal';
+              'Dear parent, {studentName} ({gradeLevel} - {section}) {scanType} at {scanTime}. — Sto Niño Portal';
             const message = smsTemplate
               .replace('{studentName}', formattedRecord.studentName)
               .replace('{gradeLevel}', formattedRecord.gradeLevel || 'N/A')
               .replace('{section}', formattedRecord.section || 'N/A')
               .replace(
-                '{scanTime}',
-                formattedRecord.scanTime || new Date().toISOString()
-              );
+                '{scanType}',
+                scanType === 'timein' ? 'timed in' : 'timed out'
+              )
+              .replace('{scanTime}', readableDateTime);
 
             console.log('💬 Message to send:', message);
 
