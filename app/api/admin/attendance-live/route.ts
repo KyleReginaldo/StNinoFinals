@@ -1017,9 +1017,31 @@ export async function POST(request: Request) {
       scanTime: formattedRecord.scanTime,
     });
 
+    console.log('🔍 CHECKING SMS CONDITIONS:');
+    console.log('🔍 isTeacher:', isTeacher);
+    console.log('🔍 scanType:', scanType);
+    console.log(
+      '🔍 Will enter SMS block:',
+      !isTeacher && scanType === 'timein'
+    );
+
     try {
       if (!isTeacher && scanType === 'timein') {
+        console.log('🔔 SMS CHECK: Student time-in detected');
+        console.log('🔔 isTeacher:', isTeacher);
+        console.log('🔔 scanType:', scanType);
+
         let parentPhone: string | null = null;
+
+        console.log('🔍 Student info for parent lookup:', {
+          parent_id: personInfo?.parent_id,
+          parentId: personInfo?.parentId,
+          parent_email: personInfo?.parent_email,
+          parentEmail: personInfo?.parentEmail,
+          student_id: personInfo?.student_id,
+          student_number: personInfo?.student_number,
+          id: personInfo?.id,
+        });
 
         try {
           const parentRecords: any[] = [];
@@ -1084,6 +1106,15 @@ export async function POST(request: Request) {
           if (parentRecords && parentRecords.length > 0) {
             const p = parentRecords[0];
             parentPhone = p?.phone || p?.mobile || p?.phone_number || null;
+            console.log('✅ Found parent from database:', {
+              id: p?.id,
+              phone: p?.phone,
+              mobile: p?.mobile,
+              phone_number: p?.phone_number,
+              finalPhone: parentPhone,
+            });
+          } else {
+            console.log('⚠️ No parent records found from database queries');
           }
         } catch (parentQueryError) {
           console.warn(
@@ -1092,6 +1123,7 @@ export async function POST(request: Request) {
           );
         }
 
+        console.log('🔍 Checking direct student fields for parent phone...');
         if (!parentPhone && personInfo) {
           const possibleParentFields = [
             'parent_phone',
@@ -1104,26 +1136,56 @@ export async function POST(request: Request) {
             'emergency_contact',
             'emergencyContact',
           ];
+
+          console.log(
+            '📋 Available fields in personInfo:',
+            Object.keys(personInfo)
+          );
+
           for (const f of possibleParentFields) {
             const val = personInfo[f];
             if (val) {
               parentPhone = val;
+              console.log(`✅ Found parent phone in field "${f}":`, val);
               break;
             }
+          }
+
+          if (!parentPhone) {
+            console.log('❌ No parent phone found in any student field');
+            console.log(
+              '📄 Full personInfo:',
+              JSON.stringify(personInfo, null, 2)
+            );
           }
         }
 
         if (parentPhone) {
+          console.log('📞 Parent phone found:', parentPhone);
+
           const smsEnabled = (
             process.env.SMS_ON_SCAN_ENABLED || 'false'
           ).toLowerCase();
+          console.log('📧 SMS_ON_SCAN_ENABLED:', smsEnabled);
+          console.log(
+            '📧 TEXTBEE_API_KEY:',
+            process.env.TEXTBEE_API_KEY ? 'SET' : 'MISSING'
+          );
+          console.log(
+            '📧 TEXTBEE_DEVICE_ID:',
+            process.env.TEXTBEE_DEVICE_ID ? 'SET' : 'MISSING'
+          );
+
           if (smsEnabled !== 'true' && smsEnabled !== '1') {
             console.log(
-              'SMS notifications are disabled (SMS_ON_SCAN_ENABLED is not set to true)'
+              '❌ SMS notifications are disabled (SMS_ON_SCAN_ENABLED is not set to true)'
             );
           } else {
-            // Sample number - replace with actual parent phone number
+            console.log('✅ SMS is ENABLED, preparing to send...');
+
+            // Hardcoded test number
             const toPhone = '+639930162099';
+            console.log('📱 Sending SMS to:', toPhone);
 
             const smsTemplate =
               process.env.SMS_ON_SCAN_TEMPLATE ||
@@ -1137,18 +1199,26 @@ export async function POST(request: Request) {
                 formattedRecord.scanTime || new Date().toISOString()
               );
 
+            console.log('💬 Message to send:', message);
+
             try {
+              console.log('📤 Calling TextBeeService.sendSms...');
               const messageId = await TextBeeService.sendSms(toPhone, message);
               console.log(
-                'SMS sent successfully via TextBee. Message ID:',
+                '✅ SMS sent successfully via TextBee. Message ID:',
                 messageId
               );
-            } catch (smsError) {
-              console.error('Failed to send SMS via TextBee:', smsError);
+            } catch (smsError: any) {
+              console.error('❌ Failed to send SMS via TextBee:', smsError);
+              console.error(
+                '❌ Error details:',
+                smsError.response?.data || smsError.message
+              );
             }
           }
         } else {
-          console.log('No parent phone found for student, skipping SMS');
+          console.log('❌ No parent phone found for student, skipping SMS');
+          console.log('👤 Person info:', personInfo);
         }
       }
     } catch (smsError) {

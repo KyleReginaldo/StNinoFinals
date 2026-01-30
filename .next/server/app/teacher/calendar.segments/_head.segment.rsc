@@ -1,7 +1,7 @@
 1:"$Sreact.fragment"
-2:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0144379f11d9a4d5.js"],"ViewportBoundary"]
-4:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0144379f11d9a4d5.js"],"MetadataBoundary"]
+2:I[84966,["/_next/static/chunks/bd9b84c618712403.js","/_next/static/chunks/853d83bcf5f9cad2.js"],"ViewportBoundary"]
+4:I[84966,["/_next/static/chunks/bd9b84c618712403.js","/_next/static/chunks/853d83bcf5f9cad2.js"],"MetadataBoundary"]
 5:"$Sreact.suspense"
-0:{"buildId":"mbwq5nbq2iJBHzj5VnGse","rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"7Y9gXDVk2p-849qDeXlXn","rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":"$@3"}],["$","div",null,{"hidden":true,"children":["$","$L4",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":"$@6"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
 3:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
 6:[["$","title","0",{"children":"St. Nino de Praga Academy"}],["$","meta","1",{"name":"description","content":"Official website of St. Nino de Praga Academy"}],["$","meta","2",{"name":"generator","content":"v0.dev"}]]

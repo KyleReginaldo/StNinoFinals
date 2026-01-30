@@ -61,6 +61,7 @@
   "/api/teacher/schedule/route": "app/api/teacher/schedule/route.js",
   "/api/teacher/stats/route": "app/api/teacher/stats/route.js",
   "/api/teacher/students/route": "app/api/teacher/students/route.js",
+  "/api/test/route": "app/api/test/route.js",
   "/guardian/page": "app/guardian/page.js",
   "/page": "app/page.js",
   "/parent-dashboard/page": "app/parent-dashboard/page.js",

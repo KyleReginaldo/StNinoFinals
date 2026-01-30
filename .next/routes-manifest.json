@@ -407,6 +407,12 @@
       "namedRegex": "^/api/teacher/students(?:/)?$"
     },
     {
+      "page": "/api/test",
+      "regex": "^/api/test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test(?:/)?$"
+    },
+    {
       "page": "/guardian",
       "regex": "^/guardian(?:/)?$",
       "routeKeys": {},

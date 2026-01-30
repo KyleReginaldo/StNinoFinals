@@ -61,6 +61,7 @@
   "/api/teacher/schedule/route": "/api/teacher/schedule",
   "/api/teacher/stats/route": "/api/teacher/stats",
   "/api/teacher/students/route": "/api/teacher/students",
+  "/api/test/route": "/api/test",
   "/guardian/page": "/guardian",
   "/page": "/",
   "/parent-dashboard/page": "/parent-dashboard",
