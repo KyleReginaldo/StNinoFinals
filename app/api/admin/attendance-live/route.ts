@@ -1194,17 +1194,19 @@ export async function POST(request: Request) {
             const toPhone = '+639930162099';
             console.log('📱 Sending SMS to:', toPhone);
 
-            // Format date as "January 30, 2026, 10:00 AM"
+            // Format date as "January 30, 2026, 10:00 AM" in Philippine time
             const scanDate = new Date(formattedRecord.scanTime || new Date());
             const formattedDate = scanDate.toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
+              timeZone: 'Asia/Manila',
             });
             const formattedTime = scanDate.toLocaleTimeString('en-US', {
               hour: 'numeric',
               minute: '2-digit',
               hour12: true,
+              timeZone: 'Asia/Manila',
             });
             const readableDateTime = `${formattedDate}, ${formattedTime}`;
 
