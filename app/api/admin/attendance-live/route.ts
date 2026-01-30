@@ -1132,6 +1132,7 @@ export async function POST(request: Request) {
             'parentContact',
             'parent_mobile',
             'parentMobile',
+            'phone_number',
             'phone',
             'emergency_contact',
             'emergencyContact',
@@ -1161,7 +1162,14 @@ export async function POST(request: Request) {
         }
 
         if (parentPhone) {
-          console.log('📞 Parent phone found:', parentPhone);
+          console.log('📞 Parent phone found (raw):', parentPhone);
+
+          // Convert 09XX to +639XX format
+          let formattedPhone = parentPhone.toString().trim();
+          if (formattedPhone.startsWith('0')) {
+            formattedPhone = '+63' + formattedPhone.slice(1);
+            console.log('📞 Converted phone format:', formattedPhone);
+          }
 
           const smsEnabled = (
             process.env.SMS_ON_SCAN_ENABLED || 'false'
