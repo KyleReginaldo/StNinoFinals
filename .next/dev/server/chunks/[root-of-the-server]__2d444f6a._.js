@@ -79,7 +79,7 @@ __turbopack_context__.s([
     "supabase",
     ()=>supabase
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$supabase$2b$supabase$2d$js$40$2$2e$78$2e$0$2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@supabase+supabase-js@2.78.0/node_modules/@supabase/supabase-js/dist/module/index.js [app-route] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/@supabase/supabase-js/dist/module/index.js [app-route] (ecmascript) <locals>");
 ;
 /**
  * Supabase Client for Client-Side Operations
@@ -95,7 +95,7 @@ const supabaseAnonKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsIn
 // Validate that environment variables are set
 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
-const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$supabase$2b$supabase$2d$js$40$2$2e$78$2e$0$2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(supabaseUrl, supabaseAnonKey);
+const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(supabaseUrl, supabaseAnonKey);
 }),
 "[externals]/next/dist/server/app-render/after-task-async-storage.external.js [external] (next/dist/server/app-render/after-task-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
 
@@ -111,7 +111,7 @@ __turbopack_context__.s([
     ()=>POST
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/supabaseClient.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/next@16.0.8_react-dom@19.2.1_react@19.2.1__react@19.2.1/node_modules/next/server.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 ;
 ;
 async function POST(request) {
@@ -119,7 +119,7 @@ async function POST(request) {
         const body = await request.json();
         const { studentId, email } = body;
         if (!studentId && !email) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 success: false,
                 error: 'Student ID or email is required'
             }, {
@@ -129,7 +129,7 @@ async function POST(request) {
         // Get student data
         const { data: student, error: studentError } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["supabase"].from('users').select('*').eq('id', studentId || '').eq('email', email || '').single();
         if (studentError || !student) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 success: false,
                 error: 'Student not found'
             }, {
@@ -155,77 +155,14 @@ async function POST(request) {
             }, 0);
             gpa = totalGrade / grades.length;
         }
-        // Dummy grades data for testing (fallback if no real data)
-        const dummyGrades = [
-            {
-                id: '1',
-                subject: 'Contemporary Philippine Arts from the Regions',
-                grade: '94',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '2',
-                subject: 'Media and Information Literacy',
-                grade: '94',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '3',
-                subject: 'Physical Education and Health',
-                grade: '97',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '4',
-                subject: 'Filipino sa Piling Larang',
-                grade: '95',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '5',
-                subject: 'Entrepreneurship',
-                grade: '95',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '6',
-                subject: 'Inquiries, Investigations and Immersion',
-                grade: '90',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '7',
-                subject: 'General Physics 2',
-                grade: '96',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '8',
-                subject: 'General Chemistry 2',
-                grade: '96',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '9',
-                subject: 'Work Immersion',
-                grade: '97',
-                lastUpdated: new Date().toISOString()
-            },
-            {
-                id: '10',
-                subject: 'Practical Research 2',
-                grade: '90',
-                lastUpdated: new Date().toISOString()
-            }
-        ];
         // Count active courses (subjects with grades)
         const activeCourses = grades?.length || 0;
-        // Dummy dashboard data
+        // Dashboard data with real grades only
         const dashboardData = {
             stats: {
-                gpa: gpa || 94.0,
-                attendanceRate: attendanceRate !== null ? attendanceRate : 95.5,
-                activeCourses: activeCourses || 10,
+                gpa: gpa || null,
+                attendanceRate: attendanceRate !== null ? attendanceRate : null,
+                activeCourses: activeCourses || 0,
                 pendingTasks: 2
             },
             assignments: [
@@ -298,7 +235,7 @@ async function POST(request) {
                     subject: g.subject,
                     grade: g.grade,
                     lastUpdated: g.updated_at || new Date().toISOString()
-                })) : dummyGrades,
+                })) : [],
             enrollment: {
                 status: 'enrolled',
                 academicYear: '2024-2025',
@@ -359,13 +296,13 @@ async function POST(request) {
                 }
             ]
         };
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
             data: dashboardData
         });
     } catch (error) {
         console.error('Student dashboard API error:', error);
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$8_react$2d$dom$40$19$2e$2$2e$1_react$40$19$2e$2$2e$1_$5f$react$40$19$2e$2$2e$1$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: false,
             error: error?.message || 'Internal server error',
             data: {

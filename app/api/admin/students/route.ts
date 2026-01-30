@@ -24,17 +24,20 @@ const mockStudents = [
     status: 'Pending',
     created_at: new Date().toISOString(),
   },
-]
+];
 
 export async function GET() {
   try {
     // Use admin client for server-side operations (bypasses RLS)
-    let supabaseClient
+    let supabaseClient;
     try {
-      supabaseClient = getSupabaseAdmin()
+      supabaseClient = getSupabaseAdmin();
     } catch (adminError: any) {
-      console.error('Failed to get admin client, falling back to regular client:', adminError)
-      supabaseClient = supabase
+      console.error(
+        'Failed to get admin client, falling back to regular client:',
+        adminError
+      );
+      supabaseClient = supabase;
     }
 
     if (!supabaseClient) {
@@ -42,7 +45,7 @@ export async function GET() {
         success: true,
         students: mockStudents,
         mock: true,
-      })
+      });
     }
 
     const { data, error } = await supabaseClient
@@ -50,30 +53,32 @@ export async function GET() {
       .select('*')
       .eq('role', 'student')
       .order('created_at', { ascending: false })
-      .limit(100)
+      .limit(100);
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('Database error:', error);
       return NextResponse.json({
         success: false,
         error: 'Failed to fetch students',
         students: [],
-      })
+      });
     }
 
     // Transform data to match frontend expectations
     const transformedStudents = (data || []).map((student: any) => ({
       ...student,
       // Computed name field for backwards compatibility
-      name: `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || 'N/A',
-    }))
+      name:
+        `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() ||
+        'N/A',
+    }));
 
     return NextResponse.json({
       success: true,
       students: transformedStudents,
-    })
+    });
   } catch (error: any) {
-    console.error('Students API error:', error)
+    console.error('Students API error:', error);
     // Return 200 with mock data instead of 500 to prevent Internal Server Error
     return NextResponse.json(
       {
@@ -83,13 +88,13 @@ export async function GET() {
         mock: true,
       },
       { status: 200 } // Always return 200, never 500
-    )
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await request.json();
     const {
       first_name,
       last_name,
@@ -103,55 +108,63 @@ export async function POST(request: Request) {
       address,
       rfid,
       password,
-    } = body
+    } = body;
 
     // Validate required fields
-    if (!first_name || !last_name || !student_number || !grade_level || !email || !password) {
+    if (
+      !first_name ||
+      !last_name ||
+      !student_number ||
+      !grade_level ||
+      !email ||
+      !password
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: 'Missing required fields',
         },
         { status: 400 }
-      )
+      );
     }
 
     // Get admin client
-    let supabaseAdmin
+    let supabaseAdmin;
     try {
-      supabaseAdmin = getSupabaseAdmin()
+      supabaseAdmin = getSupabaseAdmin();
     } catch (adminError: any) {
-      console.error('Failed to get admin client:', adminError)
+      console.error('Failed to get admin client:', adminError);
       return NextResponse.json(
         {
           success: false,
           error: 'Server configuration error',
         },
         { status: 500 }
-      )
+      );
     }
 
     // Create auth user using admin client
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        role: 'student',
-        first_name: first_name,
-        last_name: last_name,
-      },
-    })
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          role: 'student',
+          first_name: first_name,
+          last_name: last_name,
+        },
+      });
 
     if (authError) {
-      console.error('Auth error:', authError)
+      console.error('Auth error:', authError);
       return NextResponse.json(
         {
           success: false,
           error: authError.message || 'Failed to create authentication account',
         },
         { status: 400 }
-      )
+      );
     }
 
     if (!authData.user) {
@@ -161,7 +174,7 @@ export async function POST(request: Request) {
           error: 'Failed to create user account',
         },
         { status: 400 }
-      )
+      );
     }
 
     // Insert into users table
@@ -180,20 +193,20 @@ export async function POST(request: Request) {
       rfid: rfid || null,
       role: 'student',
       status: 'Active',
-    })
+    });
 
     if (insertError) {
-      console.error('Insert error:', insertError)
+      console.error('Insert error:', insertError);
       // Try to delete the auth user if database insert fails
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-      
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+
       return NextResponse.json(
         {
           success: false,
           error: insertError.message || 'Failed to create student record',
         },
         { status: 400 }
-      )
+      );
     }
 
     // Send welcome email with login credentials
@@ -226,15 +239,15 @@ export async function POST(request: Request) {
         email: email,
         password: password,
       },
-    })
+    });
   } catch (error: any) {
-    console.error('POST Students API error:', error)
+    console.error('POST Students API error:', error);
     return NextResponse.json(
       {
         success: false,
         error: error?.message || 'Internal server error',
       },
       { status: 500 }
-    )
+    );
   }
 }

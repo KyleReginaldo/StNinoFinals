@@ -1,16 +1,16 @@
-import { supabase } from '@/lib/supabaseClient'
-import { NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabaseClient';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { studentId, email } = body
+    const body = await request.json();
+    const { studentId, email } = body;
 
     if (!studentId && !email) {
       return NextResponse.json(
         { success: false, error: 'Student ID or email is required' },
         { status: 400 }
-      )
+      );
     }
 
     // Get student data
@@ -19,119 +19,56 @@ export async function POST(request: Request) {
       .select('*')
       .eq('id', studentId || '')
       .eq('email', email || '')
-      .single()
+      .single();
 
     if (studentError || !student) {
       return NextResponse.json(
         { success: false, error: 'Student not found' },
         { status: 404 }
-      )
+      );
     }
 
     // Get attendance records for this student
     const { data: attendanceRecords, error: attendanceError } = await supabase
       .from('attendance_records')
       .select('*')
-      .eq('user_id', student.id)
+      .eq('user_id', student.id);
 
     // Calculate attendance rate
-    let attendanceRate = null
+    let attendanceRate = null;
     if (attendanceRecords && attendanceRecords.length > 0) {
       const presentCount = attendanceRecords.filter(
-        (record: any) => record.status === 'present' || record.status === 'Present'
-      ).length
-      attendanceRate = (presentCount / attendanceRecords.length) * 100
+        (record: any) =>
+          record.status === 'present' || record.status === 'Present'
+      ).length;
+      attendanceRate = (presentCount / attendanceRecords.length) * 100;
     }
 
     // Get grades for this student
     const { data: grades, error: gradesError } = await supabase
       .from('grades')
       .select('*')
-      .eq('student_id', student.id)
+      .eq('student_id', student.id);
 
     // Calculate GPA from grades
-    let gpa = null
+    let gpa = null;
     if (grades && grades.length > 0) {
       const totalGrade = grades.reduce((sum: number, grade: any) => {
-        const numericGrade = parseFloat(grade.grade)
-        return sum + (isNaN(numericGrade) ? 0 : numericGrade)
-      }, 0)
-      gpa = totalGrade / grades.length
+        const numericGrade = parseFloat(grade.grade);
+        return sum + (isNaN(numericGrade) ? 0 : numericGrade);
+      }, 0);
+      gpa = totalGrade / grades.length;
     }
 
-    // Dummy grades data for testing (fallback if no real data)
-    const dummyGrades = [
-      {
-        id: '1',
-        subject: 'Contemporary Philippine Arts from the Regions',
-        grade: '94',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        subject: 'Media and Information Literacy',
-        grade: '94',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        subject: 'Physical Education and Health',
-        grade: '97',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '4',
-        subject: 'Filipino sa Piling Larang',
-        grade: '95',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '5',
-        subject: 'Entrepreneurship',
-        grade: '95',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '6',
-        subject: 'Inquiries, Investigations and Immersion',
-        grade: '90',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '7',
-        subject: 'General Physics 2',
-        grade: '96',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '8',
-        subject: 'General Chemistry 2',
-        grade: '96',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '9',
-        subject: 'Work Immersion',
-        grade: '97',
-        lastUpdated: new Date().toISOString(),
-      },
-      {
-        id: '10',
-        subject: 'Practical Research 2',
-        grade: '90',
-        lastUpdated: new Date().toISOString(),
-      },
-    ]
-
     // Count active courses (subjects with grades)
-    const activeCourses = grades?.length || 0
+    const activeCourses = grades?.length || 0;
 
-    // Dummy dashboard data
+    // Dashboard data with real grades only
     const dashboardData = {
       stats: {
-        gpa: gpa || 94.0,
-        attendanceRate: attendanceRate !== null ? attendanceRate : 95.5,
-        activeCourses: activeCourses || 10,
+        gpa: gpa || null,
+        attendanceRate: attendanceRate !== null ? attendanceRate : null,
+        activeCourses: activeCourses || 0,
         pendingTasks: 2,
       },
       assignments: [
@@ -146,7 +83,9 @@ export async function POST(request: Request) {
           id: '2',
           title: 'Business Plan',
           subject: 'Entrepreneurship',
-          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          dueDate: new Date(
+            Date.now() + 14 * 24 * 60 * 60 * 1000
+          ).toISOString(),
           status: 'pending',
         },
       ],
@@ -199,14 +138,15 @@ export async function POST(request: Request) {
           },
         ],
       },
-      grades: grades && grades.length > 0 
-        ? grades.map((g: any) => ({
-            id: g.id,
-            subject: g.subject,
-            grade: g.grade,
-            lastUpdated: g.updated_at || new Date().toISOString(),
-          }))
-        : dummyGrades,
+      grades:
+        grades && grades.length > 0
+          ? grades.map((g: any) => ({
+              id: g.id,
+              subject: g.subject,
+              grade: g.grade,
+              lastUpdated: g.updated_at || new Date().toISOString(),
+            }))
+          : [],
       enrollment: {
         status: 'enrolled',
         academicYear: '2024-2025',
@@ -215,25 +155,57 @@ export async function POST(request: Request) {
         strand: 'STEM',
       },
       subjects: [
-        { id: '1', subject: 'Contemporary Philippine Arts from the Regions', teacher: 'Prof. Maria Santos' },
-        { id: '2', subject: 'Media and Information Literacy', teacher: 'Prof. Juan Garcia' },
-        { id: '3', subject: 'Physical Education and Health', teacher: 'Coach Rodriguez' },
-        { id: '4', subject: 'Filipino sa Piling Larang', teacher: 'Prof. Ana Cruz' },
+        {
+          id: '1',
+          subject: 'Contemporary Philippine Arts from the Regions',
+          teacher: 'Prof. Maria Santos',
+        },
+        {
+          id: '2',
+          subject: 'Media and Information Literacy',
+          teacher: 'Prof. Juan Garcia',
+        },
+        {
+          id: '3',
+          subject: 'Physical Education and Health',
+          teacher: 'Coach Rodriguez',
+        },
+        {
+          id: '4',
+          subject: 'Filipino sa Piling Larang',
+          teacher: 'Prof. Ana Cruz',
+        },
         { id: '5', subject: 'Entrepreneurship', teacher: 'Prof. Carlos Reyes' },
-        { id: '6', subject: 'Inquiries, Investigations and Immersion', teacher: 'Prof. Lisa Torres' },
-        { id: '7', subject: 'General Physics 2', teacher: 'Prof. Robert Martinez' },
-        { id: '8', subject: 'General Chemistry 2', teacher: 'Prof. Patricia Lopez' },
+        {
+          id: '6',
+          subject: 'Inquiries, Investigations and Immersion',
+          teacher: 'Prof. Lisa Torres',
+        },
+        {
+          id: '7',
+          subject: 'General Physics 2',
+          teacher: 'Prof. Robert Martinez',
+        },
+        {
+          id: '8',
+          subject: 'General Chemistry 2',
+          teacher: 'Prof. Patricia Lopez',
+        },
         { id: '9', subject: 'Work Immersion', teacher: 'Prof. Michael Brown' },
-        { id: '10', subject: 'Practical Research 2', teacher: 'Prof. Jennifer White' },
+        {
+          id: '10',
+          subject: 'Practical Research 2',
+          teacher: 'Prof. Jennifer White',
+        },
       ],
-    }
+    };
 
     return NextResponse.json({
       success: true,
       data: dashboardData,
-    })
+    });
   } catch (error: any) {
-    console.error('Student dashboard API error:', error)
+    console.error('Student dashboard API error:', error);
     return NextResponse.json(
       {
         success: false,
@@ -263,7 +235,6 @@ export async function POST(request: Request) {
         },
       },
       { status: 500 }
-    )
+    );
   }
 }
-
