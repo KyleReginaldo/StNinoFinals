@@ -1191,7 +1191,7 @@ export async function POST(request: Request) {
             console.log('✅ SMS is ENABLED, preparing to send...');
 
             // Hardcoded test number
-            const toPhone = '+639930162099';
+            const toPhone = formattedPhone;
             console.log('📱 Sending SMS to:', toPhone);
 
             // Format date as "January 30, 2026, 10:00 AM" in Philippine time
