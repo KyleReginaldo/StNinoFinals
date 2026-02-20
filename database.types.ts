@@ -623,6 +623,7 @@ export type Database = {
           last_name: string;
           medical_notes: string | null;
           middle_name: string | null;
+          password_change_required: boolean | null;
           phone_number: string | null;
           photo_url: string | null;
           province: string | null;
@@ -655,6 +656,7 @@ export type Database = {
           last_name: string;
           medical_notes?: string | null;
           middle_name?: string | null;
+          password_change_required?: boolean | null;
           phone_number?: string | null;
           photo_url?: string | null;
           province?: string | null;
@@ -687,6 +689,7 @@ export type Database = {
           last_name?: string;
           medical_notes?: string | null;
           middle_name?: string | null;
+          password_change_required?: boolean | null;
           phone_number?: string | null;
           photo_url?: string | null;
           province?: string | null;

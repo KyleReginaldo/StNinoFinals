@@ -1,5 +1,6 @@
 'use client';
 
+import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
@@ -69,7 +70,7 @@ export default function StudentLayout({
     if (!storedStudent) {
       // Only redirect if not on the main student page (login page)
       if (pathname !== '/student') {
-        router.push('/student');
+        router.replace('/student');
       }
       setIsLoading(false);
       return;
@@ -81,7 +82,7 @@ export default function StudentLayout({
     } catch (error) {
       console.error('Error parsing student data:', error);
       localStorage.removeItem('student');
-      router.push('/student');
+      router.replace('/student');
     }
     setIsLoading(false);
   }, [pathname, router]);
@@ -96,10 +97,12 @@ export default function StudentLayout({
     });
 
     if (confirmed) {
-      await supabase.auth.signOut();
-      localStorage.removeItem('student');
+      // Clear state first
       setStudent(null);
-      router.push('/');
+      localStorage.removeItem('student');
+      await supabase.auth.signOut();
+      // Use replace to avoid back button issues
+      window.location.href = '/';
     }
   };
 
@@ -122,56 +125,68 @@ export default function StudentLayout({
     return <>{children}</>;
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 bg-red-800">
-            <h1 className="text-xl font-bold text-white">Student Portal</h1>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <StudentSidebarContent
-              student={student}
-              navItems={NAV_ITEMS}
-              currentPath={pathname}
-              onLogout={handleLogout}
-            />
-          </div>
-        </div>
-      </aside>
+  console.log('[Student Layout] Student data:', student);
+  console.log(
+    '[Student Layout] Student ID:',
+    student.id,
+    'Type:',
+    typeof student.id
+  );
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <div className="flex items-center justify-center h-16 px-4 bg-red-800">
-                <h1 className="text-xl font-bold text-white">Student Portal</h1>
-              </div>
+  return (
+    <PasswordChangeWrapper userId={String(student.id)}>
+      <div className="flex h-screen overflow-hidden bg-gray-50">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex md:flex-shrink-0">
+          <div className="flex flex-col w-64 bg-white border-r border-gray-200">
+            <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 bg-red-800">
+              <h1 className="text-xl font-bold text-white">Student Portal</h1>
+            </div>
+            <div className="flex-1 overflow-y-auto">
               <StudentSidebarContent
                 student={student}
                 navItems={NAV_ITEMS}
                 currentPath={pathname}
                 onLogout={handleLogout}
               />
-            </SheetContent>
-          </Sheet>
-          <h1 className="text-lg font-bold text-red-800">Student Portal</h1>
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </header>
+            </div>
+          </div>
+        </aside>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Mobile Header */}
+          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0">
+                <div className="flex items-center justify-center h-16 px-4 bg-red-800">
+                  <h1 className="text-xl font-bold text-white">
+                    Student Portal
+                  </h1>
+                </div>
+                <StudentSidebarContent
+                  student={student}
+                  navItems={NAV_ITEMS}
+                  currentPath={pathname}
+                  onLogout={handleLogout}
+                />
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-lg font-bold text-red-800">Student Portal</h1>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </header>
+
+          {/* Page Content */}
+          <main className="flex-1 overflow-y-auto">{children}</main>
+        </div>
       </div>
-    </div>
+    </PasswordChangeWrapper>
   );
 }

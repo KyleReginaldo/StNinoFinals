@@ -123,6 +123,10 @@
     "[project]/app/teacher/settings/page": [
       "static/media/GeistMono_Variable.p.73882635.woff2",
       "static/media/Geist_Variable-s.p.f19e4721.woff2"
+    ],
+    "[project]/app/test-password-change/page": [
+      "static/media/GeistMono_Variable.p.73882635.woff2",
+      "static/media/Geist_Variable-s.p.f19e4721.woff2"
     ]
   },
   "appUsingSizeAdjust": true,

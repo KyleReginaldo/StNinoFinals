@@ -34,6 +34,8 @@ import { useAlert } from '@/lib/use-alert';
 import {
   Award,
   BookOpen,
+  Eye,
+  EyeOff,
   GraduationCap,
   Mail,
   MapPin,
@@ -54,6 +56,7 @@ export default function HomePage() {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { user } = useUser();
   const { showAlert } = useAlert();
   const [admissionForm, setAdmissionForm] = useState({
@@ -297,7 +300,17 @@ export default function HomePage() {
                   </Button>
                 </Link>
               ) : (
-                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <Dialog
+                  open={loginOpen}
+                  onOpenChange={(open) => {
+                    setLoginOpen(open);
+                    if (!open) {
+                      // Reset all login state when dialog closes
+                      setIsLoggingIn(false);
+                      setLoginError('');
+                    }
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button className="bg-red-800 hover:bg-red-700 text-white">
                       Login
@@ -327,15 +340,30 @@ export default function HomePage() {
                       </div>
                       <div>
                         <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          value={loginPassword}
-                          placeholder="Enter password"
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          required
-                          disabled={isLoggingIn}
-                        />
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={loginPassword}
+                            placeholder="Enter password"
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            required
+                            disabled={isLoggingIn}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            disabled={isLoggingIn}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                       {loginError && (
                         <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
@@ -353,7 +381,11 @@ export default function HomePage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setLoginOpen(false)}
+                          onClick={() => {
+                            setLoginOpen(false);
+                            setIsLoggingIn(false);
+                            setLoginError('');
+                          }}
                           disabled={isLoggingIn}
                         >
                           Cancel

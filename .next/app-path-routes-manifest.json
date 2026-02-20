@@ -34,9 +34,11 @@
   "/api/admin/update-teacher-rfid/route": "/api/admin/update-teacher-rfid",
   "/api/admissions/approve/route": "/api/admissions/approve",
   "/api/admissions/route": "/api/admissions",
+  "/api/auth/change-password/route": "/api/auth/change-password",
   "/api/auth/login/route": "/api/auth/login",
   "/api/debug/database/route": "/api/debug/database",
   "/api/debug/env/route": "/api/debug/env",
+  "/api/debug/set-password-flag/route": "/api/debug/set-password-flag",
   "/api/grades/route": "/api/grades",
   "/api/health/supabase/route": "/api/health/supabase",
   "/api/journal/route": "/api/journal",
@@ -78,5 +80,6 @@
   "/teacher/journal/page": "/teacher/journal",
   "/teacher/login/page": "/teacher/login",
   "/teacher/page": "/teacher",
-  "/teacher/settings/page": "/teacher/settings"
+  "/teacher/settings/page": "/teacher/settings",
+  "/test-password-change/page": "/test-password-change"
 }

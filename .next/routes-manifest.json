@@ -245,6 +245,12 @@
       "namedRegex": "^/api/admissions/approve(?:/)?$"
     },
     {
+      "page": "/api/auth/change-password",
+      "regex": "^/api/auth/change\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/change\\-password(?:/)?$"
+    },
+    {
       "page": "/api/auth/login",
       "regex": "^/api/auth/login(?:/)?$",
       "routeKeys": {},
@@ -261,6 +267,12 @@
       "regex": "^/api/debug/env(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/debug/env(?:/)?$"
+    },
+    {
+      "page": "/api/debug/set-password-flag",
+      "regex": "^/api/debug/set\\-password\\-flag(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/debug/set\\-password\\-flag(?:/)?$"
     },
     {
       "page": "/api/grades",
@@ -507,6 +519,12 @@
       "regex": "^/teacher/settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/teacher/settings(?:/)?$"
+    },
+    {
+      "page": "/test-password-change",
+      "regex": "^/test\\-password\\-change(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-password\\-change(?:/)?$"
     }
   ],
   "dataRoutes": [],

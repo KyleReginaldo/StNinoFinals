@@ -34,9 +34,11 @@
   "/api/admin/update-teacher-rfid/route": "app/api/admin/update-teacher-rfid/route.js",
   "/api/admissions/approve/route": "app/api/admissions/approve/route.js",
   "/api/admissions/route": "app/api/admissions/route.js",
+  "/api/auth/change-password/route": "app/api/auth/change-password/route.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/debug/database/route": "app/api/debug/database/route.js",
   "/api/debug/env/route": "app/api/debug/env/route.js",
+  "/api/debug/set-password-flag/route": "app/api/debug/set-password-flag/route.js",
   "/api/grades/route": "app/api/grades/route.js",
   "/api/health/supabase/route": "app/api/health/supabase/route.js",
   "/api/journal/route": "app/api/journal/route.js",
@@ -78,5 +80,6 @@
   "/teacher/journal/page": "app/teacher/journal/page.js",
   "/teacher/login/page": "app/teacher/login/page.js",
   "/teacher/page": "app/teacher/page.js",
-  "/teacher/settings/page": "app/teacher/settings/page.js"
+  "/teacher/settings/page": "app/teacher/settings/page.js",
+  "/test-password-change/page": "app/test-password-change/page.js"
 }

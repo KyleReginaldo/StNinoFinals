@@ -253,7 +253,7 @@ const AdmissionPage = () => {
                     <TableHead>Grade Level</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Submitted</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="flex justify-end">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -282,16 +282,20 @@ const AdmissionPage = () => {
                         </a>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {admission.intended_grade_level}
-                        </Badge>
+                        {admission.intended_grade_level ? (
+                          <Badge variant="outline">
+                            {admission.intended_grade_level}
+                          </Badge>
+                        ) : (
+                          <p className="text-gray-500">N/A</p>
+                        )}
                       </TableCell>
                       <TableCell>{getStatusBadge(admission.status)}</TableCell>
                       <TableCell>
                         {new Date(admission.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 justify-end">
                           <Button
                             size="sm"
                             variant="ghost"

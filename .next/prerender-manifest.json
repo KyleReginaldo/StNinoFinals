@@ -801,13 +801,38 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
+    },
+    "/test-password-change": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/test-password-change",
+      "dataRoute": "/test-password-change.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
     }
   },
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "61c4ac36e6d0569a0b627477ec15680c",
-    "previewModeSigningKey": "efa7ad66802cf9cda3270876f319323ee7b77cccc293ff145b25fb09fbfd217a",
-    "previewModeEncryptionKey": "23a780309c4c40efa22d7d0012df2630b08faac493b48db0f129edbc72d3121c"
+    "previewModeId": "dc058bddd245dab3aff4eff8f23b0f29",
+    "previewModeSigningKey": "346fd6dbeae528fc0251568383de1644a92812a37c8bd8ea2d4d584882425f45",
+    "previewModeEncryptionKey": "32877e1e5c49f750f03a6fe2edcefb8e4cf824bf1fbf8ba191cbd1d125e73240"
   }
 }

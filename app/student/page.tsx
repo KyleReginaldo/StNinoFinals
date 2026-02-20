@@ -1117,11 +1117,13 @@ export default function StudentDashboard() {
     });
 
     if (confirmed) {
-      await supabase.auth.signOut();
-      clearStudentSession();
+      // Clear all state immediately
       setStudent(null);
       setDashboardData(null);
-      router.replace('/');
+      clearStudentSession();
+      await supabase.auth.signOut();
+      // Force full page reload to prevent redirect loops
+      window.location.href = '/';
     }
   };
 

@@ -1,10 +1,10 @@
 var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/admin/students/route.js")
-R.c("server/chunks/[root-of-the-server]__b7142698._.js")
-R.c("server/chunks/[root-of-the-server]__67e2e5ce._.js")
-R.c("server/chunks/node_modules__pnpm_2ae86667._.js")
-R.c("server/chunks/[root-of-the-server]__0fa9df0f._.js")
-R.c("server/chunks/[root-of-the-server]__dc6fe484._.js")
-R.c("server/chunks/node_modules__pnpm_d4174a1f._.js")
+R.c("server/chunks/[root-of-the-server]__cb025fa5._.js")
+R.c("server/chunks/[root-of-the-server]__98d6514a._.js")
+R.c("server/chunks/node_modules_ae5569c2._.js")
+R.c("server/chunks/node_modules_@supabase_c4e93f2b._.js")
+R.c("server/chunks/[root-of-the-server]__b2da729a._.js")
+R.c("server/chunks/[root-of-the-server]__7c614e19._.js")
 R.c("server/chunks/_next-internal_server_app_api_admin_students_route_actions_98cc7dc3.js")
-R.m(91280)
-module.exports=R.m(91280).exports
+R.m(47844)
+module.exports=R.m(47844).exports

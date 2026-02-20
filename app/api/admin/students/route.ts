@@ -193,6 +193,7 @@ export async function POST(request: Request) {
       rfid: rfid || null,
       role: 'student',
       status: 'Active',
+      password_change_required: true,
     });
 
     if (insertError) {

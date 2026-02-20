@@ -738,6 +738,7 @@ const AdmissionPage = ()=>{
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
+                                                        className: "flex justify-end",
                                                         children: "Actions"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/admin/admission/page.tsx",
@@ -826,13 +827,20 @@ const AdmissionPage = ()=>{
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
+                                                            children: admission.intended_grade_level ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                                                                 variant: "outline",
                                                                 children: admission.intended_grade_level
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                                lineNumber: 285,
-                                                                columnNumber: 25
+                                                                lineNumber: 286,
+                                                                columnNumber: 27
+                                                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                className: "text-gray-500",
+                                                                children: "N/A"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/admin/admission/page.tsx",
+                                                                lineNumber: 290,
+                                                                columnNumber: 27
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
@@ -843,19 +851,19 @@ const AdmissionPage = ()=>{
                                                             children: getStatusBadge(admission.status)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 289,
+                                                            lineNumber: 293,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
                                                             children: new Date(admission.created_at).toLocaleDateString()
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 290,
+                                                            lineNumber: 294,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
                                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "flex gap-2",
+                                                                className: "flex gap-2 justify-end",
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                                                         size: "sm",
@@ -867,14 +875,14 @@ const AdmissionPage = ()=>{
                                                                                 className: "h-4 w-4 mr-1"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                                                lineNumber: 301,
+                                                                                lineNumber: 305,
                                                                                 columnNumber: 29
                                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                                             "View"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/admin/admission/page.tsx",
-                                                                        lineNumber: 295,
+                                                                        lineNumber: 299,
                                                                         columnNumber: 27
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     (!admission.status || admission.status === 'pending') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -890,14 +898,14 @@ const AdmissionPage = ()=>{
                                                                                         className: "h-4 w-4 mr-1"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/admin/admission/page.tsx",
-                                                                                        lineNumber: 314,
+                                                                                        lineNumber: 318,
                                                                                         columnNumber: 33
                                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                                     "Approve"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                                                lineNumber: 307,
+                                                                                lineNumber: 311,
                                                                                 columnNumber: 31
                                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -911,14 +919,14 @@ const AdmissionPage = ()=>{
                                                                                         className: "h-4 w-4 mr-1"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/admin/admission/page.tsx",
-                                                                                        lineNumber: 324,
+                                                                                        lineNumber: 328,
                                                                                         columnNumber: 33
                                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                                     "Reject"
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                                                lineNumber: 317,
+                                                                                lineNumber: 321,
                                                                                 columnNumber: 31
                                                                             }, ("TURBOPACK compile-time value", void 0))
                                                                         ]
@@ -926,12 +934,12 @@ const AdmissionPage = ()=>{
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                                lineNumber: 294,
+                                                                lineNumber: 298,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 293,
+                                                            lineNumber: 297,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
@@ -961,7 +969,7 @@ const AdmissionPage = ()=>{
                                             children: "Previous"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 338,
+                                            lineNumber: 342,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -974,7 +982,7 @@ const AdmissionPage = ()=>{
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 345,
+                                            lineNumber: 349,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -984,13 +992,13 @@ const AdmissionPage = ()=>{
                                             children: "Next"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 348,
+                                            lineNumber: 352,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 337,
+                                    lineNumber: 341,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
@@ -1019,20 +1027,20 @@ const AdmissionPage = ()=>{
                                     children: "Admission Inquiry Details"
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 365,
+                                    lineNumber: 369,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Complete information about this admission inquiry"
                                 }, void 0, false, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 368,
+                                    lineNumber: 372,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/admission/page.tsx",
-                            lineNumber: 364,
+                            lineNumber: 368,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         selectedAdmission && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1050,14 +1058,14 @@ const AdmissionPage = ()=>{
                                                             className: "h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 377,
+                                                            lineNumber: 381,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         "Student Information"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 376,
+                                                    lineNumber: 380,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1070,7 +1078,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Full Name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 382,
+                                                                    lineNumber: 386,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1082,13 +1090,13 @@ const AdmissionPage = ()=>{
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 383,
+                                                                    lineNumber: 387,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 381,
+                                                            lineNumber: 385,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1098,7 +1106,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Intended Grade"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 389,
+                                                                    lineNumber: 393,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1106,13 +1114,13 @@ const AdmissionPage = ()=>{
                                                                     children: selectedAdmission.intended_grade_level
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 390,
+                                                                    lineNumber: 394,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 388,
+                                                            lineNumber: 392,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1122,7 +1130,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Previous School"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 395,
+                                                                    lineNumber: 399,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1130,25 +1138,25 @@ const AdmissionPage = ()=>{
                                                                     children: selectedAdmission.previous_school || 'Not provided'
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 396,
+                                                                    lineNumber: 400,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 394,
+                                                            lineNumber: 398,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 380,
+                                                    lineNumber: 384,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 375,
+                                            lineNumber: 379,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1158,7 +1166,7 @@ const AdmissionPage = ()=>{
                                                     children: "Contact Information"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 404,
+                                                    lineNumber: 408,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1171,7 +1179,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Parent/Guardian Name"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 409,
+                                                                    lineNumber: 413,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1179,13 +1187,13 @@ const AdmissionPage = ()=>{
                                                                     children: selectedAdmission.parent_name
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 412,
+                                                                    lineNumber: 416,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 408,
+                                                            lineNumber: 412,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1195,7 +1203,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Email Address"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 417,
+                                                                    lineNumber: 421,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1204,13 +1212,13 @@ const AdmissionPage = ()=>{
                                                                     children: selectedAdmission.email_address
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 418,
+                                                                    lineNumber: 422,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 416,
+                                                            lineNumber: 420,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1220,7 +1228,7 @@ const AdmissionPage = ()=>{
                                                                     children: "Phone Number"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 426,
+                                                                    lineNumber: 430,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1229,31 +1237,31 @@ const AdmissionPage = ()=>{
                                                                     children: selectedAdmission.phone_number
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                                    lineNumber: 427,
+                                                                    lineNumber: 431,
                                                                     columnNumber: 23
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 425,
+                                                            lineNumber: 429,
                                                             columnNumber: 21
                                                         }, ("TURBOPACK compile-time value", void 0))
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 407,
+                                                    lineNumber: 411,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 403,
+                                            lineNumber: 407,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 374,
+                                    lineNumber: 378,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 selectedAdmission.additional_message && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1263,7 +1271,7 @@ const AdmissionPage = ()=>{
                                             children: "Additional Message"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 440,
+                                            lineNumber: 444,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1273,18 +1281,18 @@ const AdmissionPage = ()=>{
                                                 children: selectedAdmission.additional_message
                                             }, void 0, false, {
                                                 fileName: "[project]/app/admin/admission/page.tsx",
-                                                lineNumber: 444,
+                                                lineNumber: 448,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 443,
+                                            lineNumber: 447,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 439,
+                                    lineNumber: 443,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1299,7 +1307,7 @@ const AdmissionPage = ()=>{
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 452,
+                                            lineNumber: 456,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1310,13 +1318,13 @@ const AdmissionPage = ()=>{
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 456,
+                                            lineNumber: 460,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 451,
+                                    lineNumber: 455,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1333,14 +1341,14 @@ const AdmissionPage = ()=>{
                                                             className: "h-4 w-4 mr-2"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 470,
+                                                            lineNumber: 474,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         processingId === selectedAdmission.id ? 'Processing...' : 'Approve & Create Account'
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 465,
+                                                    lineNumber: 469,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1352,14 +1360,14 @@ const AdmissionPage = ()=>{
                                                             className: "h-4 w-4 mr-2"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                                            lineNumber: 480,
+                                                            lineNumber: 484,
                                                             columnNumber: 23
                                                         }, ("TURBOPACK compile-time value", void 0)),
                                                         processingId === selectedAdmission.id ? 'Processing...' : 'Reject'
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 475,
+                                                    lineNumber: 479,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             ]
@@ -1372,14 +1380,14 @@ const AdmissionPage = ()=>{
                                                     className: "h-4 w-4 mr-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                                    lineNumber: 495,
+                                                    lineNumber: 499,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 "Send Email"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 487,
+                                            lineNumber: 491,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1388,30 +1396,30 @@ const AdmissionPage = ()=>{
                                             children: "Close"
                                         }, void 0, false, {
                                             fileName: "[project]/app/admin/admission/page.tsx",
-                                            lineNumber: 498,
+                                            lineNumber: 502,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/admin/admission/page.tsx",
-                                    lineNumber: 461,
+                                    lineNumber: 465,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/admin/admission/page.tsx",
-                            lineNumber: 373,
+                            lineNumber: 377,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/admin/admission/page.tsx",
-                    lineNumber: 363,
+                    lineNumber: 367,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/app/admin/admission/page.tsx",
-                lineNumber: 362,
+                lineNumber: 366,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
