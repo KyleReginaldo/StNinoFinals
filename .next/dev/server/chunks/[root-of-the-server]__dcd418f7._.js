@@ -134,33 +134,54 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$nodemailer$2f$lib$2f$nodemailer$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/nodemailer/lib/nodemailer.js [app-route] (ecmascript)");
 ;
-const transporter = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$nodemailer$2f$lib$2f$nodemailer$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].createTransport({
-    service: 'gmail',
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// Create a fresh transporter for every send to avoid stale connection issues.
+// A module-level singleton transporter can have its SMTP connection silently
+// expire, which causes random/intermittent send failures.
+function createTransporter() {
+    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$nodemailer$2f$lib$2f$nodemailer$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: process.env.SMTP_EMAIL,
+            pass: process.env.SMTP_PASS
+        },
+        tls: {
+            rejectUnauthorized: false
+        },
+        // No connection pooling — always open a fresh connection
+        pool: false
+    });
+}
 class EmailService {
     static async sendEmail(options) {
-        try {
-            let response = await transporter.sendMail({
-                from: process.env.SMTP_EMAIL,
-                to: options.to,
-                subject: options.subject,
-                text: options.text,
-                html: options.html
-            });
-            console.log(`Email sent: ${response.messageId}`);
-        } catch (error) {
-            console.error('Error sending email:', error);
-            throw error;
+        const MAX_RETRIES = 3;
+        let lastError;
+        for(let attempt = 1; attempt <= MAX_RETRIES; attempt++){
+            const transporter = createTransporter();
+            try {
+                const response = await transporter.sendMail({
+                    from: process.env.SMTP_EMAIL,
+                    to: options.to,
+                    subject: options.subject,
+                    text: options.text,
+                    html: options.html
+                });
+                console.log(`Email sent (attempt ${attempt}): ${response.messageId}`);
+                return; // success — stop retrying
+            } catch (error) {
+                lastError = error;
+                console.error(`Email attempt ${attempt}/${MAX_RETRIES} failed:`, error);
+                if (attempt < MAX_RETRIES) {
+                    // Wait 1s before retrying to let transient SMTP issues clear
+                    await new Promise((r)=>setTimeout(r, 1000 * attempt));
+                }
+            } finally{
+                // Always close the connection to avoid resource leaks
+                transporter.close();
+            }
         }
+        throw lastError;
     }
     static async sendLoginCredentials(credentials) {
         const html = `
@@ -667,7 +688,8 @@ async function POST(request) {
             address: address || null,
             rfid: rfid || null,
             role: 'student',
-            status: 'Active'
+            status: 'Active',
+            password_change_required: true
         });
         if (insertError) {
             console.error('Insert error:', insertError);

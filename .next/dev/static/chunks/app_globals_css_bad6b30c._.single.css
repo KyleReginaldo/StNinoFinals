@@ -955,7 +955,7 @@ p {
   flex: 1;
 }
 
-.flex-shrink-0 {
+.flex-shrink-0, .shrink-0 {
   flex-shrink: 0;
 }
 
@@ -2797,6 +2797,10 @@ p {
   --cell-size: 2rem;
 }
 
+body[data-scroll-locked] {
+  pointer-events: auto !important;
+}
+
 .file\:border-0::file-selector-button {
   border-width: 0;
 }
@@ -3314,6 +3318,10 @@ p {
   transition-duration: .5s;
 }
 
+.data-\[state\=open\]\:duration-300[data-state="open"] {
+  transition-duration: .3s;
+}
+
 .data-\[state\=open\]\:animate-in[data-state="open"] {
   --tw-enter-opacity: initial;
   --tw-enter-scale: initial;
@@ -3420,6 +3428,10 @@ p {
 
 .data-\[state\=open\]\:duration-500[data-state="open"] {
   animation-duration: .5s;
+}
+
+.data-\[state\=open\]\:duration-300[data-state="open"] {
+  animation-duration: .3s;
 }
 
 .group\/day[data-focused="true"] .group-data-\[focused\=true\]\/day\:relative {

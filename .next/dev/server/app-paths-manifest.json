@@ -1,7 +1,13 @@
 {
-  "/api/auth/change-password/route": "app/api/auth/change-password/route.js",
-  "/api/student/dashboard/route": "app/api/student/dashboard/route.js",
-  "/page": "app/page.js",
-  "/student/dashboard/page": "app/student/dashboard/page.js",
-  "/student/page": "app/student/page.js"
+  "/admin/page": "app/admin/page.js",
+  "/admin/parents/page": "app/admin/parents/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
+  "/admin/teachers/page": "app/admin/teachers/page.js",
+  "/api/admin/attendance/route": "app/api/admin/attendance/route.js",
+  "/api/admin/parents/route": "app/api/admin/parents/route.js",
+  "/api/admin/settings/route": "app/api/admin/settings/route.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/api/admin/students/route": "app/api/admin/students/route.js",
+  "/api/admin/teachers/route": "app/api/admin/teachers/route.js",
+  "/page": "app/page.js"
 }

@@ -263,7 +263,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
-"use client";
+'use client';
 ;
 ;
 ;
@@ -272,39 +272,45 @@ function AlertProvider({ children }) {
     _s();
     const [isOpen, setIsOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [alertOptions, setAlertOptions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
-        message: "",
-        type: "info"
+        message: '',
+        type: 'info'
     });
     const showAlert = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "AlertProvider.useCallback[showAlert]": (options)=>{
             setAlertOptions(options);
-            setIsOpen(true);
+            // Defer opening to the next event-loop tick so any dialog that called
+            // showAlert right before closing has had time to fully unmount its
+            // DismissableLayer. Without this, two Radix layers collide and one never
+            // releases pointer-event ownership — making the page unclickable.
+            setTimeout({
+                "AlertProvider.useCallback[showAlert]": ()=>setIsOpen(true)
+            }["AlertProvider.useCallback[showAlert]"], 0);
         }
     }["AlertProvider.useCallback[showAlert]"], []);
     const getIcon = ()=>{
         switch(alertOptions.type){
-            case "success":
+            case 'success':
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2d$big$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle$3e$__["CheckCircle"], {
                     className: "h-6 w-6 text-green-600"
                 }, void 0, false, {
                     fileName: "[project]/lib/use-alert.tsx",
-                    lineNumber: 44,
+                    lineNumber: 54,
                     columnNumber: 16
                 }, this);
-            case "error":
+            case 'error':
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__XCircle$3e$__["XCircle"], {
                     className: "h-6 w-6 text-red-600"
                 }, void 0, false, {
                     fileName: "[project]/lib/use-alert.tsx",
-                    lineNumber: 46,
+                    lineNumber: 56,
                     columnNumber: 16
                 }, this);
-            case "warning":
+            case 'warning':
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
                     className: "h-6 w-6 text-yellow-600"
                 }, void 0, false, {
                     fileName: "[project]/lib/use-alert.tsx",
-                    lineNumber: 48,
+                    lineNumber: 58,
                     columnNumber: 16
                 }, this);
             default:
@@ -312,7 +318,7 @@ function AlertProvider({ children }) {
                     className: "h-6 w-6 text-blue-600"
                 }, void 0, false, {
                     fileName: "[project]/lib/use-alert.tsx",
-                    lineNumber: 50,
+                    lineNumber: 60,
                     columnNumber: 16
                 }, this);
         }
@@ -320,14 +326,14 @@ function AlertProvider({ children }) {
     const getTitle = ()=>{
         if (alertOptions.title) return alertOptions.title;
         switch(alertOptions.type){
-            case "success":
-                return "Success";
-            case "error":
-                return "Error";
-            case "warning":
-                return "Warning";
+            case 'success':
+                return 'Success';
+            case 'error':
+                return 'Error';
+            case 'warning':
+                return 'Warning';
             default:
-                return "Information";
+                return 'Information';
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AlertContext.Provider, {
@@ -351,13 +357,13 @@ function AlertProvider({ children }) {
                                             children: getTitle()
                                         }, void 0, false, {
                                             fileName: "[project]/lib/use-alert.tsx",
-                                            lineNumber: 76,
+                                            lineNumber: 86,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/lib/use-alert.tsx",
-                                    lineNumber: 74,
+                                    lineNumber: 84,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogDescription"], {
@@ -365,13 +371,13 @@ function AlertProvider({ children }) {
                                     children: alertOptions.message
                                 }, void 0, false, {
                                     fileName: "[project]/lib/use-alert.tsx",
-                                    lineNumber: 78,
+                                    lineNumber: 88,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/lib/use-alert.tsx",
-                            lineNumber: 73,
+                            lineNumber: 83,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogFooter"], {
@@ -380,39 +386,39 @@ function AlertProvider({ children }) {
                                 children: "OK"
                             }, void 0, false, {
                                 fileName: "[project]/lib/use-alert.tsx",
-                                lineNumber: 83,
+                                lineNumber: 93,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/lib/use-alert.tsx",
-                            lineNumber: 82,
+                            lineNumber: 92,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/lib/use-alert.tsx",
-                    lineNumber: 72,
+                    lineNumber: 82,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/lib/use-alert.tsx",
-                lineNumber: 71,
+                lineNumber: 81,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/lib/use-alert.tsx",
-        lineNumber: 69,
+        lineNumber: 79,
         columnNumber: 5
     }, this);
 }
-_s(AlertProvider, "m/U3aHLiknMvhMjcewvvmlrRh7c=");
+_s(AlertProvider, "joNpDoQXOwU+usoSNDxP1hinoog=");
 _c = AlertProvider;
 function useAlert() {
     _s1();
     const context = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useContext"])(AlertContext);
     if (context === undefined) {
-        throw new Error("useAlert must be used within an AlertProvider");
+        throw new Error('useAlert must be used within an AlertProvider');
     }
     return context;
 }
@@ -438,7 +444,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
-"use client";
+'use client';
 ;
 ;
 ;
@@ -447,26 +453,30 @@ function ConfirmProvider({ children }) {
     _s();
     const [isOpen, setIsOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [confirmOptions, setConfirmOptions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
-        message: "",
-        confirmText: "Confirm",
-        cancelText: "Cancel",
-        variant: "default"
+        message: '',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
+        variant: 'default'
     });
     const [resolvePromise, setResolvePromise] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const showConfirm = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "ConfirmProvider.useCallback[showConfirm]": (options)=>{
             setConfirmOptions({
                 ...options,
-                confirmText: options.confirmText || "Confirm",
-                cancelText: options.cancelText || "Cancel",
-                variant: options.variant || "default"
+                confirmText: options.confirmText || 'Confirm',
+                cancelText: options.cancelText || 'Cancel',
+                variant: options.variant || 'default'
             });
-            setIsOpen(true);
             return new Promise({
                 "ConfirmProvider.useCallback[showConfirm]": (resolve)=>{
                     setResolvePromise({
                         "ConfirmProvider.useCallback[showConfirm]": ()=>resolve
                     }["ConfirmProvider.useCallback[showConfirm]"]);
+                    // Defer opening — same reason as showAlert. Prevents DismissableLayer
+                    // collision when showConfirm is called right after closing another dialog.
+                    setTimeout({
+                        "ConfirmProvider.useCallback[showConfirm]": ()=>setIsOpen(true)
+                    }["ConfirmProvider.useCallback[showConfirm]"], 0);
                 }
             }["ConfirmProvider.useCallback[showConfirm]"]);
         }
@@ -485,7 +495,7 @@ function ConfirmProvider({ children }) {
     };
     const getTitle = ()=>{
         if (confirmOptions.title) return confirmOptions.title;
-        return confirmOptions.variant === "destructive" ? "Confirm Action" : "Confirmation";
+        return confirmOptions.variant === 'destructive' ? 'Confirm Action' : 'Confirmation';
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ConfirmContext.Provider, {
         value: {
@@ -504,23 +514,23 @@ function ConfirmProvider({ children }) {
                                     className: "flex items-center gap-3",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__["AlertTriangle"], {
-                                            className: `h-6 w-6 ${confirmOptions.variant === "destructive" ? "text-red-600" : "text-yellow-600"}`
+                                            className: `h-6 w-6 ${confirmOptions.variant === 'destructive' ? 'text-red-600' : 'text-yellow-600'}`
                                         }, void 0, false, {
                                             fileName: "[project]/lib/use-confirm.tsx",
-                                            lineNumber: 80,
+                                            lineNumber: 95,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogTitle"], {
                                             children: getTitle()
                                         }, void 0, false, {
                                             fileName: "[project]/lib/use-confirm.tsx",
-                                            lineNumber: 81,
+                                            lineNumber: 98,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/lib/use-confirm.tsx",
-                                    lineNumber: 79,
+                                    lineNumber: 94,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogDescription"], {
@@ -528,13 +538,13 @@ function ConfirmProvider({ children }) {
                                     children: confirmOptions.message
                                 }, void 0, false, {
                                     fileName: "[project]/lib/use-confirm.tsx",
-                                    lineNumber: 83,
+                                    lineNumber: 100,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/lib/use-confirm.tsx",
-                            lineNumber: 78,
+                            lineNumber: 93,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogFooter"], {
@@ -544,49 +554,49 @@ function ConfirmProvider({ children }) {
                                     children: confirmOptions.cancelText
                                 }, void 0, false, {
                                     fileName: "[project]/lib/use-confirm.tsx",
-                                    lineNumber: 88,
+                                    lineNumber: 105,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogAction"], {
                                     onClick: handleConfirm,
-                                    className: confirmOptions.variant === "destructive" ? "bg-red-600 hover:bg-red-700" : "",
+                                    className: confirmOptions.variant === 'destructive' ? 'bg-red-600 hover:bg-red-700' : '',
                                     children: confirmOptions.confirmText
                                 }, void 0, false, {
                                     fileName: "[project]/lib/use-confirm.tsx",
-                                    lineNumber: 91,
+                                    lineNumber: 108,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/lib/use-confirm.tsx",
-                            lineNumber: 87,
+                            lineNumber: 104,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/lib/use-confirm.tsx",
-                    lineNumber: 77,
+                    lineNumber: 92,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/lib/use-confirm.tsx",
-                lineNumber: 76,
+                lineNumber: 91,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/lib/use-confirm.tsx",
-        lineNumber: 74,
+        lineNumber: 89,
         columnNumber: 5
     }, this);
 }
-_s(ConfirmProvider, "4slVP2x7isv/rWsIcVQmN6vsHcU=");
+_s(ConfirmProvider, "6u/sv1XCU552hJfQZdPe4fFl9eY=");
 _c = ConfirmProvider;
 function useConfirm() {
     _s1();
     const context = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useContext"])(ConfirmContext);
     if (context === undefined) {
-        throw new Error("useConfirm must be used within a ConfirmProvider");
+        throw new Error('useConfirm must be used within a ConfirmProvider');
     }
     return context;
 }

@@ -80,6 +80,16 @@
   }
 }
 
+/* Fix Radix UI pointer-events issue after modal/dialog close.
+   react-remove-scroll sets pointer-events:none on the body while
+   a dialog is open. If cleanup is interrupted (e.g. fast close or
+   animation cancellation) everything becomes unclickable.
+   Keeping pointer-events auto restores interaction while still
+   allowing the scroll-locked overflow:hidden to function normally. */
+body[data-scroll-locked] {
+  pointer-events: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -102,7 +112,9 @@
   h3 {
     @apply text-base font-semibold;
   }
-  h4, h5, h6 {
+  h4,
+  h5,
+  h6 {
     @apply text-sm font-semibold;
   }
   label {

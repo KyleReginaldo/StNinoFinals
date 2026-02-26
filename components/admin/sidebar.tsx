@@ -5,6 +5,7 @@ import {
   CalendarRange,
   LayoutDashboard,
   List,
+  MessageSquare,
   Monitor,
   Proportions,
   Radio,
@@ -99,6 +100,12 @@ export const AdminSidebarContent = () => {
           isSelected={pathname === '/admin/rfid-display'}
           link="/admin/rfid-display"
           icon={Monitor}
+        />
+        <Item
+          label="SMS Tester"
+          isSelected={pathname === '/admin/test-sms'}
+          link="/admin/test-sms"
+          icon={MessageSquare}
         />
         <Item
           label="Settings"

@@ -143,6 +143,12 @@
       "namedRegex": "^/admin/teachers(?:/)?$"
     },
     {
+      "page": "/admin/test-sms",
+      "regex": "^/admin/test\\-sms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/test\\-sms(?:/)?$"
+    },
+    {
       "page": "/api/admin/attendance",
       "regex": "^/api/admin/attendance(?:/)?$",
       "routeKeys": {},
@@ -225,6 +231,18 @@
       "regex": "^/api/admin/teachers(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/teachers(?:/)?$"
+    },
+    {
+      "page": "/api/admin/test-email",
+      "regex": "^/api/admin/test\\-email(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/test\\-email(?:/)?$"
+    },
+    {
+      "page": "/api/admin/test-sms",
+      "regex": "^/api/admin/test\\-sms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/test\\-sms(?:/)?$"
     },
     {
       "page": "/api/admin/update-teacher-rfid",

@@ -1,17 +1,24 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+// Create a fresh transporter for every send to avoid stale connection issues.
+// A module-level singleton transporter can have its SMTP connection silently
+// expire, which causes random/intermittent send failures.
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS upgrade on port 587
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    // No connection pooling — always open a fresh connection
+    pool: false,
+  });
+}
 
 interface EmailOptions {
   to: string;
@@ -40,19 +47,35 @@ interface AdmissionApprovalData {
 
 export class EmailService {
   static async sendEmail(options: EmailOptions): Promise<void> {
-    try {
-      let response = await transporter.sendMail({
-        from: process.env.SMTP_EMAIL,
-        to: options.to,
-        subject: options.subject,
-        text: options.text,
-        html: options.html,
-      });
-      console.log(`Email sent: ${response.messageId}`);
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw error;
+    const MAX_RETRIES = 3;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const transporter = createTransporter();
+      try {
+        const response = await transporter.sendMail({
+          from: process.env.SMTP_EMAIL,
+          to: options.to,
+          subject: options.subject,
+          text: options.text,
+          html: options.html,
+        });
+        console.log(`Email sent (attempt ${attempt}): ${response.messageId}`);
+        return; // success — stop retrying
+      } catch (error) {
+        lastError = error;
+        console.error(`Email attempt ${attempt}/${MAX_RETRIES} failed:`, error);
+        if (attempt < MAX_RETRIES) {
+          // Wait 1s before retrying to let transient SMTP issues clear
+          await new Promise((r) => setTimeout(r, 1000 * attempt));
+        }
+      } finally {
+        // Always close the connection to avoid resource leaks
+        transporter.close();
+      }
     }
+
+    throw lastError;
   }
 
   static async sendLoginCredentials(

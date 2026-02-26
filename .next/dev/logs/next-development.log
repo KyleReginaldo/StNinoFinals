@@ -1,46 +1,24 @@
-[00:00:00.644] Server  LOG      ✓ Ready in 432ms
-[00:00:03.538] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:03.679] Browser LOG     === USER CONTEXT DEBUG ===
-[00:00:03.679] Browser LOG     User object: null
-[00:00:03.679] Browser LOG     User JSON: null
-[00:00:03.679] Browser LOG     User exists? false
-[00:00:03.679] Browser LOG     User has role? undefined
-[00:00:03.679] Browser LOG     ========================
-[00:00:03.679] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:03.679] Browser LOG     Error fetching user: Auth session missing!
-[00:00:15.032] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:15.206] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:15.444] Server  LOG     [Change Password API] Checking for userId: "66e269b1-2034-42a7-bd4f-7db1d45aa33c"
-[00:00:15.468] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:15.468] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:15.468] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:15.468] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:15.468] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
-[00:00:15.468] Browser LOG     [PasswordChangeWrapper] Checking password change for userId: 66e269b1-2034-42a7-bd4f-7db1d45aa33c
-[00:00:15.468] Browser LOG     [PasswordChangeWrapper] Checking password change for userId: 66e269b1-2034-42a7-bd4f-7db1d45aa33c
-[00:00:15.468] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:15.468] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:15.468] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:15.468] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:15.591] Server  LOG     [Change Password API] Query result: {}
-[00:00:15.592] Server  LOG     [Change Password API] Password change required: false
-[00:00:15.602] Server  LOG     [Change Password API] Checking for userId: "66e269b1-2034-42a7-bd4f-7db1d45aa33c"
-[00:00:15.698] Browser LOG     [PasswordChangeWrapper] Response: {"passwordChangeRequired":false,"success":true}
-[00:00:15.698] Browser LOG     [PasswordChangeWrapper] Password change required: false
-[00:00:15.707] Server  LOG     [Change Password API] Query result: {}
-[00:00:15.707] Server  LOG     [Change Password API] Password change required: false
-[00:00:15.811] Browser LOG     [PasswordChangeWrapper] Response: {"passwordChangeRequired":false,"success":true}
-[00:00:15.811] Browser LOG     [PasswordChangeWrapper] Password change required: false
-[00:00:16.912] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:16.912] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:16.912] Browser LOG     [Student Layout] Student data: {"address":null,"admin_title":null,"blood_type":null,"city":null,"created_at":"2026-02-20T02:35:10.327","date_hired":null,"date_of_birth":null,"department":null,"email":"dennis.senaris09@gmail.com","emergency_contact":null,"employee_number":null,"enrollment_date":null,"first_name":"Aldog","gender":null,"grade_level":"grade9","id":"66e269b1-2034-42a7-bd4f-7db1d45aa33c","last_name":"Valen","medical_notes":null,"middle_name":null,"password_change_required":false,"phone_number":null,"photo_url":null,"province":null,"rfid":null,"role":"student","section":null,"specialization":null,"status":null,"student_number":null,"updated_at":"2026-02-20T02:35:10.512532","zip_code":null}
-[00:00:16.912] Browser LOG     [Student Layout] Student ID: 66e269b1-2034-42a7-bd4f-7db1d45aa33c Type: string
-[00:00:18.008] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:18.142] Browser LOG     === USER CONTEXT DEBUG ===
-[00:00:18.142] Browser LOG     User object: null
-[00:00:18.142] Browser LOG     User JSON: null
-[00:00:18.142] Browser LOG     User exists? false
-[00:00:18.142] Browser LOG     User has role? undefined
-[00:00:18.142] Browser LOG     ========================
-[00:00:18.142] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:18.142] Browser LOG     Error fetching user: Auth session missing!
+[00:00:01.886] Server  LOG      ✓ Ready in 1646ms
+[00:00:05.590] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:05.728] Browser LOG     === USER CONTEXT DEBUG ===
+[00:00:05.728] Browser LOG     User object: null
+[00:00:05.728] Browser LOG     User JSON: null
+[00:00:05.728] Browser LOG     User exists? false
+[00:00:05.728] Browser LOG     User has role? undefined
+[00:00:05.728] Browser LOG     ========================
+[00:00:05.728] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:07.045] Browser ERROR   {"__isAuthError":true,"code":"refresh_token_not_found","name":"AuthApiError","status":400}
+[00:00:07.045] Browser LOG     Error fetching user: Auth session missing!
+[00:00:16.155] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:19.365] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:28.696] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:29.890] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:46.502] Server  LOG     Email sent (attempt 1): <8b70e34d-5dde-909b-800c-36001409ee51@gmail.com>
+[00:00:46.504] Server  LOG     Welcome email sent to parent: "kyledennis099@gmail.com"
+[00:03:35.323] Server  LOG      ✓ Compiled in 122ms
+[00:05:19.008] Server  LOG      ✓ Compiled in 9ms
+[00:05:19.142] Server  LOG      ✓ Compiled in 89ms
+[00:06:42.274] Server  LOG     Email sent (attempt 1): <d4078f34-8543-24a6-2101-fe7158deba27@gmail.com>
+[00:06:42.275] Server  LOG     Welcome email sent to parent: "dennissen.a.ris09@gmail.com"
+[00:06:49.555] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:49.873] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
