@@ -674,6 +674,7 @@ function AdminHeader({ admin, canPop }) {
     const handleLogout = async ()=>{
         setIsLoggingOut(true);
         try {
+            localStorage.removeItem('admin');
             const { error } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].auth.signOut();
             if (error) {
                 console.error('Logout error:', error);
@@ -684,7 +685,7 @@ function AdminHeader({ admin, canPop }) {
                 setIsLoggingOut(false);
                 return;
             }
-            window.location.href = '/';
+            window.location.href = '/login';
         } catch (error) {
             console.error('Logout error:', error);
             showAlert({
@@ -707,12 +708,12 @@ function AdminHeader({ admin, canPop }) {
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$admin$2f$mobile$2d$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["MobileSidebar"], {
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$admin$2f$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AdminSidebarContent"], {}, void 0, false, {
                                     fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                    lineNumber: 58,
+                                    lineNumber: 59,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                lineNumber: 57,
+                                lineNumber: 58,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -723,7 +724,7 @@ function AdminHeader({ admin, canPop }) {
                                 className: "rounded-full bg-white p-1"
                             }, void 0, false, {
                                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                lineNumber: 61,
+                                lineNumber: 62,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -733,7 +734,7 @@ function AdminHeader({ admin, canPop }) {
                                         children: "Admin Portal"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                        lineNumber: 69,
+                                        lineNumber: 70,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -741,19 +742,19 @@ function AdminHeader({ admin, canPop }) {
                                         children: "Sto. Niño de Praga Academy"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                        lineNumber: 70,
+                                        lineNumber: 71,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                lineNumber: 68,
+                                lineNumber: 69,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                        lineNumber: 55,
+                        lineNumber: 56,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -767,7 +768,7 @@ function AdminHeader({ admin, canPop }) {
                                         children: adminName
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                        lineNumber: 78,
+                                        lineNumber: 79,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -776,13 +777,13 @@ function AdminHeader({ admin, canPop }) {
                                         children: "Administrator"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                        lineNumber: 79,
+                                        lineNumber: 80,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                lineNumber: 77,
+                                lineNumber: 78,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -792,29 +793,29 @@ function AdminHeader({ admin, canPop }) {
                                 children: isLoggingOut ? 'Logging out...' : 'Logout'
                             }, void 0, false, {
                                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                                lineNumber: 86,
+                                lineNumber: 87,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                        lineNumber: 76,
+                        lineNumber: 77,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/admin/components/AdminHeader.tsx",
-                lineNumber: 54,
+                lineNumber: 55,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/app/admin/components/AdminHeader.tsx",
-            lineNumber: 53,
+            lineNumber: 54,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/admin/components/AdminHeader.tsx",
-        lineNumber: 52,
+        lineNumber: 53,
         columnNumber: 5
     }, this);
 }
@@ -877,19 +878,19 @@ function useAuth() {
                         if (error) {
                             console.error('Auth error:', error);
                             localStorage.removeItem('admin');
-                            window.location.href = '/';
+                            window.location.href = '/login?role=admin';
                             return;
                         }
                         if (!data.user) {
                             localStorage.removeItem('admin');
-                            window.location.href = '/';
+                            window.location.href = '/login?role=admin';
                             return;
                         }
                         const { data: adminData, error: adminError } = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].from('users').select('*').eq('email', data.user.email || '').eq('role', 'admin').single();
                         if (adminError || !adminData) {
                             console.error('Admin check error:', adminError);
                             localStorage.removeItem('admin');
-                            window.location.href = '/';
+                            window.location.href = '/login?role=admin';
                             return;
                         }
                         setAdmin(adminData);
@@ -897,7 +898,7 @@ function useAuth() {
                     } catch (error) {
                         console.error('Unexpected error:', error);
                         localStorage.removeItem('admin');
-                        window.location.href = '/';
+                        window.location.href = '/login?role=admin';
                     } finally{
                         setLoading(false);
                     }

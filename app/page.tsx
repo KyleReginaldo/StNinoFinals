@@ -10,14 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,13 +21,10 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import {
   Award,
   BookOpen,
-  Eye,
-  EyeOff,
   GraduationCap,
   Mail,
   MapPin,
@@ -50,13 +39,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const { user } = useUser();
   const { showAlert } = useAlert();
   const [admissionForm, setAdmissionForm] = useState({
@@ -135,118 +118,10 @@ export default function HomePage() {
     console.log('========================');
   }, [user]);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    setIsLoggingIn(true);
-
-    try {
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password: loginPassword,
-        });
-
-      if (authError) {
-        setLoginError(authError.message);
-        setIsLoggingIn(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setLoginError('Login failed. Please try again.');
-        setIsLoggingIn(false);
-        return;
-      }
-
-      let userProfile = null;
-      let redirectPath = '/';
-
-      const { data, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .ilike('email', loginEmail)
-        .single();
-
-      if (profileError || !data) {
-        console.error('Profile fetch error:', profileError);
-        setLoginError(
-          'No account found with this email. Please check your credentials or contact the administrator.'
-        );
-        await supabase.auth.signOut();
-        setIsLoggingIn(false);
-        return;
-      }
-
-      userProfile = data;
-      const userRole = data.role;
-
-      if (userRole === 'teacher') {
-        localStorage.setItem('teacher', JSON.stringify(data));
-        redirectPath = '/teacher';
-      } else if (userRole === 'student') {
-        localStorage.setItem('student', JSON.stringify(data));
-        redirectPath = '/student';
-      } else if (userRole === 'admin') {
-        localStorage.setItem('admin', JSON.stringify(data));
-        redirectPath = '/admin';
-      } else if (userRole === 'parent') {
-        localStorage.setItem('parent', JSON.stringify(data));
-
-        const { data: relationships } = await supabase
-          .from('user_relationships')
-          .select(
-            'related_user_id, users!user_relationships_related_user_id_fkey(*)'
-          )
-          .eq('user_id', data.id)
-          .eq('users.role', 'student');
-
-        if (relationships) {
-          const children = relationships
-            .map((rel: any) => rel.users)
-            .filter(Boolean);
-          localStorage.setItem('parentChildren', JSON.stringify(children));
-        }
-
-        redirectPath = '/parent-dashboard';
-      } else {
-        setLoginError(
-          `Invalid user role: ${userRole}. Please contact the administrator.`
-        );
-        await supabase.auth.signOut();
-        setIsLoggingIn(false);
-        return;
-      }
-
-      if (!userProfile) {
-        setLoginError('Profile not found. Please contact the administrator.');
-        await supabase.auth.signOut();
-        setIsLoggingIn(false);
-        return;
-      }
-
-      setLoginOpen(false);
-      window.location.href = redirectPath;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setLoginError(error?.message || 'Network error. Please try again.');
-      setIsLoggingIn(false);
-    }
-  };
   const link =
     user?.role === 'parent' ? '/parent-dashboard' : `/${user?.role || ''}`;
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 transition-all scroll-smooth">
-      {/* Loading Overlay */}
-      {isLoggingIn && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 flex flex-col items-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-800 mb-4"></div>
-            <p className="text-gray-700 font-medium">Logging in...</p>
-            <p className="text-gray-500 text-sm mt-2">Please wait</p>
-          </div>
-        </div>
-      )}
       {/* Header */}
       <header className="bg-white shadow-md border-b-4 border-red-800 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
@@ -300,100 +175,11 @@ export default function HomePage() {
                   </Button>
                 </Link>
               ) : (
-                <Dialog
-                  open={loginOpen}
-                  onOpenChange={(open) => {
-                    setLoginOpen(open);
-                    if (!open) {
-                      // Reset all login state when dialog closes
-                      setIsLoggingIn(false);
-                      setLoginError('');
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <Button className="bg-red-800 hover:bg-red-700 text-white">
-                      Login
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-red-800">
-                        Login to Portal
-                      </DialogTitle>
-                      <DialogDescription>
-                        Enter your credentials to access your account
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleLoginSubmit} className="space-y-4">
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={loginEmail}
-                          placeholder="Enter email address"
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          required
-                          disabled={isLoggingIn}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="password">Password</Label>
-                        <div className="relative">
-                          <Input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            value={loginPassword}
-                            placeholder="Enter password"
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            required
-                            disabled={isLoggingIn}
-                            className="pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                            disabled={isLoggingIn}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      {loginError && (
-                        <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
-                          {loginError}
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <Button
-                          type="submit"
-                          className="bg-red-800 hover:bg-red-700"
-                          disabled={isLoggingIn}
-                        >
-                          {isLoggingIn ? 'Logging in...' : 'Login'}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            setLoginOpen(false);
-                            setIsLoggingIn(false);
-                            setLoginError('');
-                          }}
-                          disabled={isLoggingIn}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Link href="/login">
+                  <Button className="bg-red-800 hover:bg-red-700 text-white">
+                    Login
+                  </Button>
+                </Link>
               )}
             </nav>
             {/* Mobile Menu Button */}
@@ -451,15 +237,11 @@ export default function HomePage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Button
-                    className="w-full bg-red-800 hover:bg-red-700 text-white"
-                    onClick={() => {
-                      setLoginOpen(true);
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Login
-                  </Button>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-red-800 hover:bg-red-700 text-white">
+                      Login
+                    </Button>
+                  </Link>
                 )}
               </nav>
             </div>

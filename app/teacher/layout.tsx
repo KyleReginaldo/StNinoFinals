@@ -34,7 +34,7 @@ export default function TeacherLayout({
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isLoginPage = pathname === '/teacher/login';
+  const isLoginPage = pathname === '/teacher/login' || pathname === '/login';
 
   // Check if teacher is logged in
   useEffect(() => {
@@ -51,10 +51,10 @@ export default function TeacherLayout({
       } catch (error) {
         console.error('Error parsing stored teacher data:', error);
         localStorage.removeItem('teacher');
-        router.push('/teacher/login');
+        router.push('/login?role=teacher');
       }
     } else {
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
     }
     setIsLoading(false);
   }, [isLoginPage, router]);
@@ -71,7 +71,7 @@ export default function TeacherLayout({
       setTeacher(null);
       localStorage.removeItem('teacher');
       await supabase.auth.signOut();
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
 

@@ -42,10 +42,10 @@ export default function TeacherWrapper({ children }: TeacherWrapperProps) {
       } catch (error) {
         console.error('Error parsing stored teacher data:', error);
         localStorage.removeItem('teacher');
-        router.push('/teacher/login');
+        router.push('/login?role=teacher');
       }
     } else {
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
     }
     setIsLoading(false);
   }, [router]);
@@ -62,7 +62,7 @@ export default function TeacherWrapper({ children }: TeacherWrapperProps) {
       await supabase.auth.signOut();
       localStorage.removeItem('teacher');
       setTeacher(null);
-      router.push('/');
+      window.location.href = '/login';
     }
   };
 

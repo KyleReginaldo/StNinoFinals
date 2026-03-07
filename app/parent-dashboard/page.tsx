@@ -212,7 +212,7 @@ export default function ParentDashboardPage() {
     const childrenData = localStorage.getItem('parentChildren');
 
     if (!parentData) {
-      router.push('/');
+      router.push('/login?role=parent');
       return;
     }
 
@@ -233,7 +233,7 @@ export default function ParentDashboardPage() {
       }
     } catch (error) {
       console.error('Error parsing parent data:', error);
-      router.push('/');
+      router.push('/login?role=parent');
     } finally {
       setLoading(false);
     }
@@ -251,7 +251,7 @@ export default function ParentDashboardPage() {
       localStorage.removeItem('parent');
       localStorage.removeItem('parentChildren');
       await supabase.auth.signOut();
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
 

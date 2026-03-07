@@ -67,9 +67,9 @@ export default function StudentLayout({
   useEffect(() => {
     const storedStudent = localStorage.getItem('student');
     if (!storedStudent) {
-      // Only redirect if not on the main student page (login page)
+      // Only redirect if not on the main student page
       if (pathname !== '/student') {
-        router.replace('/student');
+        router.replace('/login');
       }
       setIsLoading(false);
       return;
@@ -81,7 +81,7 @@ export default function StudentLayout({
     } catch (error) {
       console.error('Error parsing student data:', error);
       localStorage.removeItem('student');
-      router.replace('/student');
+      router.replace('/login');
     }
     setIsLoading(false);
   }, [pathname, router]);
@@ -100,8 +100,7 @@ export default function StudentLayout({
       setStudent(null);
       localStorage.removeItem('student');
       await supabase.auth.signOut();
-      // Use replace to avoid back button issues
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
 

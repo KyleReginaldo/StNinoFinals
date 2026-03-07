@@ -51,7 +51,7 @@ export default function TeacherDashboard() {
   useEffect(() => {
     const storedTeacher = localStorage.getItem('teacher');
     if (!storedTeacher) {
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
       return;
     }
 
@@ -61,7 +61,7 @@ export default function TeacherDashboard() {
     } catch (error) {
       console.error('Error parsing stored teacher data:', error);
       localStorage.removeItem('teacher');
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
     }
   }, [router]);
 

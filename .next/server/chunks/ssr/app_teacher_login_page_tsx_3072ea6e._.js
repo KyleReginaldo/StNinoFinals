@@ -1,0 +1,3 @@
+module.exports=[26271,a=>{"use strict";var b=a.i(87924),c=a.i(50944),d=a.i(72131);function e(){let a=(0,c.useRouter)();return(0,d.useEffect)(()=>{a.replace("/login?role=teacher")},[a]),(0,b.jsx)("div",{className:"min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center",children:(0,b.jsx)("div",{className:"animate-spin rounded-full h-12 w-12 border-b-2 border-red-800"})})}a.s(["default",()=>e])}];
+
+//# sourceMappingURL=app_teacher_login_page_tsx_3072ea6e._.js.map

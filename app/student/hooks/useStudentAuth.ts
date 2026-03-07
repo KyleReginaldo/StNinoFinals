@@ -24,7 +24,7 @@ export function useStudentAuth() {
     const storedStudent = localStorage.getItem('student');
 
     if (!storedStudent) {
-      router.push('/student');
+      router.push('/login?role=student');
       setIsLoading(false);
       return;
     }
@@ -35,7 +35,7 @@ export function useStudentAuth() {
     } catch (error) {
       console.error('Error parsing student data:', error);
       localStorage.removeItem('student');
-      router.push('/student');
+      router.push('/login?role=student');
     }
 
     setIsLoading(false);

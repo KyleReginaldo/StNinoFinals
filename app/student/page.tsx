@@ -2,7 +2,6 @@
 
 import jsPDF from 'jspdf';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 // Import jspdf-autotable as side effect to extend jsPDF
@@ -43,12 +42,9 @@ import {
   Calendar,
   ChevronRight,
   Download,
-  Eye,
-  EyeOff,
   FileText,
   GraduationCap,
   LayoutDashboard,
-  Lock,
   LogOut,
   Mail,
   Menu,
@@ -170,8 +166,6 @@ const NAV_ITEMS = [
 ] as const;
 
 type NavItem = (typeof NAV_ITEMS)[number]['id'];
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const accentStyles: Record<string, string> = {
   blue: 'bg-blue-50 border-blue-200 text-blue-800',
@@ -748,14 +742,7 @@ export default function StudentDashboard() {
 
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [activeNav, setActiveNav] = useState<NavItem>(DEFAULT_VIEW);
   const [showFirstLoginModal, setShowFirstLoginModal] = useState(false);
   const [firstLoginForm, setFirstLoginForm] = useState({
@@ -776,20 +763,6 @@ export default function StudentDashboard() {
   );
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
-
-  const emailErrorMessage = useMemo(() => {
-    if (!loginEmail) return null;
-    return EMAIL_REGEX.test(loginEmail.trim())
-      ? null
-      : 'Enter a valid email address.';
-  }, [loginEmail]);
-
-  const passwordErrorMessage = useMemo(() => {
-    if (!loginPassword) return null;
-    return loginPassword.length >= 6
-      ? null
-      : 'Password must be at least 6 characters.';
-  }, [loginPassword]);
 
   const computedStats = useMemo<DashboardStats>(
     () => ({
@@ -847,9 +820,11 @@ export default function StudentDashboard() {
     restoreStudentFromStorage();
   }, [restoreStudentFromStorage]);
 
-  // Redirect logged-in students to dashboard
+  // Redirect logged-in students to dashboard, unauthenticated to login
   useEffect(() => {
-    if (!isLoading && student && !showFirstLoginModal) {
+    if (!isLoading && !student) {
+      router.push('/login?role=student');
+    } else if (!isLoading && student && !showFirstLoginModal) {
       router.push('/student/dashboard');
     }
   }, [isLoading, student, showFirstLoginModal, router]);
@@ -934,96 +909,6 @@ export default function StudentDashboard() {
       fetchDashboardData(student);
     }
   }, [student, fetchDashboardData]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailTouched(true);
-    setPasswordTouched(true);
-
-    if (emailErrorMessage || passwordErrorMessage) {
-      setLoginError('Please fix the highlighted fields before continuing.');
-      return;
-    }
-
-    setIsLoggingIn(true);
-    setLoginError(null);
-
-    try {
-      const response = await fetch('/api/student/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: loginEmail.trim(),
-          password: loginPassword,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: 'Network error occurred' }));
-        setLoginError(
-          errorData.error ||
-            `Server error (${response.status}). Please try again.`
-        );
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.student) {
-        setStudent(data.student);
-        persistStudentSession(data.student, rememberMe);
-        setLoginEmail('');
-        setLoginPassword('');
-        setEmailTouched(false);
-        setPasswordTouched(false);
-        setLoginError(null);
-
-        // Check if first login
-        if (data.firstLogin) {
-          setShowFirstLoginModal(true);
-          // Pre-fill form with existing data if available
-          setFirstLoginForm({
-            newPassword: '',
-            confirmPassword: '',
-            firstName: data.student.first_name || '',
-            middleName: data.student.middle_name || '',
-            lastName: data.student.last_name || '',
-            address: data.student.address || '',
-            phone: data.student.phone || '',
-            birthDate: data.student.birth_date || '',
-            gender: data.student.gender || '',
-          });
-        } else {
-          // Redirect to dashboard on successful login
-          router.push('/student/dashboard');
-        }
-      } else {
-        setLoginError(
-          data.error || 'Login failed. Please check your credentials.'
-        );
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      const errorMessage = error?.message || String(error) || '';
-      if (errorMessage?.toLowerCase().includes('network')) {
-        setLoginError(
-          'Network error. Please check your internet connection and try again.'
-        );
-      } else if (errorMessage?.includes('Failed to fetch')) {
-        setLoginError(
-          'Cannot connect to the server. Please make sure the server is running.'
-        );
-      } else {
-        setLoginError(
-          `An error occurred: ${errorMessage || 'Please try again.'}`
-        );
-      }
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
 
   const handleFirstLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1122,16 +1007,9 @@ export default function StudentDashboard() {
       setDashboardData(null);
       clearStudentSession();
       await supabase.auth.signOut();
-      // Force full page reload to prevent redirect loops
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
-
-  const loginDisabled =
-    isLoggingIn ||
-    !loginEmail ||
-    !loginPassword ||
-    Boolean(emailErrorMessage || passwordErrorMessage);
 
   const displayName = useMemo(() => {
     if (!student) return 'Student';
@@ -1882,125 +1760,10 @@ export default function StudentDashboard() {
   }
 
   if (!student) {
+    // Redirect is handled in useEffect; show nothing while redirecting
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <Card className="w-full max-w-md border-gray-200">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <Image
-                src="/logo.png"
-                alt="Sto Niño de Praga Academy Logo"
-                width={80}
-                height={80}
-                className="rounded-full"
-              />
-            </div>
-            <CardTitle className="text-2xl font-bold text-gray-800">
-              Student Login
-            </CardTitle>
-            <CardDescription>Sto Niño de Praga Academy</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4" noValidate>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-800">
-                  <Mail className="w-4 h-4 inline mr-2" />
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="student@example.com"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  onBlur={() => setEmailTouched(true)}
-                  aria-invalid={emailTouched && Boolean(emailErrorMessage)}
-                  aria-describedby="login-email-error"
-                  autoComplete="email"
-                  required
-                  className="border-gray-200"
-                />
-                {emailTouched && emailErrorMessage && (
-                  <p id="login-email-error" className="text-sm text-red-600">
-                    {emailErrorMessage}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-800">
-                  <Lock className="w-4 h-4 inline mr-2" />
-                  Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    onBlur={() => setPasswordTouched(true)}
-                    aria-invalid={
-                      passwordTouched && Boolean(passwordErrorMessage)
-                    }
-                    aria-describedby="login-password-error"
-                    autoComplete="current-password"
-                    required
-                    className="border-gray-200 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-800 focus:outline-none"
-                    aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-                {passwordTouched && passwordErrorMessage && (
-                  <p id="login-password-error" className="text-sm text-red-600">
-                    {passwordErrorMessage}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 text-sm text-gray-600">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-red-700 focus:ring-red-500"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  <span>Remember me on this device</span>
-                </label>
-                <Link href="/" className="text-sm text-red-700 hover:underline">
-                  Need help?
-                </Link>
-              </div>
-              {loginError && (
-                <div
-                  className="flex items-start space-x-2 text-red-700 text-sm bg-red-50 p-3 rounded"
-                  role="alert"
-                >
-                  <AlertCircle className="w-4 h-4 mt-0.5" />
-                  <p aria-live="assertive">{loginError}</p>
-                </div>
-              )}
-              <Button
-                type="submit"
-                disabled={loginDisabled}
-                className="w-full bg-red-800 hover:bg-red-700 disabled:opacity-60"
-              >
-                {isLoggingIn ? 'Logging in...' : 'Login'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-800" />
       </div>
     );
   }

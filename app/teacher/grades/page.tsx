@@ -123,7 +123,7 @@ export default function TeacherGrades() {
   useEffect(() => {
     const storedTeacher = localStorage.getItem('teacher');
     if (!storedTeacher) {
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
       return;
     }
     try {
@@ -132,7 +132,7 @@ export default function TeacherGrades() {
     } catch (error) {
       console.error('Error parsing stored teacher data:', error);
       localStorage.removeItem('teacher');
-      router.push('/teacher/login');
+      router.push('/login?role=teacher');
     }
   }, [router]);
 

@@ -305,6 +305,12 @@
       "namedRegex": "^/api/auth/change\\-password(?:/)?$"
     },
     {
+      "page": "/api/auth/detect-role",
+      "regex": "^/api/auth/detect\\-role(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/detect\\-role(?:/)?$"
+    },
+    {
       "page": "/api/auth/login",
       "regex": "^/api/auth/login(?:/)?$",
       "routeKeys": {},
@@ -507,6 +513,12 @@
       "regex": "^/guardian(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/guardian(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
     },
     {
       "page": "/parent",

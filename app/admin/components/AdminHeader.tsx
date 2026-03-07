@@ -27,6 +27,7 @@ export function AdminHeader({ admin, canPop }: AdminHeaderProps) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
+      localStorage.removeItem('admin');
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Logout error:', error);
@@ -37,7 +38,7 @@ export function AdminHeader({ admin, canPop }: AdminHeaderProps) {
         setIsLoggingOut(false);
         return;
       }
-      window.location.href = '/';
+      window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
       showAlert({

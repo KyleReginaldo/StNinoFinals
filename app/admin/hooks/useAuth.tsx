@@ -35,13 +35,13 @@ export function useAuth() {
         if (error) {
           console.error('Auth error:', error);
           localStorage.removeItem('admin');
-          window.location.href = '/';
+          window.location.href = '/login?role=admin';
           return;
         }
 
         if (!data.user) {
           localStorage.removeItem('admin');
-          window.location.href = '/';
+          window.location.href = '/login?role=admin';
           return;
         }
 
@@ -55,7 +55,7 @@ export function useAuth() {
         if (adminError || !adminData) {
           console.error('Admin check error:', adminError);
           localStorage.removeItem('admin');
-          window.location.href = '/';
+          window.location.href = '/login?role=admin';
           return;
         }
 
@@ -64,7 +64,7 @@ export function useAuth() {
       } catch (error) {
         console.error('Unexpected error:', error);
         localStorage.removeItem('admin');
-        window.location.href = '/';
+        window.location.href = '/login?role=admin';
       } finally {
         setLoading(false);
       }

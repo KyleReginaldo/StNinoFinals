@@ -176,7 +176,7 @@ function useStudentAuth() {
         "useStudentAuth.useEffect": ()=>{
             const storedStudent = localStorage.getItem('student');
             if (!storedStudent) {
-                router.push('/student');
+                router.push('/login?role=student');
                 setIsLoading(false);
                 return;
             }
@@ -186,7 +186,7 @@ function useStudentAuth() {
             } catch (error) {
                 console.error('Error parsing student data:', error);
                 localStorage.removeItem('student');
-                router.push('/student');
+                router.push('/login?role=student');
             }
             setIsLoading(false);
         }
