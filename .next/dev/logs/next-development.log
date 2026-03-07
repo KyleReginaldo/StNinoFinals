@@ -1,43 +1,4 @@
-[00:00:00.823] Server  LOG      ✓ Ready in 605ms
-[00:00:19.831] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:19.973] Browser LOG     === USER CONTEXT DEBUG ===
-[00:00:19.973] Browser LOG     User object: null
-[00:00:19.973] Browser LOG     User JSON: null
-[00:00:19.973] Browser LOG     User exists? false
-[00:00:19.973] Browser LOG     User has role? undefined
-[00:00:19.973] Browser LOG     ========================
-[00:00:19.973] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:19.973] Browser LOG     Error fetching user: Auth session missing!
-[00:00:50.745] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:50.745] Browser LOG     === USER CONTEXT DEBUG ===
-[00:00:50.745] Browser LOG     User object: null
-[00:00:50.745] Browser LOG     User JSON: null
-[00:00:50.745] Browser LOG     User exists? false
-[00:00:50.745] Browser LOG     User has role? undefined
-[00:00:50.745] Browser LOG     ========================
-[00:00:50.854] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:00:51.564] Browser ERROR   {"__isAuthError":true,"code":"refresh_token_not_found","name":"AuthApiError","status":400}
-[00:00:51.564] Browser LOG     Error fetching user: Auth session missing!
-[00:03:41.766] Server  LOG      ✓ Compiled in 259ms
-[00:03:46.827] Server  LOG      ✓ Compiled in 168ms
-[00:03:47.371] Browser ERROR   uncaughtError: ReferenceError: Button is not defined
-[00:03:47.375] Browser ERROR   uncaughtError: ReferenceError: Button is not defined
-[00:03:59.636] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:03:59.641] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:03:59.677] Server  LOG      ✓ Compiled in 294ms
-[00:03:59.916] Server  ERROR    ⨯ ReferenceError: Button is not defined
-[00:03:59.995] Server  ERROR    ⨯ ReferenceError: Button is not defined
-[00:04:00.257] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:04:00.297] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:04:01.128] Browser ERROR   uncaughtError: ReferenceError: Button is not defined
-[00:04:01.128] Browser ERROR   uncaughtError: ReferenceError: Button is not defined
-[00:04:30.929] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:04:30.932] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
-[00:04:31.025] Server  LOG      ✓ Compiled in 186ms
-[00:04:31.483] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:04:31.489] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:04:32.128] Browser LOG     Error fetching user: Auth session missing!
-[00:04:32.128] Browser LOG     Error fetching user: Auth session missing!
-[00:04:50.650] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
-[00:05:21.086] Server  LOG      ✓ Compiled in 109ms
-[00:05:38.440] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:00:00.828] Server  LOG      ✓ Ready in 623ms
+[00:00:04.542] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.685] Browser WARN    Image with src "http://localhost:3000/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:04.685] Browser LOG     Error fetching user: Auth session missing!
