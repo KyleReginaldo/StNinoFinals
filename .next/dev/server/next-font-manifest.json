@@ -1,30 +1,10 @@
 {
   "app": {
-    "[project]/app/admin/page": [
-      "static/media/GeistMono_Variable.p.73882635.woff2",
-      "static/media/Geist_Variable-s.p.f19e4721.woff2"
-    ],
     "[project]/app/login/page": [
       "static/media/GeistMono_Variable.p.73882635.woff2",
       "static/media/Geist_Variable-s.p.f19e4721.woff2"
     ],
     "[project]/app/page": [
-      "static/media/GeistMono_Variable.p.73882635.woff2",
-      "static/media/Geist_Variable-s.p.f19e4721.woff2"
-    ],
-    "[project]/app/student/dashboard/page": [
-      "static/media/GeistMono_Variable.p.73882635.woff2",
-      "static/media/Geist_Variable-s.p.f19e4721.woff2"
-    ],
-    "[project]/app/student/enrollment/page": [
-      "static/media/GeistMono_Variable.p.73882635.woff2",
-      "static/media/Geist_Variable-s.p.f19e4721.woff2"
-    ],
-    "[project]/app/student/grades/page": [
-      "static/media/GeistMono_Variable.p.73882635.woff2",
-      "static/media/Geist_Variable-s.p.f19e4721.woff2"
-    ],
-    "[project]/app/student/page": [
       "static/media/GeistMono_Variable.p.73882635.woff2",
       "static/media/Geist_Variable-s.p.f19e4721.woff2"
     ]
