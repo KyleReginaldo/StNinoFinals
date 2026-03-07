@@ -186,7 +186,10 @@ async function GET(request) {
                 id: student.id,
                 name: `${student.first_name} ${student.last_name}`,
                 studentId: student.student_number,
-                grade: studentGrade?.grade?.toString() || ''
+                grade: studentGrade?.grade?.toString() || '',
+                status: studentGrade?.status ?? null,
+                gradeId: studentGrade?.id ?? null,
+                reviewedAt: studentGrade?.reviewed_at ?? null
             };
         }) || [];
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({

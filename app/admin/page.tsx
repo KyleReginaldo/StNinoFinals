@@ -5,6 +5,7 @@ import {
   Activity,
   DollarSign,
   FileText,
+  GraduationCap,
   Radio,
   Settings,
   Shield,
@@ -13,12 +14,42 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useAdminData } from './hooks/useAdminData';
 import { useAuth } from './hooks/useAuth';
+
+interface ChartData {
+  weeklyAttendance: { day: string; present: number; absent: number }[];
+  gradeApprovals: { name: string; value: number; fill: string }[];
+}
 
 export default function AdminPage() {
   const { admin, loading } = useAuth();
   const { stats, loadingStats } = useAdminData(admin);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+
+  useEffect(() => {
+    if (!admin) return;
+    fetch('/api/admin/chart-data')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) setChartData(res.data);
+      })
+      .catch(console.error);
+  }, [admin]);
 
   if (!admin) {
     return null;
@@ -262,6 +293,160 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        {/* Weekly Attendance Bar Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-red-800 flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Weekly Attendance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!chartData ? (
+              <div className="flex items-center justify-center h-56">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={chartData.weeklyAttendance}
+                  margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
+                    dataKey="present"
+                    name="Present"
+                    fill="#16a34a"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="absent"
+                    name="Absent"
+                    fill="#fca5a5"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Grade Approvals Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-800 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Grade Approvals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!chartData ? (
+              <div className="flex items-center justify-center h-56">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent" />
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.gradeApprovals}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {chartData.gradeApprovals.map((entry, index) => (
+                        <Cell key={index} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-4 mt-2">
+                  {chartData.gradeApprovals.map((entry) => (
+                    <div
+                      key={entry.name}
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full inline-block"
+                        style={{ backgroundColor: entry.fill }}
+                      />
+                      <span className="text-gray-600">{entry.name}</span>
+                      <span className="font-semibold text-gray-900">
+                        {entry.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* User Distribution Bar Chart */}
+      <Card className="mt-6 mb-6">
+        <CardHeader>
+          <CardTitle className="text-red-800 flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            User Distribution
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart
+              layout="vertical"
+              data={[
+                {
+                  name: 'Students',
+                  count: stats.totalStudents,
+                  fill: '#991b1b',
+                },
+                {
+                  name: 'Teachers',
+                  count: stats.totalTeachers,
+                  fill: '#1d4ed8',
+                },
+                {
+                  name: 'Parents',
+                  count: (stats as any).totalParents ?? 0,
+                  fill: '#c2410c',
+                },
+              ]}
+              margin={{ top: 4, right: 24, left: 16, bottom: 4 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis type="number" tick={{ fontSize: 12 }} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fontSize: 13 }}
+                width={70}
+              />
+              <Tooltip />
+              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                {[
+                  { fill: '#991b1b' },
+                  { fill: '#1d4ed8' },
+                  { fill: '#c2410c' },
+                ].map((entry, index) => (
+                  <Cell key={index} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,9 +28,16 @@ import {
 } from '@/components/ui/table';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Download, GraduationCap, Save } from 'lucide-react';
+import {
+  CheckCircle2,
+  Clock,
+  Download,
+  GraduationCap,
+  Save,
+  XCircle,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Teacher {
   id: number;
@@ -45,22 +51,70 @@ interface Teacher {
   [key: string]: any;
 }
 
+type GradeStatus = 'pending' | 'approved' | 'rejected' | null;
+
+interface GradeRow {
+  id: number;
+  name: string;
+  studentId: string;
+  grade: string;
+  status: GradeStatus;
+  gradeId: string | null;
+  reviewedAt: string | null;
+}
+
+const STATUS_CONFIG = {
+  approved: {
+    label: 'Approved',
+    rowClass: 'bg-green-50',
+    badgeClass: 'bg-green-100 text-green-800 border-green-300',
+    icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+  },
+  rejected: {
+    label: 'Rejected',
+    rowClass: 'bg-red-50',
+    badgeClass: 'bg-red-100 text-red-800 border-red-300',
+    icon: <XCircle className="w-3.5 h-3.5" />,
+  },
+  pending: {
+    label: 'Pending',
+    rowClass: 'bg-amber-50',
+    badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+    icon: <Clock className="w-3.5 h-3.5" />,
+  },
+};
+
 export default function TeacherGrades() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [teacherClasses, setTeacherClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [gradesData, setGradesData] = useState<any[]>([]);
+  const [gradesData, setGradesData] = useState<GradeRow[]>([]);
   const [isSavingGrades, setIsSavingGrades] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
-  // Update grade value
+  const statusSummary = useMemo(() => {
+    return gradesData.reduce(
+      (acc, s) => {
+        if (s.status === 'approved') acc.approved++;
+        else if (s.status === 'rejected') acc.rejected++;
+        else if (s.status === 'pending') acc.pending++;
+        else if (s.grade) acc.unsaved++;
+        return acc;
+      },
+      { approved: 0, rejected: 0, pending: 0, unsaved: 0 }
+    );
+  }, [gradesData]);
+
+  // Update grade value — only if not approved
   const updateGrade = (studentId: number, value: string) => {
     setGradesData((prev) =>
       prev.map((student) =>
-        student.id === studentId ? { ...student, grade: value } : student
+        student.id === studentId && student.status !== 'approved'
+          ? { ...student, grade: value }
+          : student
       )
     );
   };
@@ -72,7 +126,6 @@ export default function TeacherGrades() {
       router.push('/teacher/login');
       return;
     }
-
     try {
       const teacherData = JSON.parse(storedTeacher);
       setTeacher(teacherData);
@@ -83,32 +136,26 @@ export default function TeacherGrades() {
     }
   }, [router]);
 
-  // Fetch teacher's classes
   useEffect(() => {
-    if (teacher && teacher.id) {
-      fetchTeacherClasses();
-    }
+    if (teacher && teacher.id) fetchTeacherClasses();
   }, [teacher]);
 
-  // Fetch real grades data
   useEffect(() => {
     if (teacher && teacher.id && selectedClassId) {
+      setGradesData([]);
       fetchGradesData();
     }
   }, [teacher, selectedClassId]);
 
   const fetchTeacherClasses = async () => {
     if (!teacher || !teacher.id) return;
-
     try {
       const response = await fetch(
         `/api/teacher/classes?teacherId=${teacher.id}`
       );
       const data = await response.json();
-
       if (data.success && data.classes) {
         setTeacherClasses(data.classes);
-        // Auto-select first class if available
         if (data.classes.length > 0 && !selectedClassId) {
           setSelectedClassId(data.classes[0].id);
         }
@@ -120,52 +167,18 @@ export default function TeacherGrades() {
 
   const fetchGradesData = async () => {
     if (!teacher || !teacher.id || !selectedClassId) return;
-
+    const subject = teacherClasses.find(
+      (c) => c.id === selectedClassId
+    )?.class_name;
+    if (!subject) return;
     setIsLoadingData(true);
     try {
-      const teacherSubject =
-        teacher.subject ||
-        teacher.subjects ||
-        teacher.specialization ||
-        'General';
-
-      // Fetch detailed grades from teacher API
       const response = await fetch(
-        `/api/teacher/grades?teacherId=${teacher.id}&classId=${selectedClassId}&subject=${encodeURIComponent(teacherSubject)}`
+        `/api/teacher/grades?teacherId=${teacher.id}&classId=${selectedClassId}&subject=${encodeURIComponent(subject)}`
       );
       const data = await response.json();
-
       if (data.success && data.data) {
         setGradesData(data.data);
-
-        // Also fetch final grades for each student from grades API
-        const studentIds = data.data.map((student: any) => student.id);
-        const gradePromises = studentIds.map(async (studentId: number) => {
-          try {
-            const gradeResponse = await fetch(
-              `/api/grades?studentId=${studentId}`
-            );
-            const gradeData = await gradeResponse.json();
-
-            if (gradeData.success && gradeData.grades) {
-              // Find the grade for this subject
-              const subjectGrade = gradeData.grades.find(
-                (g: any) => g.subject === teacherSubject
-              );
-              return { studentId, finalGrade: subjectGrade?.grade };
-            }
-            return { studentId, finalGrade: null };
-          } catch (error) {
-            console.error(
-              `Error fetching grade for student ${studentId}:`,
-              error
-            );
-            return { studentId, finalGrade: null };
-          }
-        });
-
-        const savedGrades = await Promise.all(gradePromises);
-        console.log('Loaded saved final grades:', savedGrades);
       }
     } catch (error) {
       console.error('Error fetching grades:', error);
@@ -174,66 +187,63 @@ export default function TeacherGrades() {
     }
   };
 
-  // Save grades
   const handleSaveGrades = async () => {
     if (!teacher || !teacher.id) {
       showAlert({ message: 'Teacher information not found', type: 'error' });
       return;
     }
 
+    // Only submit grades that are NOT approved
+    const submittable = gradesData.filter(
+      (s) => s.status !== 'approved' && s.grade && parseFloat(s.grade) > 0
+    );
+
+    if (submittable.length === 0) {
+      showAlert({
+        message: 'No new or updated grades to submit.',
+        type: 'warning',
+      });
+      return;
+    }
+
     setIsSavingGrades(true);
     try {
-      const teacherSubject =
-        teacher.subject ||
-        teacher.subjects ||
-        teacher.specialization ||
-        'General';
+      const results = await Promise.all(
+        submittable.map(async (student) => {
+          try {
+            const res = await fetch('/api/grades', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                studentId: student.id,
+                subject:
+                  teacherClasses.find((c) => c.id === selectedClassId)
+                    ?.class_name || '',
+                grade: parseFloat(student.grade),
+                teacherId: teacher.id,
+                classId: selectedClassId,
+              }),
+            });
+            return await res.json();
+          } catch {
+            return { success: false };
+          }
+        })
+      );
 
-      // Save grades to student grades API
-      const gradePromises = gradesData.map(async (student) => {
-        const gradeValue = parseFloat(student.grade);
-        if (!gradeValue || gradeValue <= 0)
-          return { success: true, skipped: true }; // Skip if no grade
-
-        try {
-          console.log('Saving grade for student:', {
-            studentId: student.id,
-            subject: teacherSubject,
-            grade: gradeValue,
-          });
-
-          const response = await fetch('/api/grades', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              studentId: student.id,
-              subject: teacherSubject,
-              grade: gradeValue,
-            }),
-          });
-
-          const result = await response.json();
-          console.log('Save result:', result);
-          return result;
-        } catch (error) {
-          console.error(`Error saving grade for student ${student.id}:`, error);
-          return { success: false };
-        }
-      });
-
-      const gradeResults = await Promise.all(gradePromises);
-      const failedGrades = gradeResults.filter((r) => !r.success && !r.skipped);
-
-      if (failedGrades.length > 0) {
+      const failed = results.filter((r) => !r.success);
+      if (failed.length > 0) {
         showAlert({
-          message: `${failedGrades.length} grade(s) failed to save`,
+          message: `${failed.length} grade(s) failed to save.`,
           type: 'warning',
         });
       } else {
         showAlert({
-          message: 'All grades saved successfully!',
+          message: 'Grades submitted for admin approval!',
           type: 'success',
         });
+        // Refresh so status badges update to "pending"
+        await fetchGradesData();
       }
     } catch (error) {
       console.error('Error saving grades:', error);
@@ -246,45 +256,32 @@ export default function TeacherGrades() {
     }
   };
 
-  // Export grades to CSV
   const handleExportToCSV = () => {
     if (!teacher || gradesData.length === 0) {
       showAlert({ message: 'No grades data to export.', type: 'warning' });
       return;
     }
-
-    const teacherSubject = teacher.subject || teacher.subjects || 'Mathematics';
     const selectedClass = teacherClasses.find((c) => c.id === selectedClassId);
     const className = selectedClass ? selectedClass.class_name : 'Class';
-
-    // Create CSV header
-    const headers = ['Student Number', 'Student Name', 'Grade'];
-
-    // Create CSV rows
-    const rows = gradesData.map((student) => {
-      return [student.studentId || '', student.name || '', student.grade || ''];
-    });
-
-    // Combine header and rows
-    const csvContent = [headers, ...rows]
+    const headers = ['Student Number', 'Student Name', 'Grade', 'Status'];
+    const rows = gradesData.map((s) => [
+      s.studentId || '',
+      s.name || '',
+      s.grade || '',
+      s.status || 'Not submitted',
+    ]);
+    const csv = [headers, ...rows]
       .map((row) => row.map((cell) => `"${cell}"`).join(','))
       .join('\n');
-
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
+    link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', `${className}_grades.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    showAlert({
-      message: 'Grades exported successfully!',
-      type: 'success',
-    });
+    showAlert({ message: 'Grades exported successfully!', type: 'success' });
   };
 
   return (
@@ -301,7 +298,7 @@ export default function TeacherGrades() {
         <CardContent>
           {teacher ? (
             <div className="space-y-6">
-              {/* Filters and Actions */}
+              {/* Filters */}
               <div className="flex flex-wrap items-center gap-4 pb-4 border-b">
                 <div className="flex items-center gap-2">
                   <Label htmlFor="class-select" className="text-sm font-medium">
@@ -324,22 +321,22 @@ export default function TeacherGrades() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="ml-auto flex items-center gap-2">
-                  <Badge variant="outline" className="text-sm">
-                    Subject:{' '}
-                    {teacher.subject ||
-                      teacher.subjects ||
-                      teacher.specialization ||
-                      'N/A'}
-                  </Badge>
-                </div>
+
+                {selectedClassId && (
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Subject:</span>
+                    <span className="text-sm font-medium">
+                      {teacherClasses.find((c) => c.id === selectedClassId)
+                        ?.class_name || '—'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {isLoadingData ? (
                 <div className="text-center py-12">
-                  <div className="text-xl font-bold text-red-800">
-                    Loading grades data...
-                  </div>
+                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-800 border-t-transparent mx-auto" />
+                  <p className="mt-3 text-gray-600">Loading grades data...</p>
                 </div>
               ) : gradesData.length === 0 ? (
                 <div className="text-center py-12">
@@ -348,17 +345,43 @@ export default function TeacherGrades() {
                     No students enrolled in this class
                   </p>
                   <p className="text-sm text-gray-500">
-                    Students must be enrolled in this class through the admin
-                    panel
+                    Students must be enrolled through the admin panel
                   </p>
                 </div>
               ) : (
                 <>
+                  {/* Status Summary Banner */}
+                  {(statusSummary.approved > 0 ||
+                    statusSummary.rejected > 0 ||
+                    statusSummary.pending > 0) && (
+                    <div className="flex flex-wrap gap-3 p-3 bg-gray-50 rounded-lg border text-sm">
+                      {statusSummary.approved > 0 && (
+                        <span className="flex items-center gap-1.5 text-green-700 font-medium">
+                          <CheckCircle2 className="w-4 h-4" />
+                          {statusSummary.approved} Approved
+                        </span>
+                      )}
+                      {statusSummary.pending > 0 && (
+                        <span className="flex items-center gap-1.5 text-amber-700 font-medium">
+                          <Clock className="w-4 h-4" />
+                          {statusSummary.pending} Pending review
+                        </span>
+                      )}
+                      {statusSummary.rejected > 0 && (
+                        <span className="flex items-center gap-1.5 text-red-700 font-medium">
+                          <XCircle className="w-4 h-4" />
+                          {statusSummary.rejected} Rejected — update and
+                          resubmit
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Grades Table */}
                   <div className="overflow-x-auto border rounded-lg">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-red-800 text-white">
+                        <TableRow className="bg-red-800 hover:bg-red-800">
                           <TableHead className="text-white font-bold">
                             Student Name
                           </TableHead>
@@ -368,39 +391,99 @@ export default function TeacherGrades() {
                           <TableHead className="text-white font-bold text-center">
                             Grade
                           </TableHead>
+                          <TableHead className="text-white font-bold text-center">
+                            Status
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {gradesData.map((student) => (
-                          <TableRow
-                            key={student.id}
-                            className="hover:bg-gray-50"
-                          >
-                            <TableCell className="font-medium">
-                              {student.name}
-                            </TableCell>
-                            <TableCell>{student.studentId}</TableCell>
-                            <TableCell className="p-0">
-                              <Input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                value={student.grade}
-                                onChange={(e) =>
-                                  updateGrade(student.id, e.target.value)
-                                }
-                                className="border-0 rounded-none text-center focus:ring-2 focus:ring-red-500 h-10"
-                                placeholder="Enter grade"
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {gradesData.map((student) => {
+                          const cfg = student.status
+                            ? STATUS_CONFIG[student.status]
+                            : null;
+                          const isApproved = student.status === 'approved';
+                          return (
+                            <TableRow
+                              key={student.id}
+                              className={
+                                cfg ? cfg.rowClass : 'hover:bg-gray-50'
+                              }
+                            >
+                              <TableCell className="font-medium">
+                                {student.name}
+                              </TableCell>
+                              <TableCell>{student.studentId}</TableCell>
+                              <TableCell className="p-0">
+                                {isApproved ? (
+                                  <div className="flex items-center justify-center h-10 px-3 text-green-800 font-semibold">
+                                    {student.grade}
+                                  </div>
+                                ) : (
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value={student.grade}
+                                    onChange={(e) =>
+                                      updateGrade(student.id, e.target.value)
+                                    }
+                                    className={`border-0 rounded-none text-center focus:ring-2 focus:ring-red-500 h-10 ${
+                                      student.status === 'rejected'
+                                        ? 'bg-red-50 text-red-900 focus:ring-red-500'
+                                        : student.status === 'pending'
+                                          ? 'bg-amber-50 text-amber-900 focus:ring-amber-500'
+                                          : ''
+                                    }`}
+                                    placeholder="Enter grade"
+                                  />
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {cfg ? (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${cfg.badgeClass}`}
+                                  >
+                                    {cfg.icon}
+                                    {cfg.label}
+                                    {student.reviewedAt && isApproved && (
+                                      <span className="ml-1 text-gray-500 font-normal">
+                                        {new Date(
+                                          student.reviewedAt
+                                        ).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    —
+                                  </span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
 
-                  {/* Save and Export Buttons */}
+                  {/* Legend */}
+                  <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded bg-green-100 inline-block border border-green-300" />
+                      Approved — read-only, finalized by admin
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded bg-amber-100 inline-block border border-amber-300" />
+                      Pending — awaiting admin review
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded bg-red-100 inline-block border border-red-300" />
+                      Rejected — update and resubmit
+                    </span>
+                  </div>
+
+                  {/* Action Buttons */}
                   <div className="flex justify-end gap-3">
                     <Button
                       onClick={handleExportToCSV}
@@ -423,7 +506,7 @@ export default function TeacherGrades() {
                       ) : (
                         <>
                           <Save className="w-4 h-4 mr-2" />
-                          Save Grades
+                          Submit Grades
                         </>
                       )}
                     </Button>

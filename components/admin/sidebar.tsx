@@ -1,14 +1,11 @@
 import {
   BookOpen,
   Calendar,
-  CalendarDays,
-  CalendarRange,
+  ClipboardList,
+  GraduationCap,
   LayoutDashboard,
   List,
   MessageSquare,
-  Monitor,
-  Proportions,
-  Radio,
   Settings,
   User,
   UserRound,
@@ -21,7 +18,7 @@ import NestedItem from './NestedItem';
 export const AdminSidebarContent = () => {
   const pathname = usePathname();
   return (
-    <div className="bg-[#7A0C0C] w-full h-full overflow-y-auto p-6 pt-10">
+    <div className="bg-gray-900 w-full h-full overflow-y-auto p-6 pt-10">
       <ul className="flex flex-col gap-10 text-white font-regular">
         <Item
           label="Dashboard"
@@ -66,41 +63,29 @@ export const AdminSidebarContent = () => {
           icon={BookOpen}
         />
         <Item
+          label="Grade Approvals"
+          isSelected={pathname === '/admin/grades'}
+          link="/admin/grades"
+          icon={GraduationCap}
+        />
+        <Item
+          label="Enrollment"
+          isSelected={pathname === '/admin/enrollment'}
+          link="/admin/enrollment"
+          icon={ClipboardList}
+        />
+        <Item
           label="Attendance"
-          isSelected={pathname === '/admin/attendance'}
+          isSelected={pathname.startsWith('/admin/attendance')}
           link="/admin/attendance"
           icon={Calendar}
         />
-        <Item
-          label="Live Attendance"
-          isSelected={pathname === '/admin/live-attendance'}
-          link="/admin/live-attendance"
-          icon={Radio}
-        />
-        <Item
-          label="Student Attendance"
-          isSelected={pathname === '/admin/attendance-reports'}
-          link="/admin/attendance-reports"
-          icon={CalendarDays}
-        />
-        <Item
-          label="Teacher Attendance"
-          isSelected={pathname === '/admin/teacher-attendance'}
-          link="/admin/teacher-attendance"
-          icon={CalendarRange}
-        />
-        <Item
+        {/* <Item
           label="Reports and Analytics"
           isSelected={pathname === '/admin/reports'}
           link="/admin/reports"
           icon={Proportions}
-        />
-        <Item
-          label="RFID Display"
-          isSelected={pathname === '/admin/rfid-display'}
-          link="/admin/rfid-display"
-          icon={Monitor}
-        />
+        /> */}
         <Item
           label="SMS Tester"
           isSelected={pathname === '/admin/test-sms'}

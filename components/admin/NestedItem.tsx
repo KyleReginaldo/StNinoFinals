@@ -22,10 +22,13 @@ const NestedItem = ({ label, icon: Icon, children }: NestedItemProps) => {
   return (
     <div>
       <li
-        className={`${hasSelectedChild ? 'text-[#FFFFFF] font-bold' : ''} flex items-center gap-4 cursor-pointer hover:text-white transition-colors`}
+        className={`${hasSelectedChild ? 'text-white font-bold' : 'text-gray-400'} flex items-center gap-4 cursor-pointer hover:text-white transition-colors`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <Icon size={hasSelectedChild ? 20 : 18} className="text-white" />
+        <Icon
+          size={hasSelectedChild ? 20 : 18}
+          className={hasSelectedChild ? 'text-white' : 'text-gray-500'}
+        />
         <span className="flex-1">{label}</span>
         {isOpen ? (
           <ChevronDown size={16} className="text-white" />

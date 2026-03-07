@@ -166,11 +166,13 @@ async function GET(request) {
 async function POST(request) {
     try {
         const admin = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabaseAdmin$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSupabaseAdmin"])();
-        const { studentId, subject, grade } = await request.json();
+        const { studentId, subject, grade, teacherId, classId } = await request.json();
         console.log('Grades POST received:', {
             studentId,
             subject,
-            grade
+            grade,
+            teacherId,
+            classId
         });
         if (!studentId || !subject || grade === undefined) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -196,7 +198,9 @@ async function POST(request) {
             grade: numericGrade
         });
         // First, check if a grade already exists
-        const { data: existingGrade, error: selectError } = await admin.from('grades').select('id').eq('student_id', studentId).eq('subject', subject).single();
+        const query = admin.from('grades').select('id').eq('student_id', studentId).eq('subject', subject);
+        if (classId) query.eq('class_id', classId);
+        const { data: existingGrade, error: selectError } = await query.single();
         if (selectError && selectError.code !== 'PGRST116') {
             // PGRST116 means no rows found, which is fine
             console.error('Error checking existing grade:', selectError);
@@ -212,6 +216,10 @@ async function POST(request) {
             // Update existing grade
             const { data, error } = await admin.from('grades').update({
                 grade: numericGrade,
+                teacher_id: teacherId ?? null,
+                status: 'pending',
+                reviewed_by: null,
+                reviewed_at: null,
                 updated_at: new Date().toISOString()
             }).eq('id', existingGrade.id).select();
             if (error) {
@@ -230,7 +238,10 @@ async function POST(request) {
             const { data, error } = await admin.from('grades').insert({
                 student_id: studentId,
                 subject: subject,
-                grade: numericGrade
+                grade: numericGrade,
+                teacher_id: teacherId ?? null,
+                class_id: classId ?? null,
+                status: 'pending'
             }).select();
             if (error) {
                 console.error('Error inserting grade:', error);
@@ -247,7 +258,7 @@ async function POST(request) {
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
             data: result,
-            message: 'Grade saved successfully'
+            message: 'Grade submitted for approval'
         });
     } catch (error) {
         console.error('Grades API error:', error);

@@ -35,12 +35,12 @@ export default function RootLayout({
   }
 
   return (
-    <>
+    <div className="flex flex-col h-screen overflow-hidden">
       <AdminHeader admin={admin} canPop={pathname !== '/admin'} />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
-    </>
+    </div>
   );
 }

@@ -11,9 +11,12 @@ const Item = ({ label, isSelected, link, icon: Icon }: ItemProps) => {
   return (
     <a href={link}>
       <li
-        className={`${isSelected ? 'text-[#FFFFFF] font-bold' : ''} flex items-center gap-4 cursor-pointer hover:text-white transition-colors`}
+        className={`${isSelected ? 'text-white font-bold' : 'text-gray-400'} flex items-center gap-4 cursor-pointer hover:text-white transition-colors`}
       >
-        <Icon size={isSelected ? 20 : 18} className="text-white" />
+        <Icon
+          size={isSelected ? 20 : 18}
+          className={isSelected ? 'text-white' : 'text-gray-500'}
+        />
         {label}
       </li>
     </a>

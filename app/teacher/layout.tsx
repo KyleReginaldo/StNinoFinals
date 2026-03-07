@@ -98,7 +98,7 @@ export default function TeacherLayout({
 
   return (
     <PasswordChangeWrapper userId={teacher.id}>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+      <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
         {/* Header */}
         <header className="bg-white shadow-md border-b-4 border-red-800">
           <div className="container mx-auto px-4 py-4">
@@ -172,14 +172,14 @@ export default function TeacherLayout({
         </header>
 
         {/* Main Content */}
-        <div className="flex">
+        <div className="flex flex-1 overflow-hidden">
           {/* Desktop Sidebar */}
-          <aside className="hidden md:block w-64 bg-white min-h-screen border-r border-gray-200">
+          <aside className="hidden md:block w-64 bg-gray-900 overflow-y-auto flex-shrink-0 border-r border-gray-700">
             <TeacherSidebarContent />
           </aside>
 
           {/* Main Content Area */}
-          <main className="flex-1 p-4 md:p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
         </div>
       </div>
     </PasswordChangeWrapper>

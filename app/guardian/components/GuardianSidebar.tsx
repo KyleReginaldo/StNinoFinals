@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Calendar,
-  FileText,
-  GraduationCap,
-  LayoutDashboard,
-  User,
-} from 'lucide-react';
+import { FileText, GraduationCap, LayoutDashboard, User } from 'lucide-react';
 
 interface GuardianSidebarContentProps {
   activeNav: string;
@@ -45,7 +39,7 @@ export function GuardianSidebarContent({
             Enrollment
           </button>
 
-          <button
+          {/* <button
             onClick={() => setActiveNav('schedule')}
             className={`w-full flex items-center px-3 py-2.5 text-left text-sm rounded-md transition-colors ${
               activeNav === 'schedule'
@@ -55,7 +49,7 @@ export function GuardianSidebarContent({
           >
             <Calendar className="w-4 h-4 mr-3" />
             Schedule Calendar
-          </button>
+          </button> */}
 
           <button
             onClick={() => setActiveNav('grades')}

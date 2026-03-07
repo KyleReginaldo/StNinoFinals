@@ -3,10 +3,8 @@
 import { MobileSidebar } from '@/components/admin/mobile-sidebar';
 import { AdminSidebarContent } from '@/components/admin/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
-import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -85,25 +83,13 @@ export function AdminHeader({ admin, canPop }: AdminHeaderProps) {
                 Administrator
               </Badge>
             </div>
-            {canPop ? (
-              <Button
-                className="bg-white text-red-800"
-                onClick={() => {
-                  router.back();
-                }}
-              >
-                <ArrowLeft className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Back</span>
-              </Button>
-            ) : (
-              <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="px-2 md:px-4 py-2 bg-white text-red-800 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
-              >
-                {isLoggingOut ? 'Logging out...' : 'Logout'}
-              </button>
-            )}
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="px-2 md:px-4 py-2 bg-white text-red-800 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+            >
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </button>
           </div>
         </div>
       </div>

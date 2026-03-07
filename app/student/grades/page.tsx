@@ -25,10 +25,13 @@ declare module 'jspdf' {
   }
 }
 
+type GradeStatus = 'pending' | 'approved' | 'rejected' | null;
+
 interface GradeItem {
   id: string;
   subject: string;
   grade: string;
+  status: GradeStatus;
   lastUpdated: string;
 }
 
@@ -43,6 +46,14 @@ interface EnrollmentInfo {
 interface GradesData {
   grades: GradeItem[];
   enrollment?: EnrollmentInfo;
+}
+
+function getLetterGrade(numeric: number) {
+  if (numeric >= 90) return { letter: 'A', color: 'text-green-700' };
+  if (numeric >= 85) return { letter: 'B+', color: 'text-green-600' };
+  if (numeric >= 80) return { letter: 'B', color: 'text-blue-700' };
+  if (numeric >= 75) return { letter: 'C', color: 'text-blue-600' };
+  return { letter: 'F', color: 'text-red-700' };
 }
 
 export default function GradesPage() {
@@ -61,87 +72,72 @@ export default function GradesPage() {
 
   const fetchGradesData = useCallback(async () => {
     if (!student) return;
-
     setDataLoading(true);
     try {
-      console.log('🔍 Fetching grades for student:', {
-        id: student.id,
-        email: student.email,
-        name: displayName,
-      });
-
-      // Fetch from dashboard API
-      const dashboardResponse = await fetch('/api/student/dashboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: student.id,
-          email: student.email,
+      const [dashboardRes, gradesRes] = await Promise.all([
+        fetch('/api/student/dashboard', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: student.id, email: student.email }),
         }),
-      });
+        fetch(`/api/parent/student-grades?student_id=${student.id}`),
+      ]);
 
-      const dashboardPayload = await dashboardResponse.json().catch(() => ({}));
-      console.log('📊 Dashboard API response:', {
-        success: dashboardPayload?.success,
-        gradesCount: dashboardPayload?.data?.grades?.length || 0,
-        grades: dashboardPayload?.data?.grades,
-      });
+      const dashboardPayload = await dashboardRes.json().catch(() => ({}));
+      const gradesPayload = await gradesRes.json().catch(() => ({}));
 
-      // Also fetch directly from grades table for more accurate data
-      const gradesResponse = await fetch(
-        `/api/parent/student-grades?student_id=${student.id}`
-      );
-      const gradesPayload = await gradesResponse.json().catch(() => ({}));
-      console.log('📚 Direct grades API response:', {
-        success: gradesPayload?.success,
-        gradesCount: gradesPayload?.grades?.length || 0,
-        grades: gradesPayload?.grades,
-      });
-
-      // Use direct grades data if available, otherwise fallback to dashboard
-      const gradesData =
+      const grades: GradeItem[] =
         gradesPayload?.success && gradesPayload?.grades?.length > 0
           ? gradesPayload.grades.map((g: any, index: number) => ({
               id: g.id || String(index + 1),
               subject: g.subject,
               grade: String(g.grade),
+              status: g.status ?? null,
               lastUpdated: g.lastUpdated || new Date().toISOString(),
             }))
-          : dashboardPayload?.data?.grades || [];
-
-      console.log('✅ Final grades data:', {
-        count: gradesData.length,
-        source:
-          gradesPayload?.success && gradesPayload?.grades?.length > 0
-            ? 'REAL DATABASE'
-            : 'FALLBACK/DUMMY',
-        data: gradesData,
-      });
+          : (dashboardPayload?.data?.grades || []).map(
+              (g: any, index: number) => ({
+                id: String(index + 1),
+                subject: g.subject,
+                grade: String(g.grade),
+                status: null,
+                lastUpdated: g.lastUpdated || new Date().toISOString(),
+              })
+            );
 
       setGradesData({
-        grades: gradesData,
+        grades,
         enrollment: dashboardPayload?.data?.enrollment,
       });
     } catch (error) {
-      console.error('❌ Grades fetch error:', error);
+      console.error('Grades fetch error:', error);
     } finally {
       setDataLoading(false);
     }
   }, [student, displayName]);
 
   useEffect(() => {
-    if (student) {
-      fetchGradesData();
-    }
+    if (student) fetchGradesData();
   }, [student, fetchGradesData]);
 
-  const gradeItems = gradesData?.grades || [];
+  // Students only see approved grades
+  const gradeItems = (gradesData?.grades || []).filter(
+    (g) => g.status === 'approved'
+  );
   const enrollmentInfo = gradesData?.enrollment;
+
+  const generalAverage =
+    gradeItems.length > 0
+      ? (
+          gradeItems.reduce((sum, g) => sum + parseFloat(g.grade), 0) /
+          gradeItems.length
+        ).toFixed(1)
+      : null;
 
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'long',
+        month: 'short',
         day: 'numeric',
         year: 'numeric',
       });
@@ -158,10 +154,11 @@ export default function GradesPage() {
       });
       return;
     }
-
-    if (gradeItems.length === 0) {
+    // Only allow PDF if there are approved grades
+    const approvedItems = gradeItems.filter((g) => g.status === 'approved');
+    if (approvedItems.length === 0) {
       showAlert({
-        message: 'No grades available to download.',
+        message: 'No approved grades available to download yet.',
         type: 'warning',
       });
       return;
@@ -174,7 +171,6 @@ export default function GradesPage() {
         format: 'a4',
       });
 
-      // School information - centered
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 18, { align: 'center' });
@@ -185,14 +181,12 @@ export default function GradesPage() {
         align: 'center',
       });
 
-      // Certificate title
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.text('CERTIFICATE OF GRADES', 105, 45, { align: 'center' });
 
-      // Student information
       const studentName =
-        `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() ||
+        `${student.first_name || ''} ${(student as any).middle_name || ''} ${student.last_name || ''}`.trim() ||
         displayName;
       const gradeLevel =
         student.grade_level || enrollmentInfo?.gradeLevel || 'N/A';
@@ -214,44 +208,32 @@ export default function GradesPage() {
         { align: 'center' }
       );
 
-      // Grades table
-      const tableData = gradeItems.map((grade) => {
-        const gradeValue = grade.grade || '0';
-        const numericGrade = parseFloat(gradeValue);
+      const tableData = approvedItems.map((grade) => {
+        const num = parseFloat(grade.grade);
         return [
           grade.subject || 'N/A',
-          gradeValue,
-          !isNaN(numericGrade) && numericGrade >= 75 ? 'PASSED' : 'FAILED',
+          grade.grade,
+          !isNaN(num) && num >= 75 ? 'PASSED' : 'FAILED',
         ];
       });
 
-      // Calculate general average
-      const numericGrades = gradeItems
-        .map((g) => {
-          const gradeValue = g.grade || '0';
-          return parseFloat(gradeValue);
-        })
-        .filter((g) => !isNaN(g));
-
-      const generalAverage =
-        numericGrades.length > 0
+      const numericAvg =
+        approvedItems.length > 0
           ? (
-              numericGrades.reduce((a, b) => a + b, 0) / numericGrades.length
+              approvedItems.reduce((s, g) => s + parseFloat(g.grade), 0) /
+              approvedItems.length
             ).toFixed(0)
           : 'N/A';
       const actionTaken =
-        generalAverage !== 'N/A' && parseFloat(generalAverage) >= 75
+        numericAvg !== 'N/A' && parseFloat(numericAvg) >= 75
           ? 'PROMOTED'
           : 'RETAINED';
-
-      // Add general average row
       tableData.push([
         'General Average for the semester',
-        generalAverage,
+        numericAvg,
         actionTaken,
       ]);
 
-      // Create table using autoTable
       if (typeof (doc as any).autoTable === 'function') {
         (doc as any).autoTable({
           startY: 80,
@@ -264,10 +246,7 @@ export default function GradesPage() {
             fontStyle: 'bold',
             fontSize: 10,
           },
-          bodyStyles: {
-            fontSize: 9,
-            textColor: [0, 0, 0],
-          },
+          bodyStyles: { fontSize: 9, textColor: [0, 0, 0] },
           columnStyles: {
             0: { cellWidth: 100 },
             1: { cellWidth: 40, halign: 'center' },
@@ -277,11 +256,8 @@ export default function GradesPage() {
         });
       }
 
-      // Certification text
       let finalY = 200;
-      if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
-        finalY = doc.lastAutoTable.finalY + 15;
-      }
+      if (doc.lastAutoTable?.finalY) finalY = doc.lastAutoTable.finalY + 15;
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'italic');
@@ -298,9 +274,7 @@ export default function GradesPage() {
         { align: 'center' }
       );
 
-      // Date and location
-      const currentDate = new Date();
-      const dateStr = currentDate.toLocaleDateString('en-US', {
+      const dateStr = new Date().toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -313,36 +287,26 @@ export default function GradesPage() {
         { align: 'center' }
       );
 
-      // Signatures section
       const signatureY = finalY + 35;
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-
-      // Left signature
       doc.text('MRS. CORAZON R. ULEP', 50, signatureY);
       doc.text('School Registrar', 50, signatureY + 5);
-
-      // Right signature
       doc.text('COL GILMAR N GALICIA PA(Res) ME', 150, signatureY);
       doc.text('Principal / Administrator', 150, signatureY + 5);
 
-      // Footer note
-      const footerY = 270;
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
       doc.text(
         'Should there be a need to verify this document? Please call (046) 443-33-67 Office of the Registrar',
         105,
-        footerY,
+        270,
         { align: 'center' }
       );
-      doc.text('NOT VALID WITHOUT SCHOOL SEAL', 105, footerY + 5, {
-        align: 'center',
-      });
+      doc.text('NOT VALID WITHOUT SCHOOL SEAL', 105, 275, { align: 'center' });
 
-      // Save PDF
-      const fileName = `Certificate_of_Grades_${studentName.replace(/\s+/g, '_')}_${academicYear}.pdf`;
-      doc.save(fileName);
+      doc.save(
+        `Certificate_of_Grades_${studentName.replace(/\s+/g, '_')}_${academicYear}.pdf`
+      );
     } catch (error: any) {
       console.error('Error generating PDF:', error);
       showAlert({
@@ -354,30 +318,70 @@ export default function GradesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl font-bold text-red-800">Loading...</div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-800 border-t-transparent" />
       </div>
     );
   }
 
-  if (!student) {
-    return null;
-  }
+  if (!student) return null;
+
+  const hasApproved = gradeItems.length > 0;
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Grades & Reports</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Grades & Reports</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Your academic performance for the current semester
+          </p>
+        </div>
         <Button
           onClick={generateGradesPDF}
           className="bg-red-800 hover:bg-red-700 text-white"
-          disabled={gradeItems.length === 0}
+          disabled={!hasApproved}
+          title={
+            !hasApproved
+              ? 'PDF is available once grades are approved'
+              : 'Download Certificate of Grades'
+          }
         >
           <Download className="w-4 h-4 mr-2" />
-          Download Certificate (PDF)
+          Download Certificate
         </Button>
       </div>
 
+      {/* Summary cards — only shown when there are grades */}
+      {gradeItems.length > 0 && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="border-0 shadow-sm bg-white">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                Subjects
+              </p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">
+                {gradeItems.length}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm bg-white">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                General Average
+              </p>
+              <p
+                className={`text-3xl font-bold mt-1 ${generalAverage ? (parseFloat(generalAverage) >= 75 ? 'text-green-700' : 'text-red-700') : 'text-gray-400'}`}
+              >
+                {generalAverage ?? '—'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Grades list */}
       <Card className="bg-white border border-gray-200">
         <CardHeader>
           <CardTitle>Current Grades</CardTitle>
@@ -386,41 +390,77 @@ export default function GradesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {gradeItems.length === 0 ? (
+          {dataLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-800 border-t-transparent mx-auto" />
+              <p className="text-gray-500 mt-3 text-sm">Loading grades...</p>
+            </div>
+          ) : gradeItems.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap
-                className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                className="w-16 h-16 text-gray-300 mx-auto mb-4"
                 aria-hidden
               />
-              <p className="text-gray-600">
-                {dataLoading ? 'Fetching grades...' : 'No grades available.'}
+              <p className="text-gray-600 font-medium">
+                No grades released yet
               </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Grades will be loaded from the database.
+              <p className="text-sm text-gray-400 mt-1">
+                Your grades will appear here once they have been finalized by
+                your school.
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {gradeItems.map((grade) => (
-                <div
-                  key={grade.id}
-                  className="flex items-center justify-between border border-gray-100 rounded-lg p-4"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{grade.subject}</p>
-                    <p className="text-sm text-gray-500">
-                      Updated {formatDate(grade.lastUpdated)}
-                    </p>
+            <div className="divide-y divide-gray-100">
+              {gradeItems.map((grade) => {
+                const num = parseFloat(grade.grade);
+                const letterInfo = !isNaN(num) ? getLetterGrade(num) : null;
+                const isPassing = !isNaN(num) && num >= 75;
+
+                return (
+                  <div
+                    key={grade.id}
+                    className="flex items-center justify-between py-4 px-1"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {grade.subject}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Updated {formatDate(grade.lastUpdated)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                      <div className="text-right">
+                        <span
+                          className={`text-2xl font-bold ${isPassing ? 'text-green-700' : 'text-red-700'}`}
+                        >
+                          {grade.grade}
+                        </span>
+                        {letterInfo && (
+                          <span
+                            className={`block text-xs font-semibold ${letterInfo.color}`}
+                          >
+                            {letterInfo.letter}
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className={`w-2 h-10 rounded-full ${isPassing ? 'bg-green-400' : 'bg-red-400'}`}
+                      />
+                    </div>
                   </div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {grade.grade}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {!hasApproved && (
+        <p className="text-center text-xs text-gray-400">
+          Certificate download will be available once grades are finalized.
+        </p>
+      )}
     </div>
   );
 }

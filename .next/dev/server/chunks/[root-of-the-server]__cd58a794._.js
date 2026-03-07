@@ -165,11 +165,11 @@ async function GET() {
         // Get total students for attendance calculation
         const totalStudents = studentsCount || 0;
         // Get today's attendance records
-        const { data: attendanceRecords, error: attendanceError } = await supabaseAdmin.from('attendance').select('student_id').gte('scanned_at', `${today}T00:00:00`).lte('scanned_at', `${today}T23:59:59`);
+        const { data: attendanceRecords, error: attendanceError } = await supabaseAdmin.from('attendance_records').select('user_id').gte('scan_datetime', `${today}T00:00:00`).lte('scan_datetime', `${today}T23:59:59`);
         let attendanceRate = 0;
         if (!attendanceError && attendanceRecords && totalStudents > 0) {
             // Count unique students who attended today
-            const uniqueStudents = new Set(attendanceRecords.map((record)=>record.student_id));
+            const uniqueStudents = new Set(attendanceRecords.map((record)=>record.user_id));
             attendanceRate = Math.round(uniqueStudents.size / totalStudents * 100);
         }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({

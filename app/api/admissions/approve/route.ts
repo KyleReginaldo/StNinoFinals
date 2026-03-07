@@ -108,6 +108,7 @@ export async function POST(request: Request) {
         role: 'student',
         grade_level: admission.intended_grade_level,
         created_at: new Date().toISOString(),
+        password_change_required: true,
       });
 
       if (userError) {

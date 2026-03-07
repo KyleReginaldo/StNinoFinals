@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
 import { useConfirm } from '@/lib/use-confirm';
 import {
-  Calendar,
   FileText,
   GraduationCap,
   LayoutDashboard,
@@ -31,12 +30,12 @@ const NAV_ITEMS = [
     icon: FileText,
     href: '/student/enrollment',
   },
-  {
-    id: 'schedule',
-    label: 'Schedule Calendar',
-    icon: Calendar,
-    href: '/student/schedule',
-  },
+  // {
+  //   id: 'schedule',
+  //   label: 'Schedule Calendar',
+  //   icon: Calendar,
+  //   href: '/student/schedule',
+  // },
   {
     id: 'grades',
     label: 'Grades & Reports',
@@ -138,8 +137,8 @@ export default function StudentLayout({
       <div className="flex h-screen overflow-hidden bg-gray-50">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:flex-shrink-0">
-          <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-            <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 bg-red-800">
+          <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-700">
+            <div className="flex items-center justify-center h-16 px-4 border-b border-gray-700 bg-gray-950">
               <h1 className="text-xl font-bold text-white">Student Portal</h1>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -164,7 +163,7 @@ export default function StudentLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0">
-                <div className="flex items-center justify-center h-16 px-4 bg-red-800">
+                <div className="flex items-center justify-center h-16 px-4 bg-gray-950">
                   <h1 className="text-xl font-bold text-white">
                     Student Portal
                   </h1>

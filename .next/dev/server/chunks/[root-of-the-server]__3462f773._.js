@@ -140,8 +140,10 @@ async function GET(request) {
         }
         // Format the grades data
         const formattedGrades = grades.map((grade)=>({
+                id: grade.id,
                 subject: grade.subject,
                 grade: grade.grade.toString(),
+                status: grade.status ?? null,
                 lastUpdated: grade.updated_at || grade.created_at
             }));
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({

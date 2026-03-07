@@ -82,6 +82,9 @@ export async function GET(request: NextRequest) {
           name: `${student.first_name} ${student.last_name}`,
           studentId: student.student_number,
           grade: studentGrade?.grade?.toString() || '',
+          status: studentGrade?.status ?? null,
+          gradeId: studentGrade?.id ?? null,
+          reviewedAt: studentGrade?.reviewed_at ?? null,
         };
       }) || [];
 

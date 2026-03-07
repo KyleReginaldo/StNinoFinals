@@ -187,6 +187,28 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+function getLetterGrade(numeric) {
+    if (numeric >= 90) return {
+        letter: 'A',
+        color: 'text-green-700'
+    };
+    if (numeric >= 85) return {
+        letter: 'B+',
+        color: 'text-green-600'
+    };
+    if (numeric >= 80) return {
+        letter: 'B',
+        color: 'text-blue-700'
+    };
+    if (numeric >= 75) return {
+        letter: 'C',
+        color: 'text-blue-600'
+    };
+    return {
+        letter: 'F',
+        color: 'text-red-700'
+    };
+}
 function GradesPage() {
     _s();
     const { student, isLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$student$2f$hooks$2f$useStudentAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useStudentAuth"])();
@@ -209,60 +231,48 @@ function GradesPage() {
             if (!student) return;
             setDataLoading(true);
             try {
-                console.log('🔍 Fetching grades for student:', {
-                    id: student.id,
-                    email: student.email,
-                    name: displayName
-                });
-                // Fetch from dashboard API
-                const dashboardResponse = await fetch('/api/student/dashboard', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        studentId: student.id,
-                        email: student.email
-                    })
-                });
-                const dashboardPayload = await dashboardResponse.json().catch({
+                const [dashboardRes, gradesRes] = await Promise.all([
+                    fetch('/api/student/dashboard', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            studentId: student.id,
+                            email: student.email
+                        })
+                    }),
+                    fetch(`/api/parent/student-grades?student_id=${student.id}`)
+                ]);
+                const dashboardPayload = await dashboardRes.json().catch({
                     "GradesPage.useCallback[fetchGradesData]": ()=>({})
                 }["GradesPage.useCallback[fetchGradesData]"]);
-                console.log('📊 Dashboard API response:', {
-                    success: dashboardPayload?.success,
-                    gradesCount: dashboardPayload?.data?.grades?.length || 0,
-                    grades: dashboardPayload?.data?.grades
-                });
-                // Also fetch directly from grades table for more accurate data
-                const gradesResponse = await fetch(`/api/parent/student-grades?student_id=${student.id}`);
-                const gradesPayload = await gradesResponse.json().catch({
+                const gradesPayload = await gradesRes.json().catch({
                     "GradesPage.useCallback[fetchGradesData]": ()=>({})
                 }["GradesPage.useCallback[fetchGradesData]"]);
-                console.log('📚 Direct grades API response:', {
-                    success: gradesPayload?.success,
-                    gradesCount: gradesPayload?.grades?.length || 0,
-                    grades: gradesPayload?.grades
-                });
-                // Use direct grades data if available, otherwise fallback to dashboard
-                const gradesData = gradesPayload?.success && gradesPayload?.grades?.length > 0 ? gradesPayload.grades.map({
+                const grades = gradesPayload?.success && gradesPayload?.grades?.length > 0 ? gradesPayload.grades.map({
                     "GradesPage.useCallback[fetchGradesData]": (g, index)=>({
                             id: g.id || String(index + 1),
                             subject: g.subject,
                             grade: String(g.grade),
+                            status: g.status ?? null,
                             lastUpdated: g.lastUpdated || new Date().toISOString()
                         })
-                }["GradesPage.useCallback[fetchGradesData]"]) : dashboardPayload?.data?.grades || [];
-                console.log('✅ Final grades data:', {
-                    count: gradesData.length,
-                    source: gradesPayload?.success && gradesPayload?.grades?.length > 0 ? 'REAL DATABASE' : 'FALLBACK/DUMMY',
-                    data: gradesData
-                });
+                }["GradesPage.useCallback[fetchGradesData]"]) : (dashboardPayload?.data?.grades || []).map({
+                    "GradesPage.useCallback[fetchGradesData]": (g, index)=>({
+                            id: String(index + 1),
+                            subject: g.subject,
+                            grade: String(g.grade),
+                            status: null,
+                            lastUpdated: g.lastUpdated || new Date().toISOString()
+                        })
+                }["GradesPage.useCallback[fetchGradesData]"]);
                 setGradesData({
-                    grades: gradesData,
+                    grades,
                     enrollment: dashboardPayload?.data?.enrollment
                 });
             } catch (error) {
-                console.error('❌ Grades fetch error:', error);
+                console.error('Grades fetch error:', error);
             } finally{
                 setDataLoading(false);
             }
@@ -273,20 +283,20 @@ function GradesPage() {
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "GradesPage.useEffect": ()=>{
-            if (student) {
-                fetchGradesData();
-            }
+            if (student) fetchGradesData();
         }
     }["GradesPage.useEffect"], [
         student,
         fetchGradesData
     ]);
-    const gradeItems = gradesData?.grades || [];
+    // Students only see approved grades
+    const gradeItems = (gradesData?.grades || []).filter((g)=>g.status === 'approved');
     const enrollmentInfo = gradesData?.enrollment;
+    const generalAverage = gradeItems.length > 0 ? (gradeItems.reduce((sum, g)=>sum + parseFloat(g.grade), 0) / gradeItems.length).toFixed(1) : null;
     const formatDate = (dateString)=>{
         try {
             return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'long',
+                month: 'short',
                 day: 'numeric',
                 year: 'numeric'
             });
@@ -303,9 +313,13 @@ function GradesPage() {
                 });
                 return;
             }
-            if (gradeItems.length === 0) {
+            // Only allow PDF if there are approved grades
+            const approvedItems = gradeItems.filter({
+                "GradesPage.useCallback[generateGradesPDF].approvedItems": (g)=>g.status === 'approved'
+            }["GradesPage.useCallback[generateGradesPDF].approvedItems"]);
+            if (approvedItems.length === 0) {
                 showAlert({
-                    message: 'No grades available to download.',
+                    message: 'No approved grades available to download yet.',
                     type: 'warning'
                 });
                 return;
@@ -316,7 +330,6 @@ function GradesPage() {
                     unit: 'mm',
                     format: 'a4'
                 });
-                // School information - centered
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
                 doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 18, {
@@ -330,13 +343,11 @@ function GradesPage() {
                 doc.text('La Paz Homes II/Karlaville Parkhomes, Trece', 105, 28, {
                     align: 'center'
                 });
-                // Certificate title
                 doc.setFontSize(16);
                 doc.setFont('helvetica', 'bold');
                 doc.text('CERTIFICATE OF GRADES', 105, 45, {
                     align: 'center'
                 });
-                // Student information
                 const studentName = `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''}`.trim() || displayName;
                 const gradeLevel = student.grade_level || enrollmentInfo?.gradeLevel || 'N/A';
                 const academicYear = enrollmentInfo?.academicYear || '2024-2025';
@@ -349,38 +360,25 @@ function GradesPage() {
                 doc.text(`for the ${semester} of ACADEMIC YEAR ${academicYear}.`, 105, 66, {
                     align: 'center'
                 });
-                // Grades table
-                const tableData = gradeItems.map({
+                const tableData = approvedItems.map({
                     "GradesPage.useCallback[generateGradesPDF].tableData": (grade)=>{
-                        const gradeValue = grade.grade || '0';
-                        const numericGrade = parseFloat(gradeValue);
+                        const num = parseFloat(grade.grade);
                         return [
                             grade.subject || 'N/A',
-                            gradeValue,
-                            !isNaN(numericGrade) && numericGrade >= 75 ? 'PASSED' : 'FAILED'
+                            grade.grade,
+                            !isNaN(num) && num >= 75 ? 'PASSED' : 'FAILED'
                         ];
                     }
                 }["GradesPage.useCallback[generateGradesPDF].tableData"]);
-                // Calculate general average
-                const numericGrades = gradeItems.map({
-                    "GradesPage.useCallback[generateGradesPDF].numericGrades": (g)=>{
-                        const gradeValue = g.grade || '0';
-                        return parseFloat(gradeValue);
-                    }
-                }["GradesPage.useCallback[generateGradesPDF].numericGrades"]).filter({
-                    "GradesPage.useCallback[generateGradesPDF].numericGrades": (g)=>!isNaN(g)
-                }["GradesPage.useCallback[generateGradesPDF].numericGrades"]);
-                const generalAverage = numericGrades.length > 0 ? (numericGrades.reduce({
-                    "GradesPage.useCallback[generateGradesPDF]": (a, b)=>a + b
-                }["GradesPage.useCallback[generateGradesPDF]"], 0) / numericGrades.length).toFixed(0) : 'N/A';
-                const actionTaken = generalAverage !== 'N/A' && parseFloat(generalAverage) >= 75 ? 'PROMOTED' : 'RETAINED';
-                // Add general average row
+                const numericAvg = approvedItems.length > 0 ? (approvedItems.reduce({
+                    "GradesPage.useCallback[generateGradesPDF]": (s, g)=>s + parseFloat(g.grade)
+                }["GradesPage.useCallback[generateGradesPDF]"], 0) / approvedItems.length).toFixed(0) : 'N/A';
+                const actionTaken = numericAvg !== 'N/A' && parseFloat(numericAvg) >= 75 ? 'PROMOTED' : 'RETAINED';
                 tableData.push([
                     'General Average for the semester',
-                    generalAverage,
+                    numericAvg,
                     actionTaken
                 ]);
-                // Create table using autoTable
                 if (typeof doc.autoTable === 'function') {
                     doc.autoTable({
                         startY: 80,
@@ -434,11 +432,8 @@ function GradesPage() {
                         }
                     });
                 }
-                // Certification text
                 let finalY = 200;
-                if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
-                    finalY = doc.lastAutoTable.finalY + 15;
-                }
+                if (doc.lastAutoTable?.finalY) finalY = doc.lastAutoTable.finalY + 15;
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'italic');
                 doc.text('This certification is issued upon the request of the aforementioned student', 105, finalY, {
@@ -447,9 +442,7 @@ function GradesPage() {
                 doc.text('for EDUCATIONAL ASSISTANCE and for the stated purpose only.', 105, finalY + 6, {
                     align: 'center'
                 });
-                // Date and location
-                const currentDate = new Date();
-                const dateStr = currentDate.toLocaleDateString('en-US', {
+                const dateStr = new Date().toLocaleDateString('en-US', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
@@ -458,29 +451,21 @@ function GradesPage() {
                 doc.text(`Issued this ${dateStr} at SNDPA-LPH, Trece Martires City, Cavite.`, 105, finalY + 15, {
                     align: 'center'
                 });
-                // Signatures section
                 const signatureY = finalY + 35;
                 doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                // Left signature
                 doc.text('MRS. CORAZON R. ULEP', 50, signatureY);
                 doc.text('School Registrar', 50, signatureY + 5);
-                // Right signature
                 doc.text('COL GILMAR N GALICIA PA(Res) ME', 150, signatureY);
                 doc.text('Principal / Administrator', 150, signatureY + 5);
-                // Footer note
-                const footerY = 270;
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'italic');
-                doc.text('Should there be a need to verify this document? Please call (046) 443-33-67 Office of the Registrar', 105, footerY, {
+                doc.text('Should there be a need to verify this document? Please call (046) 443-33-67 Office of the Registrar', 105, 270, {
                     align: 'center'
                 });
-                doc.text('NOT VALID WITHOUT SCHOOL SEAL', 105, footerY + 5, {
+                doc.text('NOT VALID WITHOUT SCHOOL SEAL', 105, 275, {
                     align: 'center'
                 });
-                // Save PDF
-                const fileName = `Certificate_of_Grades_${studentName.replace(/\s+/g, '_')}_${academicYear}.pdf`;
-                doc.save(fileName);
+                doc.save(`Certificate_of_Grades_${studentName.replace(/\s+/g, '_')}_${academicYear}.pdf`);
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 showAlert({
@@ -498,62 +483,150 @@ function GradesPage() {
     ]);
     if (isLoading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "flex items-center justify-center min-h-screen",
+            className: "flex items-center justify-center min-h-[60vh]",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-xl font-bold text-red-800",
-                children: "Loading..."
+                className: "animate-spin rounded-full h-10 w-10 border-4 border-red-800 border-t-transparent"
             }, void 0, false, {
                 fileName: "[project]/app/student/grades/page.tsx",
-                lineNumber: 358,
+                lineNumber: 322,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/app/student/grades/page.tsx",
-            lineNumber: 357,
+            lineNumber: 321,
             columnNumber: 7
         }, this);
     }
-    if (!student) {
-        return null;
-    }
+    if (!student) return null;
+    const hasApproved = gradeItems.length > 0;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "p-6 space-y-6",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex items-center justify-between",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                        className: "text-2xl font-bold text-gray-900",
-                        children: "Grades & Reports"
-                    }, void 0, false, {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                className: "text-2xl font-bold text-gray-900",
+                                children: "Grades & Reports"
+                            }, void 0, false, {
+                                fileName: "[project]/app/student/grades/page.tsx",
+                                lineNumber: 336,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-sm text-gray-500 mt-0.5",
+                                children: "Your academic performance for the current semester"
+                            }, void 0, false, {
+                                fileName: "[project]/app/student/grades/page.tsx",
+                                lineNumber: 337,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/app/student/grades/page.tsx",
-                        lineNumber: 370,
+                        lineNumber: 335,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                         onClick: generateGradesPDF,
                         className: "bg-red-800 hover:bg-red-700 text-white",
-                        disabled: gradeItems.length === 0,
+                        disabled: !hasApproved,
+                        title: !hasApproved ? 'PDF is available once grades are approved' : 'Download Certificate of Grades',
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
                                 className: "w-4 h-4 mr-2"
                             }, void 0, false, {
                                 fileName: "[project]/app/student/grades/page.tsx",
-                                lineNumber: 376,
+                                lineNumber: 351,
                                 columnNumber: 11
                             }, this),
-                            "Download Certificate (PDF)"
+                            "Download Certificate"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/student/grades/page.tsx",
-                        lineNumber: 371,
+                        lineNumber: 341,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/student/grades/page.tsx",
-                lineNumber: 369,
+                lineNumber: 334,
                 columnNumber: 7
+            }, this),
+            gradeItems.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-2 gap-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                        className: "border-0 shadow-sm bg-white",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
+                            className: "pt-4 pb-4",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs text-gray-500 uppercase tracking-wide",
+                                    children: "Subjects"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 361,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-3xl font-bold text-gray-900 mt-1",
+                                    children: gradeItems.length
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 364,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/student/grades/page.tsx",
+                            lineNumber: 360,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/app/student/grades/page.tsx",
+                        lineNumber: 359,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                        className: "border-0 shadow-sm bg-white",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
+                            className: "pt-4 pb-4",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs text-gray-500 uppercase tracking-wide",
+                                    children: "General Average"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 371,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: `text-3xl font-bold mt-1 ${generalAverage ? parseFloat(generalAverage) >= 75 ? 'text-green-700' : 'text-red-700' : 'text-gray-400'}`,
+                                    children: generalAverage ?? '—'
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 374,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/student/grades/page.tsx",
+                            lineNumber: 370,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/app/student/grades/page.tsx",
+                        lineNumber: 369,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/student/grades/page.tsx",
+                lineNumber: 358,
+                columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                 className: "bg-white border border-gray-200",
@@ -564,121 +637,191 @@ function GradesPage() {
                                 children: "Current Grades"
                             }, void 0, false, {
                                 fileName: "[project]/app/student/grades/page.tsx",
-                                lineNumber: 383,
+                                lineNumber: 387,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                                 children: "Your grades for the current semester"
                             }, void 0, false, {
                                 fileName: "[project]/app/student/grades/page.tsx",
-                                lineNumber: 384,
+                                lineNumber: 388,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/student/grades/page.tsx",
-                        lineNumber: 382,
+                        lineNumber: 386,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
-                        children: gradeItems.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: dataLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "text-center py-12",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$graduation$2d$cap$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__GraduationCap$3e$__["GraduationCap"], {
-                                    className: "w-16 h-16 text-gray-400 mx-auto mb-4",
-                                    "aria-hidden": true
-                                }, void 0, false, {
-                                    fileName: "[project]/app/student/grades/page.tsx",
-                                    lineNumber: 391,
-                                    columnNumber: 15
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-gray-600",
-                                    children: dataLoading ? 'Fetching grades...' : 'No grades available.'
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "animate-spin rounded-full h-10 w-10 border-4 border-red-800 border-t-transparent mx-auto"
                                 }, void 0, false, {
                                     fileName: "[project]/app/student/grades/page.tsx",
                                     lineNumber: 395,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-sm text-gray-500 mt-2",
-                                    children: "Grades will be loaded from the database."
+                                    className: "text-gray-500 mt-3 text-sm",
+                                    children: "Loading grades..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/student/grades/page.tsx",
-                                    lineNumber: 398,
+                                    lineNumber: 396,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/student/grades/page.tsx",
-                            lineNumber: 390,
+                            lineNumber: 394,
+                            columnNumber: 13
+                        }, this) : gradeItems.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "text-center py-12",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$graduation$2d$cap$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__GraduationCap$3e$__["GraduationCap"], {
+                                    className: "w-16 h-16 text-gray-300 mx-auto mb-4",
+                                    "aria-hidden": true
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 400,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-gray-600 font-medium",
+                                    children: "No grades released yet"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 404,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-sm text-gray-400 mt-1",
+                                    children: "Your grades will appear here once they have been finalized by your school."
+                                }, void 0, false, {
+                                    fileName: "[project]/app/student/grades/page.tsx",
+                                    lineNumber: 407,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/student/grades/page.tsx",
+                            lineNumber: 399,
                             columnNumber: 13
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "space-y-4",
-                            children: gradeItems.map((grade)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center justify-between border border-gray-100 rounded-lg p-4",
+                            className: "divide-y divide-gray-100",
+                            children: gradeItems.map((grade)=>{
+                                const num = parseFloat(grade.grade);
+                                const letterInfo = !isNaN(num) ? getLetterGrade(num) : null;
+                                const isPassing = !isNaN(num) && num >= 75;
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex items-center justify-between py-4 px-1",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex-1 min-w-0",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "font-medium text-gray-900",
+                                                    className: "font-medium text-gray-900 truncate",
                                                     children: grade.subject
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/student/grades/page.tsx",
-                                                    lineNumber: 410,
-                                                    columnNumber: 21
+                                                    lineNumber: 425,
+                                                    columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-sm text-gray-500",
+                                                    className: "text-xs text-gray-400 mt-0.5",
                                                     children: [
                                                         "Updated ",
                                                         formatDate(grade.lastUpdated)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/student/grades/page.tsx",
-                                                    lineNumber: 411,
-                                                    columnNumber: 21
+                                                    lineNumber: 428,
+                                                    columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/student/grades/page.tsx",
-                                            lineNumber: 409,
-                                            columnNumber: 19
+                                            lineNumber: 424,
+                                            columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "text-xl font-semibold text-gray-900",
-                                            children: grade.grade
-                                        }, void 0, false, {
+                                            className: "flex items-center gap-3 ml-4 flex-shrink-0",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-right",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: `text-2xl font-bold ${isPassing ? 'text-green-700' : 'text-red-700'}`,
+                                                            children: grade.grade
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/student/grades/page.tsx",
+                                                            lineNumber: 434,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        letterInfo && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: `block text-xs font-semibold ${letterInfo.color}`,
+                                                            children: letterInfo.letter
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/student/grades/page.tsx",
+                                                            lineNumber: 440,
+                                                            columnNumber: 27
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/student/grades/page.tsx",
+                                                    lineNumber: 433,
+                                                    columnNumber: 23
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: `w-2 h-10 rounded-full ${isPassing ? 'bg-green-400' : 'bg-red-400'}`
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/student/grades/page.tsx",
+                                                    lineNumber: 447,
+                                                    columnNumber: 23
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
                                             fileName: "[project]/app/student/grades/page.tsx",
-                                            lineNumber: 415,
-                                            columnNumber: 19
+                                            lineNumber: 432,
+                                            columnNumber: 21
                                         }, this)
                                     ]
                                 }, grade.id, true, {
                                     fileName: "[project]/app/student/grades/page.tsx",
-                                    lineNumber: 405,
-                                    columnNumber: 17
-                                }, this))
+                                    lineNumber: 420,
+                                    columnNumber: 19
+                                }, this);
+                            })
                         }, void 0, false, {
                             fileName: "[project]/app/student/grades/page.tsx",
-                            lineNumber: 403,
+                            lineNumber: 413,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/student/grades/page.tsx",
-                        lineNumber: 388,
+                        lineNumber: 392,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/student/grades/page.tsx",
-                lineNumber: 381,
+                lineNumber: 385,
                 columnNumber: 7
+            }, this),
+            !hasApproved && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                className: "text-center text-xs text-gray-400",
+                children: "Certificate download will be available once grades are finalized."
+            }, void 0, false, {
+                fileName: "[project]/app/student/grades/page.tsx",
+                lineNumber: 460,
+                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/student/grades/page.tsx",
-        lineNumber: 368,
+        lineNumber: 332,
         columnNumber: 5
     }, this);
 }

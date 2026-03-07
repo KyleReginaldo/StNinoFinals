@@ -12,6 +12,18 @@ import {
 import { BookOpen, Calendar, Clock, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface Teacher {
   id: number;
@@ -24,10 +36,16 @@ interface Teacher {
   [key: string]: any;
 }
 
+interface TeacherChartData {
+  gradeStatus: { name: string; value: number; fill: string }[];
+  studentsPerClass: { class: string; students: number }[];
+}
+
 export default function TeacherDashboard() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [teacherStats, setTeacherStats] = useState<any>(null);
+  const [chartData, setChartData] = useState<TeacherChartData | null>(null);
 
   // Check if teacher is logged in
   useEffect(() => {
@@ -68,6 +86,16 @@ export default function TeacherDashboard() {
       }
     } catch (error) {
       console.error('Error fetching teacher stats:', error);
+    }
+
+    try {
+      const res = await fetch(
+        `/api/teacher/chart-data?teacherId=${teacher.id}`
+      );
+      const d = await res.json();
+      if (d.success) setChartData(d.data);
+    } catch (error) {
+      console.error('Error fetching teacher chart data:', error);
     }
   };
 
@@ -209,6 +237,110 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Grade Submissions Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-800 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Grade Submission Status
+            </CardTitle>
+            <CardDescription>Status of your submitted grades</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!chartData ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent" />
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.gradeStatus}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={76}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {chartData.gradeStatus.map((entry, index) => (
+                        <Cell key={index} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-4 mt-2">
+                  {chartData.gradeStatus.map((entry) => (
+                    <div
+                      key={entry.name}
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full inline-block"
+                        style={{ backgroundColor: entry.fill }}
+                      />
+                      <span className="text-gray-600">{entry.name}</span>
+                      <span className="font-semibold text-gray-900">
+                        {entry.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Students per Class */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-800">Students per Class</CardTitle>
+            <CardDescription>
+              Active enrollments in your classes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!chartData ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent" />
+              </div>
+            ) : chartData.studentsPerClass.length === 0 ? (
+              <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+                No active classes found
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={chartData.studentsPerClass}
+                  margin={{ top: 4, right: 8, left: -16, bottom: 24 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="class"
+                    tick={{ fontSize: 11 }}
+                    angle={-20}
+                    textAnchor="end"
+                    interval={0}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip />
+                  <Bar
+                    dataKey="students"
+                    name="Students"
+                    fill="#991b1b"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card>

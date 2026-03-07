@@ -44,9 +44,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const admin = getSupabaseAdmin();
-    const { studentId, subject, grade } = await request.json();
+    const { studentId, subject, grade, teacherId, classId } =
+      await request.json();
 
-    console.log('Grades POST received:', { studentId, subject, grade });
+    console.log('Grades POST received:', {
+      studentId,
+      subject,
+      grade,
+      teacherId,
+      classId,
+    });
 
     if (!studentId || !subject || grade === undefined) {
       return NextResponse.json(
@@ -71,12 +78,15 @@ export async function POST(request: Request) {
     });
 
     // First, check if a grade already exists
-    const { data: existingGrade, error: selectError } = await admin
+    const query = admin
       .from('grades')
       .select('id')
       .eq('student_id', studentId)
-      .eq('subject', subject)
-      .single();
+      .eq('subject', subject);
+
+    if (classId) query.eq('class_id', classId);
+
+    const { data: existingGrade, error: selectError } = await query.single();
 
     if (selectError && selectError.code !== 'PGRST116') {
       // PGRST116 means no rows found, which is fine
@@ -94,6 +104,10 @@ export async function POST(request: Request) {
         .from('grades')
         .update({
           grade: numericGrade,
+          teacher_id: teacherId ?? null,
+          status: 'pending',
+          reviewed_by: null,
+          reviewed_at: null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', existingGrade.id)
@@ -116,6 +130,9 @@ export async function POST(request: Request) {
           student_id: studentId,
           subject: subject,
           grade: numericGrade,
+          teacher_id: teacherId ?? null,
+          class_id: classId ?? null,
+          status: 'pending',
         })
         .select();
 
@@ -133,7 +150,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: 'Grade saved successfully',
+      message: 'Grade submitted for approval',
     });
   } catch (error: any) {
     console.error('Grades API error:', error);

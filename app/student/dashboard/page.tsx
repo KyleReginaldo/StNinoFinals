@@ -9,167 +9,107 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import {
-  AlertCircle,
-  ChevronRight,
-  FileText,
+  BookOpen,
+  CalendarCheck,
+  CheckCircle2,
+  Clock,
   GraduationCap,
   RefreshCcw,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
-interface DashboardStats {
-  gpa: number | null;
-  attendanceRate: number | null;
-  activeCourses: number | null;
-  pendingTasks: number | null;
-}
-
-interface AssignmentSummary {
-  id: string;
-  title: string;
-  subject: string;
-  dueDate: string;
-  status: 'pending' | 'completed' | 'overdue';
-}
-
-interface CourseProgress {
-  id: string;
-  subject: string;
-  instructor?: string;
-  completion: number;
-}
-
 interface DashboardData {
-  stats: DashboardStats;
-  assignments: AssignmentSummary[];
-  courseProgress: CourseProgress[];
+  stats: {
+    gpa: number | null;
+    attendanceRate: number | null;
+    activeCourses: number;
+    approvedGrades: number;
+  };
+  grades: {
+    id: string;
+    subject: string;
+    grade: number;
+    status: string;
+    updatedAt: string;
+  }[];
+  classes: {
+    id: string;
+    class_name: string;
+    class_code: string;
+    grade_level: string | null;
+    section: string | null;
+    semester: string;
+    school_year: string;
+    room: string | null;
+    schedule: string | null;
+    teacher_name: string | null;
+    is_active: boolean;
+  }[];
+  recentAttendance: { date: string; timeIn: string | null; status: string }[];
+}
+
+function gradeToLetter(g: number): string {
+  if (g >= 97) return 'A+';
+  if (g >= 93) return 'A';
+  if (g >= 90) return 'A-';
+  if (g >= 87) return 'B+';
+  if (g >= 83) return 'B';
+  if (g >= 80) return 'B-';
+  if (g >= 77) return 'C+';
+  if (g >= 75) return 'C';
+  return 'F';
+}
+
+function gradeColor(g: number): string {
+  if (g >= 90) return 'text-green-700 bg-green-50 border-green-200';
+  if (g >= 80) return 'text-blue-700 bg-blue-50 border-blue-200';
+  if (g >= 75) return 'text-amber-700 bg-amber-50 border-amber-200';
+  return 'text-red-700 bg-red-50 border-red-200';
 }
 
 export default function StudentDashboardPage() {
   const { student, isLoading } = useStudentAuth();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
-  const [dashboardLoading, setDashboardLoading] = useState(false);
-  const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const displayName = useMemo(() => {
     if (!student) return 'Student';
-    if (student.first_name && student.last_name) {
-      return `${student.first_name} ${student.last_name}`;
-    }
-    return student.email?.split('@')[0] || 'Student';
+    return student.first_name
+      ? `${student.first_name}`
+      : (student.email?.split('@')[0] ?? 'Student');
   }, [student]);
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!student) return;
-
-    setDashboardLoading(true);
-    setDashboardError(null);
-
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch('/api/student/dashboard', {
+      const res = await fetch('/api/student/dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: student.id,
-          email: student.email,
-        }),
+        body: JSON.stringify({ studentId: student.id }),
       });
-
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok || !payload?.success) {
-        setDashboardData(payload?.data ?? null);
-        setDashboardError(payload?.error || 'Failed to load dashboard data.');
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || !payload?.success) {
+        setError(payload?.error || 'Failed to load dashboard data.');
       } else {
-        setDashboardData(payload.data);
+        setData(payload.data);
       }
-    } catch (error: any) {
-      console.error('Dashboard fetch error:', error);
-      setDashboardError('Network error. Please check your connection.');
+    } catch {
+      setError('Network error. Please check your connection.');
     } finally {
-      setDashboardLoading(false);
+      setLoading(false);
     }
   }, [student]);
 
   useEffect(() => {
-    if (student) {
-      fetchDashboardData();
-    }
-  }, [student, fetchDashboardData]);
-
-  const computedStats = useMemo<DashboardStats>(
-    () => ({
-      gpa: dashboardData?.stats?.gpa ?? student?.gpa ?? null,
-      attendanceRate: dashboardData?.stats?.attendanceRate ?? null,
-      activeCourses:
-        dashboardData?.stats?.activeCourses ?? student?.active_courses ?? null,
-      pendingTasks:
-        dashboardData?.stats?.pendingTasks ?? student?.pending_tasks ?? null,
-    }),
-    [dashboardData, student]
-  );
-
-  const assignments = useMemo(
-    () => dashboardData?.assignments ?? [],
-    [dashboardData]
-  );
-  const courseProgress = useMemo(
-    () => dashboardData?.courseProgress ?? [],
-    [dashboardData]
-  );
-
-  const statCards = [
-    {
-      label: 'Current GPA',
-      value: computedStats.gpa !== null ? computedStats.gpa.toFixed(2) : '—',
-      helper:
-        computedStats.gpa !== null ? 'Registrar confirmed' : 'Awaiting data',
-    },
-    {
-      label: 'Attendance Rate',
-      value:
-        computedStats.attendanceRate !== null
-          ? `${computedStats.attendanceRate.toFixed(0)}%`
-          : '—',
-      helper:
-        computedStats.attendanceRate !== null ? 'Last 30 days' : 'Data pending',
-    },
-    {
-      label: 'Active Courses',
-      value:
-        computedStats.activeCourses !== null
-          ? String(computedStats.activeCourses)
-          : '—',
-      helper:
-        computedStats.activeCourses !== null
-          ? 'Enrolled this term'
-          : 'Loading...',
-    },
-    {
-      label: 'Pending Tasks',
-      value:
-        computedStats.pendingTasks !== null
-          ? String(computedStats.pendingTasks)
-          : '—',
-      helper: computedStats.pendingTasks !== null ? 'Due soon' : 'Syncing...',
-    },
-  ];
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return dateString;
-    }
-  };
+    if (student) fetchData();
+  }, [student, fetchData]);
 
   if (isLoading) {
     return (
@@ -178,131 +118,229 @@ export default function StudentDashboardPage() {
       </div>
     );
   }
+  if (!student) return null;
 
-  if (!student) {
-    return null;
-  }
+  const stats = data?.stats;
+  const grades = data?.grades ?? [];
+  const classes = data?.classes ?? [];
+  const recentAttendance = data?.recentAttendance ?? [];
+
+  const approvedGrades = grades.filter((g) => g.status === 'approved');
+  const pendingGrades = grades.filter((g) => g.status === 'pending');
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+          <h2 className="text-2xl font-bold text-gray-900">
             Welcome back, {displayName}!
           </h2>
-          <p className="text-gray-600">
-            Here&apos;s your academic overview for today.
+          <p className="text-sm text-gray-500 mt-0.5">
+            {student.grade_level && student.section
+              ? `${student.grade_level} — ${student.section}`
+              : (student.grade_level ?? 'Academic overview')}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {dashboardError && (
-            <Badge
-              variant="outline"
-              className="text-red-700 border-red-200 bg-red-50"
-            >
-              Sync issue
-            </Badge>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchDashboardData}
-            disabled={dashboardLoading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCcw
-              className={`w-4 h-4 ${dashboardLoading ? 'animate-spin' : ''}`}
-            />
-            Refresh data
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchData}
+          disabled={loading}
+          className="flex items-center gap-2"
+        >
+          <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
-      {dashboardError && (
-        <div className="flex items-start space-x-3 bg-red-50 border border-red-100 text-sm text-red-800 p-4 rounded-md">
-          <AlertCircle className="w-4 h-4 mt-0.5" />
-          <div>
-            <p className="font-semibold">
-              We couldn&apos;t refresh your dashboard.
-            </p>
-            <p>{dashboardError}</p>
-          </div>
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
+          <XCircle className="w-4 h-4 shrink-0" />
+          {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat) => (
-          <Card key={stat.label} className="bg-white border border-gray-200">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                {stat.label}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold text-gray-900">
-                {stat.value}
-              </div>
-              <div className="flex items-center mt-1 text-xs text-gray-500">
-                <ChevronRight className="w-3 h-3 mr-1" />
-                {stat.helper}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                GPA
+              </span>
+              <TrendingUp className="w-4 h-4 text-red-700" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats?.gpa != null ? stats.gpa.toFixed(2) : '—'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {approvedGrades.length > 0
+                ? `From ${approvedGrades.length} approved subject${approvedGrades.length !== 1 ? 's' : ''}`
+                : 'No approved grades yet'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Attendance
+              </span>
+              <CalendarCheck className="w-4 h-4 text-red-700" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats?.attendanceRate != null ? `${stats.attendanceRate}%` : '—'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Last 60 records</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Classes
+              </span>
+              <BookOpen className="w-4 h-4 text-red-700" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {loading ? '—' : (stats?.activeCourses ?? 0)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Enrolled this term</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Grades
+              </span>
+              <GraduationCap className="w-4 h-4 text-red-700" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {loading ? '—' : grades.length}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {pendingGrades.length > 0
+                ? `${pendingGrades.length} pending review`
+                : 'All reviewed'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-white border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              Recent Assignments
-            </CardTitle>
-            <CardDescription className="text-sm text-gray-600">
-              Your latest assignments and their status
-            </CardDescription>
+        {/* Grades */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">My Grades</CardTitle>
+            <CardDescription>Approved grades this term</CardDescription>
           </CardHeader>
           <CardContent>
-            {assignments.length === 0 ? (
-              <div className="text-center py-12">
-                <FileText
-                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  aria-hidden
-                />
-                <p className="text-gray-600">
-                  {dashboardLoading
-                    ? 'Loading assignments...'
-                    : 'No assignments available.'}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Assignments will load automatically once published.
+            {loading ? (
+              <p className="text-sm text-gray-500 text-center py-8">
+                Loading grades...
+              </p>
+            ) : approvedGrades.length === 0 ? (
+              <div className="text-center py-10">
+                <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">No approved grades yet.</p>
+                {pendingGrades.length > 0 && (
+                  <p className="text-xs text-amber-600 mt-1 flex items-center justify-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {pendingGrades.length} grade
+                    {pendingGrades.length !== 1 ? 's' : ''} pending admin review
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {approvedGrades.map((g) => {
+                  const num = parseFloat(String(g.grade));
+                  return (
+                    <div
+                      key={g.id}
+                      className="flex items-center justify-between py-2 px-3 rounded-lg border border-gray-100 hover:bg-gray-50"
+                    >
+                      <p className="text-sm font-medium text-gray-800 truncate pr-4">
+                        {g.subject}
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded border ${gradeColor(num)}`}
+                        >
+                          {gradeToLetter(num)}
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 w-10 text-right">
+                          {num}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {pendingGrades.length > 0 && (
+                  <p className="text-xs text-amber-600 pt-1 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {pendingGrades.length} more subject
+                    {pendingGrades.length !== 1 ? 's' : ''} pending
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Classes */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">
+              My Classes
+            </CardTitle>
+            <CardDescription>Enrolled classes this term</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-sm text-gray-500 text-center py-8">
+                Loading classes...
+              </p>
+            ) : classes.length === 0 ? (
+              <div className="text-center py-10">
+                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">
+                  Not enrolled in any classes yet.
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {assignments.map((assignment) => (
+              <div className="space-y-2">
+                {classes.map((cls) => (
                   <div
-                    key={assignment.id}
-                    className="flex items-center justify-between border border-gray-100 rounded-lg p-3"
+                    key={cls.id}
+                    className="flex items-start justify-between py-2 px-3 rounded-lg border border-gray-100 hover:bg-gray-50"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {assignment.title}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {cls.class_name}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {assignment.subject} · Due{' '}
-                        {formatDate(assignment.dueDate)}
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {cls.teacher_name
+                          ? `${cls.teacher_name}`
+                          : 'No teacher assigned'}
+                        {cls.room ? ` · ${cls.room}` : ''}
                       </p>
+                      {cls.schedule && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {cls.schedule}
+                        </p>
+                      )}
                     </div>
                     <Badge
-                      className={`${
-                        assignment.status === 'completed'
-                          ? 'bg-green-50 text-green-700'
-                          : assignment.status === 'overdue'
-                            ? 'bg-red-50 text-red-700'
-                            : 'bg-yellow-50 text-yellow-700'
-                      }`}
+                      className={`shrink-0 ml-2 text-xs ${cls.is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500'}`}
+                      variant="outline"
                     >
-                      {assignment.status.replace(/_/g, ' ')}
+                      {cls.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                 ))}
@@ -310,57 +348,71 @@ export default function StudentDashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        <Card className="bg-white border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              Course Progress
-            </CardTitle>
-            <CardDescription className="text-sm text-gray-600">
-              Your progress in current subjects
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {courseProgress.length === 0 ? (
-              <div className="text-center py-12">
-                <GraduationCap
-                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  aria-hidden
-                />
-                <p className="text-gray-600">
-                  {dashboardLoading
-                    ? 'Syncing progress...'
-                    : 'No course progress data available.'}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Course progress will be loaded from the database.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {courseProgress.map((course) => (
-                  <div key={course.id}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <p className="font-medium text-gray-900">
-                        {course.subject}
-                      </p>
-                      <span className="text-gray-600">
-                        {course.completion}%
-                      </span>
-                    </div>
-                    {course.instructor && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        Instructor: {course.instructor}
-                      </p>
-                    )}
-                    <Progress value={course.completion} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Recent Attendance */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold">
+            Recent Attendance
+          </CardTitle>
+          <CardDescription>Your last 7 recorded days</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-sm text-gray-500 text-center py-6">
+              Loading attendance...
+            </p>
+          ) : recentAttendance.length === 0 ? (
+            <div className="text-center py-8">
+              <CalendarCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-500">
+                No attendance records found.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {recentAttendance.map((r, i) => {
+                const present = r.status === 'present';
+                const date = new Date(r.date);
+                return (
+                  <div
+                    key={i}
+                    className={`flex flex-col items-center px-3 py-2 rounded-lg border text-xs ${
+                      present
+                        ? 'border-green-200 bg-green-50 text-green-700'
+                        : 'border-red-200 bg-red-50 text-red-700'
+                    }`}
+                  >
+                    <span className="font-semibold">
+                      {date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                    <span className="flex items-center gap-0.5 mt-1">
+                      {present ? (
+                        <CheckCircle2 className="w-3 h-3" />
+                      ) : (
+                        <XCircle className="w-3 h-3" />
+                      )}
+                      {present ? 'Present' : 'Absent'}
+                    </span>
+                    {r.timeIn && (
+                      <span className="text-gray-500 mt-0.5">
+                        {new Date(r.timeIn).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

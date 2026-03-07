@@ -95,6 +95,18 @@
       "namedRegex": "^/admin/classes(?:/)?$"
     },
     {
+      "page": "/admin/enrollment",
+      "regex": "^/admin/enrollment(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/enrollment(?:/)?$"
+    },
+    {
+      "page": "/admin/grades",
+      "regex": "^/admin/grades(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/grades(?:/)?$"
+    },
+    {
       "page": "/admin/live-attendance",
       "regex": "^/admin/live\\-attendance(?:/)?$",
       "routeKeys": {},
@@ -167,10 +179,22 @@
       "namedRegex": "^/api/admin/attendance\\-reports(?:/)?$"
     },
     {
+      "page": "/api/admin/chart-data",
+      "regex": "^/api/admin/chart\\-data(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/chart\\-data(?:/)?$"
+    },
+    {
       "page": "/api/admin/check-rfid",
       "regex": "^/api/admin/check\\-rfid(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/check\\-rfid(?:/)?$"
+    },
+    {
+      "page": "/api/admin/class-subjects",
+      "regex": "^/api/admin/class\\-subjects(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/class\\-subjects(?:/)?$"
     },
     {
       "page": "/api/admin/classes",
@@ -183,6 +207,18 @@
       "regex": "^/api/admin/diagnostics(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/diagnostics(?:/)?$"
+    },
+    {
+      "page": "/api/admin/enrollment-requests",
+      "regex": "^/api/admin/enrollment\\-requests(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/enrollment\\-requests(?:/)?$"
+    },
+    {
+      "page": "/api/admin/grades",
+      "regex": "^/api/admin/grades(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/grades(?:/)?$"
     },
     {
       "page": "/api/admin/login",
@@ -323,6 +359,12 @@
       "namedRegex": "^/api/parent/children(?:/)?$"
     },
     {
+      "page": "/api/parent/enrollment-request",
+      "regex": "^/api/parent/enrollment\\-request(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/parent/enrollment\\-request(?:/)?$"
+    },
+    {
       "page": "/api/parent/link-student",
       "regex": "^/api/parent/link\\-student(?:/)?$",
       "routeKeys": {},
@@ -365,6 +407,18 @@
       "namedRegex": "^/api/student/dashboard(?:/)?$"
     },
     {
+      "page": "/api/student/enrollment",
+      "regex": "^/api/student/enrollment(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/student/enrollment(?:/)?$"
+    },
+    {
+      "page": "/api/student/enrollment-request",
+      "regex": "^/api/student/enrollment\\-request(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/student/enrollment\\-request(?:/)?$"
+    },
+    {
       "page": "/api/student/login",
       "regex": "^/api/student/login(?:/)?$",
       "routeKeys": {},
@@ -393,6 +447,12 @@
       "regex": "^/api/students/update\\-rfid(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/students/update\\-rfid(?:/)?$"
+    },
+    {
+      "page": "/api/teacher/chart-data",
+      "regex": "^/api/teacher/chart\\-data(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/teacher/chart\\-data(?:/)?$"
     },
     {
       "page": "/api/teacher/classes",
