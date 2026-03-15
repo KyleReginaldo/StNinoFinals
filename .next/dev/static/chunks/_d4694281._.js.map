@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/koyaemer/Documents/development/StNinoFinals/app/teacher/layout.tsx"],"sourcesContent":["'use client';\n\nimport { usePathname } from 'next/navigation';\n\nexport default function TeacherLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  const pathname = usePathname();\n  const isLoginPage = pathname === '/teacher/login';\n\n  // Login page doesn't need the wrapper\n  if (isLoginPage) {\n    return <>{children}</>;\n  }\n\n  // All other pages render without a wrapper (auth is handled per-page)\n  return <>{children}</>;\n}\n"],"names":[],"mappings":";;;;;AAEA;;;AAFA;;AAIe,SAAS,cAAc,EACpC,QAAQ,EAGT;;IACC,MAAM,WAAW,IAAA,oJAAW;IAC5B,MAAM,cAAc,aAAa;IAEjC,sCAAsC;IACtC,IAAI,aAAa;QACf,qBAAO;sBAAG;;IACZ;IAEA,sEAAsE;IACtE,qBAAO;kBAAG;;AACZ;GAfwB;;QAKL,oJAAW;;;KALN"}},
-    {"offset": {"line": 43, "column": 0}, "map": {"version":3,"sources":["file:///Users/koyaemer/Documents/development/StNinoFinals/node_modules/next/navigation.js"],"sourcesContent":["module.exports = require('./dist/client/components/navigation')\n"],"names":[],"mappings":"AAAA,OAAO,OAAO","ignoreList":[0]}}]
-}

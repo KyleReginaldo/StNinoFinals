@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/koyaemer/Documents/development/StNinoFinals/app/student/dashboard/page.tsx"],"sourcesContent":["'use client';\n\nimport { useRouter } from 'next/navigation';\nimport { useEffect } from 'react';\n\nexport default function StudentDashboardPage() {\n  const router = useRouter();\n\n  useEffect(() => {\n    const storedStudent = localStorage.getItem('student');\n    if (!storedStudent) {\n      router.push('/student');\n    }\n  }, [router]);\n\n  return (\n    <div className=\"p-6\">\n      <h1 className=\"text-2xl font-bold text-gray-900 mb-6\">Dashboard</h1>\n      <p>Dashboard content will be moved here...</p>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;AAEA;AACA;AAHA;;;;AAKe,SAAS;IACtB,MAAM,SAAS,IAAA,+IAAS;IAExB,IAAA,kNAAS,EAAC;QACR,MAAM,gBAAgB,aAAa,OAAO,CAAC;QAC3C,IAAI,CAAC,eAAe;YAClB,OAAO,IAAI,CAAC;QACd;IACF,GAAG;QAAC;KAAO;IAEX,qBACE,8OAAC;QAAI,WAAU;;0BACb,8OAAC;gBAAG,WAAU;0BAAwC;;;;;;0BACtD,8OAAC;0BAAE;;;;;;;;;;;;AAGT"}}]
-}
