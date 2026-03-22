@@ -1,12 +1,15 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   Activity,
   DollarSign,
   FileText,
   GraduationCap,
   Radio,
+  RotateCcw,
   Settings,
   Shield,
   UserCheck,
@@ -38,18 +41,52 @@ interface ChartData {
 
 export default function AdminPage() {
   const { admin, loading } = useAuth();
-  const { stats, loadingStats } = useAdminData(admin);
+  const { stats: baseStats, loadingStats, fetchStats } = useAdminData(admin);
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>({
+    from: new Date(),
+    to: new Date(),
+  });
+  const [filteredStats, setFilteredStats] = useState<any>(null);
+  const stats = filteredStats || baseStats;
+
+  const toIso = (d: Date) => d.toISOString().split('T')[0];
+
+  const fetchAllData = (range?: { from?: Date; to?: Date }) => {
+    const params = new URLSearchParams();
+    if (range?.from) params.set('startDate', toIso(range.from));
+    if (range?.to) params.set('endDate', toIso(range.to));
+    const qs = params.toString();
+
+    fetch(`/api/admin/chart-data?${qs}`)
+      .then((r) => r.json())
+      .then((res) => { if (res.success) setChartData(res.data); })
+      .catch(console.error);
+
+    fetch(`/api/admin/stats?${qs}`)
+      .then((r) => r.json())
+      .then((res) => { if (res.success && res.data) setFilteredStats(res.data); })
+      .catch(console.error);
+  };
 
   useEffect(() => {
     if (!admin) return;
-    fetch('/api/admin/chart-data')
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success) setChartData(res.data);
-      })
-      .catch(console.error);
+    fetchAllData(dateRange);
   }, [admin]);
+
+  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
+    setDateRange(range);
+    if (range?.from && range?.to) {
+      fetchAllData(range);
+    }
+  };
+
+  const handleResetToToday = () => {
+    const today = { from: new Date(), to: new Date() };
+    setDateRange(today);
+    setFilteredStats(null);
+    fetchAllData(today);
+  };
 
   if (!admin) {
     return null;
@@ -65,6 +102,21 @@ export default function AdminPage() {
           Welcome back, {admin.first_name || 'Admin'}! Here's an overview of
           your school.
         </p>
+      </div>
+
+      {/* Date Range Filter */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
+        <div className="w-full sm:w-auto">
+          <DateRangePicker
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            placeholder="Select date range"
+          />
+        </div>
+        <Button onClick={handleResetToToday} variant="outline" size="sm">
+          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+          Today
+        </Button>
       </div>
 
       {/* Dashboard Stats */}
@@ -133,7 +185,7 @@ export default function AdminPage() {
             <div className="text-3xl font-bold text-green-900">
               {loadingStats ? '...' : `${stats.attendanceRate}%`}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Today's attendance</p>
+            <p className="text-xs text-gray-600 mt-1">{filteredStats ? 'Filtered attendance' : "Today's attendance"}</p>
           </CardContent>
         </Card>
 

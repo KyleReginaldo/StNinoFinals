@@ -66,36 +66,109 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate phone number is numeric only (10-11 digits)
+    if (!/^\d{10,11}$/.test(body.phone_number)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Phone number must be 10-11 digits with no letters or special characters.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check for existing admission with same email
+    const { data: existingAdmission } = await supabase
+      .from('admissions')
+      .select('id, status')
+      .eq('email_address', body.email_address)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Check for existing user account with same email
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', body.email_address)
+      .limit(1)
+      .single();
+
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, error: 'An account with this email already exists. Please use a different email or contact the school.' },
+        { status: 409 }
+      );
+    }
+
+    if (existingAdmission && (existingAdmission.status === 'approved' || existingAdmission.status === 'rejected')) {
+      return NextResponse.json(
+        { success: false, error: 'An application with this email has already been processed. Please contact the school for assistance.' },
+        { status: 409 }
+      );
+    }
+
     const admissionData: AdmissionInsert = {
       first_name: body.first_name,
       last_name: body.last_name,
+      middle_initial: body.middle_initial || null,
       parent_name: body.parent_name,
       email_address: body.email_address,
       phone_number: body.phone_number,
       intended_grade_level: body.intended_grade_level,
       previous_school: body.previous_school,
       additional_message: body.additional_message || null,
-      status: 'pending', // Set default status
+      status: 'pending',
     };
 
-    const { data, error } = await supabase
-      .from('admissions')
-      .insert([admissionData])
-      .select()
-      .single();
+    let data;
+    let isUpdate = false;
 
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+    // If pending admission exists, update it (re-application)
+    if (existingAdmission && existingAdmission.status === 'pending') {
+      const { data: updated, error } = await supabase
+        .from('admissions')
+        .update({
+          ...admissionData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingAdmission.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 500 }
+        );
+      }
+      data = updated;
+      isUpdate = true;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from('admissions')
+        .insert([admissionData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 500 }
+        );
+      }
+      data = inserted;
     }
 
     return NextResponse.json({
       success: true,
       data,
-      message: 'Admission inquiry submitted successfully',
+      isUpdate,
+      message: isUpdate
+        ? 'Admission inquiry updated successfully'
+        : 'Admission inquiry submitted successfully',
     });
   } catch (error: any) {
     console.error('POST Admissions error:', error);

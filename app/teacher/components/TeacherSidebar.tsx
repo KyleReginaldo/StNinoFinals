@@ -17,8 +17,8 @@ export default function TeacherSidebarContent() {
     { href: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/teacher/account', label: 'My Account', icon: User },
     { href: '/teacher/calendar', label: 'Calendar', icon: Calendar },
+    { href: '/teacher/classes', label: 'My Classes', icon: BookOpen },
     { href: '/teacher/grades', label: 'Manage Grades', icon: GraduationCap },
-    { href: '/teacher/journal', label: 'Teaching Journal', icon: BookOpen },
     // { href: '/teacher/settings', label: 'Settings', icon: Settings },
   ];
 

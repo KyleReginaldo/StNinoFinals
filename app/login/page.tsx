@@ -6,12 +6,20 @@ import { supabase } from '@/lib/supabaseClient';
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-red-800 border-t-transparent" /></div>}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -21,6 +29,15 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Auto-fill email and password from URL params (from welcome email link)
+  useEffect(() => {
+    const paramEmail = searchParams.get('email');
+    const paramPassword = searchParams.get('password');
+    if (paramEmail) setEmail(paramEmail);
+    if (paramPassword) setPassword(paramPassword);
+  }, [searchParams]);
 
   // Redirect already-logged-in users
   useEffect(() => {

@@ -143,7 +143,7 @@ export default function ParentManagementPage() {
     setAddError("")
 
     try {
-      const tempPassword = `Parent${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 100)}`
+      const tempPassword = `SN${Math.random().toString(36).slice(-6)}`
 
       const addressString = `${newParent.address.streetDetails}${newParent.address.barangayName ? ', ' + newParent.address.barangayName : ''}, Trece Martires City, Cavite`
 

@@ -42,10 +42,14 @@ export async function POST(request: Request) {
     }
 
     if (action === 'reject') {
-      // Simply update status to rejected
+      const rejectionReason = body.rejection_reason || '';
+
       const { error: updateError } = await supabase
         .from('admissions')
-        .update({ status: 'rejected' })
+        .update({
+          status: 'rejected',
+          rejection_reason: rejectionReason,
+        })
         .eq('id', admissionId);
 
       if (updateError) {
@@ -55,7 +59,18 @@ export async function POST(request: Request) {
         );
       }
 
-      // TODO: Send rejection email
+      // Send rejection email
+      try {
+        await EmailService.sendAdmissionRejection({
+          parentName: admission.parent_name,
+          studentFirstName: admission.first_name,
+          studentLastName: admission.last_name,
+          email: admission.email_address,
+          reason: rejectionReason,
+        });
+      } catch (emailError) {
+        console.error('Rejection email error:', emailError);
+      }
 
       return NextResponse.json({
         success: true,
@@ -66,7 +81,7 @@ export async function POST(request: Request) {
     // APPROVAL PROCESS
     if (action === 'approve') {
       // Generate a temporary password
-      const tempPassword = `SN${Math.random().toString(36).slice(-8)}${Date.now().toString(36)}`;
+      const tempPassword = `SN${Math.random().toString(36).slice(-6)}`;
 
       // Create user in Supabase Auth
       const { data: authData, error: authError } =
@@ -143,7 +158,7 @@ export async function POST(request: Request) {
           email: admission.email_address,
           password: tempPassword,
           gradeLevel: admission.intended_grade_level,
-          loginUrl: `${request.headers.get('origin')}/student`,
+          loginUrl: `${request.headers.get('origin')}/login?email=${encodeURIComponent(admission.email_address)}&password=${encodeURIComponent(tempPassword)}`,
         });
       } catch (emailError) {
         console.error('Email error:', emailError);

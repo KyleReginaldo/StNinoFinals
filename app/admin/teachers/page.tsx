@@ -150,7 +150,7 @@ export default function TeacherManagementPage() {
     setAddError('');
 
     try {
-      const tempPassword = `Teacher${Math.random().toString(36).slice(-8)}${Math.floor(Math.random() * 100)}`;
+      const tempPassword = `SN${Math.random().toString(36).slice(-6)}`;
 
       const addressString = `${newTeacher.address.streetDetails}${newTeacher.address.barangayName ? ', ' + newTeacher.address.barangayName : ''}, Trece Martires City, Cavite`;
 

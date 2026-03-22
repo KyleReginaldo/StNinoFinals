@@ -1,8 +1,10 @@
 import {
+  BarChart3,
   BookOpen,
   Calendar,
   ClipboardList,
   GraduationCap,
+  Layers,
   LayoutDashboard,
   List,
   MessageSquare,
@@ -12,11 +14,27 @@ import {
   Users,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Item from './Item';
 import NestedItem from './NestedItem';
 
 export const AdminSidebarContent = () => {
   const pathname = usePathname();
+  const [pendingCounts, setPendingCounts] = useState({ admissions: 0, enrollments: 0, grades: 0 });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const res = await fetch('/api/admin/pending-counts');
+        const data = await res.json();
+        if (data.success) setPendingCounts(data.counts);
+      } catch {}
+    };
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="bg-gray-900 w-full h-full overflow-y-auto p-6 pt-10">
       <ul className="flex flex-col gap-10 text-white font-regular">
@@ -55,6 +73,7 @@ export const AdminSidebarContent = () => {
           isSelected={pathname === '/admin/admission'}
           link="/admin/admission"
           icon={List}
+          badge={pendingCounts.admissions}
         />
         <Item
           label="Classes"
@@ -63,16 +82,24 @@ export const AdminSidebarContent = () => {
           icon={BookOpen}
         />
         <Item
+          label="Sections"
+          isSelected={pathname === '/admin/sections'}
+          link="/admin/sections"
+          icon={Layers}
+        />
+        <Item
           label="Grade Approvals"
           isSelected={pathname === '/admin/grades'}
           link="/admin/grades"
           icon={GraduationCap}
+          badge={pendingCounts.grades}
         />
         <Item
           label="Enrollment"
           isSelected={pathname === '/admin/enrollment'}
           link="/admin/enrollment"
           icon={ClipboardList}
+          badge={pendingCounts.enrollments}
         />
         <Item
           label="Attendance"
@@ -80,12 +107,12 @@ export const AdminSidebarContent = () => {
           link="/admin/attendance"
           icon={Calendar}
         />
-        {/* <Item
-          label="Reports and Analytics"
+        <Item
+          label="Reports & Analytics"
           isSelected={pathname === '/admin/reports'}
           link="/admin/reports"
-          icon={Proportions}
-        /> */}
+          icon={BarChart3}
+        />
         <Item
           label="SMS Tester"
           isSelected={pathname === '/admin/test-sms'}

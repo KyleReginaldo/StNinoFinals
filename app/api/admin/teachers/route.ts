@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     const { data: authData, error: authError } =
       await admin.auth.admin.createUser({
         email,
-        password: password || Math.random().toString(36).slice(-8),
+        password: password || `SN${Math.random().toString(36).slice(-6)}`,
         email_confirm: true,
       });
 
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
 
     // Send welcome email with login credentials
     try {
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}`;
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(generatedPassword)}`;
       await EmailService.sendLoginCredentials({
         name: `${first_name} ${last_name}`,
         email: email,

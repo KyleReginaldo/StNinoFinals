@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
@@ -69,6 +68,7 @@ export default function ParentDashboardPage() {
   const [studentNumber, setStudentNumber] = useState('');
   const [relationshipType, setRelationshipType] = useState('parent');
   const [addError, setAddError] = useState('');
+  const [viewingChild, setViewingChild] = useState<Child | null>(null);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
@@ -317,12 +317,6 @@ export default function ParentDashboardPage() {
     }
   };
 
-  const handleViewStudentPage = (child: Child) => {
-    // Store child data temporarily and redirect to student page
-    localStorage.setItem('student', JSON.stringify(child));
-    window.open(`/student?parentView=true`, '_blank');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -403,10 +397,9 @@ export default function ParentDashboardPage() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Your Child</DialogTitle>
+                      <DialogTitle>Add Your Student</DialogTitle>
                       <DialogDescription>
-                        Enter your child's student number to link them to your
-                        account.
+                        Enter the student number to link them to your account.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
@@ -476,9 +469,9 @@ export default function ParentDashboardPage() {
 
   return (
     <PasswordChangeWrapper userId={parent?.id}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-md border-b-4 border-red-800">
+        <header className="bg-white shadow-md border-b-4 border-red-800 flex-shrink-0">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -506,15 +499,14 @@ export default function ParentDashboardPage() {
                       className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white bg-transparent"
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
-                      Add Child
+                      Add Student
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Your Child</DialogTitle>
+                      <DialogTitle>Add Your Student</DialogTitle>
                       <DialogDescription>
-                        Enter your child's student number to link them to your
-                        account.
+                        Enter the student number to link them to your account.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 mt-4">
@@ -574,134 +566,420 @@ export default function ParentDashboardPage() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <Link href="/">
-                  <Button
-                    variant="outline"
-                    className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
-                  >
-                    <Home className="w-4 h-4 mr-2" />
-                    Home
-                  </Button>
-                </Link>
-                <div className="text-right">
+                <div className="text-right hidden md:block">
                   <p className="font-medium text-red-800">
                     {parent.name || parent.email || 'Parent/Guardian'}
                   </p>
                   <p className="text-sm text-gray-600">Parent/Guardian</p>
                 </div>
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
+                  >
+                    <Home className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Home</span>
+                  </Button>
+                </Link>
                 <Button
                   onClick={handleLogout}
                   variant="outline"
-                  className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
+                  size="sm"
+                  className="md:hidden border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                  <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content */}
-        <div className="container mx-auto px-4 py-8">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-5 mb-8">
-              <TabsTrigger
-                value="dashboard"
-                className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger
-                value="children"
-                className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
-              >
-                <User className="w-4 h-4 mr-2" />
-                My Children
-              </TabsTrigger>
-              <TabsTrigger
-                value="attendance"
-                className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                Attendance
-              </TabsTrigger>
-              <TabsTrigger
-                value="messages"
-                className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Messages
-              </TabsTrigger>
-              <TabsTrigger
-                value="schedule"
-                className="data-[state=active]:bg-red-800 data-[state=active]:text-white"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Dashboard Tab */}
-            <TabsContent value="dashboard" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Welcome, {parent.name || parent.email || 'Parent/Guardian'}!
-                </h2>
-                <p className="text-gray-600">
-                  Monitor your children's academic progress and school
-                  activities.
-                </p>
-              </div>
-
-              {/* Data Loading Indicator */}
-              {dataLoading && (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-800 mx-auto mb-3"></div>
-                  <p className="text-gray-600">Loading dashboard data...</p>
-                </div>
-              )}
-
-              {/* Integrated Parent Dashboard Component */}
-              {!dataLoading && (
-                <ParentDashboard
-                  children={children}
-                  childStats={childStats}
-                  childGrades={childGrades}
-                  childAttendance={childAttendance}
-                  announcements={announcements}
-                />
-              )}
-            </TabsContent>
-
-            {/* My Children Tab */}
-            <TabsContent value="children" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  My Children
-                </h2>
-                <p className="text-gray-600">
-                  View and access your children's student portals.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {children.map((child) => (
-                  <Card
-                    key={child.id}
-                    className="border-red-200 hover:shadow-lg transition-shadow"
+        {/* Main Content with Sidebar */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <aside className="hidden md:flex w-64 flex-shrink-0 bg-gray-900 flex-col overflow-y-auto">
+            <nav className="flex-1 p-4 pt-8 space-y-1">
+              {[
+                { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                { key: 'children', label: 'My Students', icon: User },
+                { key: 'attendance', label: 'Attendance', icon: Clock },
+                { key: 'messages', label: 'Messages', icon: MessageSquare },
+                { key: 'schedule', label: 'Schedule', icon: Calendar },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-red-800 text-white'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`}
                   >
-                    <CardHeader>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {child.photo || child.name?.charAt(0) || 'S'}
-                        </div>
-                        <div className="flex-1">
+                    <Icon className="w-4 h-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
+              <div className="p-4 border-t border-gray-800">
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  className="w-full justify-start text-gray-400 hover:text-white hover:bg-gray-800"
+                >
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Logout
+                </Button>
+              </div>
+            </nav>
+          </aside>
+
+          {/* Mobile bottom nav */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+            <div className="flex justify-around py-2">
+              {[
+                { key: 'dashboard', label: 'Home', icon: LayoutDashboard },
+                { key: 'children', label: 'Students', icon: User },
+                { key: 'attendance', label: 'Attendance', icon: Clock },
+                { key: 'messages', label: 'Messages', icon: MessageSquare },
+                { key: 'schedule', label: 'Schedule', icon: Calendar },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`flex flex-col items-center gap-1 px-2 py-1 text-xs ${
+                      isActive ? 'text-red-800 font-semibold' : 'text-gray-500'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <main className="flex-1 p-6 md:p-8 overflow-y-auto pb-20 md:pb-8">
+            {/* Dashboard */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Welcome, {parent.name || parent.email || 'Parent/Guardian'}!
+                  </h2>
+                  <p className="text-gray-600">
+                    Monitor your children's academic progress and school
+                    activities.
+                  </p>
+                </div>
+
+                {/* Data Loading Indicator */}
+                {dataLoading && (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-800 mx-auto mb-3"></div>
+                    <p className="text-gray-600">Loading dashboard data...</p>
+                  </div>
+                )}
+
+                {/* Integrated Parent Dashboard Component */}
+                {!dataLoading && (
+                  <ParentDashboard
+                    children={children}
+                    childStats={childStats}
+                    childGrades={childGrades}
+                    childAttendance={childAttendance}
+                    announcements={announcements}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* My Students */}
+            {activeTab === 'children' && (
+              <div className="space-y-6">
+                {viewingChild ? (
+                  /* ── Full Student Portal View ── */
+                  <div>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setViewingChild(null)}
+                      className="mb-4 text-gray-600 hover:text-gray-900 -ml-2"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                      Back to Students
+                    </Button>
+
+                    {/* Student Header */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                        {viewingChild.photo ||
+                          viewingChild.name?.charAt(0) ||
+                          'S'}
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">
+                          {viewingChild.name}
+                        </h2>
+                        <p className="text-gray-500">
+                          {viewingChild.grade_level || 'N/A'} -{' '}
+                          {viewingChild.section || 'N/A'} |{' '}
+                          {viewingChild.student_id || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Grades Card */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-red-800">Grades</CardTitle>
+                          <CardDescription>
+                            Academic performance by subject
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {(childGrades[String(viewingChild.id)] || []).length >
+                          0 ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b bg-gray-50">
+                                    <th className="text-left py-2.5 px-3 text-gray-600 font-semibold">
+                                      Subject
+                                    </th>
+                                    <th className="text-center py-2.5 px-3 text-gray-600 font-semibold">
+                                      Quarter
+                                    </th>
+                                    <th className="text-center py-2.5 px-3 text-gray-600 font-semibold">
+                                      Grade
+                                    </th>
+                                    <th className="text-center py-2.5 px-3 text-gray-600 font-semibold">
+                                      Status
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(
+                                    childGrades[String(viewingChild.id)] || []
+                                  ).map((g: any, idx: number) => (
+                                    <tr
+                                      key={idx}
+                                      className="border-b last:border-0 hover:bg-gray-50"
+                                    >
+                                      <td className="py-2.5 px-3 font-medium">
+                                        {g.subject}
+                                      </td>
+                                      <td className="text-center py-2.5 px-3 text-gray-500">
+                                        Q{g.quarter || '-'}
+                                      </td>
+                                      <td className="text-center py-2.5 px-3">
+                                        <span
+                                          className={`font-bold ${Number(g.grade) >= 75 ? 'text-green-600' : 'text-red-600'}`}
+                                        >
+                                          {g.grade}
+                                        </span>
+                                      </td>
+                                      <td className="text-center py-2.5 px-3">
+                                        <span
+                                          className={`text-xs px-2 py-0.5 rounded-full ${g.status === 'approved' ? 'bg-green-100 text-green-700' : g.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}
+                                        >
+                                          {g.status || 'N/A'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-400">
+                              <p>No grades available yet.</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Attendance Card */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-red-800">
+                            Attendance
+                          </CardTitle>
+                          <CardDescription>
+                            Recent attendance records
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {(childAttendance[String(viewingChild.id)] || [])
+                            .length > 0 ? (
+                            <div className="space-y-0">
+                              {(
+                                childAttendance[String(viewingChild.id)] || []
+                              ).map((a: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between py-2.5 px-3 border-b last:border-0 hover:bg-gray-50"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                      {new Date(
+                                        a.scan_time || a.date
+                                      ).toLocaleDateString('en-PH', {
+                                        weekday: 'short',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                      })}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                      {a.scan_time
+                                        ? new Date(
+                                            a.scan_time
+                                          ).toLocaleTimeString('en-PH', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })
+                                        : ''}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                                      a.scan_type === 'timein' ||
+                                      a.status === 'present'
+                                        ? 'bg-green-100 text-green-700'
+                                        : a.scan_type === 'timeout'
+                                          ? 'bg-blue-100 text-blue-700'
+                                          : 'bg-orange-100 text-orange-700'
+                                    }`}
+                                  >
+                                    {a.scan_type === 'timein'
+                                      ? 'Time In'
+                                      : a.scan_type === 'timeout'
+                                        ? 'Time Out'
+                                        : a.status || 'N/A'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-400">
+                              <p>No attendance records yet.</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Student List ── */
+                  <>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        My Students
+                      </h2>
+                      <p className="text-gray-600">
+                        Select a student to view their grades and attendance.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {children.map((child) => (
+                        <Card
+                          key={child.id}
+                          className="border-red-200 hover:shadow-lg transition-shadow cursor-pointer"
+                          onClick={() => setViewingChild(child)}
+                        >
+                          <CardHeader>
+                            <div className="flex items-center space-x-4">
+                              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                                {child.photo || child.name?.charAt(0) || 'S'}
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-red-800">
+                                  {child.name}
+                                </CardTitle>
+                                <CardDescription>
+                                  {child.grade_level || 'N/A'} -{' '}
+                                  {child.section || 'N/A'}
+                                </CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">
+                                  Student ID
+                                </span>
+                                <span className="font-medium">
+                                  {child.student_id || 'N/A'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Email</span>
+                                <span className="font-medium text-xs">
+                                  {child.email || 'N/A'}
+                                </span>
+                              </div>
+                              <div className="pt-2">
+                                <Button
+                                  className="w-full bg-red-800 hover:bg-red-700"
+                                  size="sm"
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  View Portal
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Attendance */}
+            {activeTab === 'attendance' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Attendance Records
+                  </h2>
+                  <p className="text-gray-600">
+                    View detailed attendance information for each child.
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  {children.map((child) => {
+                    const childId = String(child.id);
+                    const attendanceData = childAttendance[childId] || [];
+                    const stats = childStats[childId];
+
+                    return (
+                      <Card key={child.id}>
+                        <CardHeader>
                           <CardTitle className="text-red-800">
                             {child.name}
                           </CardTitle>
@@ -709,249 +987,202 @@ export default function ParentDashboardPage() {
                             {child.grade_level || 'N/A'} -{' '}
                             {child.section || 'N/A'}
                           </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-sm text-gray-600">Student ID</p>
-                          <p className="font-medium">
-                            {child.student_id || 'N/A'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Email</p>
-                          <p className="font-medium text-sm">
-                            {child.email || 'N/A'}
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => handleViewStudentPage(child)}
-                          className="w-full bg-red-800 hover:bg-red-700"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Student Portal
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* Attendance Tab */}
-            <TabsContent value="attendance" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Attendance Records
-                </h2>
-                <p className="text-gray-600">
-                  View detailed attendance information for each child.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {children.map((child) => {
-                  const childId = String(child.id);
-                  const attendanceData = childAttendance[childId] || [];
-                  const stats = childStats[childId];
-
-                  return (
-                    <Card key={child.id}>
-                      <CardHeader>
-                        <CardTitle className="text-red-800">
-                          {child.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {child.grade_level || 'N/A'} -{' '}
-                          {child.section || 'N/A'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {stats && (
-                            <div>
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-medium">
-                                  Overall Attendance Rate
-                                </span>
-                                <span className="text-sm font-bold text-red-800">
-                                  {stats.attendanceRate.toFixed(1)}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div
-                                  className="bg-red-600 h-3 rounded-full transition-all"
-                                  style={{ width: `${stats.attendanceRate}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                          {attendanceData.length > 0 ? (
-                            <div className="text-sm text-gray-500">
-                              Last 7 days:{' '}
-                              {
-                                attendanceData.filter(
-                                  (a: any) => a.status === 'present'
-                                ).length
-                              }{' '}
-                              present,{' '}
-                              {
-                                attendanceData.filter(
-                                  (a: any) => a.status === 'late'
-                                ).length
-                              }{' '}
-                              late,{' '}
-                              {
-                                attendanceData.filter(
-                                  (a: any) => a.status === 'absent'
-                                ).length
-                              }{' '}
-                              absent
-                            </div>
-                          ) : (
-                            <div className="text-center py-6 text-gray-500">
-                              <Clock className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                              <p>No attendance records available</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </TabsContent>
-
-            {/* Messages Tab */}
-            <TabsContent value="messages" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Messages & Announcements
-                </h2>
-                <p className="text-gray-600">
-                  Communications from teachers and school administration.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {children.map((child) => {
-                  const childId = String(child.id);
-                  const childAnnouncements = announcements[childId] || [];
-
-                  return (
-                    <Card key={child.id}>
-                      <CardHeader>
-                        <CardTitle className="text-red-800">
-                          Messages for {child.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {child.grade_level || 'N/A'} -{' '}
-                          {child.section || 'N/A'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {childAnnouncements.length > 0 ? (
-                            childAnnouncements.map((announcement: any) => (
-                              <div
-                                key={announcement.id}
-                                className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-                              >
-                                <div className="flex items-start justify-between mb-2">
-                                  <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900">
-                                      {announcement.title}
-                                    </h4>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                      {announcement.date
-                                        ? new Date(
-                                            announcement.date
-                                          ).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                          })
-                                        : ''}
-                                    </p>
-                                  </div>
-                                  <span
-                                    className={`text-xs px-2 py-1 rounded flex-shrink-0 ${
-                                      announcement.priority === 'high'
-                                        ? 'bg-red-100 text-red-800'
-                                        : announcement.priority === 'medium'
-                                          ? 'bg-yellow-100 text-yellow-800'
-                                          : 'bg-blue-100 text-blue-800'
-                                    }`}
-                                  >
-                                    {announcement.priority}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {stats && (
+                              <div>
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium">
+                                    Overall Attendance Rate
+                                  </span>
+                                  <span className="text-sm font-bold text-red-800">
+                                    {stats.attendanceRate.toFixed(1)}%
                                   </span>
                                 </div>
-                                {announcement.content && (
-                                  <p className="text-sm text-gray-700 mt-2">
-                                    {announcement.content}
-                                  </p>
-                                )}
-                                <p className="text-xs text-gray-400 mt-2">
-                                  From: {announcement.from || 'School Admin'}
-                                </p>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                  <div
+                                    className="bg-red-600 h-3 rounded-full transition-all"
+                                    style={{
+                                      width: `${stats.attendanceRate}%`,
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            ))
-                          ) : (
-                            <p className="text-center text-gray-500 py-4">
-                              No messages yet
-                            </p>
-                          )}
+                            )}
+                            {attendanceData.length > 0 ? (
+                              <div className="text-sm text-gray-500">
+                                Last 7 days:{' '}
+                                {
+                                  attendanceData.filter(
+                                    (a: any) => a.status === 'present'
+                                  ).length
+                                }{' '}
+                                present,{' '}
+                                {
+                                  attendanceData.filter(
+                                    (a: any) => a.status === 'late'
+                                  ).length
+                                }{' '}
+                                late,{' '}
+                                {
+                                  attendanceData.filter(
+                                    (a: any) => a.status === 'absent'
+                                  ).length
+                                }{' '}
+                                absent
+                              </div>
+                            ) : (
+                              <div className="text-center py-6 text-gray-500">
+                                <Clock className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                                <p>No attendance records available</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Messages */}
+            {activeTab === 'messages' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Messages & Announcements
+                  </h2>
+                  <p className="text-gray-600">
+                    Communications from teachers and school administration.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {children.map((child) => {
+                    const childId = String(child.id);
+                    const childAnnouncements = announcements[childId] || [];
+
+                    return (
+                      <Card key={child.id}>
+                        <CardHeader>
+                          <CardTitle className="text-red-800">
+                            Messages for {child.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {child.grade_level || 'N/A'} -{' '}
+                            {child.section || 'N/A'}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {childAnnouncements.length > 0 ? (
+                              childAnnouncements.map((announcement: any) => (
+                                <div
+                                  key={announcement.id}
+                                  className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-gray-900">
+                                        {announcement.title}
+                                      </h4>
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        {announcement.date
+                                          ? new Date(
+                                              announcement.date
+                                            ).toLocaleDateString('en-US', {
+                                              month: 'short',
+                                              day: 'numeric',
+                                              year: 'numeric',
+                                            })
+                                          : ''}
+                                      </p>
+                                    </div>
+                                    <span
+                                      className={`text-xs px-2 py-1 rounded flex-shrink-0 ${
+                                        announcement.priority === 'high'
+                                          ? 'bg-red-100 text-red-800'
+                                          : announcement.priority === 'medium'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-blue-100 text-blue-800'
+                                      }`}
+                                    >
+                                      {announcement.priority}
+                                    </span>
+                                  </div>
+                                  {announcement.content && (
+                                    <p className="text-sm text-gray-700 mt-2">
+                                      {announcement.content}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    From: {announcement.from || 'School Admin'}
+                                  </p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-center text-gray-500 py-4">
+                                No messages yet
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Schedule */}
+            {activeTab === 'schedule' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Class Schedules
+                  </h2>
+                  <p className="text-gray-600">
+                    View your children's class schedules.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {children.map((child) => (
+                    <Card key={child.id}>
+                      <CardHeader>
+                        <CardTitle className="text-red-800">
+                          {child.name}'s Schedule
+                        </CardTitle>
+                        <CardDescription>
+                          {child.grade_level || 'N/A'} -{' '}
+                          {child.section || 'N/A'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center py-8 text-gray-500">
+                          <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                          <p>Schedule information coming soon.</p>
+                          <Button
+                            onClick={() => {
+                              setViewingChild(child);
+                              setActiveTab('children');
+                            }}
+                            variant="outline"
+                            className="mt-4"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Grades & Attendance
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </TabsContent>
-
-            {/* Schedule Tab */}
-            <TabsContent value="schedule" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Class Schedules
-                </h2>
-                <p className="text-gray-600">
-                  View your children's class schedules.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {children.map((child) => (
-                  <Card key={child.id}>
-                    <CardHeader>
-                      <CardTitle className="text-red-800">
-                        {child.name}'s Schedule
-                      </CardTitle>
-                      <CardDescription>
-                        {child.grade_level || 'N/A'} - {child.section || 'N/A'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-8 text-gray-500">
-                        <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                        <p>Schedule information available in student portal.</p>
-                        <Button
-                          onClick={() => handleViewStudentPage(child)}
-                          variant="outline"
-                          className="mt-4"
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Student Portal
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </main>
         </div>
       </div>
     </PasswordChangeWrapper>

@@ -1,3 +1,4 @@
+import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { TextBeeService } from '@/services/textbee';
 import { NextResponse } from 'next/server';
@@ -1083,12 +1084,12 @@ export async function POST(request: Request) {
             try {
               const { data: linkedParentIds } = await supabaseClient
                 .from('user_relationships')
-                .select('parent_id')
-                .eq('student_id', sId)
+                .select('user_id')
+                .eq('related_user_id', sId)
                 .limit(10);
               if (linkedParentIds && linkedParentIds.length > 0) {
                 const parentIds = linkedParentIds
-                  .map((r: any) => r.parent_id)
+                  .map((r: any) => r.user_id)
                   .filter(Boolean);
                 if (parentIds.length > 0) {
                   const { data: parentsFromLink } = await supabaseClient
@@ -1243,6 +1244,26 @@ export async function POST(request: Request) {
         } else {
           console.log('❌ No parent phone found for student, skipping SMS');
           console.log('👤 Person info:', personInfo);
+        }
+
+        // Send email notification to parent
+        if (parentRecords && parentRecords.length > 0) {
+          const parentEmail = parentRecords[0]?.email;
+          if (parentEmail) {
+            try {
+              const scanTypeText = scanType === 'timein' ? 'timed in' : 'timed out';
+              const readableTime = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+              await EmailService.sendEmail({
+                to: parentEmail,
+                subject: `Attendance Alert: ${formattedRecord.studentName} has ${scanTypeText}`,
+                text: `Dear Parent,\n\n${formattedRecord.studentName} (${formattedRecord.gradeLevel || 'N/A'} - ${formattedRecord.section || 'N/A'}) has ${scanTypeText} at ${readableTime}.\n\nBest regards,\nSto Niño de Praga Academy`,
+                html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;"><h2 style="color:#7A0C0C;margin-top:0;">Attendance Alert</h2><p>Dear Parent,</p><p><strong>${formattedRecord.studentName}</strong> (${formattedRecord.gradeLevel || 'N/A'} - ${formattedRecord.section || 'N/A'}) has <strong>${scanTypeText}</strong> at <strong>${readableTime}</strong>.</p><p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p></div>`,
+              });
+              console.log('✅ Attendance email sent to parent:', parentEmail);
+            } catch (emailError) {
+              console.error('❌ Failed to send attendance email:', emailError);
+            }
+          }
         }
       }
     } catch (smsError) {

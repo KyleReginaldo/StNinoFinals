@@ -45,6 +45,14 @@ interface AdmissionApprovalData {
   loginUrl: string;
 }
 
+interface AdmissionRejectionData {
+  parentName: string;
+  studentFirstName: string;
+  studentLastName: string;
+  email: string;
+  reason: string;
+}
+
 export class EmailService {
   static async sendEmail(options: EmailOptions): Promise<void> {
     const MAX_RETRIES = 3;
@@ -352,6 +360,71 @@ Sto Niño de Praga Academy
     await this.sendEmail({
       to: data.email,
       subject: 'Welcome to Sto Niño de Praga Academy - Admission Approved!',
+      text: text,
+      html: html,
+    });
+  }
+
+  static async sendAdmissionRejection(
+    data: AdmissionRejectionData
+  ): Promise<void> {
+    const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+              .container { background-color: #f9f9f9; border-radius: 10px; padding: 30px; border: 1px solid #ddd; }
+              .header { text-align: center; margin-bottom: 30px; color: #7A0C0C; }
+              .header h1 { color: #7A0C0C; margin: 0; }
+              .reason-box { background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc2626; }
+              .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Admission Update</h1>
+              </div>
+
+              <p>Dear ${data.parentName},</p>
+
+              <p>Thank you for your interest in Sto Niño de Praga Academy. After careful review, we regret to inform you that the admission application for <strong>${data.studentFirstName} ${data.studentLastName}</strong> was not approved at this time.</p>
+
+              ${data.reason ? `<div class="reason-box"><h3 style="color: #dc2626; margin-top: 0;">Reason</h3><p>${data.reason}</p></div>` : ''}
+
+              <p>We encourage you to reach out to our admissions office if you have any questions or would like to discuss this further.</p>
+
+              <div class="footer">
+                <p>Best regards,<br><strong>Sto Niño de Praga Academy</strong></p>
+                <p>&copy; ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+    const text = `
+Admission Update
+
+Dear ${data.parentName},
+
+Thank you for your interest in Sto Niño de Praga Academy. After careful review, we regret to inform you that the admission application for ${data.studentFirstName} ${data.studentLastName} was not approved at this time.
+
+${data.reason ? `Reason: ${data.reason}` : ''}
+
+We encourage you to reach out to our admissions office if you have any questions or would like to discuss this further.
+
+Best regards,
+Sto Niño de Praga Academy
+
+© ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.
+      `;
+
+    await this.sendEmail({
+      to: data.email,
+      subject:
+        'Sto Niño de Praga Academy - Admission Application Update',
       text: text,
       html: html,
     });

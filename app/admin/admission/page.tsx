@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -45,6 +47,9 @@ const AdmissionPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingAdmissionId, setRejectingAdmissionId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
   const { showAlert } = useAlert();
 
   const fetchAdmissions = async () => {
@@ -129,12 +134,16 @@ const AdmissionPage = () => {
     }
   };
 
-  const handleReject = async (admissionId: number) => {
-    if (!confirm('Are you sure you want to reject this admission?')) {
-      return;
-    }
+  const openRejectDialog = (admissionId: number) => {
+    setRejectingAdmissionId(admissionId);
+    setRejectionReason('');
+    setRejectDialogOpen(true);
+  };
 
-    setProcessingId(admissionId);
+  const handleReject = async () => {
+    if (!rejectingAdmissionId) return;
+
+    setProcessingId(rejectingAdmissionId);
     try {
       const response = await fetch('/api/admissions/approve', {
         method: 'POST',
@@ -142,8 +151,9 @@ const AdmissionPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          admissionId,
+          admissionId: rejectingAdmissionId,
           action: 'reject',
+          rejection_reason: rejectionReason,
         }),
       });
 
@@ -151,8 +161,9 @@ const AdmissionPage = () => {
 
       if (result.success) {
         showAlert({ message: 'Admission rejected.', type: 'success' });
-        fetchAdmissions(); // Refresh the list
+        fetchAdmissions();
         setDialogOpen(false);
+        setRejectDialogOpen(false);
       } else {
         showAlert({
           message: result.error || 'Failed to reject admission',
@@ -260,7 +271,7 @@ const AdmissionPage = () => {
                   {filteredAdmissions.map((admission) => (
                     <TableRow key={admission.id}>
                       <TableCell className="font-medium">
-                        {admission.first_name} {admission.last_name}
+                        {admission.first_name} {admission.middle_initial ? `${admission.middle_initial}. ` : ''}{admission.last_name}
                       </TableCell>
                       <TableCell>{admission.parent_name}</TableCell>
                       <TableCell>
@@ -321,7 +332,7 @@ const AdmissionPage = () => {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleReject(admission.id)}
+                                onClick={() => openRejectDialog(admission.id)}
                                 disabled={processingId === admission.id}
                                 className="text-red-600 hover:text-red-800 hover:bg-red-50"
                               >
@@ -386,6 +397,7 @@ const AdmissionPage = () => {
                       <p className="text-xs text-gray-500">Full Name</p>
                       <p className="font-medium">
                         {selectedAdmission.first_name}{' '}
+                        {selectedAdmission.middle_initial ? `${selectedAdmission.middle_initial}. ` : ''}
                         {selectedAdmission.last_name}
                       </p>
                     </div>
@@ -478,7 +490,7 @@ const AdmissionPage = () => {
                     </Button>
                     <Button
                       className="flex-1 bg-red-600 hover:bg-red-700"
-                      onClick={() => handleReject(selectedAdmission.id)}
+                      onClick={() => openRejectDialog(selectedAdmission.id)}
                       disabled={processingId === selectedAdmission.id}
                     >
                       <XCircle className="h-4 w-4 mr-2" />
@@ -505,6 +517,43 @@ const AdmissionPage = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-800">Reject Admission</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this admission. This will be sent to the applicant via email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <Label htmlFor="rejectionReason">Reason for Rejection *</Label>
+              <Textarea
+                id="rejectionReason"
+                placeholder="Enter the reason for rejection..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={handleReject}
+                disabled={!rejectionReason.trim() || processingId === rejectingAdmissionId}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                {processingId === rejectingAdmissionId ? 'Rejecting...' : 'Confirm Rejection'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

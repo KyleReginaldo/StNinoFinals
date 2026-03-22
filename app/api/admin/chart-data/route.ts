@@ -1,24 +1,48 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
-    // --- Weekly Attendance (last 7 days) ---
+    // --- Attendance data for range (or last 7 days) ---
     const days: { label: string; date: string }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push({
-        label: d.toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        }),
-        date: d.toISOString().split('T')[0],
-      });
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const current = new Date(start);
+      while (current <= end) {
+        days.push({
+          label: current.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          date: current.toISOString().split('T')[0],
+        });
+        current.setDate(current.getDate() + 1);
+      }
+    } else {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push({
+          label: d.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          date: d.toISOString().split('T')[0],
+        });
+      }
     }
+
+    // Limit to 31 days max for performance
+    const chartDays = days.slice(-31);
 
     const { count: totalStudents } = await supabaseAdmin
       .from('users')
@@ -26,7 +50,7 @@ export async function GET() {
       .eq('role', 'student');
 
     const weeklyAttendance = await Promise.all(
-      days.map(async ({ label, date }) => {
+      chartDays.map(async ({ label, date }) => {
         const { data } = await supabaseAdmin
           .from('attendance_records')
           .select('user_id')
@@ -42,10 +66,12 @@ export async function GET() {
       })
     );
 
-    // --- Grade Approvals breakdown ---
-    const { data: gradeRows } = await supabaseAdmin
-      .from('grades')
-      .select('status');
+    // --- Grade Approvals breakdown (filtered by date if provided) ---
+    let gradesQuery = supabaseAdmin.from('grades').select('status, created_at');
+    if (startDate) gradesQuery = gradesQuery.gte('created_at', `${startDate}T00:00:00`);
+    if (endDate) gradesQuery = gradesQuery.lte('created_at', `${endDate}T23:59:59`);
+
+    const { data: gradeRows } = await gradesQuery;
 
     const gradeCounts = { pending: 0, approved: 0, rejected: 0 };
     for (const row of gradeRows ?? []) {

@@ -35,7 +35,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { BookOpen, Edit, Plus, Trash2, Users } from 'lucide-react';
+import { BookOpen, Download, Edit, Eye, Plus, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Class {
@@ -94,8 +94,31 @@ export default function ClassesManagementPage() {
     description: '',
   });
 
+  const [showStudentsDialog, setShowStudentsDialog] = useState(false);
+  const [classStudents, setClassStudents] = useState<Student[]>([]);
+  const [viewingClass, setViewingClass] = useState<Class | null>(null);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
+  const [sectionsByGrade, setSectionsByGrade] = useState<Record<string, string[]>>({});
+
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+
+  // Fetch sections from admin settings
+  useEffect(() => {
+    const fetchSections = async () => {
+      try {
+        const res = await fetch('/api/admin/settings/sections');
+        const data = await res.json();
+        if (data.success && data.sections) {
+          setSectionsByGrade(data.sections);
+        }
+      } catch (error) {
+        console.error('Error fetching sections:', error);
+      }
+    };
+    fetchSections();
+  }, []);
 
   useEffect(() => {
     fetchClasses();
@@ -240,6 +263,42 @@ export default function ClassesManagementPage() {
     }
   };
 
+  const handleViewStudents = async (classItem: Class) => {
+    setViewingClass(classItem);
+    setLoadingStudents(true);
+    setShowStudentsDialog(true);
+    try {
+      const response = await fetch(`/api/admin/classes?classId=${classItem.id}`);
+      const result = await response.json();
+      if (result.success && result.class?.students) {
+        setClassStudents(result.class.students);
+      } else {
+        setClassStudents([]);
+      }
+    } catch (error) {
+      console.error('Error fetching class students:', error);
+      setClassStudents([]);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (!viewingClass || classStudents.length === 0) return;
+    const header = 'Student Number,First Name,Last Name,Grade Level,Section';
+    const rows = classStudents.map((s) =>
+      `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${viewingClass.class_name}_students.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDelete = async (classItem: Class) => {
     const confirmed = await showConfirm({
       title: 'Delete Class',
@@ -360,6 +419,14 @@ export default function ClassesManagementPage() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleViewStudents(classItem)}
+                          title="View Students"
+                        >
+                          <Users className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleOpenDialog(classItem)}
                         >
                           <Edit className="w-4 h-4" />
@@ -431,7 +498,7 @@ export default function ClassesManagementPage() {
                 <Select
                   value={formData.grade_level}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, grade_level: value })
+                    setFormData({ ...formData, grade_level: value, section: '' })
                   }
                 >
                   <SelectTrigger id="grade_level">
@@ -456,14 +523,24 @@ export default function ClassesManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="section">Section</Label>
-                <Input
-                  id="section"
+                <Select
                   value={formData.section}
-                  onChange={(e) =>
-                    setFormData({ ...formData, section: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, section: value })
                   }
-                  placeholder="e.g., Section A"
-                />
+                >
+                  <SelectTrigger id="section">
+                    <SelectValue placeholder="Select section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(sectionsByGrade[formData.grade_level] || []).map((sec) => (
+                      <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                    ))}
+                    {(!sectionsByGrade[formData.grade_level] || sectionsByGrade[formData.grade_level].length === 0) && (
+                      <SelectItem value="__none" disabled>No sections for this grade</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -665,6 +742,60 @@ export default function ClassesManagementPage() {
               {editingClass ? 'Update Class' : 'Create Class'}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Students Dialog */}
+      <Dialog open={showStudentsDialog} onOpenChange={setShowStudentsDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-red-800">
+              Class List: {viewingClass?.class_name}
+            </DialogTitle>
+            <DialogDescription>
+              {viewingClass?.grade_level} - {viewingClass?.section} | {classStudents.length} student(s) enrolled
+            </DialogDescription>
+          </DialogHeader>
+          {loadingStudents ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent"></div>
+            </div>
+          ) : classStudents.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No students enrolled in this class.
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Student Number</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Grade Level</TableHead>
+                    <TableHead>Section</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {classStudents.map((student, index) => (
+                    <TableRow key={student.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell className="font-medium">{student.student_number}</TableCell>
+                      <TableCell>{student.last_name}, {student.first_name}</TableCell>
+                      <TableCell>{student.grade_level || '-'}</TableCell>
+                      <TableCell>{student.section || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={handleExportCSV}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

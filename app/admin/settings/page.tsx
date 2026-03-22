@@ -16,7 +16,7 @@ import {
   Save,
   Settings as SettingsIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface SystemSettings {
   schoolName: string;
@@ -47,7 +47,25 @@ export default function SettingsPage() {
     teacherPortal: true,
   });
   const [saving, setSaving] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          setSettings(data.settings);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+    loadSettings();
+  }, []);
 
   // --- Test notifications state ---
   const [testSmsPhone, setTestSmsPhone] = useState('');
@@ -131,10 +149,18 @@ export default function SettingsPage() {
     setSaving(true);
     setFeedback(null);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setFeedback('Settings saved successfully!');
-      setTimeout(() => setFeedback(null), 3000);
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedback('Settings saved successfully!');
+        setTimeout(() => setFeedback(null), 3000);
+      } else {
+        setFeedback('Error saving settings. Please try again.');
+      }
     } catch (error) {
       setFeedback('Error saving settings. Please try again.');
     } finally {

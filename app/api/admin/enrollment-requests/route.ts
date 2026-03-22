@@ -1,3 +1,4 @@
+import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -57,10 +58,10 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // Fetch the request to get student_id
+    // Fetch the request with student info
     const { data: enrollmentRequest, error: fetchError } = await supabase
       .from('enrollment_requests')
-      .select('id, student_id')
+      .select('id, student_id, grade_level, school_year, student:users!enrollment_requests_student_id_fkey(first_name, last_name, email)')
       .eq('id', requestId)
       .single();
 
@@ -112,6 +113,25 @@ export async function PATCH(request: NextRequest) {
           },
           { status: 500 }
         );
+      }
+    }
+
+    // Send email notification on rejection
+    if (status === 'rejected') {
+      try {
+        const student = Array.isArray(enrollmentRequest.student)
+          ? enrollmentRequest.student[0]
+          : enrollmentRequest.student;
+        if (student?.email) {
+          await EmailService.sendEmail({
+            to: student.email,
+            subject: 'Enrollment Request Update - Sto Niño de Praga Academy',
+            text: `Dear ${student.first_name} ${student.last_name},\n\nWe regret to inform you that your enrollment request for ${enrollmentRequest.grade_level} (S.Y. ${enrollmentRequest.school_year}) was not approved at this time.\n\n${adminNotes ? `Reason: ${adminNotes}\n\n` : ''}If you have questions, please contact the school administration.\n\nBest regards,\nSto Niño de Praga Academy`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;"><h2 style="color:#7A0C0C;margin-top:0;">Enrollment Request Update</h2><p>Dear ${student.first_name} ${student.last_name},</p><p>We regret to inform you that your enrollment request for <strong>${enrollmentRequest.grade_level}</strong> (S.Y. ${enrollmentRequest.school_year}) was not approved at this time.</p>${adminNotes ? `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px;border-radius:4px;margin:16px 0;"><strong>Reason:</strong> ${adminNotes}</div>` : ''}<p>If you have questions, please contact the school administration.</p><p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p></div>`,
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send enrollment rejection email:', emailError);
       }
     }
 

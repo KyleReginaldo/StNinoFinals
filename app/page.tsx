@@ -37,6 +37,7 @@ export default function HomePage() {
   const [admissionForm, setAdmissionForm] = useState({
     firstName: '',
     lastName: '',
+    middleInitial: '',
     parentName: '',
     emailAddress: '',
     phoneNumber: '',
@@ -45,6 +46,14 @@ export default function HomePage() {
     additionalMessage: '',
   });
   const [isSubmittingAdmission, setIsSubmittingAdmission] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [admissionTab, setAdmissionTab] = useState('requirements');
+
+  const scrollToInquiry = () => {
+    setAdmissionTab('inquiry');
+    document.getElementById('admissions')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +68,7 @@ export default function HomePage() {
         body: JSON.stringify({
           first_name: admissionForm.firstName,
           last_name: admissionForm.lastName,
+          middle_initial: admissionForm.middleInitial,
           parent_name: admissionForm.parentName,
           email_address: admissionForm.emailAddress,
           phone_number: admissionForm.phoneNumber,
@@ -71,14 +81,13 @@ export default function HomePage() {
       const result = await response.json();
 
       if (result.success) {
-        showAlert({
-          message: 'Thank you for your interest! We will contact you soon.',
-          type: 'success',
-        });
+        setSubmittedEmail(admissionForm.emailAddress);
+        setSubmissionSuccess(true);
         // Reset form
         setAdmissionForm({
           firstName: '',
           lastName: '',
+          middleInitial: '',
           parentName: '',
           emailAddress: '',
           phoneNumber: '',
@@ -280,11 +289,7 @@ export default function HomePage() {
 
             <div className="flex flex-wrap gap-4">
               <button
-                onClick={() =>
-                  document
-                    .getElementById('admissions')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={scrollToInquiry}
                 className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-sm px-7 py-3.5 rounded-full transition-all duration-200 active:scale-95 shadow-lg shadow-amber-900/30"
               >
                 <GraduationCap className="w-4 h-4" />
@@ -392,7 +397,7 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-5xl">
-            <Tabs defaultValue="requirements" className="w-full">
+            <Tabs value={admissionTab} onValueChange={setAdmissionTab} className="w-full">
               <TabsList className="inline-flex bg-gray-100 rounded-full p-1 mb-10 gap-1">
                 <TabsTrigger
                   value="requirements"
@@ -498,11 +503,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <button
-                      onClick={() =>
-                        document
-                          .getElementById('admissions')
-                          ?.scrollIntoView({ behavior: 'smooth' })
-                      }
+                      onClick={scrollToInquiry}
                       className="mt-8 w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-sm py-3 rounded-xl transition-colors"
                     >
                       Apply Now
@@ -513,6 +514,24 @@ export default function HomePage() {
 
               {/* Inquiry form tab */}
               <TabsContent value="inquiry">
+                {submissionSuccess ? (
+                  <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8 sm:p-10 text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h3>
+                    <p className="text-gray-500 mb-6">
+                      Thank you for your interest in Sto. Niño de Praga Academy.<br />
+                      We will contact you at <strong>{submittedEmail}</strong> with next steps.
+                    </p>
+                    <button
+                      onClick={() => setSubmissionSuccess(false)}
+                      className="inline-flex items-center gap-2 bg-red-900 hover:bg-red-800 text-white font-semibold text-sm px-7 py-3 rounded-xl transition-colors"
+                    >
+                      Submit Another Inquiry
+                    </button>
+                  </div>
+                ) : (
                 <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8 sm:p-10">
                   <div className="mb-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-1">
@@ -524,7 +543,7 @@ export default function HomePage() {
                     </p>
                   </div>
                   <form onSubmit={handleAdmissionSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_80px] gap-5">
                       <div className="space-y-1.5">
                         <Label
                           htmlFor="firstName"
@@ -565,6 +584,28 @@ export default function HomePage() {
                             })
                           }
                           required
+                          disabled={isSubmittingAdmission}
+                          className="h-11 bg-white border-gray-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="middleInitial"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          M.I.
+                        </Label>
+                        <Input
+                          id="middleInitial"
+                          value={admissionForm.middleInitial}
+                          placeholder="M.I."
+                          maxLength={2}
+                          onChange={(e) =>
+                            setAdmissionForm({
+                              ...admissionForm,
+                              middleInitial: e.target.value,
+                            })
+                          }
                           disabled={isSubmittingAdmission}
                           className="h-11 bg-white border-gray-200"
                         />
@@ -628,12 +669,14 @@ export default function HomePage() {
                         <Input
                           id="phoneNumber"
                           type="tel"
+                          inputMode="numeric"
+                          maxLength={11}
                           value={admissionForm.phoneNumber}
-                          placeholder="09XX-XXX-XXXX"
+                          placeholder="09XXXXXXXXX"
                           onChange={(e) =>
                             setAdmissionForm({
                               ...admissionForm,
-                              phoneNumber: e.target.value,
+                              phoneNumber: e.target.value.replace(/\D/g, ''),
                             })
                           }
                           required
@@ -731,6 +774,7 @@ export default function HomePage() {
                     </button>
                   </form>
                 </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
