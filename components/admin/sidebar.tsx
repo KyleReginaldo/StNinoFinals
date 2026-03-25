@@ -20,7 +20,11 @@ import NestedItem from './NestedItem';
 
 export const AdminSidebarContent = () => {
   const pathname = usePathname();
-  const [pendingCounts, setPendingCounts] = useState({ admissions: 0, enrollments: 0, grades: 0 });
+  const [pendingCounts, setPendingCounts] = useState({
+    admissions: 0,
+    enrollments: 0,
+    grades: 0,
+  });
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -74,6 +78,12 @@ export const AdminSidebarContent = () => {
           link="/admin/admission"
           icon={List}
           badge={pendingCounts.admissions}
+        />
+        <Item
+          label="Class List"
+          isSelected={pathname === '/admin/class-list'}
+          link="/admin/class-list"
+          icon={Layers}
         />
         <Item
           label="Classes"

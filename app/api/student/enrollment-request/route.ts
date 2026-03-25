@@ -32,7 +32,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { studentId, gradeLevel, strand, schoolYear, semester } = body;
+    const {
+      studentId,
+      gradeLevel,
+      strand,
+      schoolYear,
+      semester,
+      previousGradesUrl,
+    } = body;
 
     if (!studentId || !gradeLevel || !schoolYear || !semester) {
       return NextResponse.json(
@@ -73,6 +80,7 @@ export async function POST(request: NextRequest) {
         school_year: schoolYear,
         semester: Number(semester),
         status: 'pending',
+        previous_grades_url: previousGradesUrl ?? null,
       })
       .select()
       .single();

@@ -35,8 +35,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { BookOpen, Download, Edit, Eye, Plus, Trash2, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { BookOpen, Download, Edit, Plus, Search, Trash2, Users } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Class {
   id: string;
@@ -99,7 +99,9 @@ export default function ClassesManagementPage() {
   const [viewingClass, setViewingClass] = useState<Class | null>(null);
   const [loadingStudents, setLoadingStudents] = useState(false);
 
-  const [sectionsByGrade, setSectionsByGrade] = useState<Record<string, string[]>>({});
+  const [sectionsByGrade, setSectionsByGrade] = useState<
+    Record<string, string[]>
+  >({});
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
@@ -198,6 +200,7 @@ export default function ClassesManagementPage() {
       });
       setSelectedStudentIds([]);
     }
+    setStudentSearch('');
     setShowDialog(true);
   };
 
@@ -268,7 +271,9 @@ export default function ClassesManagementPage() {
     setLoadingStudents(true);
     setShowStudentsDialog(true);
     try {
-      const response = await fetch(`/api/admin/classes?classId=${classItem.id}`);
+      const response = await fetch(
+        `/api/admin/classes?classId=${classItem.id}`
+      );
       const result = await response.json();
       if (result.success && result.class?.students) {
         setClassStudents(result.class.students);
@@ -286,8 +291,9 @@ export default function ClassesManagementPage() {
   const handleExportCSV = () => {
     if (!viewingClass || classStudents.length === 0) return;
     const header = 'Student Number,First Name,Last Name,Grade Level,Section';
-    const rows = classStudents.map((s) =>
-      `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
+    const rows = classStudents.map(
+      (s) =>
+        `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -334,6 +340,8 @@ export default function ClassesManagementPage() {
     }
   };
 
+  const [studentSearch, setStudentSearch] = useState('');
+
   const toggleStudentSelection = (studentId: string) => {
     setSelectedStudentIds((prev) =>
       prev.includes(studentId)
@@ -341,6 +349,32 @@ export default function ClassesManagementPage() {
         : [...prev, studentId]
     );
   };
+
+  // Filter students by the class's grade level, then by search
+  const filteredStudents = useMemo(() => {
+    let list = students;
+
+    if (formData.grade_level) {
+      list = list.filter(
+        (s) =>
+          s.grade_level &&
+          s.grade_level.trim().toLowerCase() ===
+            formData.grade_level.trim().toLowerCase()
+      );
+    }
+
+    if (studentSearch.trim()) {
+      const q = studentSearch.toLowerCase();
+      list = list.filter(
+        (s) =>
+          s.first_name?.toLowerCase().includes(q) ||
+          s.last_name?.toLowerCase().includes(q) ||
+          s.student_number?.toLowerCase().includes(q)
+      );
+    }
+
+    return list;
+  }, [students, formData.grade_level, studentSearch]);
 
   return (
     <div className="p-6">
@@ -498,7 +532,11 @@ export default function ClassesManagementPage() {
                 <Select
                   value={formData.grade_level}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, grade_level: value, section: '' })
+                    setFormData({
+                      ...formData,
+                      grade_level: value,
+                      section: '',
+                    })
                   }
                 >
                   <SelectTrigger id="grade_level">
@@ -533,11 +571,18 @@ export default function ClassesManagementPage() {
                     <SelectValue placeholder="Select section" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(sectionsByGrade[formData.grade_level] || []).map((sec) => (
-                      <SelectItem key={sec} value={sec}>{sec}</SelectItem>
-                    ))}
-                    {(!sectionsByGrade[formData.grade_level] || sectionsByGrade[formData.grade_level].length === 0) && (
-                      <SelectItem value="__none" disabled>No sections for this grade</SelectItem>
+                    {(sectionsByGrade[formData.grade_level] || []).map(
+                      (sec) => (
+                        <SelectItem key={sec} value={sec}>
+                          {sec}
+                        </SelectItem>
+                      )
+                    )}
+                    {(!sectionsByGrade[formData.grade_level] ||
+                      sectionsByGrade[formData.grade_level].length === 0) && (
+                      <SelectItem value="__none" disabled>
+                        No sections for this grade
+                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -694,13 +739,34 @@ export default function ClassesManagementPage() {
               <Label className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 Enroll Students
+                {formData.grade_level && (
+                  <span className="text-xs font-normal text-gray-500">
+                    — showing {formData.grade_level} students
+                  </span>
+                )}
               </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search students by name or number..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
-                {students.length === 0 ? (
-                  <p className="text-sm text-gray-500">No students available</p>
+                {!formData.grade_level ? (
+                  <p className="text-sm text-amber-600">
+                    Select a grade level first to see matching students.
+                  </p>
+                ) : filteredStudents.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    No students found for {formData.grade_level}
+                    {studentSearch.trim() ? ` matching "${studentSearch}"` : ''}.
+                  </p>
                 ) : (
                   <div className="space-y-2">
-                    {students.map((student) => (
+                    {filteredStudents.map((student) => (
                       <label
                         key={student.id}
                         className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
@@ -713,10 +779,10 @@ export default function ClassesManagementPage() {
                         />
                         <span className="text-sm">
                           {student.first_name} {student.last_name} (
-                          {student.student_number})
-                          {student.grade_level && student.section && (
+                          {student.student_number || 'No ID'})
+                          {student.section && (
                             <span className="text-gray-500 ml-2">
-                              {student.grade_level} - {student.section}
+                              — {student.section}
                             </span>
                           )}
                         </span>
@@ -753,7 +819,8 @@ export default function ClassesManagementPage() {
               Class List: {viewingClass?.class_name}
             </DialogTitle>
             <DialogDescription>
-              {viewingClass?.grade_level} - {viewingClass?.section} | {classStudents.length} student(s) enrolled
+              {viewingClass?.grade_level} - {viewingClass?.section} |{' '}
+              {classStudents.length} student(s) enrolled
             </DialogDescription>
           </DialogHeader>
           {loadingStudents ? (
@@ -780,8 +847,12 @@ export default function ClassesManagementPage() {
                   {classStudents.map((student, index) => (
                     <TableRow key={student.id}>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell className="font-medium">{student.student_number}</TableCell>
-                      <TableCell>{student.last_name}, {student.first_name}</TableCell>
+                      <TableCell className="font-medium">
+                        {student.student_number}
+                      </TableCell>
+                      <TableCell>
+                        {student.last_name}, {student.first_name}
+                      </TableCell>
                       <TableCell>{student.grade_level || '-'}</TableCell>
                       <TableCell>{student.section || '-'}</TableCell>
                     </TableRow>

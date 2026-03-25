@@ -43,7 +43,9 @@ export default function AdminPage() {
   const { admin, loading } = useAuth();
   const { stats: baseStats, loadingStats, fetchStats } = useAdminData(admin);
   const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>({
+  const [dateRange, setDateRange] = useState<
+    { from?: Date; to?: Date } | undefined
+  >({
     from: new Date(),
     to: new Date(),
   });
@@ -60,12 +62,16 @@ export default function AdminPage() {
 
     fetch(`/api/admin/chart-data?${qs}`)
       .then((r) => r.json())
-      .then((res) => { if (res.success) setChartData(res.data); })
+      .then((res) => {
+        if (res.success) setChartData(res.data);
+      })
       .catch(console.error);
 
     fetch(`/api/admin/stats?${qs}`)
       .then((r) => r.json())
-      .then((res) => { if (res.success && res.data) setFilteredStats(res.data); })
+      .then((res) => {
+        if (res.success && res.data) setFilteredStats(res.data);
+      })
       .catch(console.error);
   };
 
@@ -74,7 +80,9 @@ export default function AdminPage() {
     fetchAllData(dateRange);
   }, [admin]);
 
-  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
+  const handleDateRangeChange = (
+    range: { from?: Date; to?: Date } | undefined
+  ) => {
     setDateRange(range);
     if (range?.from && range?.to) {
       fetchAllData(range);
@@ -185,7 +193,9 @@ export default function AdminPage() {
             <div className="text-3xl font-bold text-green-900">
               {loadingStats ? '...' : `${stats.attendanceRate}%`}
             </div>
-            <p className="text-xs text-gray-600 mt-1">{filteredStats ? 'Filtered attendance' : "Today's attendance"}</p>
+            <p className="text-xs text-gray-600 mt-1">
+              {filteredStats ? 'Filtered attendance' : "Today's attendance"}
+            </p>
           </CardContent>
         </Card>
 

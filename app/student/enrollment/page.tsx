@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import jsPDF from 'jspdf';
 import {
@@ -32,10 +33,11 @@ import {
   Hash,
   Layers,
   Send,
+  Upload,
   User2,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
 const CURRENT_SCHOOL_YEAR = '2025-2026';
@@ -149,12 +151,19 @@ export default function EnrollmentPage() {
   const [enrollmentRequest, setEnrollmentRequest] =
     useState<EnrollmentRequest | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
+  const [enrollmentHistory, setEnrollmentHistory] = useState<
+    EnrollmentRequest[]
+  >([]);
 
   const [gradeLevel, setGradeLevel] = useState('');
   const [strand, setStrand] = useState('');
   const [semester, setSemester] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [previousGradesFile, setPreviousGradesFile] = useState<File | null>(
+    null
+  );
   const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayName = useMemo(() => {
     if (!student) return 'Student';
@@ -170,14 +179,17 @@ export default function EnrollmentPage() {
     if (!student) return;
     setDataLoading(true);
     try {
-      const [enrollmentRes, requestRes] = await Promise.all([
+      const [enrollmentRes, requestRes, historyRes] = await Promise.all([
         fetch(`/api/student/enrollment?studentId=${student.id}`),
         fetch(`/api/student/enrollment-request?studentId=${student.id}`),
+        fetch(`/api/student/enrollment-history?studentId=${student.id}`),
       ]);
-      const [enrollmentPayload, requestPayload] = await Promise.all([
-        enrollmentRes.json().catch(() => ({})),
-        requestRes.json().catch(() => ({})),
-      ]);
+      const [enrollmentPayload, requestPayload, historyPayload] =
+        await Promise.all([
+          enrollmentRes.json().catch(() => ({})),
+          requestRes.json().catch(() => ({})),
+          historyRes.json().catch(() => ({})),
+        ]);
       if (
         enrollmentRes.ok &&
         enrollmentPayload?.success &&
@@ -187,6 +199,9 @@ export default function EnrollmentPage() {
       }
       if (requestRes.ok && requestPayload?.success) {
         setEnrollmentRequest(requestPayload.data ?? null);
+      }
+      if (historyRes.ok && historyPayload?.success) {
+        setEnrollmentHistory(historyPayload.data ?? []);
       }
     } catch (e) {
       console.error('Fetch error:', e);
@@ -217,6 +232,35 @@ export default function EnrollmentPage() {
     }
     setSubmitting(true);
     try {
+      let previousGradesUrl = null;
+
+      if (previousGradesFile) {
+        // Only upload if a file was selected.
+        const fileExt = previousGradesFile.name.split('.').pop();
+        const fileName = `${student.id}_${Date.now()}.${fileExt}`;
+        const filePath = `enrollment/${fileName}`;
+
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('documents')
+          .upload(filePath, previousGradesFile);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          showAlert({
+            message: 'Failed to upload document.',
+            type: 'error',
+          });
+          setSubmitting(false);
+          return;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('documents')
+          .getPublicUrl(filePath);
+
+        previousGradesUrl = publicUrlData.publicUrl;
+      }
+
       const res = await fetch('/api/student/enrollment-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -226,6 +270,7 @@ export default function EnrollmentPage() {
           strand: isSHS ? strand : null,
           schoolYear: CURRENT_SCHOOL_YEAR,
           semester: Number(semester),
+          previousGradesUrl,
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -244,6 +289,8 @@ export default function EnrollmentPage() {
       setStrand('');
       setSemester('');
       setAdditionalNotes('');
+      setPreviousGradesFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       fetchData();
     } catch {
       showAlert({
@@ -253,7 +300,16 @@ export default function EnrollmentPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [student, gradeLevel, strand, semester, isSHS, showAlert, fetchData]);
+  }, [
+    student,
+    gradeLevel,
+    strand,
+    semester,
+    isSHS,
+    previousGradesFile,
+    showAlert,
+    fetchData,
+  ]);
 
   const info = enrollmentData?.student;
   const enrollment = enrollmentData?.enrollment;
@@ -366,6 +422,61 @@ export default function EnrollmentPage() {
     }
   }, [student, enrollment, classes, info, displayName, showAlert]);
 
+  const generateHistoryPDF = useCallback(() => {
+    if (!enrollmentHistory || enrollmentHistory.length === 0) {
+      showAlert({
+        message: 'No enrollment history available.',
+        type: 'warning',
+      });
+      return;
+    }
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 20, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text('ENROLLMENT HISTORY', 105, 30, { align: 'center' });
+
+      const studentName = info?.name || displayName;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Student: ${studentName.toUpperCase()}`, 20, 45);
+
+      let yPos = 55;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Date Applied', 20, yPos);
+      doc.text('Grade', 60, yPos);
+      doc.text('School Year', 100, yPos);
+      doc.text('Status', 150, yPos);
+
+      yPos += 6;
+      doc.setFont('helvetica', 'normal');
+
+      enrollmentHistory.forEach((req) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        const dateStr = new Date(req.created_at).toLocaleDateString();
+        doc.text(dateStr, 20, yPos);
+        doc.text(req.grade_level, 60, yPos);
+        doc.text(`${req.school_year} (Sem ${req.semester})`, 100, yPos);
+        doc.text(req.status.toUpperCase(), 150, yPos);
+        yPos += 8;
+      });
+
+      doc.save(`Enrollment_History_${studentName.replace(/\s+/g, '_')}.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+      showAlert({ message: 'Failed to generate history.', type: 'error' });
+    }
+  }, [enrollmentHistory, displayName, info, showAlert]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -390,10 +501,24 @@ export default function EnrollmentPage() {
               Your current enrollment information and subjects
             </p>
           </div>
-          {/* <Button onClick={generateCertificationPDF} disabled={dataLoading} className="bg-red-800 hover:bg-red-700 text-white">
-            <Download className="w-4 h-4 mr-2" />
-            Download Certificate
-          </Button> */}
+          <div className="flex gap-2">
+            <Button
+              onClick={generateHistoryPDF}
+              disabled={dataLoading}
+              variant="outline"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Download History
+            </Button>
+            <Button
+              onClick={generateCertificationPDF}
+              disabled={dataLoading}
+              className="bg-red-800 hover:bg-red-700 text-white"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Download COE
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200">
@@ -543,11 +668,22 @@ export default function EnrollmentPage() {
   if (reqStatus === 'pending') {
     return (
       <div className="p-6 space-y-6 max-w-3xl mx-auto">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Track your enrollment application
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Track your enrollment status
+            </p>
+          </div>
+          <Button
+            onClick={generateHistoryPDF}
+            disabled={dataLoading}
+            variant="outline"
+            className="shrink-0"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Download History
+          </Button>
         </div>
         <div className="flex items-start gap-4 p-5 rounded-xl bg-amber-50 border border-amber-200">
           <Clock className="w-7 h-7 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -635,11 +771,22 @@ export default function EnrollmentPage() {
   if (reqStatus === 'rejected') {
     return (
       <div className="p-6 space-y-6 max-w-3xl mx-auto">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Submit a new enrollment application
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Submit a new enrollment application
+            </p>
+          </div>
+          <Button
+            onClick={generateHistoryPDF}
+            disabled={dataLoading}
+            variant="outline"
+            className="shrink-0"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Download History
+          </Button>
         </div>
         <div className="flex items-start gap-4 p-5 rounded-xl bg-red-50 border border-red-200">
           <XCircle className="w-7 h-7 text-red-600 flex-shrink-0 mt-0.5" />
@@ -677,6 +824,8 @@ export default function EnrollmentPage() {
           onSubmit={handleSubmitRequest}
           title="Submit New Application"
           description="Fill in the details for your new enrollment request."
+          fileInputRef={fileInputRef}
+          setPreviousGradesFile={setPreviousGradesFile}
         />
       </div>
     );
@@ -685,11 +834,22 @@ export default function EnrollmentPage() {
   // ─── NO REQUEST (default) ─────────────────────────────────────────────────
   return (
     <div className="p-6 space-y-6 max-w-3xl mx-auto">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Submit an enrollment application for the upcoming school year
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Submit an enrollment application for the upcoming school year
+          </p>
+        </div>
+        <Button
+          onClick={generateHistoryPDF}
+          disabled={dataLoading}
+          variant="outline"
+          className="shrink-0"
+        >
+          <BookOpen className="w-4 h-4 mr-2" />
+          Download History
+        </Button>
       </div>
       <div className="flex items-start gap-4 p-5 rounded-xl bg-blue-50 border border-blue-200">
         <AlertCircle className="w-7 h-7 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -718,6 +878,8 @@ export default function EnrollmentPage() {
         onSubmit={handleSubmitRequest}
         title="Enrollment Application"
         description={`Apply for enrollment in A.Y. ${CURRENT_SCHOOL_YEAR}.`}
+        fileInputRef={fileInputRef}
+        setPreviousGradesFile={setPreviousGradesFile}
       />
     </div>
   );
@@ -738,6 +900,8 @@ function EnrollmentForm({
   onSubmit,
   title,
   description,
+  fileInputRef,
+  setPreviousGradesFile,
 }: {
   gradeLevel: string;
   setGradeLevel: (v: string) => void;
@@ -752,6 +916,8 @@ function EnrollmentForm({
   onSubmit: () => void;
   title: string;
   description: string;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  setPreviousGradesFile: (file: File | null) => void;
 }) {
   return (
     <Card className="bg-white border border-gray-200 shadow-sm">
@@ -816,6 +982,32 @@ function EnrollmentForm({
             </Select>
           </div>
         )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="previousGrades">
+            Previous Grades (PDF, Image, etc.){' '}
+            <span className="text-gray-500 font-normal text-xs">
+              (optional)
+            </span>
+          </Label>
+          <div className="flex items-center gap-2">
+            <Upload className="w-4 h-4 text-gray-400 shrink-0" />
+            <input
+              id="previousGrades"
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setPreviousGradesFile(e.target.files[0]);
+                } else {
+                  setPreviousGradesFile(null);
+                }
+              }}
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              accept=".pdf,.png,.jpg,.jpeg"
+            />
+          </div>
+        </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="notes">Additional Notes (optional)</Label>

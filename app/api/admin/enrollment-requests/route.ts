@@ -61,7 +61,9 @@ export async function PATCH(request: NextRequest) {
     // Fetch the request with student info
     const { data: enrollmentRequest, error: fetchError } = await supabase
       .from('enrollment_requests')
-      .select('id, student_id, grade_level, school_year, student:users!enrollment_requests_student_id_fkey(first_name, last_name, email)')
+      .select(
+        'id, student_id, grade_level, school_year, assigned_class_id, student:users!enrollment_requests_student_id_fkey(first_name, last_name, email)'
+      )
       .eq('id', requestId)
       .single();
 
@@ -113,6 +115,16 @@ export async function PATCH(request: NextRequest) {
           },
           { status: 500 }
         );
+      }
+    } else if (status === 'rejected') {
+      // Un-enroll if they were previously assigned to a class
+      const classToRemove = enrollmentRequest.assigned_class_id;
+      if (classToRemove) {
+        await supabase
+          .from('user_classes')
+          .delete()
+          .eq('user_id', enrollmentRequest.student_id)
+          .eq('class_id', classToRemove);
       }
     }
 

@@ -59,12 +59,13 @@ interface EnrollmentRequest {
   admin_notes: string | null;
   assigned_class_id: string | null;
   created_at: string;
+  previous_grades_url: string | null;
   student: StudentInfo | null;
 }
 
 interface ClassOption {
   id: string;
-  name: string;
+  class_name: string;
   grade_level: string | null;
   section: string | null;
 }
@@ -217,12 +218,11 @@ export default function AdminEnrollmentPage() {
   const relevantClasses = selectedRequest
     ? classes.filter(
         (c) =>
-          !c.grade_level ||
-          c.grade_level
-            .toLowerCase()
-            .includes(selectedRequest.grade_level.replace('Grade ', '').trim())
+          c.grade_level &&
+          c.grade_level.trim().toLowerCase() ===
+            selectedRequest.grade_level.trim().toLowerCase()
       )
-    : classes;
+    : [];
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -469,6 +469,22 @@ export default function AdminEnrollmentPage() {
                 </div>
               </div>
 
+              {selectedRequest.previous_grades_url && (
+                <div className="text-sm">
+                  <span className="text-gray-600 block mb-1">
+                    Previous Grades:
+                  </span>
+                  <a
+                    href={selectedRequest.previous_grades_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline truncate block"
+                  >
+                    View Document
+                  </a>
+                </div>
+              )}
+
               {/* Current status */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Current status:</span>
@@ -488,26 +504,35 @@ export default function AdminEnrollmentPage() {
                       (required for approval)
                     </span>
                   </Label>
-                  <Select
-                    value={assignedClassId}
-                    onValueChange={setAssignedClassId}
-                  >
-                    <SelectTrigger id="classAssign">
-                      <SelectValue placeholder="Select a class..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(relevantClasses.length > 0
-                        ? relevantClasses
-                        : classes
-                      ).map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                          {c.grade_level ? ` — Grade ${c.grade_level}` : ''}
-                          {c.section ? ` (${c.section})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {relevantClasses.length > 0 ? (
+                    <Select
+                      value={assignedClassId}
+                      onValueChange={setAssignedClassId}
+                    >
+                      <SelectTrigger id="classAssign">
+                        <SelectValue placeholder="Select a class..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {relevantClasses.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.class_name}
+                            {c.section ? ` — ${c.section}` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                      No classes found for {selectedRequest.grade_level}.{' '}
+                      <a
+                        href="/admin/classes"
+                        className="underline font-medium hover:text-amber-800"
+                      >
+                        Create a class
+                      </a>{' '}
+                      for this grade level first.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -531,9 +556,20 @@ export default function AdminEnrollmentPage() {
               onClick={closeModal}
               disabled={submitting}
             >
-              Cancel
+              {selectedRequest?.status === 'rejected' ? 'Close' : 'Cancel'}
             </Button>
-            {selectedRequest?.status !== 'approved' && (
+            {selectedRequest?.status === 'approved' && (
+              <Button
+                variant="outline"
+                onClick={() => handleDecision('rejected')}
+                disabled={submitting}
+                className="border-red-300 text-red-700 hover:bg-red-50"
+              >
+                <XCircle className="w-4 h-4 mr-1.5" />
+                Reject
+              </Button>
+            )}
+            {selectedRequest?.status === 'pending' && (
               <>
                 <Button
                   variant="outline"
@@ -542,7 +578,7 @@ export default function AdminEnrollmentPage() {
                   className="border-red-300 text-red-700 hover:bg-red-50"
                 >
                   <XCircle className="w-4 h-4 mr-1.5" />
-                  Reject
+                  Reject Form
                 </Button>
                 <Button
                   onClick={() => handleDecision('approved')}

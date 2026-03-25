@@ -346,6 +346,7 @@ export type Database = {
           created_at: string
           grade_level: string
           id: string
+          previous_grades_url: string | null
           school_year: string
           semester: number
           status: Database["public"]["Enums"]["enrollment_request_status"]
@@ -360,6 +361,7 @@ export type Database = {
           created_at?: string
           grade_level: string
           id?: string
+          previous_grades_url?: string | null
           school_year: string
           semester: number
           status?: Database["public"]["Enums"]["enrollment_request_status"]
@@ -374,6 +376,7 @@ export type Database = {
           created_at?: string
           grade_level?: string
           id?: string
+          previous_grades_url?: string | null
           school_year?: string
           semester?: number
           status?: Database["public"]["Enums"]["enrollment_request_status"]
