@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
           totalStudents: 0,
           classesToday: 0,
           pendingGrades: 0,
-          journalEntries: 0,
           todaySchedule: [],
           announcements: [],
         },
@@ -95,12 +94,6 @@ export async function GET(request: NextRequest) {
     // Sort today's schedule by time
     todaySchedule.sort((a, b) => a.timeStart.localeCompare(b.timeStart))
 
-    // Get journal entries count
-    const { count: journalCount } = await admin
-      .from('journal_entries')
-      .select('*', { count: 'exact', head: true })
-      .eq('teacher_id', teacherId)
-
     // Get active announcements
     const { data: announcements } = await admin
       .from('announcements')
@@ -118,7 +111,6 @@ export async function GET(request: NextRequest) {
         totalStudents: totalStudents,
         classesToday: todaySchedule.length,
         pendingGrades: 0, // Can be calculated if you track grade completion
-        journalEntries: journalCount || 0,
         todaySchedule: todaySchedule,
         announcements: announcements || [],
       },
@@ -133,7 +125,6 @@ export async function GET(request: NextRequest) {
           totalStudents: 0,
           classesToday: 0,
           pendingGrades: 0,
-          journalEntries: 0,
           todaySchedule: [],
           announcements: [],
         },

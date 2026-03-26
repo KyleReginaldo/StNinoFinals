@@ -45,6 +45,15 @@ interface AdmissionApprovalData {
   loginUrl: string;
 }
 
+interface AttendanceNotificationData {
+  parentEmail: string;
+  studentName: string;
+  gradeLevel: string;
+  section: string;
+  scanType: 'timein' | 'timeout';
+  scanTime: string;
+}
+
 interface AdmissionRejectionData {
   parentName: string;
   studentFirstName: string;
@@ -362,6 +371,61 @@ Sto Niño de Praga Academy
       subject: 'Welcome to Sto Niño de Praga Academy - Admission Approved!',
       text: text,
       html: html,
+    });
+  }
+
+  static async sendAttendanceNotification(
+    data: AttendanceNotificationData
+  ): Promise<void> {
+    const scanTypeText = data.scanType === 'timein' ? 'timed in' : 'timed out';
+    const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+              .container { background-color: #f9f9f9; border-radius: 10px; padding: 30px; border: 1px solid #ddd; }
+              .header { text-align: center; margin-bottom: 20px; color: #7A0C0C; }
+              .header h1 { color: #7A0C0C; margin: 0; font-size: 22px; }
+              .info-box { background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ${data.scanType === 'timein' ? '#16a34a' : '#ea580c'}; }
+              .info-box p { margin: 8px 0; }
+              .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 13px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Attendance Notification</h1>
+              </div>
+
+              <p>Dear Parent/Guardian,</p>
+
+              <p>This is to inform you that your child has <strong>${scanTypeText}</strong> at school.</p>
+
+              <div class="info-box">
+                <p><strong>Student:</strong> ${data.studentName}</p>
+                <p><strong>Grade & Section:</strong> ${data.gradeLevel} - ${data.section}</p>
+                <p><strong>Status:</strong> ${scanTypeText.charAt(0).toUpperCase() + scanTypeText.slice(1)}</p>
+                <p><strong>Time:</strong> ${data.scanTime}</p>
+              </div>
+
+              <div class="footer">
+                <p>This is an automated notification from the RFID attendance system.</p>
+                <p>Best regards,<br><strong>Sto Niño de Praga Academy</strong></p>
+                <p>&copy; ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+    const text = `Attendance Notification\n\nDear Parent/Guardian,\n\nThis is to inform you that your child has ${scanTypeText} at school.\n\nStudent: ${data.studentName}\nGrade & Section: ${data.gradeLevel} - ${data.section}\nStatus: ${scanTypeText}\nTime: ${data.scanTime}\n\nThis is an automated notification from the RFID attendance system.\n\nBest regards,\nSto Niño de Praga Academy`;
+
+    await this.sendEmail({
+      to: data.parentEmail,
+      subject: `Attendance Alert: ${data.studentName} has ${scanTypeText}`,
+      text,
+      html,
     });
   }
 

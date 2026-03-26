@@ -29,10 +29,12 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
+import { Badge } from '@/components/ui/badge';
 import {
   Calendar,
   Clock,
   Eye,
+  GraduationCap,
   Home,
   LayoutDashboard,
   LogOut,
@@ -69,6 +71,13 @@ export default function ParentDashboardPage() {
   const [relationshipType, setRelationshipType] = useState('parent');
   const [addError, setAddError] = useState('');
   const [viewingChild, setViewingChild] = useState<Child | null>(null);
+  const [enrollmentRequests, setEnrollmentRequests] = useState<any[]>([]);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
+  const [enrollingChild, setEnrollingChild] = useState<string>('');
+  const [enrollGradeLevel, setEnrollGradeLevel] = useState('');
+  const [enrollStrand, setEnrollStrand] = useState('');
+  const [enrollSemester, setEnrollSemester] = useState('1');
+  const [enrollSubmitting, setEnrollSubmitting] = useState(false);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
@@ -314,6 +323,71 @@ export default function ParentDashboardPage() {
       setAddError('Failed to add student. Please try again.');
     } finally {
       setIsAddingChild(false);
+    }
+  };
+
+  const currentSchoolYear = (() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    return month >= 5 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+  })();
+
+  const fetchEnrollmentRequests = async () => {
+    if (!parent?.id) return;
+    setEnrollmentLoading(true);
+    try {
+      const res = await fetch(`/api/parent/enrollment-request?parentId=${parent.id}`);
+      const data = await res.json();
+      if (data.success) setEnrollmentRequests(data.data || []);
+    } catch (err) {
+      console.error('Error fetching enrollment requests:', err);
+    } finally {
+      setEnrollmentLoading(false);
+    }
+  };
+
+  const handleEnrollSubmit = async () => {
+    if (!enrollingChild || !enrollGradeLevel || !enrollSemester) {
+      showAlert({ message: 'Please fill in all required fields.', type: 'error' });
+      return;
+    }
+
+    const needsStrand = enrollGradeLevel.includes('11') || enrollGradeLevel.includes('12');
+    if (needsStrand && !enrollStrand) {
+      showAlert({ message: 'Please select a strand for Senior High School.', type: 'error' });
+      return;
+    }
+
+    setEnrollSubmitting(true);
+    try {
+      const res = await fetch('/api/parent/enrollment-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parentId: parent.id,
+          studentId: enrollingChild,
+          gradeLevel: enrollGradeLevel,
+          strand: needsStrand ? enrollStrand : null,
+          schoolYear: currentSchoolYear,
+          semester: enrollSemester,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert({ message: 'Enrollment request submitted successfully!', type: 'success' });
+        setEnrollingChild('');
+        setEnrollGradeLevel('');
+        setEnrollStrand('');
+        setEnrollSemester('1');
+        fetchEnrollmentRequests();
+      } else {
+        showAlert({ message: data.error || 'Failed to submit enrollment request.', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setEnrollSubmitting(false);
     }
   };
 
@@ -603,6 +677,7 @@ export default function ParentDashboardPage() {
               {[
                 { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                 { key: 'children', label: 'My Students', icon: User },
+                { key: 'enrollment', label: 'Enrollment', icon: GraduationCap },
                 { key: 'attendance', label: 'Attendance', icon: Clock },
                 { key: 'messages', label: 'Messages', icon: MessageSquare },
                 { key: 'schedule', label: 'Schedule', icon: Calendar },
@@ -612,7 +687,10 @@ export default function ParentDashboardPage() {
                 return (
                   <button
                     key={item.key}
-                    onClick={() => setActiveTab(item.key)}
+                    onClick={() => {
+                      setActiveTab(item.key);
+                      if (item.key === 'enrollment') fetchEnrollmentRequests();
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-red-800 text-white'
@@ -643,9 +721,9 @@ export default function ParentDashboardPage() {
               {[
                 { key: 'dashboard', label: 'Home', icon: LayoutDashboard },
                 { key: 'children', label: 'Students', icon: User },
+                { key: 'enrollment', label: 'Enroll', icon: GraduationCap },
                 { key: 'attendance', label: 'Attendance', icon: Clock },
                 { key: 'messages', label: 'Messages', icon: MessageSquare },
-                { key: 'schedule', label: 'Schedule', icon: Calendar },
               ].map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.key;
@@ -956,6 +1034,161 @@ export default function ParentDashboardPage() {
                     </div>
                   </>
                 )}
+              </div>
+            )}
+
+            {/* Enrollment */}
+            {activeTab === 'enrollment' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Enrollment
+                  </h2>
+                  <p className="text-gray-600">
+                    Submit enrollment requests for your children.
+                  </p>
+                </div>
+
+                {/* Enrollment Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-red-800">New Enrollment Request</CardTitle>
+                    <CardDescription>
+                      Select a child and fill in the enrollment details.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Select Child *</Label>
+                        <Select value={enrollingChild} onValueChange={setEnrollingChild}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a student" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {children.map((child) => (
+                              <SelectItem key={String(child.id)} value={String(child.id)}>
+                                {child.name} ({child.student_id || 'N/A'})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Grade Level *</Label>
+                        <Select value={enrollGradeLevel} onValueChange={(v) => { setEnrollGradeLevel(v); setEnrollStrand(''); }}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select grade level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map((g) => (
+                              <SelectItem key={g} value={g}>{g}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Semester *</Label>
+                        <Select value={enrollSemester} onValueChange={setEnrollSemester}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1st Semester</SelectItem>
+                            <SelectItem value="2">2nd Semester</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {(enrollGradeLevel.includes('11') || enrollGradeLevel.includes('12')) && (
+                        <div className="space-y-2">
+                          <Label>Strand *</Label>
+                          <Select value={enrollStrand} onValueChange={setEnrollStrand}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select strand" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {['STEM','ABM','HUMSS','GAS','TVL','Sports','Arts & Design'].map((s) => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Label>School Year</Label>
+                        <Input value={currentSchoolYear} disabled />
+                      </div>
+                    </div>
+
+                    <Button
+                      className="mt-6 bg-red-800 hover:bg-red-700"
+                      onClick={handleEnrollSubmit}
+                      disabled={enrollSubmitting}
+                    >
+                      <GraduationCap className="w-4 h-4 mr-2" />
+                      {enrollSubmitting ? 'Submitting...' : 'Submit Enrollment Request'}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Enrollment Status */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-red-800">Enrollment History</CardTitle>
+                    <CardDescription>
+                      Status of submitted enrollment requests.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {enrollmentLoading ? (
+                      <div className="flex justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-800"></div>
+                      </div>
+                    ) : enrollmentRequests.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p>No enrollment requests yet.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {enrollmentRequests.map((req: any) => {
+                          const child = children.find((c) => String(c.id) === String(req.student_id));
+                          return (
+                            <div key={req.id} className="flex items-center justify-between p-4 border rounded-lg">
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {child?.name || 'Unknown Student'}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {req.grade_level}{req.strand ? ` - ${req.strand}` : ''} | {req.school_year} | Sem {req.semester}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Submitted: {new Date(req.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  req.status === 'approved'
+                                    ? 'bg-green-50 text-green-700 border-green-300'
+                                    : req.status === 'rejected'
+                                      ? 'bg-red-50 text-red-700 border-red-300'
+                                      : 'bg-yellow-50 text-yellow-700 border-yellow-300'
+                                }
+                              >
+                                {req.status?.charAt(0).toUpperCase() + req.status?.slice(1) || 'Pending'}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
 

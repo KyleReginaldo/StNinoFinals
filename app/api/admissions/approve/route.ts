@@ -43,6 +43,7 @@ export async function POST(request: Request) {
 
     if (action === 'reject') {
       const rejectionReason = body.rejection_reason || '';
+      const wasApproved = admission.status === 'approved';
 
       const { error: updateError } = await supabase
         .from('admissions')
@@ -57,6 +58,37 @@ export async function POST(request: Request) {
           { success: false, error: updateError.message },
           { status: 500 }
         );
+      }
+
+      // If previously approved, deactivate the student account
+      if (wasApproved) {
+        try {
+          // Find the user by email
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', admission.email_address)
+            .eq('role', 'student')
+            .single();
+
+          if (existingUser) {
+            // Deactivate in users table
+            await supabase
+              .from('users')
+              .update({ status: 'inactive' })
+              .eq('id', existingUser.id);
+
+            // Ban from Supabase Auth (prevents login)
+            await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+              ban_duration: '876600h', // ~100 years
+            });
+
+            console.log('Deactivated previously approved student:', existingUser.id);
+          }
+        } catch (deactivateError) {
+          console.error('Error deactivating student account:', deactivateError);
+          // Don't fail the rejection if deactivation fails
+        }
       }
 
       // Send rejection email
@@ -74,69 +106,105 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
-        message: 'Admission rejected successfully',
+        message: wasApproved
+          ? 'Admission rejected and student account deactivated'
+          : 'Admission rejected successfully',
       });
     }
 
     // APPROVAL PROCESS
     if (action === 'approve') {
-      // Generate a temporary password
       const tempPassword = `SN${Math.random().toString(36).slice(-6)}`;
+      const wasRejected = admission.status === 'rejected';
 
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } =
-        await supabaseAdmin.auth.admin.createUser({
-          email: admission.email_address,
+      // Check if student account already exists (from a previous approval)
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', admission.email_address)
+        .eq('role', 'student')
+        .single();
+
+      let userId: string;
+
+      if (existingUser) {
+        // Reactivate existing account
+        userId = existingUser.id;
+
+        // Reactivate in users table
+        await supabase
+          .from('users')
+          .update({
+            status: 'active',
+            password_change_required: true,
+          })
+          .eq('id', userId);
+
+        // Unban and reset password in Supabase Auth
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
           password: tempPassword,
-          email_confirm: true,
-          user_metadata: {
-            first_name: admission.first_name,
-            last_name: admission.last_name,
-            role: 'student',
-          },
+          ban_duration: 'none',
         });
 
-      if (authError) {
-        console.error('Auth creation error:', authError);
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Failed to create auth user: ${authError.message}`,
-          },
-          { status: 500 }
-        );
-      }
+        console.log('Reactivated existing student account:', userId);
+      } else {
+        // Create new user in Supabase Auth
+        const { data: authData, error: authError } =
+          await supabaseAdmin.auth.admin.createUser({
+            email: admission.email_address,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+              first_name: admission.first_name,
+              last_name: admission.last_name,
+              role: 'student',
+            },
+          });
 
-      if (!authData.user) {
-        return NextResponse.json(
-          { success: false, error: 'Failed to create auth user' },
-          { status: 500 }
-        );
-      }
+        if (authError) {
+          console.error('Auth creation error:', authError);
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Failed to create auth user: ${authError.message}`,
+            },
+            { status: 500 }
+          );
+        }
 
-      // Create user record in users table
-      const { error: userError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        email: admission.email_address,
-        first_name: admission.first_name,
-        last_name: admission.last_name,
-        role: 'student',
-        grade_level: admission.intended_grade_level,
-        created_at: new Date().toISOString(),
-        password_change_required: true,
-      });
+        if (!authData.user) {
+          return NextResponse.json(
+            { success: false, error: 'Failed to create auth user' },
+            { status: 500 }
+          );
+        }
 
-      if (userError) {
-        console.error('User creation error:', userError);
-        // Rollback: Delete auth user if user record creation fails
-        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Failed to create user record: ${userError.message}`,
-          },
-          { status: 500 }
-        );
+        userId = authData.user.id;
+
+        // Create user record in users table
+        const { error: userError } = await supabase.from('users').insert({
+          id: userId,
+          email: admission.email_address,
+          first_name: admission.first_name,
+          last_name: admission.last_name,
+          role: 'student',
+          grade_level: admission.intended_grade_level,
+          created_at: new Date().toISOString(),
+          password_change_required: true,
+        });
+
+        if (userError) {
+          console.error('User creation error:', userError);
+          // Rollback: Delete auth user if user record creation fails
+          await supabaseAdmin.auth.admin.deleteUser(userId);
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Failed to create user record: ${userError.message}`,
+            },
+            { status: 500 }
+          );
+        }
       }
 
       // Update admission status to approved
@@ -162,14 +230,15 @@ export async function POST(request: Request) {
         });
       } catch (emailError) {
         console.error('Email error:', emailError);
-        // Don't fail the whole process if email fails
       }
 
       return NextResponse.json({
         success: true,
-        message: 'Admission approved and student account created successfully',
+        message: existingUser
+          ? 'Admission approved and student account reactivated'
+          : 'Admission approved and student account created successfully',
         data: {
-          userId: authData.user.id,
+          userId,
           email: admission.email_address,
         },
       });

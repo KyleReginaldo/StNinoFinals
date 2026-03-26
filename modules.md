@@ -35,7 +35,7 @@ Legend: ✅ Complete · ⚠️ Incomplete / Needs work · ❌ Placeholder / Not 
 | ------------ | ------ | ------------------------------------------------------------------------ |
 | Dashboard    | ✅     | Total students, classes today, pending grades, journal entries; charts   |
 | Grades       | ✅     | Select class → loads students with grades and approval status → submit   |
-| Journal      | ✅     | Create/view journal entries with date, subject, topic, activities, notes |
+| ~~Journal~~  | ❌     | Removed — feature no longer needed                                      |
 | Calendar     | ✅     | Class schedule pulled from DB, filtered by day of week                   |
 | **Account**  | ⚠️     | Read-only profile display. No edit form, no save capability              |
 | **Settings** | ❌     | Placeholder text only — "Settings panel will be available here"          |

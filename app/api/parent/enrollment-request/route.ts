@@ -1,6 +1,55 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const parentId = searchParams.get('parentId');
+
+    if (!parentId) {
+      return NextResponse.json(
+        { success: false, error: 'parentId is required' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    // Get all children linked to this parent
+    const { data: relationships } = await supabase
+      .from('user_relationships')
+      .select('related_user_id')
+      .eq('user_id', parentId);
+
+    if (!relationships || relationships.length === 0) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
+    const childIds = relationships.map((r: any) => r.related_user_id);
+
+    // Get enrollment requests for all linked children
+    const { data, error } = await supabase
+      .from('enrollment_requests')
+      .select('*')
+      .in('student_id', childIds)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: data || [] });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

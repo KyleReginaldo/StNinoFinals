@@ -88,12 +88,12 @@ const AdmissionPage = () => {
     setDialogOpen(true);
   };
 
-  const handleApprove = async (admissionId: number) => {
-    if (
-      !confirm(
-        'Are you sure you want to approve this admission? This will create a student account and send credentials via email.'
-      )
-    ) {
+  const handleApprove = async (admissionId: number, currentStatus?: string | null) => {
+    const isOverride = currentStatus === 'rejected';
+    const message = isOverride
+      ? 'This admission was previously rejected. Approving will create (or reactivate) a student account and send credentials via email. Continue?'
+      : 'Are you sure you want to approve this admission? This will create a student account and send credentials via email.';
+    if (!confirm(message)) {
       return;
     }
 
@@ -316,30 +316,29 @@ const AdmissionPage = () => {
                             <Eye className="h-4 w-4 mr-1" />
                             View
                           </Button>
-                          {(!admission.status ||
-                            admission.status === 'pending') && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleApprove(admission.id)}
-                                disabled={processingId === admission.id}
-                                className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => openRejectDialog(admission.id)}
-                                disabled={processingId === admission.id}
-                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </>
+                          {admission.status !== 'approved' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleApprove(admission.id, admission.status)}
+                              disabled={processingId === admission.id}
+                              className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                          )}
+                          {admission.status !== 'rejected' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openRejectDialog(admission.id)}
+                              disabled={processingId === admission.id}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
                           )}
                         </div>
                       </TableCell>
@@ -475,30 +474,33 @@ const AdmissionPage = () => {
               </div>
 
               <div className="flex gap-3">
-                {(!selectedAdmission.status ||
-                  selectedAdmission.status === 'pending') && (
-                  <>
-                    <Button
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                      onClick={() => handleApprove(selectedAdmission.id)}
-                      disabled={processingId === selectedAdmission.id}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {processingId === selectedAdmission.id
-                        ? 'Processing...'
+                {selectedAdmission.status !== 'approved' && (
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    onClick={() => handleApprove(selectedAdmission.id, selectedAdmission.status)}
+                    disabled={processingId === selectedAdmission.id}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {processingId === selectedAdmission.id
+                      ? 'Processing...'
+                      : selectedAdmission.status === 'rejected'
+                        ? 'Override: Approve'
                         : 'Approve & Create Account'}
-                    </Button>
-                    <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700"
-                      onClick={() => openRejectDialog(selectedAdmission.id)}
-                      disabled={processingId === selectedAdmission.id}
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {processingId === selectedAdmission.id
-                        ? 'Processing...'
+                  </Button>
+                )}
+                {selectedAdmission.status !== 'rejected' && (
+                  <Button
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    onClick={() => openRejectDialog(selectedAdmission.id)}
+                    disabled={processingId === selectedAdmission.id}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    {processingId === selectedAdmission.id
+                      ? 'Processing...'
+                      : selectedAdmission.status === 'approved'
+                        ? 'Override: Reject'
                         : 'Reject'}
-                    </Button>
-                  </>
+                  </Button>
                 )}
                 <Button
                   className={`${!selectedAdmission.status || selectedAdmission.status === 'pending' ? '' : 'flex-1'} bg-blue-600 hover:bg-blue-700`}

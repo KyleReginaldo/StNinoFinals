@@ -1032,6 +1032,7 @@ export async function POST(request: Request) {
         console.log('🔔 scanType:', scanType);
 
         let parentPhone: string | null = null;
+        const parentRecords: any[] = [];
 
         console.log('🔍 Student info for parent lookup:', {
           parent_id: personInfo?.parent_id,
@@ -1044,7 +1045,6 @@ export async function POST(request: Request) {
         });
 
         try {
-          const parentRecords: any[] = [];
 
           const parentId =
             personInfo?.parent_id || personInfo?.parentId || null;
@@ -1251,13 +1251,14 @@ export async function POST(request: Request) {
           const parentEmail = parentRecords[0]?.email;
           if (parentEmail) {
             try {
-              const scanTypeText = scanType === 'timein' ? 'timed in' : 'timed out';
               const readableTime = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
-              await EmailService.sendEmail({
-                to: parentEmail,
-                subject: `Attendance Alert: ${formattedRecord.studentName} has ${scanTypeText}`,
-                text: `Dear Parent,\n\n${formattedRecord.studentName} (${formattedRecord.gradeLevel || 'N/A'} - ${formattedRecord.section || 'N/A'}) has ${scanTypeText} at ${readableTime}.\n\nBest regards,\nSto Niño de Praga Academy`,
-                html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;"><h2 style="color:#7A0C0C;margin-top:0;">Attendance Alert</h2><p>Dear Parent,</p><p><strong>${formattedRecord.studentName}</strong> (${formattedRecord.gradeLevel || 'N/A'} - ${formattedRecord.section || 'N/A'}) has <strong>${scanTypeText}</strong> at <strong>${readableTime}</strong>.</p><p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p></div>`,
+              await EmailService.sendAttendanceNotification({
+                parentEmail,
+                studentName: formattedRecord.studentName,
+                gradeLevel: formattedRecord.gradeLevel || 'N/A',
+                section: formattedRecord.section || 'N/A',
+                scanType,
+                scanTime: readableTime,
               });
               console.log('✅ Attendance email sent to parent:', parentEmail);
             } catch (emailError) {

@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { BookOpen, Calendar, Clock, GraduationCap } from 'lucide-react';
+import { Calendar, Clock, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
@@ -132,18 +132,6 @@ export default function TeacherDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">Scheduled for today</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-600">
-          <CardHeader className="pb-2">
-            <CardDescription>Journal Entries</CardDescription>
-            <CardTitle className="text-3xl text-green-600">
-              {teacherStats?.journalEntries || 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">Total entries recorded</p>
           </CardContent>
         </Card>
 
@@ -348,21 +336,13 @@ export default function TeacherDashboard() {
           <CardTitle className="text-red-800">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
               onClick={() => router.push('/teacher/grades')}
               className="bg-red-800 hover:bg-red-700 h-auto py-4"
             >
               <GraduationCap className="w-5 h-5 mr-2" />
               Manage Grades
-            </Button>
-            <Button
-              onClick={() => router.push('/teacher/journal')}
-              variant="outline"
-              className="border-red-800 text-red-800 hover:bg-red-50 h-auto py-4"
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Add Journal Entry
             </Button>
             <Button
               onClick={() => router.push('/teacher/calendar')}
