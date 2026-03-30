@@ -440,6 +440,15 @@ function LoginPageContent() {
               >
                 {isLoggingIn ? 'Signing in…' : 'Sign in'}
               </button>
+
+              <div className="text-right mt-2">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-red-800 hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
             </form>
 
             {/* Back link */}

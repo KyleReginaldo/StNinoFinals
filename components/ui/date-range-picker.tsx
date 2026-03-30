@@ -19,12 +19,14 @@ interface DateRangePickerProps {
   value: DateRangeValue | undefined;
   onChange: (range: DateRangeValue | undefined) => void;
   placeholder?: string;
+  disableFuture?: boolean;
 }
 
 export function DateRangePicker({
   value,
   onChange,
   placeholder,
+  disableFuture = true,
 }: DateRangePickerProps) {
   const [open, setOpen] = React.useState(false);
   const clickCount = React.useRef(0);
@@ -69,7 +71,7 @@ export function DateRangePicker({
             }
           }}
           numberOfMonths={2}
-          disabled={{ after: new Date() }}
+          disabled={disableFuture ? { after: new Date() } : undefined}
           defaultMonth={value?.from || new Date()}
         />
       </PopoverContent>

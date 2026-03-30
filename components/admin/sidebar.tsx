@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   BookOpen,
   Calendar,
   ClipboardList,
@@ -116,6 +117,12 @@ export const AdminSidebarContent = () => {
           isSelected={pathname.startsWith('/admin/attendance')}
           link="/admin/attendance"
           icon={Calendar}
+        />
+        <Item
+          label="Announcements"
+          isSelected={pathname === '/admin/announcements'}
+          link="/admin/announcements"
+          icon={Bell}
         />
         <Item
           label="Reports & Analytics"

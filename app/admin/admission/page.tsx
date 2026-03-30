@@ -193,7 +193,7 @@ const AdmissionPage = () => {
       return (
         <Badge
           variant="outline"
-          className="bg-green-50 text-green-700 border-green-300"
+          className="bg-green-100 text-green-800 border-green-300"
         >
           Approved
         </Badge>
@@ -203,7 +203,7 @@ const AdmissionPage = () => {
       return (
         <Badge
           variant="outline"
-          className="bg-red-50 text-red-700 border-red-300"
+          className="bg-red-100 text-red-800 border-red-300"
         >
           Rejected
         </Badge>
@@ -319,10 +319,9 @@ const AdmissionPage = () => {
                           {admission.status !== 'approved' && (
                             <Button
                               size="sm"
-                              variant="ghost"
                               onClick={() => handleApprove(admission.id, admission.status)}
                               disabled={processingId === admission.id}
-                              className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                              className="bg-green-600 text-white hover:bg-green-700"
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Approve
@@ -331,10 +330,9 @@ const AdmissionPage = () => {
                           {admission.status !== 'rejected' && (
                             <Button
                               size="sm"
-                              variant="ghost"
                               onClick={() => openRejectDialog(admission.id)}
                               disabled={processingId === admission.id}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              className="bg-red-600 text-white hover:bg-red-700"
                             >
                               <XCircle className="h-4 w-4 mr-1" />
                               Reject

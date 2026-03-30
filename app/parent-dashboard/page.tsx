@@ -38,7 +38,6 @@ import {
   Home,
   LayoutDashboard,
   LogOut,
-  MessageSquare,
   User,
   UserPlus,
 } from 'lucide-react';
@@ -396,7 +395,7 @@ export default function ParentDashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-800 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading parent dashboard...</p>
+          <p className="text-gray-600">Loading guardian dashboard...</p>
         </div>
       </div>
     );
@@ -420,7 +419,7 @@ export default function ParentDashboardPage() {
                   />
                   <div>
                     <h1 className="text-xl font-bold text-red-800">
-                      Parent Dashboard
+                      Guardian Dashboard
                     </h1>
                     <p className="text-sm text-gray-600">
                       Sto Niño de Praga Academy
@@ -558,7 +557,7 @@ export default function ParentDashboardPage() {
                 />
                 <div>
                   <h1 className="text-xl font-bold text-red-800">
-                    Parent Dashboard
+                    Guardian Dashboard
                   </h1>
                   <p className="text-sm text-gray-600">
                     Sto Niño de Praga Academy
@@ -644,7 +643,7 @@ export default function ParentDashboardPage() {
                   <p className="font-medium text-red-800">
                     {parent.name || parent.email || 'Parent/Guardian'}
                   </p>
-                  <p className="text-sm text-gray-600">Parent/Guardian</p>
+                  <p className="text-sm text-gray-600">Guardian</p>
                 </div>
                 <Link href="/">
                   <Button
@@ -679,7 +678,6 @@ export default function ParentDashboardPage() {
                 { key: 'children', label: 'My Students', icon: User },
                 { key: 'enrollment', label: 'Enrollment', icon: GraduationCap },
                 { key: 'attendance', label: 'Attendance', icon: Clock },
-                { key: 'messages', label: 'Messages', icon: MessageSquare },
                 { key: 'schedule', label: 'Schedule', icon: Calendar },
               ].map((item) => {
                 const Icon = item.icon;
@@ -723,7 +721,7 @@ export default function ParentDashboardPage() {
                 { key: 'children', label: 'Students', icon: User },
                 { key: 'enrollment', label: 'Enroll', icon: GraduationCap },
                 { key: 'attendance', label: 'Attendance', icon: Clock },
-                { key: 'messages', label: 'Messages', icon: MessageSquare },
+                { key: 'schedule', label: 'Schedule', icon: Calendar },
               ].map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.key;
@@ -766,7 +764,7 @@ export default function ParentDashboardPage() {
                   </div>
                 )}
 
-                {/* Integrated Parent Dashboard Component */}
+                {/* Integrated Guardian Dashboard Component */}
                 {!dataLoading && (
                   <ParentDashboard
                     children={children}
@@ -946,7 +944,9 @@ export default function ParentDashboardPage() {
                                         ? 'bg-green-100 text-green-700'
                                         : a.scan_type === 'timeout'
                                           ? 'bg-blue-100 text-blue-700'
-                                          : 'bg-orange-100 text-orange-700'
+                                          : a.status === 'absent'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-orange-100 text-orange-700'
                                     }`}
                                   >
                                     {a.scan_type === 'timein'
@@ -1280,28 +1280,31 @@ export default function ParentDashboardPage() {
               </div>
             )}
 
-            {/* Messages */}
-            {activeTab === 'messages' && (
+            {/* Schedule / Subjects */}
+            {activeTab === 'schedule' && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Messages & Announcements
+                    Subjects
                   </h2>
                   <p className="text-gray-600">
-                    Communications from teachers and school administration.
+                    View your children's enrolled subjects.
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {children.map((child) => {
                     const childId = String(child.id);
-                    const childAnnouncements = announcements[childId] || [];
+                    const grades = childGrades[childId] || [];
+                    const subjects = [
+                      ...new Set(grades.map((g: any) => g.subject)),
+                    ].sort();
 
                     return (
                       <Card key={child.id}>
                         <CardHeader>
                           <CardTitle className="text-red-800">
-                            Messages for {child.name}
+                            {child.name}'s Subjects
                           </CardTitle>
                           <CardDescription>
                             {child.grade_level || 'N/A'} -{' '}
@@ -1309,109 +1312,30 @@ export default function ParentDashboardPage() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-3">
-                            {childAnnouncements.length > 0 ? (
-                              childAnnouncements.map((announcement: any) => (
-                                <div
-                                  key={announcement.id}
-                                  className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                          {subjects.length > 0 ? (
+                            <ul className="space-y-2">
+                              {subjects.map((subject: string) => (
+                                <li
+                                  key={subject}
+                                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                                 >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="flex-1">
-                                      <h4 className="font-semibold text-gray-900">
-                                        {announcement.title}
-                                      </h4>
-                                      <p className="text-sm text-gray-500 mt-1">
-                                        {announcement.date
-                                          ? new Date(
-                                              announcement.date
-                                            ).toLocaleDateString('en-US', {
-                                              month: 'short',
-                                              day: 'numeric',
-                                              year: 'numeric',
-                                            })
-                                          : ''}
-                                      </p>
-                                    </div>
-                                    <span
-                                      className={`text-xs px-2 py-1 rounded flex-shrink-0 ${
-                                        announcement.priority === 'high'
-                                          ? 'bg-red-100 text-red-800'
-                                          : announcement.priority === 'medium'
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : 'bg-blue-100 text-blue-800'
-                                      }`}
-                                    >
-                                      {announcement.priority}
-                                    </span>
-                                  </div>
-                                  {announcement.content && (
-                                    <p className="text-sm text-gray-700 mt-2">
-                                      {announcement.content}
-                                    </p>
-                                  )}
-                                  <p className="text-xs text-gray-400 mt-2">
-                                    From: {announcement.from || 'School Admin'}
-                                  </p>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-center text-gray-500 py-4">
-                                No messages yet
-                              </p>
-                            )}
-                          </div>
+                                  <GraduationCap className="w-4 h-4 text-red-800 flex-shrink-0" />
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {subject}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <GraduationCap className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                              <p>No subjects found.</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     );
                   })}
-                </div>
-              </div>
-            )}
-
-            {/* Schedule */}
-            {activeTab === 'schedule' && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Class Schedules
-                  </h2>
-                  <p className="text-gray-600">
-                    View your children's class schedules.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {children.map((child) => (
-                    <Card key={child.id}>
-                      <CardHeader>
-                        <CardTitle className="text-red-800">
-                          {child.name}'s Schedule
-                        </CardTitle>
-                        <CardDescription>
-                          {child.grade_level || 'N/A'} -{' '}
-                          {child.section || 'N/A'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-8 text-gray-500">
-                          <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                          <p>Schedule information coming soon.</p>
-                          <Button
-                            onClick={() => {
-                              setViewingChild(child);
-                              setActiveTab('children');
-                            }}
-                            variant="outline"
-                            className="mt-4"
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Grades & Attendance
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
                 </div>
               </div>
             )}

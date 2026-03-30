@@ -66,28 +66,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch student population by grade level and section
-    // If date range provided, only count students created within that range
-    let studentsQuery = supabaseAdmin
+    // Always show ALL students regardless of date range (population is not time-filtered)
+    const { data: studentsList } = await supabaseAdmin
       .from('users')
       .select('grade_level, section, created_at')
       .eq('role', 'student')
       .not('grade_level', 'is', null);
-
-    if (startDate) {
-      studentsQuery = studentsQuery.gte('created_at', `${startDate}T00:00:00`);
-    }
-    if (endDate) {
-      studentsQuery = studentsQuery.lte('created_at', `${endDate}T23:59:59`);
-    }
-
-    const { data: studentsList } = await studentsQuery;
 
     const gradeDistribution: Record<string, number> = {};
     const sectionDistribution: Record<string, Record<string, number>> = {};
 
     if (studentsList) {
       for (const s of studentsList) {
-        const grade = s.grade_level || 'Unknown';
+        const rawGrade = (s.grade_level || '').trim();
+        if (!rawGrade) continue; // Skip students with no grade level
+        const grade = rawGrade;
         gradeDistribution[grade] = (gradeDistribution[grade] || 0) + 1;
 
         if (s.section) {

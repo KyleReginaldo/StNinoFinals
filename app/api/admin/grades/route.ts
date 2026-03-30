@@ -44,18 +44,48 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const admin = getSupabaseAdmin();
-    const { id, status, reviewedBy } = await request.json();
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Missing grade id' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { id, ids, status, reviewedBy } = body;
 
     if (!['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
         { success: false, error: 'Status must be approved or rejected' },
+        { status: 400 }
+      );
+    }
+
+    // Batch update
+    if (ids && Array.isArray(ids) && ids.length > 0) {
+      const { data, error } = await admin
+        .from('grades')
+        .update({
+          status,
+          reviewed_by: reviewedBy ?? null,
+          reviewed_at: new Date().toISOString(),
+        })
+        .in('id', ids)
+        .eq('status', 'pending')
+        .select('*, student:users!grades_student_id_fkey(first_name, last_name, email)');
+
+      if (error) {
+        console.error('Admin grades batch PATCH error:', error);
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data,
+        count: data?.length ?? 0,
+      });
+    }
+
+    // Single update
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Missing grade id or ids' },
         { status: 400 }
       );
     }

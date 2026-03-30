@@ -1,21 +1,15 @@
 import nodemailer from 'nodemailer';
 
-// Create a fresh transporter for every send to avoid stale connection issues.
-// A module-level singleton transporter can have its SMTP connection silently
-// expire, which causes random/intermittent send failures.
 function createTransporter() {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // STARTTLS upgrade on port 587
+    secure: false,
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASS,
     },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    // No connection pooling — always open a fresh connection
+    tls: { rejectUnauthorized: false },
     pool: false,
   });
 }
@@ -62,6 +56,65 @@ interface AdmissionRejectionData {
   reason: string;
 }
 
+// ─── Shared email shell ────────────────────────────────────────────
+// All templates use this wrapper for consistent branding.
+function emailShell(bodyHtml: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;padding:40px 20px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <!-- Header -->
+  <tr><td style="background-color:#7f1d1d;padding:32px 40px;text-align:center;">
+    <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;letter-spacing:0.5px;">Sto. Niño de Praga Academy</h1>
+    <p style="margin:6px 0 0;color:#fca5a5;font-size:12px;text-transform:uppercase;letter-spacing:1px;">School Management Portal</p>
+  </td></tr>
+  <!-- Body -->
+  <tr><td style="padding:40px;">
+    ${bodyHtml}
+  </td></tr>
+  <!-- Footer -->
+  <tr><td style="background-color:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+    <p style="margin:0 0 4px;color:#9ca3af;font-size:12px;">Sto. Niño de Praga Academy</p>
+    <p style="margin:0;color:#d1d5db;font-size:11px;">This is an automated message. Please do not reply.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+function btn(href: string, label: string): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:12px 0 28px;">
+    <a href="${href}" style="display:inline-block;background-color:#7f1d1d;color:#ffffff;padding:14px 36px;text-decoration:none;border-radius:4px;font-weight:600;font-size:15px;">${label}</a>
+  </td></tr></table>`;
+}
+
+function infoBox(rows: string, borderColor = '#7f1d1d'): string {
+  return `<div style="background-color:#f9fafb;padding:20px;margin:20px 0;border-left:4px solid ${borderColor};border-radius:2px;">
+    ${rows}
+  </div>`;
+}
+
+function infoRow(label: string, value: string): string {
+  return `<p style="margin:8px 0;color:#4b5563;font-size:14px;"><strong style="color:#1f2937;">${label}:</strong> ${value}</p>`;
+}
+
+function warningBox(text: string): string {
+  return `<div style="background-color:#fef3c7;padding:14px 16px;margin:20px 0;border-left:4px solid #f59e0b;border-radius:2px;">
+    <p style="margin:0;color:#92400e;font-size:13px;"><strong>⚠ Security Notice:</strong> ${text}</p>
+  </div>`;
+}
+
+function divider(): string {
+  return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0 20px;"/>`;
+}
+
+// ─── Email service ─────────────────────────────────────────────────
+
 export class EmailService {
   static async sendEmail(options: EmailOptions): Promise<void> {
     const MAX_RETRIES = 3;
@@ -78,16 +131,14 @@ export class EmailService {
           html: options.html,
         });
         console.log(`Email sent (attempt ${attempt}): ${response.messageId}`);
-        return; // success — stop retrying
+        return;
       } catch (error) {
         lastError = error;
         console.error(`Email attempt ${attempt}/${MAX_RETRIES} failed:`, error);
         if (attempt < MAX_RETRIES) {
-          // Wait 1s before retrying to let transient SMTP issues clear
           await new Promise((r) => setTimeout(r, 1000 * attempt));
         }
       } finally {
-        // Always close the connection to avoid resource leaks
         transporter.close();
       }
     }
@@ -95,331 +146,88 @@ export class EmailService {
     throw lastError;
   }
 
-  static async sendLoginCredentials(
-    credentials: LoginCredentials
-  ): Promise<void> {
-    const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .container {
-                background-color: #f9f9f9;
-                border-radius: 10px;
-                padding: 30px;
-                border: 1px solid #ddd;
-              }
-              .header {
-                text-align: center;
-                margin-bottom: 30px;
-              }
-              .header h1 {
-                color: #2c3e50;
-                margin: 0;
-              }
-              .credentials {
-                background-color: #fff;
-                padding: 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border-left: 4px solid #3498db;
-              }
-              .credentials p {
-                margin: 10px 0;
-              }
-              .credentials strong {
-                color: #2c3e50;
-              }
-              .button-container {
-                text-align: center;
-                margin: 30px 0;
-              }
-              .login-button {
-                display: inline-block;
-                background-color: #3498db;
-                color: #ffffff !important;
-                padding: 15px 40px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                font-size: 16px;
-              }
-              .login-button:hover {
-                background-color: #2980b9;
-              }
-              .footer {
-                margin-top: 30px;
-                text-align: center;
-                color: #7f8c8d;
-                font-size: 14px;
-              }
-              .warning {
-                background-color: #fff3cd;
-                border-left: 4px solid #ffc107;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 5px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Welcome to St. Niño Portal</h1>
-              </div>
-              
-              <p>Dear ${credentials.name},</p>
-              
-              <p>Your account has been successfully created. Below are your login credentials:</p>
-              
-              <div class="credentials">
-                <p><strong>Email:</strong> ${credentials.email}</p>
-                <p><strong>Password:</strong> ${credentials.password}</p>
-                <p><strong>Role:</strong> ${credentials.role.charAt(0).toUpperCase() + credentials.role.slice(1)}</p>
-              </div>
-              
-              <div class="warning">
-                <strong>⚠️ Security Notice:</strong> Please change your password after your first login for security purposes.
-              </div>
-              
-              <div class="button-container">
-                <a href="${credentials.loginUrl}" class="login-button">Login to Portal</a>
-              </div>
-              
-              <div class="footer">
-                <p>If you have any questions or need assistance, please contact the administrator.</p>
-                <p>&copy; ${new Date().getFullYear()} St. Niño Portal. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `;
+  // ── Welcome / Login Credentials ──────────────────────────────────
+  static async sendLoginCredentials(credentials: LoginCredentials): Promise<void> {
+    const role = credentials.role.charAt(0).toUpperCase() + credentials.role.slice(1);
 
-    const text = `
-Welcome to St. Niño Portal
+    const html = emailShell(`
+      <h2 style="margin:0 0 16px;color:#7f1d1d;font-size:22px;font-weight:700;">Welcome!</h2>
+      <p style="margin:0 0 20px;color:#4b5563;font-size:15px;line-height:1.6;">
+        Dear ${credentials.name}, your account has been created. Here are your login credentials:
+      </p>
+      ${infoBox(
+        infoRow('Email', credentials.email) +
+        infoRow('Password', credentials.password) +
+        infoRow('Role', role)
+      )}
+      ${warningBox('Please change your password after your first login.')}
+      ${btn(credentials.loginUrl, 'Login to Portal')}
+      ${divider()}
+      <p style="margin:0;color:#6b7280;font-size:13px;">If you have any questions, please contact the school administration.</p>
+    `);
 
-Dear ${credentials.name},
-
-Your account has been successfully created. Below are your login credentials:
-
-Email: ${credentials.email}
-Password: ${credentials.password}
-Role: ${credentials.role.charAt(0).toUpperCase() + credentials.role.slice(1)}
-
-Please change your password after your first login for security purposes.
-
-Login here: ${credentials.loginUrl}
-
-If you have any questions or need assistance, please contact the administrator.
-
-© ${new Date().getFullYear()} St. Niño Portal. All rights reserved.
-      `;
+    const text = `Welcome to Sto. Niño de Praga Academy\n\nDear ${credentials.name},\n\nYour account has been created.\n\nEmail: ${credentials.email}\nPassword: ${credentials.password}\nRole: ${role}\n\nPlease change your password after your first login.\n\nLogin: ${credentials.loginUrl}`;
 
     await this.sendEmail({
       to: credentials.email,
-      subject: 'Welcome to St. Niño Portal - Your Login Credentials',
-      text: text,
-      html: html,
+      subject: 'Welcome to Sto. Niño de Praga Academy — Your Login Credentials',
+      text,
+      html,
     });
   }
 
-  static async sendAdmissionApproval(
-    data: AdmissionApprovalData
-  ): Promise<void> {
-    const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .container {
-                background-color: #f9f9f9;
-                border-radius: 10px;
-                padding: 30px;
-                border: 1px solid #ddd;
-              }
-              .header {
-                text-align: center;
-                margin-bottom: 30px;
-                color: #7A0C0C;
-              }
-              .header h1 {
-                color: #7A0C0C;
-                margin: 0;
-              }
-              .credentials {
-                background-color: #fff;
-                padding: 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border-left: 4px solid #7A0C0C;
-              }
-              .credentials p {
-                margin: 10px 0;
-              }
-              .credentials strong {
-                color: #2c3e50;
-              }
-              .button-container {
-                text-align: center;
-                margin: 30px 0;
-              }
-              .login-button {
-                display: inline-block;
-                background-color: #7A0C0C;
-                color: #ffffff !important;
-                padding: 15px 40px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                font-size: 16px;
-              }
-              .login-button:hover {
-                background-color: #5a0909;
-              }
-              .footer {
-                margin-top: 30px;
-                text-align: center;
-                color: #7f8c8d;
-                font-size: 14px;
-              }
-              .warning {
-                background-color: #fff3cd;
-                border-left: 4px solid #ffc107;
-                padding: 15px;
-                margin: 20px 0;
-                border-radius: 5px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Admission Approved!</h1>
-              </div>
-              
-              <p>Dear ${data.parentName},</p>
-              
-              <p>Congratulations! We are pleased to inform you that the admission application for <strong>${data.studentFirstName} ${data.studentLastName}</strong> has been approved.</p>
-              
-              <div class="credentials">
-                <h3 style="color: #7A0C0C; margin-top: 0;">Student Portal Access</h3>
-                <p><strong>Email:</strong> ${data.email}</p>
-                <p><strong>Temporary Password:</strong> ${data.password}</p>
-                <p><strong>Grade Level:</strong> ${data.gradeLevel}</p>
-              </div>
-              
-              <div class="warning">
-                <strong>⚠️ Security Notice:</strong> Please change your password after first login for security purposes.
-              </div>
-              
-              <div class="button-container">
-                <a href="${data.loginUrl}" class="login-button">Access Student Portal</a>
-              </div>
-              
-              <div class="footer">
-                <p>If you have any questions, please don't hesitate to contact us.</p>
-                <p>Best regards,<br><strong>Sto Niño de Praga Academy</strong></p>
-                <p>&copy; ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `;
+  // ── Admission Approved ───────────────────────────────────────────
+  static async sendAdmissionApproval(data: AdmissionApprovalData): Promise<void> {
+    const html = emailShell(`
+      <h2 style="margin:0 0 16px;color:#7f1d1d;font-size:22px;font-weight:700;">Admission Approved</h2>
+      <p style="margin:0 0 20px;color:#4b5563;font-size:15px;line-height:1.6;">
+        Dear ${data.parentName}, we are pleased to inform you that the admission for
+        <strong>${data.studentFirstName} ${data.studentLastName}</strong> has been approved.
+      </p>
+      ${infoBox(
+        `<p style="margin:0 0 12px;color:#7f1d1d;font-size:14px;font-weight:700;">Student Portal Access</p>` +
+        infoRow('Email', data.email) +
+        infoRow('Temporary Password', data.password) +
+        infoRow('Grade Level', data.gradeLevel)
+      )}
+      ${warningBox('Please change the password after first login.')}
+      ${btn(data.loginUrl, 'Access Student Portal')}
+      ${divider()}
+      <p style="margin:0;color:#6b7280;font-size:13px;">If you have any questions, please contact the admissions office.</p>
+    `);
 
-    const text = `
-Admission Approved!
-
-Dear ${data.parentName},
-
-Congratulations! We are pleased to inform you that the admission application for ${data.studentFirstName} ${data.studentLastName} has been approved.
-
-Student Portal Access:
-Email: ${data.email}
-Temporary Password: ${data.password}
-Grade Level: ${data.gradeLevel}
-
-⚠️ Please change your password after first login for security purposes.
-
-You can access the student portal at: ${data.loginUrl}
-
-If you have any questions, please don't hesitate to contact us.
-
-Best regards,
-Sto Niño de Praga Academy
-
-© ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.
-      `;
+    const text = `Admission Approved\n\nDear ${data.parentName},\n\nThe admission for ${data.studentFirstName} ${data.studentLastName} has been approved.\n\nEmail: ${data.email}\nTemporary Password: ${data.password}\nGrade Level: ${data.gradeLevel}\n\nPlease change the password after first login.\n\nLogin: ${data.loginUrl}`;
 
     await this.sendEmail({
       to: data.email,
-      subject: 'Welcome to Sto Niño de Praga Academy - Admission Approved!',
-      text: text,
-      html: html,
+      subject: 'Sto. Niño de Praga Academy — Admission Approved',
+      text,
+      html,
     });
   }
 
-  static async sendAttendanceNotification(
-    data: AttendanceNotificationData
-  ): Promise<void> {
+  // ── Attendance Notification ──────────────────────────────────────
+  static async sendAttendanceNotification(data: AttendanceNotificationData): Promise<void> {
     const scanTypeText = data.scanType === 'timein' ? 'timed in' : 'timed out';
-    const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-              .container { background-color: #f9f9f9; border-radius: 10px; padding: 30px; border: 1px solid #ddd; }
-              .header { text-align: center; margin-bottom: 20px; color: #7A0C0C; }
-              .header h1 { color: #7A0C0C; margin: 0; font-size: 22px; }
-              .info-box { background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ${data.scanType === 'timein' ? '#16a34a' : '#ea580c'}; }
-              .info-box p { margin: 8px 0; }
-              .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 13px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Attendance Notification</h1>
-              </div>
+    const borderColor = data.scanType === 'timein' ? '#16a34a' : '#ea580c';
 
-              <p>Dear Parent/Guardian,</p>
+    const html = emailShell(`
+      <h2 style="margin:0 0 16px;color:#7f1d1d;font-size:22px;font-weight:700;">Attendance Notification</h2>
+      <p style="margin:0 0 20px;color:#4b5563;font-size:15px;line-height:1.6;">
+        Dear Parent/Guardian, your child has <strong>${scanTypeText}</strong> at school.
+      </p>
+      ${infoBox(
+        infoRow('Student', data.studentName) +
+        infoRow('Grade & Section', `${data.gradeLevel} — ${data.section}`) +
+        infoRow('Status', scanTypeText.charAt(0).toUpperCase() + scanTypeText.slice(1)) +
+        infoRow('Time', data.scanTime),
+        borderColor
+      )}
+      ${divider()}
+      <p style="margin:0;color:#6b7280;font-size:13px;">This is an automated notification from the RFID attendance system.</p>
+    `);
 
-              <p>This is to inform you that your child has <strong>${scanTypeText}</strong> at school.</p>
-
-              <div class="info-box">
-                <p><strong>Student:</strong> ${data.studentName}</p>
-                <p><strong>Grade & Section:</strong> ${data.gradeLevel} - ${data.section}</p>
-                <p><strong>Status:</strong> ${scanTypeText.charAt(0).toUpperCase() + scanTypeText.slice(1)}</p>
-                <p><strong>Time:</strong> ${data.scanTime}</p>
-              </div>
-
-              <div class="footer">
-                <p>This is an automated notification from the RFID attendance system.</p>
-                <p>Best regards,<br><strong>Sto Niño de Praga Academy</strong></p>
-                <p>&copy; ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `;
-
-    const text = `Attendance Notification\n\nDear Parent/Guardian,\n\nThis is to inform you that your child has ${scanTypeText} at school.\n\nStudent: ${data.studentName}\nGrade & Section: ${data.gradeLevel} - ${data.section}\nStatus: ${scanTypeText}\nTime: ${data.scanTime}\n\nThis is an automated notification from the RFID attendance system.\n\nBest regards,\nSto Niño de Praga Academy`;
+    const text = `Attendance Notification\n\nDear Parent/Guardian,\n\nYour child has ${scanTypeText} at school.\n\nStudent: ${data.studentName}\nGrade & Section: ${data.gradeLevel} — ${data.section}\nStatus: ${scanTypeText}\nTime: ${data.scanTime}\n\nThis is an automated notification from the RFID attendance system.`;
 
     await this.sendEmail({
       to: data.parentEmail,
@@ -429,68 +237,34 @@ Sto Niño de Praga Academy
     });
   }
 
-  static async sendAdmissionRejection(
-    data: AdmissionRejectionData
-  ): Promise<void> {
-    const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-              .container { background-color: #f9f9f9; border-radius: 10px; padding: 30px; border: 1px solid #ddd; }
-              .header { text-align: center; margin-bottom: 30px; color: #7A0C0C; }
-              .header h1 { color: #7A0C0C; margin: 0; }
-              .reason-box { background-color: #fff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc2626; }
-              .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 14px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Admission Update</h1>
-              </div>
+  // ── Admission Rejected ───────────────────────────────────────────
+  static async sendAdmissionRejection(data: AdmissionRejectionData): Promise<void> {
+    const html = emailShell(`
+      <h2 style="margin:0 0 16px;color:#7f1d1d;font-size:22px;font-weight:700;">Admission Update</h2>
+      <p style="margin:0 0 20px;color:#4b5563;font-size:15px;line-height:1.6;">
+        Dear ${data.parentName}, thank you for your interest in Sto. Niño de Praga Academy.
+        After careful review, the admission application for
+        <strong>${data.studentFirstName} ${data.studentLastName}</strong> was not approved at this time.
+      </p>
+      ${data.reason ? infoBox(
+        `<p style="margin:0 0 8px;color:#dc2626;font-size:14px;font-weight:700;">Reason</p>
+         <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.5;">${data.reason}</p>`,
+        '#dc2626'
+      ) : ''}
+      <p style="margin:0 0 0;color:#4b5563;font-size:15px;line-height:1.6;">
+        We encourage you to reach out to our admissions office if you have any questions.
+      </p>
+      ${divider()}
+      <p style="margin:0;color:#6b7280;font-size:13px;">Best regards, Sto. Niño de Praga Academy</p>
+    `);
 
-              <p>Dear ${data.parentName},</p>
-
-              <p>Thank you for your interest in Sto Niño de Praga Academy. After careful review, we regret to inform you that the admission application for <strong>${data.studentFirstName} ${data.studentLastName}</strong> was not approved at this time.</p>
-
-              ${data.reason ? `<div class="reason-box"><h3 style="color: #dc2626; margin-top: 0;">Reason</h3><p>${data.reason}</p></div>` : ''}
-
-              <p>We encourage you to reach out to our admissions office if you have any questions or would like to discuss this further.</p>
-
-              <div class="footer">
-                <p>Best regards,<br><strong>Sto Niño de Praga Academy</strong></p>
-                <p>&copy; ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `;
-
-    const text = `
-Admission Update
-
-Dear ${data.parentName},
-
-Thank you for your interest in Sto Niño de Praga Academy. After careful review, we regret to inform you that the admission application for ${data.studentFirstName} ${data.studentLastName} was not approved at this time.
-
-${data.reason ? `Reason: ${data.reason}` : ''}
-
-We encourage you to reach out to our admissions office if you have any questions or would like to discuss this further.
-
-Best regards,
-Sto Niño de Praga Academy
-
-© ${new Date().getFullYear()} Sto Niño de Praga Academy. All rights reserved.
-      `;
+    const text = `Admission Update\n\nDear ${data.parentName},\n\nThe admission application for ${data.studentFirstName} ${data.studentLastName} was not approved at this time.\n\n${data.reason ? `Reason: ${data.reason}\n\n` : ''}We encourage you to reach out to our admissions office if you have any questions.\n\nBest regards,\nSto. Niño de Praga Academy`;
 
     await this.sendEmail({
       to: data.email,
-      subject:
-        'Sto Niño de Praga Academy - Admission Application Update',
-      text: text,
-      html: html,
+      subject: 'Sto. Niño de Praga Academy — Admission Application Update',
+      text,
+      html,
     });
   }
 }

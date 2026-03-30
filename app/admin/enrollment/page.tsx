@@ -563,7 +563,7 @@ export default function AdminEnrollmentPage() {
                 variant="outline"
                 onClick={() => handleDecision('rejected')}
                 disabled={submitting}
-                className="border-red-300 text-red-700 hover:bg-red-50"
+                className="bg-red-600 text-white hover:bg-red-700"
               >
                 <XCircle className="w-4 h-4 mr-1.5" />
                 Reject
@@ -575,7 +575,7 @@ export default function AdminEnrollmentPage() {
                   variant="outline"
                   onClick={() => handleDecision('rejected')}
                   disabled={submitting}
-                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  className="bg-red-600 text-white hover:bg-red-700"
                 >
                   <XCircle className="w-4 h-4 mr-1.5" />
                   Reject Form

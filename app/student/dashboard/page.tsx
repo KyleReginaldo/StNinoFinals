@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
+  Bell,
   BookOpen,
   CalendarCheck,
   CheckCircle2,
@@ -76,6 +77,7 @@ export default function StudentDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
 
   const displayName = useMemo(() => {
     if (!student) return 'Student';
@@ -110,6 +112,15 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     if (student) fetchData();
   }, [student, fetchData]);
+
+  useEffect(() => {
+    fetch('/api/announcements?role=students')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) setAnnouncements(res.data || []);
+      })
+      .catch(console.error);
+  }, []);
 
   if (isLoading) {
     return (
@@ -158,6 +169,46 @@ export default function StudentDashboardPage() {
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
           <XCircle className="w-4 h-4 shrink-0" />
           {error}
+        </div>
+      )}
+
+      {/* Announcements Banner */}
+      {announcements.length > 0 && (
+        <div className="bg-gradient-to-r from-red-900 to-red-800 rounded-xl shadow-lg p-5 text-white">
+          <div className="flex items-center gap-2 mb-3">
+            <Bell className="h-5 w-5" />
+            <h3 className="font-bold text-lg">Announcements</h3>
+            <span className="ml-auto bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              {announcements.length} new
+            </span>
+          </div>
+          <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+            {announcements.map((a: any) => (
+              <div
+                key={a.id}
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/10"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-white text-sm">{a.title}</h4>
+                    {a.content && (
+                      <p className="text-red-100 text-xs mt-1 line-clamp-2">{a.content}</p>
+                    )}
+                    <p className="text-xs text-red-200 mt-2">
+                      {a.published_at
+                        ? new Date(a.published_at).toLocaleDateString('en-PH')
+                        : ''}
+                    </p>
+                  </div>
+                  {a.priority === 'high' && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 uppercase">
+                      Urgent
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -413,6 +464,7 @@ export default function StudentDashboardPage() {
           )}
         </CardContent>
       </Card>
+
     </div>
   );
 }
