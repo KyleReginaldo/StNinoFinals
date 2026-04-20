@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     // Fetch only approved grades from the database
     const { data: grades, error } = await supabase
       .from('grades')
-      .select('*')
+      .select('*, classes(school_year, quarter)')
       .eq('student_id', studentId)
       .eq('status', 'approved')
       .order('updated_at', { ascending: false });
@@ -31,12 +31,14 @@ export async function GET(request: Request) {
     }
 
     // Format the grades data
-    const formattedGrades = grades.map((grade) => ({
+    const formattedGrades = grades.map((grade: any) => ({
       id: grade.id,
       subject: grade.subject,
       grade: grade.grade.toString(),
       status: grade.status ?? null,
       lastUpdated: grade.updated_at || grade.created_at,
+      quarter: grade.quarter ?? grade.classes?.quarter ?? null,
+      school_year: grade.school_year ?? grade.classes?.school_year ?? null,
     }));
 
     return NextResponse.json({

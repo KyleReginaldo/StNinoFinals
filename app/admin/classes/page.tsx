@@ -1,13 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Pagination } from '@/components/ui/data-table/Pagination';
+import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import {
   Dialog,
   DialogContent,
@@ -24,19 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { BookOpen, Download, Edit, Plus, Search, Trash2, Users } from 'lucide-react';
+import { parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { BookOpen, Download, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+
+const DAY_OPTIONS = ['M', 'T', 'W', 'Th', 'F'];
+
+const DAY_LABELS: Record<string, string> = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', Th: 'Thursday', F: 'Friday' };
 
 interface Class {
   id: string;
@@ -55,6 +48,12 @@ interface Class {
   students?: any[];
   teacher?: any;
 }
+
+type FlatClass = Class & {
+  teacherName: string;
+  quarterDisplay: string;
+  statusLabel: string;
+};
 
 interface Teacher {
   id: string;
@@ -80,6 +79,7 @@ export default function ClassesManagementPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [studentSearch, setStudentSearch] = useState('');
 
   const [formData, setFormData] = useState({
     class_code: '',
@@ -90,31 +90,27 @@ export default function ClassesManagementPage() {
     semester: '',
     teacher_id: '',
     room: '',
-    schedule: '',
     description: '',
   });
+  const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([]);
 
   const [showStudentsDialog, setShowStudentsDialog] = useState(false);
   const [classStudents, setClassStudents] = useState<Student[]>([]);
   const [viewingClass, setViewingClass] = useState<Class | null>(null);
   const [loadingStudents, setLoadingStudents] = useState(false);
 
-  const [sectionsByGrade, setSectionsByGrade] = useState<
-    Record<string, string[]>
-  >({});
+  const [sectionsByGrade, setSectionsByGrade] = useState<Record<string, string[]>>({});
+  const [rooms, setRooms] = useState<{ id: string; name: string; capacity: number | null }[]>([]);
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
-  // Fetch sections from admin settings
   useEffect(() => {
     const fetchSections = async () => {
       try {
         const res = await fetch('/api/admin/settings/sections');
         const data = await res.json();
-        if (data.success && data.sections) {
-          setSectionsByGrade(data.sections);
-        }
+        if (data.success && data.sections) setSectionsByGrade(data.sections);
       } catch (error) {
         console.error('Error fetching sections:', error);
       }
@@ -126,15 +122,17 @@ export default function ClassesManagementPage() {
     fetchClasses();
     fetchTeachers();
     fetchStudents();
+    fetch('/api/admin/rooms')
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setRooms(d.rooms.filter((r: any) => r.is_active).map((r: any) => ({ id: r.id, name: r.name, capacity: r.capacity }))); })
+      .catch(() => {});
   }, []);
 
   const fetchClasses = async () => {
     try {
       const response = await fetch('/api/admin/classes');
       const data = await response.json();
-      if (data.success) {
-        setClasses(data.classes || []);
-      }
+      if (data.success) setClasses(data.classes || []);
     } catch (error) {
       console.error('Error fetching classes:', error);
       showAlert({ message: 'Failed to load classes', type: 'error' });
@@ -147,9 +145,7 @@ export default function ClassesManagementPage() {
     try {
       const response = await fetch('/api/admin/teachers');
       const data = await response.json();
-      if (data.success) {
-        setTeachers(data.teachers || []);
-      }
+      if (data.success) setTeachers(data.teachers || []);
     } catch (error) {
       console.error('Error fetching teachers:', error);
     }
@@ -159,9 +155,7 @@ export default function ClassesManagementPage() {
     try {
       const response = await fetch('/api/students/all');
       const data = await response.json();
-      if (data.success) {
-        setStudents(data.students || []);
-      }
+      if (data.success) setStudents(data.students || []);
     } catch (error) {
       console.error('Error fetching students:', error);
     }
@@ -176,13 +170,12 @@ export default function ClassesManagementPage() {
         grade_level: classItem.grade_level || '',
         section: classItem.section || '',
         school_year: classItem.school_year,
-        semester: classItem.semester,
+        semester: String((classItem as any).quarter ?? classItem.semester ?? ''),
         teacher_id: classItem.teacher_id || '',
         room: classItem.room || '',
-        schedule: classItem.schedule || '',
         description: classItem.description || '',
       });
-      // Fetch class details to get student IDs
+      setScheduleSlots(parseScheduleSlots(classItem.schedule));
       fetchClassDetails(classItem.id);
     } else {
       setEditingClass(null);
@@ -195,9 +188,9 @@ export default function ClassesManagementPage() {
         semester: '1',
         teacher_id: '',
         room: '',
-        schedule: '',
         description: '',
       });
+      setScheduleSlots([]);
       setSelectedStudentIds([]);
     }
     setStudentSearch('');
@@ -217,44 +210,21 @@ export default function ClassesManagementPage() {
   };
 
   const handleSubmit = async () => {
-    if (
-      !formData.class_code ||
-      !formData.class_name ||
-      !formData.school_year ||
-      !formData.semester
-    ) {
-      showAlert({
-        message: 'Please fill in all required fields',
-        type: 'error',
-      });
+    if (!formData.class_code || !formData.class_name || !formData.school_year || !formData.semester) {
+      showAlert({ message: 'Please fill in all required fields', type: 'error' });
       return;
     }
-
     try {
-      const payload = {
-        ...formData,
-        student_ids: selectedStudentIds,
-        id: editingClass?.id,
-      };
-
-      const url = '/api/admin/classes';
-      const method = editingClass ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
+      const schedule = scheduleSlots.length > 0 ? JSON.stringify(scheduleSlots) : null;
+      const payload = { ...formData, schedule, student_ids: selectedStudentIds, id: editingClass?.id };
+      const response = await fetch('/api/admin/classes', {
+        method: editingClass ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const data = await response.json();
-
       if (data.success) {
-        showAlert({
-          message: editingClass
-            ? 'Class updated successfully'
-            : 'Class created successfully',
-          type: 'success',
-        });
+        showAlert({ message: editingClass ? 'Class updated successfully' : 'Class created successfully', type: 'success' });
         setShowDialog(false);
         fetchClasses();
       } else {
@@ -271,15 +241,9 @@ export default function ClassesManagementPage() {
     setLoadingStudents(true);
     setShowStudentsDialog(true);
     try {
-      const response = await fetch(
-        `/api/admin/classes?classId=${classItem.id}`
-      );
+      const response = await fetch(`/api/admin/classes?classId=${classItem.id}`);
       const result = await response.json();
-      if (result.success && result.class?.students) {
-        setClassStudents(result.class.students);
-      } else {
-        setClassStudents([]);
-      }
+      setClassStudents(result.success && result.class?.students ? result.class.students : []);
     } catch (error) {
       console.error('Error fetching class students:', error);
       setClassStudents([]);
@@ -291,9 +255,8 @@ export default function ClassesManagementPage() {
   const handleExportCSV = () => {
     if (!viewingClass || classStudents.length === 0) return;
     const header = 'Student Number,First Name,Last Name,Grade Level,Section';
-    const rows = classStudents.map(
-      (s) =>
-        `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
+    const rows = classStudents.map(s =>
+      `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -312,27 +275,15 @@ export default function ClassesManagementPage() {
       confirmText: 'Delete',
       cancelText: 'Cancel',
     });
-
     if (!confirmed) return;
-
     try {
-      const response = await fetch(
-        `/api/admin/classes?classId=${classItem.id}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
+      const response = await fetch(`/api/admin/classes?classId=${classItem.id}`, { method: 'DELETE' });
       const data = await response.json();
-
       if (data.success) {
         showAlert({ message: 'Class deleted successfully', type: 'success' });
         fetchClasses();
       } else {
-        showAlert({
-          message: data.error || 'Failed to delete class',
-          type: 'error',
-        });
+        showAlert({ message: data.error || 'Failed to delete class', type: 'error' });
       }
     } catch (error) {
       console.error('Error deleting class:', error);
@@ -340,155 +291,253 @@ export default function ClassesManagementPage() {
     }
   };
 
-  const [studentSearch, setStudentSearch] = useState('');
-
   const toggleStudentSelection = (studentId: string) => {
-    setSelectedStudentIds((prev) =>
-      prev.includes(studentId)
-        ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
+    setSelectedStudentIds(prev =>
+      prev.includes(studentId) ? prev.filter(id => id !== studentId) : [...prev, studentId]
     );
   };
 
-  // Filter students by the class's grade level, then by search
   const filteredStudents = useMemo(() => {
     let list = students;
-
     if (formData.grade_level) {
-      list = list.filter(
-        (s) =>
-          s.grade_level &&
-          s.grade_level.trim().toLowerCase() ===
-            formData.grade_level.trim().toLowerCase()
+      list = list.filter(s =>
+        s.grade_level && s.grade_level.trim().toLowerCase() === formData.grade_level.trim().toLowerCase()
       );
     }
-
     if (studentSearch.trim()) {
       const q = studentSearch.toLowerCase();
-      list = list.filter(
-        (s) =>
-          s.first_name?.toLowerCase().includes(q) ||
-          s.last_name?.toLowerCase().includes(q) ||
-          s.student_number?.toLowerCase().includes(q)
+      list = list.filter(s =>
+        s.first_name?.toLowerCase().includes(q) ||
+        s.last_name?.toLowerCase().includes(q) ||
+        s.student_number?.toLowerCase().includes(q)
       );
     }
-
     return list;
   }, [students, formData.grade_level, studentSearch]);
 
-  return (
-    <div className="p-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="w-6 h-6" />
-                Classes Management
-              </CardTitle>
-              <CardDescription>
-                Create and manage classes, assign teachers and students
-              </CardDescription>
-            </div>
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-red-800 hover:bg-red-900"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Class
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">Loading classes...</div>
-          ) : classes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No classes found. Click "Add Class" to create one.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Class Code</TableHead>
-                  <TableHead>Class Name</TableHead>
-                  <TableHead>Grade/Section</TableHead>
-                  <TableHead>Teacher</TableHead>
-                  <TableHead>School Year</TableHead>
-                  <TableHead>Semester</TableHead>
-                  <TableHead>Room</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classes.map((classItem) => (
-                  <TableRow key={classItem.id}>
-                    <TableCell className="font-medium">
-                      {classItem.class_code}
-                    </TableCell>
-                    <TableCell>{classItem.class_name}</TableCell>
-                    <TableCell>
-                      {classItem.grade_level && classItem.section
-                        ? `${classItem.grade_level} - ${classItem.section}`
-                        : classItem.grade_level || classItem.section || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {classItem.teacher_name || 'Not assigned'}
-                    </TableCell>
-                    <TableCell>{classItem.school_year}</TableCell>
-                    <TableCell>Semester {classItem.semester}</TableCell>
-                    <TableCell>{classItem.room || '-'}</TableCell>
-                    <TableCell>
-                      {classItem.is_active ? (
-                        <span className="text-green-600 font-medium">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="text-gray-500">Inactive</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewStudents(classItem)}
-                          title="View Students"
-                        >
-                          <Users className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenDialog(classItem)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(classItem)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+  const flatClasses = useMemo<FlatClass[]>(() =>
+    classes.map(c => ({
+      ...c,
+      teacherName: c.teacher_name ?? 'Unassigned',
+      quarterDisplay: String((c as any).quarter ?? c.semester ?? ''),
+      statusLabel: c.is_active ? 'active' : 'inactive',
+    })),
+    [classes]
+  );
 
+  const gradeOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return classes
+      .flatMap(c => c.grade_level ? [c.grade_level] : [])
+      .filter(g => { if (seen.has(g)) return false; seen.add(g); return true; });
+  }, [classes]);
+
+  const tc = useTableControls(flatClasses, {
+    searchFields: ['class_name', 'class_code', 'teacherName'],
+    defaultSort: { key: 'class_name', dir: 'asc' },
+    pageSize: 25,
+  });
+
+  const hasFilters = !!tc.search || !!tc.filters['grade_level'] || !!tc.filters['statusLabel'];
+
+  const conflictedRooms = useMemo(() => {
+    if (scheduleSlots.length === 0) return new Set<string>();
+    const conflicted = new Set<string>();
+    for (const cls of classes) {
+      if (cls.id === editingClass?.id || !cls.room || !cls.schedule) continue;
+      const clsSlots = parseScheduleSlots(cls.schedule);
+      for (const mine of scheduleSlots) {
+        const myTime = parseScheduleTime(`${mine.day} ${mine.start} - ${mine.end}`);
+        if (!myTime) continue;
+        for (const theirs of clsSlots) {
+          if (mine.day !== theirs.day) continue;
+          const theirTime = parseScheduleTime(`${theirs.day} ${theirs.start} - ${theirs.end}`);
+          if (theirTime && timesOverlap(myTime, theirTime)) conflicted.add(cls.room);
+        }
+      }
+    }
+    return conflicted;
+  }, [scheduleSlots, classes, editingClass]);
+
+  return (
+    <div className="p-4 md:p-6 space-y-5 mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <BookOpen className="w-6 h-6" />
+            Classes Management
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Create and manage classes, assign teachers and students
+          </p>
+        </div>
+        <Button
+          onClick={() => handleOpenDialog()}
+          className="bg-gray-900 hover:bg-gray-800 text-white self-start sm:self-auto"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Class
+        </Button>
+      </div>
+
+      {/* Toolbar */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input
+            className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            placeholder="Search class name, code, or teacher..."
+            value={tc.search}
+            onChange={e => tc.setSearch(e.target.value)}
+          />
+        </div>
+        <Select
+          value={tc.filters['grade_level'] || 'all'}
+          onValueChange={v => tc.setFilter('grade_level', v === 'all' ? '' : v)}
+        >
+          <SelectTrigger className="w-36 h-8 text-sm">
+            <SelectValue placeholder="Grade Level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Grades</SelectItem>
+            {gradeOptions.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select
+          value={tc.filters['statusLabel'] || 'all'}
+          onValueChange={v => tc.setFilter('statusLabel', v === 'all' ? '' : v)}
+        >
+          <SelectTrigger className="w-32 h-8 text-sm">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <button
+            onClick={() => tc.clearFilters()}
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
+          >
+            <X className="w-3.5 h-3.5" />
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-900 border-t-transparent" />
+          </div>
+        ) : tc.rows.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            {hasFilters
+              ? 'No classes match the selected filters.'
+              : 'No classes found. Click "Add Class" to create one.'}
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <SortHeader label="Class Code"      sortKey="class_code"      currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
+                <SortHeader label="Class Name"      sortKey="class_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
+                <SortHeader label="Grade / Section" sortKey="grade_level"     currentSort={tc.sort} onSort={tc.toggleSort} />
+                <SortHeader label="Teacher"         sortKey="teacherName"     currentSort={tc.sort} onSort={tc.toggleSort} />
+                <SortHeader label="Quarter"         sortKey="quarterDisplay"  currentSort={tc.sort} onSort={tc.toggleSort} />
+                <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Room</th>
+                <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-2.5 pr-4 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {tc.rows.map(classItem => (
+                <tr key={classItem.id} className="hover:bg-gray-50 group">
+                  <td className="px-4 py-3 pl-4">
+                    <span className="font-mono text-[12px] text-gray-500">{classItem.class_code}</span>
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{classItem.class_name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {classItem.grade_level && classItem.section
+                      ? `${classItem.grade_level} — ${classItem.section}`
+                      : classItem.grade_level || classItem.section || <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {classItem.teacher_name
+                      ? classItem.teacher_name
+                      : <span className="text-gray-400 italic">Unassigned</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {classItem.quarterDisplay
+                      ? `Q${classItem.quarterDisplay}`
+                      : <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {classItem.room || <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1.5 text-sm">
+                      <span className={`w-1.5 h-1.5 rounded-full ${classItem.is_active ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <span className={classItem.is_active ? 'text-gray-700' : 'text-gray-400'}>
+                        {classItem.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 pr-4">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleViewStudents(classItem)}
+                        title="View Students"
+                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+                      >
+                        <Users className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenDialog(classItem)}
+                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(classItem)}
+                        className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-[11px] text-gray-400">
+            {tc.totalCount} class{tc.totalCount !== 1 ? 'es' : ''}
+          </span>
+          {tc.pageCount > 1 && (
+            <Pagination
+              page={tc.page}
+              pageCount={tc.pageCount}
+              totalCount={tc.totalCount}
+              filteredCount={tc.filteredCount}
+              pageSize={tc.pageSize}
+              onPageChange={tc.setPage}
+              onPageSizeChange={tc.setPageSize}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Form Dialog — keep unchanged */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingClass ? 'Edit Class' : 'Create New Class'}
-            </DialogTitle>
+            <DialogTitle>{editingClass ? 'Edit Class' : 'Create New Class'}</DialogTitle>
             <DialogDescription>
               {editingClass
                 ? 'Update class information and enrollment'
@@ -499,28 +548,20 @@ export default function ClassesManagementPage() {
           <div className="space-y-6 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="class_code">
-                  Class Code <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="class_code">Class Code <span className="text-red-500">*</span></Label>
                 <Input
                   id="class_code"
                   value={formData.class_code}
-                  onChange={(e) =>
-                    setFormData({ ...formData, class_code: e.target.value })
-                  }
+                  onChange={e => setFormData({ ...formData, class_code: e.target.value })}
                   placeholder="e.g., MATH101"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="class_name">
-                  Class Name <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="class_name">Class Name <span className="text-red-500">*</span></Label>
                 <Input
                   id="class_name"
                   value={formData.class_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, class_name: e.target.value })
-                  }
+                  onChange={e => setFormData({ ...formData, class_name: e.target.value })}
                   placeholder="e.g., Mathematics"
                 />
               </div>
@@ -531,17 +572,9 @@ export default function ClassesManagementPage() {
                 <Label htmlFor="grade_level">Grade Level</Label>
                 <Select
                   value={formData.grade_level}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      grade_level: value,
-                      section: '',
-                    })
-                  }
+                  onValueChange={value => setFormData({ ...formData, grade_level: value, section: '' })}
                 >
-                  <SelectTrigger id="grade_level">
-                    <SelectValue placeholder="Select grade level" />
-                  </SelectTrigger>
+                  <SelectTrigger id="grade_level"><SelectValue placeholder="Select grade level" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Kinder">Kinder</SelectItem>
                     <SelectItem value="Grade 1">Grade 1</SelectItem>
@@ -563,26 +596,16 @@ export default function ClassesManagementPage() {
                 <Label htmlFor="section">Section</Label>
                 <Select
                   value={formData.section}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, section: value })
-                  }
+                  onValueChange={value => setFormData({ ...formData, section: value })}
                 >
-                  <SelectTrigger id="section">
-                    <SelectValue placeholder="Select section" />
-                  </SelectTrigger>
+                  <SelectTrigger id="section"><SelectValue placeholder="Select section" /></SelectTrigger>
                   <SelectContent>
-                    {(sectionsByGrade[formData.grade_level] || []).map(
-                      (sec) => (
-                        <SelectItem key={sec} value={sec}>
-                          {sec}
-                        </SelectItem>
-                      )
-                    )}
+                    {(sectionsByGrade[formData.grade_level] || []).map(sec => (
+                      <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                    ))}
                     {(!sectionsByGrade[formData.grade_level] ||
                       sectionsByGrade[formData.grade_level].length === 0) && (
-                      <SelectItem value="__none" disabled>
-                        No sections for this grade
-                      </SelectItem>
+                      <SelectItem value="__none" disabled>No sections for this grade</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -591,34 +614,26 @@ export default function ClassesManagementPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="school_year">
-                  School Year <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="school_year">School Year <span className="text-red-500">*</span></Label>
                 <Input
                   id="school_year"
                   value={formData.school_year}
-                  onChange={(e) =>
-                    setFormData({ ...formData, school_year: e.target.value })
-                  }
+                  onChange={e => setFormData({ ...formData, school_year: e.target.value })}
                   placeholder="e.g., 2024-2025"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="semester">
-                  Semester <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="semester">Quarter <span className="text-red-500">*</span></Label>
                 <Select
                   value={formData.semester}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, semester: value })
-                  }
+                  onValueChange={value => setFormData({ ...formData, semester: value })}
                 >
-                  <SelectTrigger id="semester">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger id="semester"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Semester 1</SelectItem>
-                    <SelectItem value="2">Semester 2</SelectItem>
+                    <SelectItem value="1">Quarter 1</SelectItem>
+                    <SelectItem value="2">Quarter 2</SelectItem>
+                    <SelectItem value="3">Quarter 3</SelectItem>
+                    <SelectItem value="4">Quarter 4</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -629,15 +644,11 @@ export default function ClassesManagementPage() {
                 <Label htmlFor="teacher_id">Assign Teacher</Label>
                 <Select
                   value={formData.teacher_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, teacher_id: value })
-                  }
+                  onValueChange={value => setFormData({ ...formData, teacher_id: value })}
                 >
-                  <SelectTrigger id="teacher_id">
-                    <SelectValue placeholder="No teacher assigned" />
-                  </SelectTrigger>
+                  <SelectTrigger id="teacher_id"><SelectValue placeholder="No teacher assigned" /></SelectTrigger>
                   <SelectContent>
-                    {teachers.map((teacher) => (
+                    {teachers.map(teacher => (
                       <SelectItem key={teacher.id} value={teacher.id}>
                         {teacher.first_name} {teacher.last_name}
                       </SelectItem>
@@ -647,79 +658,81 @@ export default function ClassesManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="room">Room</Label>
-                <Input
-                  id="room"
+                <Select
                   value={formData.room}
-                  onChange={(e) =>
-                    setFormData({ ...formData, room: e.target.value })
-                  }
-                  placeholder="e.g., Room 101"
-                />
+                  onValueChange={value => setFormData({ ...formData, room: value })}
+                >
+                  <SelectTrigger id="room"><SelectValue placeholder="Select a room" /></SelectTrigger>
+                  <SelectContent>
+                    {rooms.map((r) => (
+                      <SelectItem key={r.id} value={r.name} disabled={conflictedRooms.has(r.name)}>
+                        <div className="flex items-center justify-between gap-6 w-full">
+                          <span>{r.name}</span>
+                          <span className="text-xs text-gray-400 ml-auto">
+                            {conflictedRooms.has(r.name)
+                              ? '⚠ Occupied'
+                              : r.capacity ? `${r.capacity} seats` : ''}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="schedule">Schedule</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Input
-                  id="schedule-days"
-                  value={formData.schedule.split(' ')[0] || ''}
-                  onChange={(e) => {
-                    const days = e.target.value;
-                    const timeRange =
-                      formData.schedule.split(' ').slice(1).join(' ') || '';
-                    setFormData({
-                      ...formData,
-                      schedule: `${days} ${timeRange}`.trim(),
-                    });
-                  }}
-                  placeholder="e.g., MWF"
-                />
-                <Input
-                  id="schedule-start"
-                  type="time"
-                  value={formData.schedule.match(/(\d{1,2}:\d{2})/)?.[1] || ''}
-                  onChange={(e) => {
-                    const days = formData.schedule.split(' ')[0] || '';
-                    const endTime =
-                      formData.schedule.match(/- (\d{1,2}:\d{2})/)?.[1] || '';
-                    const startTime = e.target.value;
-                    const timeStr = endTime
-                      ? `${startTime} - ${endTime}`
-                      : startTime;
-                    setFormData({
-                      ...formData,
-                      schedule: `${days} ${timeStr}`.trim(),
-                    });
-                  }}
-                  placeholder="Start time"
-                />
-                <Input
-                  id="schedule-end"
-                  type="time"
-                  value={
-                    formData.schedule.match(/- (\d{1,2}:\d{2})/)?.[1] || ''
-                  }
-                  onChange={(e) => {
-                    const days = formData.schedule.split(' ')[0] || '';
-                    const startTime =
-                      formData.schedule.match(/(\d{1,2}:\d{2})/)?.[1] || '';
-                    const endTime = e.target.value;
-                    const timeStr =
-                      startTime && endTime
-                        ? `${startTime} - ${endTime}`
-                        : startTime || endTime;
-                    setFormData({
-                      ...formData,
-                      schedule: `${days} ${timeStr}`.trim(),
-                    });
-                  }}
-                  placeholder="End time"
-                />
+            <div className="space-y-3">
+              <Label>Schedule</Label>
+              <div className="flex gap-1 flex-wrap">
+                {DAY_OPTIONS.map(day => {
+                  const isSelected = scheduleSlots.some(s => s.day === day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setScheduleSlots(prev => prev.filter(s => s.day !== day));
+                        } else {
+                          const ordered = DAY_OPTIONS.filter(d => d === day || scheduleSlots.some(s => s.day === d));
+                          setScheduleSlots(prev => {
+                            const next = [...prev, { day, start: '08:00', end: '09:00' }];
+                            return ordered.map(d => next.find(s => s.day === d)!).filter(Boolean);
+                          });
+                        }
+                      }}
+                      className={`px-2.5 py-1 text-sm rounded border font-medium transition-colors ${
+                        isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-xs text-gray-500">
-                Days (e.g., MWF, TTh), Start time, End time
-              </p>
+              {scheduleSlots.length > 0 && (
+                <div className="space-y-2">
+                  {scheduleSlots.map(slot => (
+                    <div key={slot.day} className="flex items-center gap-2">
+                      <span className="w-8 text-xs font-semibold text-gray-500 text-center">{slot.day}</span>
+                      <span className="text-xs text-gray-400 hidden sm:inline">{DAY_LABELS[slot.day]}</span>
+                      <Input
+                        type="time"
+                        value={slot.start}
+                        onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, start: e.target.value } : s))}
+                        className="h-8 w-28 text-sm"
+                      />
+                      <span className="text-xs text-gray-400">→</span>
+                      <Input
+                        type="time"
+                        value={slot.end}
+                        onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, end: e.target.value } : s))}
+                        className="h-8 w-28 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -727,9 +740,7 @@ export default function ClassesManagementPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Class description or notes"
                 rows={3}
               />
@@ -750,15 +761,13 @@ export default function ClassesManagementPage() {
                 <Input
                   placeholder="Search students by name or number..."
                   value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
+                  onChange={e => setStudentSearch(e.target.value)}
                   className="pl-9"
                 />
               </div>
               <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
                 {!formData.grade_level ? (
-                  <p className="text-sm text-amber-600">
-                    Select a grade level first to see matching students.
-                  </p>
+                  <p className="text-sm text-amber-600">Select a grade level first to see matching students.</p>
                 ) : filteredStudents.length === 0 ? (
                   <p className="text-sm text-gray-500">
                     No students found for {formData.grade_level}
@@ -766,7 +775,7 @@ export default function ClassesManagementPage() {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {filteredStudents.map((student) => (
+                    {filteredStudents.map(student => (
                       <label
                         key={student.id}
                         className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
@@ -778,12 +787,9 @@ export default function ClassesManagementPage() {
                           className="rounded"
                         />
                         <span className="text-sm">
-                          {student.first_name} {student.last_name} (
-                          {student.student_number || 'No ID'})
+                          {student.first_name} {student.last_name} ({student.student_number || 'No ID'})
                           {student.section && (
-                            <span className="text-gray-500 ml-2">
-                              — {student.section}
-                            </span>
+                            <span className="text-gray-500 ml-2">— {student.section}</span>
                           )}
                         </span>
                       </label>
@@ -791,20 +797,13 @@ export default function ClassesManagementPage() {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
-                {selectedStudentIds.length} student(s) selected
-              </p>
+              <p className="text-xs text-gray-500">{selectedStudentIds.length} student(s) selected</p>
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              className="bg-red-800 hover:bg-red-900"
-            >
+            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+            <Button onClick={handleSubmit} className="bg-gray-900 hover:bg-gray-800 text-white">
               {editingClass ? 'Update Class' : 'Create Class'}
             </Button>
           </div>
@@ -815,50 +814,53 @@ export default function ClassesManagementPage() {
       <Dialog open={showStudentsDialog} onOpenChange={setShowStudentsDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-red-800">
-              Class List: {viewingClass?.class_name}
-            </DialogTitle>
+            <DialogTitle>Class List: {viewingClass?.class_name}</DialogTitle>
             <DialogDescription>
-              {viewingClass?.grade_level} - {viewingClass?.section} |{' '}
-              {classStudents.length} student(s) enrolled
+              {viewingClass?.grade_level} — {viewingClass?.section} · {classStudents.length} student(s) enrolled
             </DialogDescription>
           </DialogHeader>
           {loadingStudents ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-red-800 border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-900 border-t-transparent" />
             </div>
           ) : classStudents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No students enrolled in this class.
-            </div>
+            <div className="text-center py-8 text-gray-400">No students enrolled in this class.</div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Student Number</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Grade Level</TableHead>
-                    <TableHead>Section</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {classStudents.map((student, index) => (
-                    <TableRow key={student.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell className="font-medium">
-                        {student.student_number}
-                      </TableCell>
-                      <TableCell>
-                        {student.last_name}, {student.first_name}
-                      </TableCell>
-                      <TableCell>{student.grade_level || '-'}</TableCell>
-                      <TableCell>{student.section || '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-10">#</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student No.</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Name</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Grade</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Section</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {classStudents.map((student, index) => (
+                      <tr key={student.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-xs text-gray-400 tabular-nums">{index + 1}</td>
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-[12px] text-gray-500">
+                            {student.student_number || <span className="text-gray-300">—</span>}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          {student.last_name}, {student.first_name}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {student.grade_level || <span className="text-gray-300">—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {student.section || <span className="text-gray-300">—</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <div className="flex justify-end mt-4">
                 <Button variant="outline" onClick={handleExportCSV}>
                   <Download className="w-4 h-4 mr-2" />

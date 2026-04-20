@@ -40,7 +40,7 @@ export default function HomePage() {
     middleInitial: '',
     parentName: '',
     emailAddress: '',
-    phoneNumber: '',
+    phoneNumber: '+63',
     intendedGradeLevel: '',
     previousSchool: '',
     additionalMessage: '',
@@ -90,7 +90,7 @@ export default function HomePage() {
           middleInitial: '',
           parentName: '',
           emailAddress: '',
-          phoneNumber: '',
+          phoneNumber: '+63',
           intendedGradeLevel: '',
           previousSchool: '',
           additionalMessage: '',
@@ -669,16 +669,16 @@ export default function HomePage() {
                         <Input
                           id="phoneNumber"
                           type="tel"
-                          inputMode="numeric"
-                          maxLength={11}
+                          maxLength={13}
                           value={admissionForm.phoneNumber}
-                          placeholder="09XXXXXXXXX"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              phoneNumber: e.target.value.replace(/\D/g, ''),
-                            })
-                          }
+                          placeholder="+63XXXXXXXXXX"
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            // Always keep +63 prefix; allow only digits after it
+                            if (!val.startsWith('+63')) val = '+63';
+                            const digits = val.slice(3).replace(/\D/g, '').slice(0, 10);
+                            setAdmissionForm({ ...admissionForm, phoneNumber: '+63' + digits });
+                          }}
                           required
                           disabled={isSubmittingAdmission}
                           className="h-11 bg-white border-gray-200"

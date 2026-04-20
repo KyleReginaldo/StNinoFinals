@@ -1,3 +1,4 @@
+import { parseScheduleTime, timesOverlap } from '@/lib/rooms';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
       .from('classes')
       .select('*')
       .order('school_year', { ascending: false })
-      .order('semester', { ascending: false })
+      .order('quarter', { ascending: false })
       .order('class_name', { ascending: true });
 
     if (error) {
@@ -116,6 +117,60 @@ export async function GET(request: NextRequest) {
   }
 }
 
+function getSlotsFromSchedule(schedule: string): { day: string; start: number; end: number }[] {
+  try {
+    const parsed = JSON.parse(schedule);
+    if (Array.isArray(parsed)) {
+      return parsed.flatMap((item: any) => {
+        const t = parseScheduleTime(`${item.day} ${item.start} - ${item.end}`);
+        return t ? [{ day: item.day as string, ...t }] : [];
+      });
+    }
+  } catch {}
+  const t = parseScheduleTime(schedule);
+  const dayMatch = schedule.match(/^([A-Za-z]+)/);
+  if (!t || !dayMatch) return [];
+  return [{ day: dayMatch[1], ...t }];
+}
+
+async function checkRoomConflict(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  room: string,
+  schedule: string,
+  school_year: string,
+  excludeId?: string
+): Promise<string | null> {
+  if (!room || !schedule) return null;
+  const newSlots = getSlotsFromSchedule(schedule);
+  if (newSlots.length === 0) return null;
+
+  let query = admin
+    .from('classes')
+    .select('id, class_name, schedule')
+    .eq('room', room)
+    .eq('school_year', school_year)
+    .eq('is_active', true);
+
+  if (excludeId) query = query.neq('id', excludeId);
+
+  const { data: existing } = await query;
+  if (!existing) return null;
+
+  for (const cls of existing) {
+    if (!cls.schedule) continue;
+    const existingSlots = getSlotsFromSchedule(cls.schedule);
+    for (const n of newSlots) {
+      for (const e of existingSlots) {
+        if (n.day !== e.day) continue;
+        if (timesOverlap({ start: n.start, end: n.end }, { start: e.start, end: e.end })) {
+          return `Room "${room}" is already booked by "${cls.class_name}" on ${n.day}.`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // POST - Create new class
 export async function POST(request: NextRequest) {
   try {
@@ -147,6 +202,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for room/time conflict
+    if (room && schedule) {
+      const conflict = await checkRoomConflict(admin, room, schedule, school_year);
+      if (conflict) {
+        return NextResponse.json({ success: false, error: conflict }, { status: 409 });
+      }
+    }
+
     // Create the class
     const { data: newClass, error: classError } = await admin
       .from('classes')
@@ -156,7 +219,7 @@ export async function POST(request: NextRequest) {
         grade_level: grade_level || null,
         section: section || null,
         school_year,
-        semester: parseInt(semester),
+        quarter: parseInt(semester),
         teacher_id: teacher_id || null,
         room: room || null,
         schedule: schedule || null,
@@ -236,6 +299,14 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Check for room/time conflict (exclude the class being edited)
+    if (room && schedule && school_year) {
+      const conflict = await checkRoomConflict(admin, room, schedule, school_year, id);
+      if (conflict) {
+        return NextResponse.json({ success: false, error: conflict }, { status: 409 });
+      }
+    }
+
     // Update the class
     const { data: updatedClass, error: updateError } = await admin
       .from('classes')
@@ -245,7 +316,7 @@ export async function PUT(request: NextRequest) {
         grade_level: grade_level || null,
         section: section || null,
         school_year,
-        semester: parseInt(semester),
+        quarter: parseInt(semester),
         teacher_id: teacher_id || null,
         room: room || null,
         schedule: schedule || null,

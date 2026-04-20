@@ -3,7 +3,6 @@
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DatePicker from '@/components/ui/date-picker';
 import {
   Dialog,
@@ -29,17 +28,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Pagination } from '@/components/ui/data-table/Pagination';
+import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Edit, Eye, Search, Trash2, UserPlus } from 'lucide-react';
+import { Edit, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -64,7 +58,7 @@ export default function TeacherManagementPage() {
   const { admin, loading: authLoading } = useAuth();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showViewSheet, setShowViewSheet] = useState(false);
@@ -138,11 +132,13 @@ export default function TeacherManagementPage() {
     fetchTeachers();
   }, []);
 
-  const filteredTeachers = teachers.filter((teacher) =>
-    `${teacher.first_name} ${teacher.last_name} ${teacher.employee_number}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const tc = useTableControls(teachers, {
+    searchFields: ['first_name', 'last_name', 'employee_number', 'email'],
+    defaultSort: { key: 'last_name', dir: 'asc' },
+    pageSize: 25,
+  });
+  const deptOptions = [...new Set(teachers.map((t) => t.department).filter(Boolean))].sort() as string[];
+  const statusOptions = [...new Set(teachers.map((t) => t.status).filter(Boolean))].sort() as string[];
 
   const handleAddTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,34 +284,27 @@ export default function TeacherManagementPage() {
 
   if (authLoading || !admin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-red-800 border-t-transparent"></div>
-          <p className="mt-4 text-red-800 font-medium">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-6 h-6 border-2 border-red-800 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-red-50">
-      <div className="container mx-auto px-6 py-8">
-        <div className="mb-6 flex items-center gap-4">
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold text-red-800">
-              Teacher Management
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Manage teacher records and information
-            </p>
-          </div>
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-red-800 hover:bg-red-700">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Teacher
-              </Button>
-            </DialogTrigger>
+    <div className="p-6 space-y-4">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-base font-semibold text-gray-900">Teachers</h1>
+          <p className="text-xs text-gray-400 mt-0.5">{tc.filteredCount} of {tc.totalCount} records</p>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-900 hover:bg-gray-700 text-white rounded-lg transition-colors">
+              <UserPlus className="w-3.5 h-3.5" />
+              Add Teacher
+            </button>
+          </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-red-800">
@@ -829,124 +818,150 @@ export default function TeacherManagementPage() {
           </SheetContent>
         </Sheet>
 
-        <Card className="shadow-md">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-red-800">
-                All Teachers ({filteredTeachers.length})
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Search teachers..."
-                    className="pl-10 w-64"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
+      {/* Table card */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <div className="relative flex-shrink-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search teachers…"
+              value={tc.search}
+              onChange={(e) => tc.setSearch(e.target.value)}
+              className="pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg w-52 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:bg-white transition-colors placeholder:text-gray-400"
+            />
+          </div>
+          <select
+            value={tc.filters['department'] ?? ''}
+            onChange={(e) => tc.setFilter('department', e.target.value)}
+            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
+          >
+            <option value="">All Departments</option>
+            {deptOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select
+            value={tc.filters['status'] ?? ''}
+            onChange={(e) => tc.setFilter('status', e.target.value)}
+            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
+          >
+            <option value="">All Status</option>
+            {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          {(tc.search || tc.filters['department'] || tc.filters['status']) && (
+            <button onClick={tc.clearFilters} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors">
+              <X className="w-3 h-3" /> Clear
+            </button>
+          )}
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin" />
             </div>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-800 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading teachers...</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee Number</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Specialization</TableHead>
-                    <TableHead>RFID</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTeachers.length > 0 ? (
-                    filteredTeachers.map((teacher) => (
-                      <TableRow key={teacher.id}>
-                        <TableCell className="font-medium">
-                          {teacher.employee_number}
-                        </TableCell>
-                        <TableCell>{`${teacher.first_name} ${teacher.last_name}`}</TableCell>
-                        <TableCell>{teacher.department || 'N/A'}</TableCell>
-                        <TableCell>{teacher.specialization || 'N/A'}</TableCell>
-                        <TableCell>
-                          {teacher.rfid ? (
-                            <Badge
-                              variant="outline"
-                              className="bg-blue-50 text-blue-700 border-blue-200"
-                            >
-                              {teacher.rfid}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400 text-sm">
-                              Not assigned
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>{teacher.email}</TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-800">
-                            {teacher.status || 'Active'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openViewSheet(teacher)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(teacher)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() =>
-                                handleDeleteTeacher(
-                                  teacher.id,
-                                  `${teacher.first_name} ${teacher.last_name}`
-                                )
-                              }
-                              disabled={deletingTeacher}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="text-center text-gray-500 py-8"
-                      >
-                        No teachers found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Employee No.</th>
+                  <SortHeader label="Name"           sortKey="last_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <SortHeader label="Department"     sortKey="department"     currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
+                  <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <SortHeader label="Status"         sortKey="status"         currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <th className="px-4 py-2.5" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {tc.rows.length > 0 ? tc.rows.map((teacher) => {
+                  return (
+                    <tr
+                      key={teacher.id}
+                      onClick={() => openViewSheet(teacher)}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer group"
+                    >
+                      <td className="px-4 py-3 font-mono text-[12px] text-gray-500 whitespace-nowrap">
+                        {teacher.employee_number}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-[13px] font-medium text-gray-900">
+                          {teacher.first_name} {teacher.last_name}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {teacher.department ? (
+                          <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                            {teacher.department}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-[13px] text-gray-700 whitespace-nowrap">
+                        {teacher.specialization || <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {teacher.rfid ? (
+                          <span className="font-mono text-[11px] bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded">
+                            {teacher.rfid}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-[13px] text-gray-500 whitespace-nowrap">
+                        {teacher.email}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                          {teacher.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => openEditDialog(teacher)}
+                            className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTeacher(teacher.id, `${teacher.first_name} ${teacher.last_name}`)}
+                            disabled={deletingTeacher}
+                            className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-16 text-center text-sm text-gray-400">
+                      No teachers found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <Pagination
+          page={tc.page}
+          pageCount={tc.pageCount}
+          totalCount={tc.totalCount}
+          filteredCount={tc.filteredCount}
+          pageSize={tc.pageSize}
+          onPageChange={tc.setPage}
+          onPageSizeChange={tc.setPageSize}
+        />
       </div>
     </div>
   );

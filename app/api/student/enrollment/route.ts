@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     const { data: classes, error: classesError } = await supabase
       .from('classes')
       .select(
-        'id, class_name, class_code, grade_level, section, semester, school_year, room, schedule, is_active, teacher_id'
+        'id, class_name, class_code, grade_level, section, quarter, school_year, room, schedule, is_active, teacher_id'
       )
       .in('id', classIds);
 
@@ -114,10 +114,8 @@ export async function GET(request: NextRequest) {
       activeClasses.length > 0 ? activeClasses[0] : classes?.[0];
 
     const semesterLabel = (sem: string | number | null) => {
-      if (sem === 1 || sem === '1') return 'First Semester';
-      if (sem === 2 || sem === '2') return 'Second Semester';
-      if (typeof sem === 'string' && sem.length > 0) return sem;
-      return null;
+      if (sem === null || sem === undefined || sem === '') return null;
+      return `Quarter ${sem}`;
     };
 
     const formattedClasses = (classes || []).map((cls) => ({
@@ -126,7 +124,7 @@ export async function GET(request: NextRequest) {
       classCode: cls.class_code,
       gradeLevel: cls.grade_level,
       section: cls.section,
-      semester: semesterLabel(cls.semester),
+      semester: semesterLabel((cls as any).quarter),
       schoolYear: cls.school_year,
       room: cls.room,
       schedule: cls.schedule,
@@ -147,7 +145,7 @@ export async function GET(request: NextRequest) {
         },
         enrollment: {
           schoolYear: primaryClass?.school_year ?? null,
-          semester: semesterLabel(primaryClass?.semester ?? null),
+          semester: semesterLabel((primaryClass as any)?.quarter ?? null),
           isEnrolled: formattedClasses.length > 0,
         },
         classes: formattedClasses,

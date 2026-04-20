@@ -1,8 +1,8 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Pagination } from '@/components/ui/data-table/Pagination';
+import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   Dialog,
@@ -20,18 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Bell, Edit2, Plus, Search, Trash2 } from 'lucide-react';
+import { Bell, Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -49,78 +42,26 @@ interface Announcement {
   updated_at: string | null;
 }
 
-type TabValue = 'all' | 'active' | 'expired';
+type FlatAnnouncement = Announcement & { announcementStatus: string };
+
+const PRIORITY_CONFIG: Record<string, { label: string; dot: string }> = {
+  high:   { label: 'High',   dot: 'bg-red-500'   },
+  normal: { label: 'Normal', dot: 'bg-amber-400'  },
+  low:    { label: 'Low',    dot: 'bg-blue-400'   },
+};
 
 const PRIORITY_OPTIONS = [
-  { label: 'High', value: 'high' },
+  { label: 'High',   value: 'high'   },
   { label: 'Normal', value: 'normal' },
-  { label: 'Low', value: 'low' },
+  { label: 'Low',    value: 'low'    },
 ];
 
 const AUDIENCE_OPTIONS = [
-  { label: 'All Users', value: 'all' },
-  { label: 'Students', value: 'students' },
-  { label: 'Teachers', value: 'teachers' },
+  { label: 'All Users',        value: 'all'      },
+  { label: 'Students',         value: 'students' },
+  { label: 'Teachers',         value: 'teachers' },
   { label: 'Parents/Guardians', value: 'parents' },
 ];
-
-const getPriorityBadge = (priority: string | null) => {
-  switch (priority) {
-    case 'high':
-      return (
-        <Badge
-          variant="outline"
-          className="bg-red-100 text-red-800 border-red-300"
-        >
-          High
-        </Badge>
-      );
-    case 'normal':
-      return (
-        <Badge
-          variant="outline"
-          className="bg-yellow-100 text-yellow-800 border-yellow-300"
-        >
-          Normal
-        </Badge>
-      );
-    case 'low':
-      return (
-        <Badge
-          variant="outline"
-          className="bg-blue-100 text-blue-800 border-blue-300"
-        >
-          Low
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">Unknown</Badge>;
-  }
-};
-
-const getStatusBadge = (announcement: Announcement) => {
-  const now = new Date();
-  const isExpired =
-    announcement.expires_at && new Date(announcement.expires_at) < now;
-  if (!announcement.is_active || isExpired) {
-    return (
-      <Badge
-        variant="outline"
-        className="bg-gray-100 text-gray-700 border-gray-300"
-      >
-        {isExpired ? 'Expired' : 'Inactive'}
-      </Badge>
-    );
-  }
-  return (
-    <Badge
-      variant="outline"
-      className="bg-green-100 text-green-800 border-green-300"
-    >
-      Active
-    </Badge>
-  );
-};
 
 const defaultForm = {
   title: '',
@@ -140,8 +81,6 @@ export default function AdminAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<TabValue>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState(defaultForm);
@@ -151,9 +90,7 @@ export default function AdminAnnouncementsPage() {
     try {
       const res = await fetch('/api/admin/announcements');
       const result = await res.json();
-      if (result.success) {
-        setAnnouncements(result.data || []);
-      }
+      if (result.success) setAnnouncements(result.data || []);
     } catch {
       showAlert({ message: 'Failed to load announcements', type: 'error' });
     } finally {
@@ -165,36 +102,31 @@ export default function AdminAnnouncementsPage() {
     fetchAnnouncements();
   }, [fetchAnnouncements]);
 
-  const filtered = useMemo(() => {
+  const flatAnnouncements: FlatAnnouncement[] = useMemo(() => {
     const now = new Date();
-    return announcements.filter((a) => {
-      const search = searchTerm.toLowerCase();
-      const matchesSearch =
-        !search ||
-        a.title.toLowerCase().includes(search) ||
-        a.content.toLowerCase().includes(search);
-
+    return announcements.map((a) => {
       const isExpired = a.expires_at && new Date(a.expires_at) < now;
-      const isActive = a.is_active && !isExpired;
-
-      if (activeTab === 'active') return matchesSearch && isActive;
-      if (activeTab === 'expired')
-        return matchesSearch && (!a.is_active || isExpired);
-      return matchesSearch;
+      return { ...a, announcementStatus: a.is_active && !isExpired ? 'active' : 'inactive' };
     });
-  }, [announcements, searchTerm, activeTab]);
+  }, [announcements]);
+
+  const tc = useTableControls(flatAnnouncements, {
+    searchFields: ['title', 'content'],
+    defaultSort: { key: 'published_at', dir: 'desc' },
+    pageSize: 25,
+  });
 
   const counts = useMemo(() => {
-    const now = new Date();
-    let active = 0;
-    let expired = 0;
-    for (const a of announcements) {
-      const isExpired = a.expires_at && new Date(a.expires_at) < now;
-      if (a.is_active && !isExpired) active++;
-      else expired++;
-    }
-    return { all: announcements.length, active, expired };
-  }, [announcements]);
+    const active = flatAnnouncements.filter((a) => a.announcementStatus === 'active').length;
+    const inactive = flatAnnouncements.filter((a) => a.announcementStatus === 'inactive').length;
+    return { all: flatAnnouncements.length, active, inactive };
+  }, [flatAnnouncements]);
+
+  const activeTab = (tc.filters['announcementStatus'] as string | undefined) ?? 'all';
+
+  const handleTabChange = (tab: string) => {
+    tc.setFilter('announcementStatus', tab === 'all' ? '' : tab);
+  };
 
   const openCreateDialog = () => {
     setEditingId(null);
@@ -213,9 +145,7 @@ export default function AdminAnnouncementsPage() {
       published_at: a.published_at
         ? new Date(a.published_at).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
-      expires_at: a.expires_at
-        ? new Date(a.expires_at).toISOString().slice(0, 10)
-        : '',
+      expires_at: a.expires_at ? new Date(a.expires_at).toISOString().slice(0, 10) : '',
     });
     setDialogOpen(true);
   };
@@ -225,41 +155,23 @@ export default function AdminAnnouncementsPage() {
       showAlert({ message: 'Title and content are required', type: 'warning' });
       return;
     }
-
     setSubmitting(true);
     try {
       const method = editingId ? 'PATCH' : 'POST';
       const body = editingId
-        ? {
-            id: editingId,
-            ...formData,
-            expires_at: formData.expires_at || null,
-          }
-        : {
-            ...formData,
-            expires_at: formData.expires_at || null,
-            author_id: admin?.id,
-          };
-
+        ? { id: editingId, ...formData, expires_at: formData.expires_at || null }
+        : { ...formData, expires_at: formData.expires_at || null, author_id: admin?.id };
       const res = await fetch('/api/admin/announcements', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const result = await res.json();
-
       if (!res.ok || !result.success) {
-        showAlert({
-          message: result.error || 'Failed to save announcement',
-          type: 'error',
-        });
+        showAlert({ message: result.error || 'Failed to save announcement', type: 'error' });
         return;
       }
-
-      showAlert({
-        message: editingId ? 'Announcement updated!' : 'Announcement created!',
-        type: 'success',
-      });
+      showAlert({ message: editingId ? 'Announcement updated!' : 'Announcement created!', type: 'success' });
       setDialogOpen(false);
       fetchAnnouncements();
     } catch {
@@ -272,11 +184,9 @@ export default function AdminAnnouncementsPage() {
   const handleDelete = async (id: string) => {
     const confirmed = await showConfirm({
       title: 'Delete Announcement',
-      message:
-        'Are you sure you want to delete this announcement? This cannot be undone.',
+      message: 'Are you sure you want to delete this announcement? This cannot be undone.',
     });
     if (!confirmed) return;
-
     try {
       const res = await fetch('/api/admin/announcements', {
         method: 'DELETE',
@@ -288,159 +198,210 @@ export default function AdminAnnouncementsPage() {
         showAlert({ message: 'Announcement deleted', type: 'success' });
         fetchAnnouncements();
       } else {
-        showAlert({
-          message: result.error || 'Failed to delete',
-          type: 'error',
-        });
+        showAlert({ message: result.error || 'Failed to delete', type: 'error' });
       }
     } catch {
       showAlert({ message: 'Error deleting announcement', type: 'error' });
     }
   };
 
+  const hasFilters =
+    !!tc.search ||
+    !!tc.filters['priority'] ||
+    !!tc.filters['target_audience'] ||
+    !!tc.filters['announcementStatus'];
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8 flex items-center gap-4">
-        <Bell className="w-10 h-10 text-red-800" />
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Announcements</h2>
-          <p className="text-gray-600">
-            Create and manage announcements visible to all users
-          </p>
+      <div className="flex items-center gap-4">
+        <Bell className="w-8 h-8 text-gray-700" />
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-gray-900">Announcements</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Create and manage announcements visible to all users</p>
         </div>
-        <Button
-          onClick={openCreateDialog}
-          className="ml-auto bg-red-800 hover:bg-red-700 text-white"
-        >
+        <Button onClick={openCreateDialog} className="bg-gray-900 hover:bg-gray-800 text-white" size="sm">
           <Plus className="h-4 w-4 mr-1" />
           New Announcement
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total', count: counts.all, tab: 'all' as TabValue },
-          { label: 'Active', count: counts.active, tab: 'active' as TabValue },
-          {
-            label: 'Expired/Inactive',
-            count: counts.expired,
-            tab: 'expired' as TabValue,
-          },
+          { label: 'Total',             count: counts.all,      tab: 'all'      },
+          { label: 'Active',            count: counts.active,   tab: 'active'   },
+          { label: 'Expired / Inactive', count: counts.inactive, tab: 'inactive' },
         ].map((s) => (
           <button
             key={s.tab}
-            onClick={() => setActiveTab(s.tab)}
-            className={`p-4 rounded-lg border text-left transition-colors ${
+            onClick={() => handleTabChange(s.tab)}
+            className={`p-4 rounded-xl border text-left transition-colors ${
               activeTab === s.tab
-                ? 'bg-red-50 border-red-300'
-                : 'bg-white border-gray-200 hover:border-gray-300'
+                ? 'bg-gray-900 border-gray-900'
+                : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
-            <p className="text-sm text-gray-500">{s.label}</p>
-            <p className="text-2xl font-bold text-gray-900">{s.count}</p>
+            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
+              activeTab === s.tab ? 'text-gray-400' : 'text-gray-400'
+            }`}>
+              {s.label}
+            </p>
+            <p className={`text-2xl font-bold ${activeTab === s.tab ? 'text-white' : 'text-gray-900'}`}>
+              {s.count}
+            </p>
           </button>
         ))}
       </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search announcements..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
       {/* Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-red-800">
-            {activeTab === 'all'
-              ? 'All Announcements'
-              : activeTab === 'active'
-                ? 'Active Announcements'
-                : 'Expired/Inactive Announcements'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-800 border-t-transparent" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No announcements found
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Audience</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Published</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((a) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-medium max-w-xs truncate">
-                      {a.title}
-                    </TableCell>
-                    <TableCell>{getPriorityBadge(a.priority)}</TableCell>
-                    <TableCell className="capitalize text-sm text-gray-600">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {/* Toolbar */}
+        <div className="px-4 py-3 flex flex-wrap items-center gap-2 border-b border-gray-100">
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-gray-50"
+              placeholder="Search announcements..."
+              value={tc.search}
+              onChange={(e) => tc.setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            value={tc.filters['priority'] ?? ''}
+            onChange={(e) => tc.setFilter('priority', e.target.value)}
+            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          >
+            <option value="">All Priority</option>
+            <option value="high">High</option>
+            <option value="normal">Normal</option>
+            <option value="low">Low</option>
+          </select>
+          <select
+            value={tc.filters['target_audience'] ?? ''}
+            onChange={(e) => tc.setFilter('target_audience', e.target.value)}
+            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          >
+            <option value="">All Audiences</option>
+            {AUDIENCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          {hasFilters && (
+            <button
+              onClick={() => { tc.clearFilters(); tc.setSearch(''); }}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
+            >
+              <X className="w-3 h-3" />
+              Clear
+            </button>
+          )}
+        </div>
+
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50">
+              <SortHeader label="Title"     sortKey="title"           currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Priority</th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Audience</th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</th>
+              <SortHeader label="Published" sortKey="published_at"    currentSort={tc.sort} onSort={tc.toggleSort} />
+              <SortHeader label="Expires"   sortKey="expires_at"      currentSort={tc.sort} onSort={tc.toggleSort} />
+              <th className="px-4 py-2.5 w-20" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 7 }).map((__, j) => (
+                    <td key={j} className="px-4 py-3">
+                      <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : tc.rows.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-14 text-gray-400">
+                  <Bell className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  No announcements found.
+                </td>
+              </tr>
+            ) : (
+              tc.rows.map((a) => {
+                const priCfg = PRIORITY_CONFIG[a.priority ?? 'normal'] ?? PRIORITY_CONFIG['normal'];
+                const isActive = a.announcementStatus === 'active';
+                return (
+                  <tr key={a.id} className="hover:bg-gray-50 group">
+                    <td className="px-4 py-3 pl-4 max-w-xs">
+                      <p className="text-sm font-medium text-gray-900 truncate">{a.title}</p>
+                      <p className="text-xs text-gray-400 truncate">{a.content}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${priCfg.dot}`} />
+                        <span className="text-xs text-gray-600">{priCfg.label}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">
                       {a.target_audience || 'all'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(a)}</TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                        <span className="text-xs text-gray-600">{isActive ? 'Active' : 'Inactive'}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
                       {a.published_at
                         ? new Date(a.published_at).toLocaleDateString('en-PH')
-                        : '—'}
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                        : <span className="text-gray-300">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
                       {a.expires_at
                         ? new Date(a.expires_at).toLocaleDateString('en-PH')
-                        : '—'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        : <span className="text-gray-300">—</span>}
+                    </td>
+                    <td className="px-4 py-3 pr-4">
+                      <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
                           onClick={() => openEditDialog(a)}
+                          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700"
                         >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(a.id)}
-                          className="text-red-600 hover:bg-red-50"
+                          className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+
+        <Pagination
+          page={tc.page}
+          onPageChange={tc.setPage}
+          pageCount={tc.pageCount}
+          totalCount={tc.totalCount}
+          filteredCount={tc.filteredCount}
+          pageSize={tc.pageSize}
+          onPageSizeChange={tc.setPageSize}
+        />
+      </div>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-red-800">
+            <DialogTitle className="text-gray-900">
               {editingId ? 'Edit Announcement' : 'New Announcement'}
             </DialogTitle>
           </DialogHeader>
@@ -450,9 +411,7 @@ export default function AdminAnnouncementsPage() {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Announcement title"
               />
             </div>
@@ -461,9 +420,7 @@ export default function AdminAnnouncementsPage() {
               <Textarea
                 id="content"
                 value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Write your announcement..."
                 rows={4}
               />
@@ -473,18 +430,14 @@ export default function AdminAnnouncementsPage() {
                 <Label>Priority</Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, priority: v })
-                  }
+                  onValueChange={(v) => setFormData({ ...formData, priority: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {PRIORITY_OPTIONS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -493,18 +446,14 @@ export default function AdminAnnouncementsPage() {
                 <Label>Target Audience</Label>
                 <Select
                   value={formData.target_audience}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, target_audience: v })
-                  }
+                  onValueChange={(v) => setFormData({ ...formData, target_audience: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {AUDIENCE_OPTIONS.map((a) => (
-                      <SelectItem key={a.value} value={a.value}>
-                        {a.label}
-                      </SelectItem>
+                      <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -527,9 +476,7 @@ export default function AdminAnnouncementsPage() {
                     published_at: range?.from
                       ? range.from.toISOString().slice(0, 10)
                       : new Date().toISOString().slice(0, 10),
-                    expires_at: range?.to
-                      ? range.to.toISOString().slice(0, 10)
-                      : '',
+                    expires_at: range?.to ? range.to.toISOString().slice(0, 10) : '',
                   })
                 }
                 placeholder="Select publish and expiry dates"
@@ -541,17 +488,13 @@ export default function AdminAnnouncementsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-              disabled={submitting}
-            >
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={submitting}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
             </Button>

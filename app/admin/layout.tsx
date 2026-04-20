@@ -1,8 +1,7 @@
 'use client';
-import AdminSidebar from '@/components/admin/sidebar';
-import { usePathname } from 'next/navigation';
+import AdminSidebar, { AdminSidebarContent } from '@/components/admin/sidebar';
+import { MobileSidebar } from '@/components/admin/mobile-sidebar';
 import { useEffect, useState } from 'react';
-import { AdminHeader } from './components/AdminHeader';
 import { useAuth } from './hooks/useAuth';
 
 export default function RootLayout({
@@ -11,14 +10,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const { admin, loading } = useAuth();
-  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch by not rendering until client-side
   if (!mounted || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -35,10 +32,16 @@ export default function RootLayout({
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <AdminHeader admin={admin} canPop={pathname !== '/admin'} />
-      <div className="flex flex-1 overflow-hidden">
-        <AdminSidebar />
+    <div className="flex h-screen overflow-hidden">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+          <MobileSidebar>
+            <AdminSidebarContent />
+          </MobileSidebar>
+          <span className="text-sm font-semibold text-gray-900">Admin Portal</span>
+        </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>

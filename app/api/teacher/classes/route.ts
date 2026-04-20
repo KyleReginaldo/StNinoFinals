@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       .in('id', classIds)
       .eq('is_active', true)
       .order('school_year', { ascending: false })
-      .order('semester', { ascending: false });
+      .order('quarter', { ascending: false });
 
     if (classesError) {
       console.error('Error fetching classes:', classesError);

@@ -2,6 +2,7 @@
 
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   Card,
   CardContent,
@@ -35,14 +36,13 @@ import {
   Clock,
   Eye,
   GraduationCap,
-  Home,
   LayoutDashboard,
   LogOut,
+  Menu,
   User,
   UserPlus,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ParentDashboard } from './components/ParentDashboard';
@@ -392,14 +392,84 @@ export default function ParentDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-800 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading guardian dashboard...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-900 border-t-transparent" />
       </div>
     );
   }
+
+  const parentName = parent
+    ? (parent.first_name && parent.last_name
+        ? `${parent.first_name} ${parent.last_name}`
+        : parent.name || parent.email?.split('@')[0] || 'Guardian')
+    : 'Guardian';
+
+  const avatarLetters = parentName
+    .split(' ')
+    .map((n: string) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const sidebarNav = (onNavigate?: () => void) => (
+    <div className="flex flex-col h-full bg-[#111827] overflow-hidden">
+      {/* Branding */}
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5 flex-shrink-0">
+        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-white/10">
+          <Image src="/logo.png" alt="Logo" width={36} height={36} className="object-cover w-full h-full" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-white truncate leading-tight">St. Niño de Praga</p>
+          <p className="text-[10px] text-gray-500 leading-none mt-0.5">Guardian Portal</p>
+        </div>
+      </div>
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+        {[
+          { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
+          { key: 'children',   label: 'My Students', icon: User            },
+          { key: 'enrollment', label: 'Enrollment',  icon: GraduationCap   },
+          { key: 'attendance', label: 'Attendance',  icon: Clock           },
+          { key: 'schedule',   label: 'Schedule',    icon: Calendar        },
+        ].map(({ key, label, icon: Icon }) => {
+          const active = activeTab === key;
+          return (
+            <button
+              key={key}
+              onClick={() => {
+                setActiveTab(key);
+                if (key === 'enrollment') fetchEnrollmentRequests();
+                onNavigate?.();
+              }}
+              className={`group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 text-left ${
+                active ? 'bg-white/10 text-white font-medium' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+              }`}
+            >
+              {active && <span className="absolute left-0 w-0.5 h-5 bg-red-400 rounded-full" />}
+              <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />
+              <span className="flex-1 truncate">{label}</span>
+            </button>
+          );
+        })}
+      </nav>
+      {/* Footer */}
+      <div className="px-3 py-3 border-t border-white/5 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-red-800/40 flex items-center justify-center flex-shrink-0">
+            <span className="text-[11px] font-bold text-red-300">{avatarLetters}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-gray-300 truncate">{parentName}</p>
+            <p className="text-[10px] text-gray-600 leading-none mt-0.5">Guardian</p>
+          </div>
+          <button onClick={handleLogout} title="Logout"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (!parent || children.length === 0) {
     return (
@@ -542,207 +612,111 @@ export default function ParentDashboardPage() {
 
   return (
     <PasswordChangeWrapper userId={parent?.id}>
-      <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-md border-b-4 border-red-800 flex-shrink-0">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Image
-                  src="/logo.png"
-                  alt="Sto Niño de Praga Academy Logo"
-                  width={60}
-                  height={60}
-                  className="rounded-full"
-                />
-                <div>
-                  <h1 className="text-xl font-bold text-red-800">
-                    Guardian Dashboard
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    Sto Niño de Praga Academy
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white bg-transparent"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Add Student
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Your Student</DialogTitle>
-                      <DialogDescription>
-                        Enter the student number to link them to your account.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label htmlFor="studentNumber">Student Number</Label>
-                        <Input
-                          id="studentNumber"
-                          placeholder="e.g., SNPA-2024-001"
-                          value={studentNumber}
-                          onChange={(e) => setStudentNumber(e.target.value)}
-                          disabled={isAddingChild}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="relationship">Relationship</Label>
-                        <Select
-                          value={relationshipType}
-                          onValueChange={setRelationshipType}
-                          disabled={isAddingChild}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="parent">Parent</SelectItem>
-                            <SelectItem value="guardian">Guardian</SelectItem>
-                            <SelectItem value="mother">Mother</SelectItem>
-                            <SelectItem value="father">Father</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {addError && (
-                        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-                          {addError}
-                        </div>
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddChild}
-                          disabled={isAddingChild}
-                          className="flex-1 bg-red-800 hover:bg-red-700"
-                        >
-                          {isAddingChild ? 'Adding...' : 'Add Student'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowAddDialog(false);
-                            setStudentNumber('');
-                            setAddError('');
-                          }}
-                          disabled={isAddingChild}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <div className="text-right hidden md:block">
-                  <p className="font-medium text-red-800">
-                    {parent.name || parent.email || 'Parent/Guardian'}
-                  </p>
-                  <p className="text-sm text-gray-600">Guardian</p>
-                </div>
-                <Link href="/">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
-                  >
-                    <Home className="w-4 h-4 mr-1" />
-                    <span className="hidden sm:inline">Home</span>
-                  </Button>
-                </Link>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  size="sm"
-                  className="md:hidden border-red-800 text-red-800 hover:bg-red-800 hover:text-white bg-transparent"
-                >
-                  <LogOut className="w-4 h-4" />
+      <div className="h-screen flex overflow-hidden bg-gray-50">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:block w-56 h-full flex-shrink-0">
+          {sidebarNav()}
+        </aside>
+
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          {/* Mobile top bar */}
+          <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Toggle menu">
+                  <Menu className="h-5 w-5" />
                 </Button>
-              </div>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-56">
+                {sidebarNav(() => {})}
+              </SheetContent>
+            </Sheet>
+            <span className="text-sm font-semibold text-gray-900">Guardian Portal</span>
+            <div className="ml-auto">
+              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white">
+                    <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                    Add Student
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Your Student</DialogTitle>
+                    <DialogDescription>Enter the student number to link them to your account.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="studentNumberMobile">Student Number</Label>
+                      <Input id="studentNumberMobile" placeholder="e.g., SNPA-2024-001" value={studentNumber} onChange={(e) => setStudentNumber(e.target.value)} disabled={isAddingChild} />
+                    </div>
+                    <div>
+                      <Label>Relationship</Label>
+                      <Select value={relationshipType} onValueChange={setRelationshipType} disabled={isAddingChild}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="parent">Parent</SelectItem>
+                          <SelectItem value="guardian">Guardian</SelectItem>
+                          <SelectItem value="mother">Mother</SelectItem>
+                          <SelectItem value="father">Father</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {addError && <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">{addError}</div>}
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddChild} disabled={isAddingChild} className="flex-1 bg-gray-900 hover:bg-gray-800">{isAddingChild ? 'Adding...' : 'Add Student'}</Button>
+                      <Button variant="outline" onClick={() => { setShowAddDialog(false); setStudentNumber(''); setAddError(''); }} disabled={isAddingChild}>Cancel</Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
-        </header>
 
-        {/* Main Content with Sidebar */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar */}
-          <aside className="hidden md:flex w-64 flex-shrink-0 bg-gray-900 flex-col overflow-y-auto">
-            <nav className="flex-1 p-4 pt-8 space-y-1">
-              {[
-                { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                { key: 'children', label: 'My Students', icon: User },
-                { key: 'enrollment', label: 'Enrollment', icon: GraduationCap },
-                { key: 'attendance', label: 'Attendance', icon: Clock },
-                { key: 'schedule', label: 'Schedule', icon: Calendar },
-              ].map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => {
-                      setActiveTab(item.key);
-                      if (item.key === 'enrollment') fetchEnrollmentRequests();
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-red-800 text-white'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
-              <div className="p-4 border-t border-gray-800">
-                <Button
-                  onClick={handleLogout}
-                  variant="ghost"
-                  className="w-full justify-start text-gray-400 hover:text-white hover:bg-gray-800"
-                >
-                  <LogOut className="w-4 h-4 mr-3" />
-                  Logout
+          {/* Desktop top bar */}
+          <div className="hidden md:flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+            <span className="text-sm font-semibold text-gray-900">Guardian Portal</span>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white">
+                  <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                  Add Student
                 </Button>
-              </div>
-            </nav>
-          </aside>
-
-          {/* Mobile bottom nav */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-            <div className="flex justify-around py-2">
-              {[
-                { key: 'dashboard', label: 'Home', icon: LayoutDashboard },
-                { key: 'children', label: 'Students', icon: User },
-                { key: 'enrollment', label: 'Enroll', icon: GraduationCap },
-                { key: 'attendance', label: 'Attendance', icon: Clock },
-                { key: 'schedule', label: 'Schedule', icon: Calendar },
-              ].map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setActiveTab(item.key)}
-                    className={`flex flex-col items-center gap-1 px-2 py-1 text-xs ${
-                      isActive ? 'text-red-800 font-semibold' : 'text-gray-500'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Your Student</DialogTitle>
+                  <DialogDescription>Enter the student number to link them to your account.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <Label htmlFor="studentNumber">Student Number</Label>
+                    <Input id="studentNumber" placeholder="e.g., SNPA-2024-001" value={studentNumber} onChange={(e) => setStudentNumber(e.target.value)} disabled={isAddingChild} />
+                  </div>
+                  <div>
+                    <Label>Relationship</Label>
+                    <Select value={relationshipType} onValueChange={setRelationshipType} disabled={isAddingChild}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="parent">Parent</SelectItem>
+                        <SelectItem value="guardian">Guardian</SelectItem>
+                        <SelectItem value="mother">Mother</SelectItem>
+                        <SelectItem value="father">Father</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {addError && <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">{addError}</div>}
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddChild} disabled={isAddingChild} className="flex-1 bg-gray-900 hover:bg-gray-800">{isAddingChild ? 'Adding...' : 'Add Student'}</Button>
+                    <Button variant="outline" onClick={() => { setShowAddDialog(false); setStudentNumber(''); setAddError(''); }} disabled={isAddingChild}>Cancel</Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Content Area */}
-          <main className="flex-1 p-6 md:p-8 overflow-y-auto pb-20 md:pb-8">
+          <main className="flex-1 p-4 md:p-6 overflow-y-auto">
             {/* Dashboard */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
@@ -1090,14 +1064,16 @@ export default function ParentDashboardPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Semester *</Label>
+                        <Label>Quarter *</Label>
                         <Select value={enrollSemester} onValueChange={setEnrollSemester}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">1st Semester</SelectItem>
-                            <SelectItem value="2">2nd Semester</SelectItem>
+                            <SelectItem value="1">Quarter 1</SelectItem>
+                            <SelectItem value="2">Quarter 2</SelectItem>
+                            <SelectItem value="3">Quarter 3</SelectItem>
+                            <SelectItem value="4">Quarter 4</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1164,7 +1140,7 @@ export default function ParentDashboardPage() {
                                   {child?.name || 'Unknown Student'}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {req.grade_level}{req.strand ? ` - ${req.strand}` : ''} | {req.school_year} | Sem {req.semester}
+                                  {req.grade_level}{req.strand ? ` - ${req.strand}` : ''} | {req.school_year} | Q{req.quarter}
                                 </p>
                                 <p className="text-xs text-gray-400 mt-1">
                                   Submitted: {new Date(req.created_at).toLocaleDateString()}

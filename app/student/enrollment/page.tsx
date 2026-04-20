@@ -359,7 +359,7 @@ export default function EnrollmentPage() {
         72,
         { align: 'center' }
       );
-      doc.text(`for the ${semStr} of Academic Year ${academicYear}.`, 105, 79, {
+      doc.text(`for Quarter ${semStr} of Academic Year ${academicYear}.`, 105, 79, {
         align: 'center',
       });
       if (classes.length > 0) {
@@ -465,7 +465,7 @@ export default function EnrollmentPage() {
         const dateStr = new Date(req.created_at).toLocaleDateString();
         doc.text(dateStr, 20, yPos);
         doc.text(req.grade_level, 60, yPos);
-        doc.text(`${req.school_year} (Sem ${req.semester})`, 100, yPos);
+        doc.text(`${req.school_year} (Q${req.semester})`, 100, yPos);
         doc.text(req.status.toUpperCase(), 150, yPos);
         yPos += 8;
       });
@@ -579,8 +579,8 @@ export default function EnrollmentPage() {
               />
               <InfoCard
                 icon={CalendarDays}
-                label="Semester"
-                value={enrollment?.semester}
+                label="Quarter"
+                value={enrollment?.semester ? `Quarter ${enrollment.semester}` : undefined}
               />
             </div>
           </CardContent>
@@ -724,11 +724,11 @@ export default function EnrollmentPage() {
               />
               <InfoCard
                 icon={CalendarDays}
-                label="Semester"
+                label="Quarter"
                 value={
-                  enrollmentRequest?.semester === 1
-                    ? '1st Semester'
-                    : '2nd Semester'
+                  enrollmentRequest?.semester
+                    ? `Quarter ${enrollmentRequest.semester}`
+                    : undefined
                 }
               />
               <InfoCard
@@ -949,15 +949,17 @@ function EnrollmentForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="semester">
-              Semester <span className="text-red-600">*</span>
+              Quarter <span className="text-red-600">*</span>
             </Label>
             <Select value={semester} onValueChange={setSemester}>
               <SelectTrigger id="semester">
-                <SelectValue placeholder="Select semester" />
+                <SelectValue placeholder="Select quarter" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1st Semester</SelectItem>
-                <SelectItem value="2">2nd Semester</SelectItem>
+                <SelectItem value="1">Quarter 1</SelectItem>
+                <SelectItem value="2">Quarter 2</SelectItem>
+                <SelectItem value="3">Quarter 3</SelectItem>
+                <SelectItem value="4">Quarter 4</SelectItem>
               </SelectContent>
             </Select>
           </div>

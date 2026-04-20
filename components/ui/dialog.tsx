@@ -27,7 +27,7 @@ const DialogOverlay = React.forwardRef<
       // can get stuck if two dialogs overlap during a close animation, making
       // the entire page unclickable. Removing exit animations causes Radix to
       // unmount the overlay immediately, eliminating the overlap window.
-      'fixed inset-0 z-40 bg-black/80 pointer-events-none data-[state=open]:pointer-events-auto data-[state=open]:animate-in data-[state=open]:fade-in-0',
+      'fixed inset-0 z-40 bg-black/40 pointer-events-none data-[state=open]:pointer-events-auto data-[state=open]:animate-in data-[state=open]:fade-in-0',
       className
     )}
     {...props}

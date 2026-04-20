@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       const { data: classData } = await supabase
         .from('classes')
         .select(
-          'id, class_name, class_code, grade_level, section, semester, school_year, room, schedule, teacher_id, is_active'
+          'id, class_name, class_code, grade_level, section, quarter, school_year, room, schedule, teacher_id, is_active'
         )
         .in('id', classIds);
 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
           class_code: c.class_code,
           grade_level: c.grade_level,
           section: c.section,
-          semester: c.semester,
+          semester: c.quarter,
           school_year: c.school_year,
           room: c.room,
           schedule: c.schedule,

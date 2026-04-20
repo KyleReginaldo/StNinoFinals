@@ -66,12 +66,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate phone number is numeric only (10-11 digits)
-    if (!/^\d{10,11}$/.test(body.phone_number)) {
+    // Validate phone: accept +63XXXXXXXXXX (13 chars) or 09XXXXXXXXX (11 digits)
+    if (!/^(\+63\d{10}|0\d{10}|\d{10,11})$/.test(body.phone_number)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Phone number must be 10-11 digits with no letters or special characters.',
+          error: 'Phone number must be in +63XXXXXXXXXX or 09XXXXXXXXX format.',
         },
         { status: 400 }
       );

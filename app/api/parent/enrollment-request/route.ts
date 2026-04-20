@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         grade_level: gradeLevel,
         strand: strand ?? null,
         school_year: schoolYear,
-        semester: Number(semester),
+        quarter: Number(semester),
         status: 'pending',
       })
       .select()

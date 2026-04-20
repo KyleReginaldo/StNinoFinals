@@ -133,22 +133,15 @@ export default function StudentLayout({
 
   return (
     <PasswordChangeWrapper userId={String(student.id)}>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-[#F9FAFB]">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex md:flex-shrink-0">
-          <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-700">
-            <div className="flex items-center justify-center h-16 px-4 border-b border-gray-700 bg-gray-950">
-              <h1 className="text-xl font-bold text-white">Student Portal</h1>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <StudentSidebarContent
-                student={student}
-                navItems={NAV_ITEMS}
-                currentPath={pathname}
-                onLogout={handleLogout}
-              />
-            </div>
-          </div>
+        <aside className="hidden md:block w-56 h-full flex-shrink-0">
+          <StudentSidebarContent
+            student={student}
+            navItems={NAV_ITEMS}
+            currentPath={pathname}
+            onLogout={handleLogout}
+          />
         </aside>
 
         {/* Main Content */}
@@ -161,12 +154,7 @@ export default function StudentLayout({
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
-                <div className="flex items-center justify-center h-16 px-4 bg-gray-950">
-                  <h1 className="text-xl font-bold text-white">
-                    Student Portal
-                  </h1>
-                </div>
+              <SheetContent side="left" className="w-56 p-0">
                 <StudentSidebarContent
                   student={student}
                   navItems={NAV_ITEMS}
@@ -175,7 +163,7 @@ export default function StudentLayout({
                 />
               </SheetContent>
             </Sheet>
-            <h1 className="text-lg font-bold text-red-800">Student Portal</h1>
+            <h1 className="text-sm font-bold text-gray-800">Student Portal</h1>
             <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>

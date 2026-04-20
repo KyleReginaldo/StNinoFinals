@@ -191,7 +191,7 @@ export default function GuardianDashboard() {
                     <div className="flex items-center mt-1">
                       <ChevronRight className="w-3 h-3 text-purple-500" />
                       <span className="text-xs text-purple-600 ml-1">
-                        This semester
+                        This quarter
                       </span>
                     </div>
                   </CardContent>
@@ -443,7 +443,7 @@ export default function GuardianDashboard() {
                 <CardHeader>
                   <CardTitle>Current Grades</CardTitle>
                   <CardDescription>
-                    Miguel's grades for the current semester
+                    Miguel's grades for the current quarter
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

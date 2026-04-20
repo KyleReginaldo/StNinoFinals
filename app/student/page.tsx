@@ -915,8 +915,13 @@ export default function StudentDashboard() {
     setFirstLoginError(null);
 
     // Validation
-    if (!firstLoginForm.newPassword || firstLoginForm.newPassword.length < 6) {
-      setFirstLoginError('Password must be at least 6 characters long.');
+    if (!firstLoginForm.newPassword || firstLoginForm.newPassword.length < 8) {
+      setFirstLoginError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(firstLoginForm.newPassword)) {
+      setFirstLoginError('Password must contain at least one letter and one number.');
       return;
     }
 
@@ -1803,9 +1808,10 @@ export default function StudentDashboard() {
                         })
                       }
                       required
-                      minLength={6}
-                      placeholder="At least 6 characters"
+                      minLength={8}
+                      placeholder="At least 8 characters"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters and include a letter and a number.</p>
                   </div>
                   <div>
                     <Label htmlFor="confirmPassword">Confirm Password *</Label>
