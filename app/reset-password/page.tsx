@@ -216,9 +216,7 @@ export default function ResetPasswordPage() {
 
                 <button
                   type="submit"
-                  disabled={
-                    !newPassword || !confirmPassword || loading
-                  }
+                  disabled={!newPassword || !confirmPassword || loading}
                   className="w-full h-11 rounded-lg text-sm font-semibold text-white transition-all duration-200 bg-red-900 hover:bg-red-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2"
                 >
                   {loading ? 'Resetting...' : 'Reset Password'}
