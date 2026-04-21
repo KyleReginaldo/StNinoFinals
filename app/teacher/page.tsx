@@ -9,6 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Bell, Calendar, Clock, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -46,6 +51,7 @@ export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [teacherStats, setTeacherStats] = useState<any>(null);
   const [chartData, setChartData] = useState<TeacherChartData | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
 
   // Check if teacher is logged in
   useEffect(() => {
@@ -123,7 +129,8 @@ export default function TeacherDashboard() {
             {teacherStats.announcements.map((a: any) => (
               <div
                 key={a.id}
-                className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/10"
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/10 cursor-pointer hover:bg-white/20 transition-colors"
+                onClick={() => setSelectedAnnouncement(a)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -357,6 +364,36 @@ export default function TeacherDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedAnnouncement && (
+        <Dialog open={!!selectedAnnouncement} onOpenChange={() => setSelectedAnnouncement(null)}>
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden [&>button]:text-white [&>button]:hover:bg-white/20 [&>button]:rounded-md [&>button]:opacity-80 [&>button]:hover:opacity-100">
+            <DialogTitle className="sr-only">{selectedAnnouncement.title}</DialogTitle>
+            <div className="bg-gradient-to-br from-red-900 to-red-800 px-5 pt-5 pb-4 pr-14">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-white/20 rounded-full p-1.5">
+                  <Bell className="h-3.5 w-3.5 text-white" />
+                </div>
+                <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Announcement</span>
+                {selectedAnnouncement.priority === 'high' && (
+                  <span className="ml-auto bg-red-500 border border-red-400 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                    Urgent
+                  </span>
+                )}
+              </div>
+              <h2 className="text-white font-bold text-lg leading-snug">{selectedAnnouncement.title}</h2>
+              {selectedAnnouncement.published_at && (
+                <p className="text-red-200/80 text-xs mt-2">
+                  {new Date(selectedAnnouncement.published_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              )}
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{selectedAnnouncement.content}</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

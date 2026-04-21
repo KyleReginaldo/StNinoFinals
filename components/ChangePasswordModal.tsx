@@ -35,7 +35,18 @@ export function ChangePasswordModal({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [newPasswordError, setNewPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const { showAlert } = useAlert();
+
+  const validateNewPassword = (value: string) => {
+    if (!value) return '';
+    if (value.length < 6) return 'Must be at least 6 characters';
+    if (!/^[a-zA-Z0-9]+$/.test(value)) return 'Letters and numbers only (no special characters)';
+    if (!/[a-zA-Z]/.test(value)) return 'Must contain at least one letter';
+    if (!/[0-9]/.test(value)) return 'Must contain at least one number';
+    return '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +60,16 @@ export function ChangePasswordModal({
 
     if (newPassword.length < 6) {
       setError('New password must be at least 6 characters long');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9]+$/.test(newPassword)) {
+      setError('Password must contain only letters and numbers (alphanumeric)');
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      setError('Password must contain at least one letter and one number');
       return;
     }
 
@@ -155,11 +176,17 @@ export function ChangePasswordModal({
                 type={showNewPassword ? 'text' : 'password'}
                 value={newPassword}
                 placeholder="Enter new password (min. 6 characters)"
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setNewPasswordError(validateNewPassword(e.target.value));
+                  if (confirmPassword) {
+                    setConfirmPasswordError(e.target.value !== confirmPassword ? 'Passwords do not match' : '');
+                  }
+                }}
                 required
                 minLength={6}
                 disabled={isSubmitting}
-                className="pr-10"
+                className={`pr-10 ${newPasswordError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
               />
               <button
                 type="button"
@@ -174,6 +201,9 @@ export function ChangePasswordModal({
                 )}
               </button>
             </div>
+            {newPasswordError && (
+              <p className="text-red-500 text-xs mt-1">{newPasswordError}</p>
+            )}
           </div>
 
           <div>
@@ -184,10 +214,13 @@ export function ChangePasswordModal({
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 placeholder="Re-enter new password"
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setConfirmPasswordError(e.target.value !== newPassword ? 'Passwords do not match' : '');
+                }}
                 required
                 disabled={isSubmitting}
-                className="pr-10"
+                className={`pr-10 ${confirmPasswordError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
               />
               <button
                 type="button"
@@ -202,6 +235,9 @@ export function ChangePasswordModal({
                 )}
               </button>
             </div>
+            {confirmPasswordError && (
+              <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+            )}
           </div>
 
           {error && (
@@ -213,7 +249,7 @@ export function ChangePasswordModal({
           <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
             <p className="text-sm text-blue-800">
               <Lock className="h-4 w-4 inline mr-1" />
-              Password must be at least 6 characters long
+              Password must be at least 6 characters, alphanumeric only (letters and numbers)
             </p>
           </div>
 
