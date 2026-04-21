@@ -17,6 +17,8 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [newPasswordError, setNewPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,14 +56,21 @@ export default function ResetPasswordPage() {
     };
   }, []);
 
+  const validatePassword = (value: string) => {
+    if (!value) return '';
+    if (value.length < 6) return 'Must be at least 6 characters';
+    if (!/^[a-zA-Z0-9]+$/.test(value)) return 'Letters and numbers only (no special characters)';
+    if (!/[a-zA-Z]/.test(value)) return 'Must contain at least one letter';
+    if (!/[0-9]/.test(value)) return 'Must contain at least one number';
+    return '';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
+    const pwErr = validatePassword(newPassword);
+    if (pwErr) { setError(pwErr); return; }
 
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
@@ -166,10 +175,14 @@ export default function ResetPasswordPage() {
                       id="newPassword"
                       type={showPassword ? 'text' : 'password'}
                       value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value);
+                        setNewPasswordError(validatePassword(e.target.value));
+                        if (confirmPassword)
+                          setConfirmPasswordError(e.target.value !== confirmPassword ? 'Passwords do not match' : '');
+                      }}
                       placeholder="Enter new password"
-                      className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-transparent"
-                      minLength={6}
+                      className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-transparent ${newPasswordError ? 'border-red-500' : 'border-gray-300'}`}
                       autoFocus
                     />
                     <button
@@ -184,6 +197,9 @@ export default function ResetPasswordPage() {
                       )}
                     </button>
                   </div>
+                  {newPasswordError && (
+                    <p className="text-red-500 text-xs mt-1">{newPasswordError}</p>
+                  )}
                 </div>
 
                 <div>
@@ -199,12 +215,24 @@ export default function ResetPasswordPage() {
                       id="confirmPassword"
                       type={showPassword ? 'text' : 'password'}
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        setConfirmPasswordError(e.target.value !== newPassword ? 'Passwords do not match' : '');
+                      }}
                       placeholder="Confirm new password"
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-transparent"
-                      minLength={6}
+                      className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-transparent ${confirmPasswordError ? 'border-red-500' : 'border-gray-300'}`}
                     />
                   </div>
+                  {confirmPasswordError && (
+                    <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+                  )}
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    <Lock className="h-4 w-4 inline mr-1" />
+                    Password must be at least 6 characters, alphanumeric only (letters and numbers)
+                  </p>
                 </div>
 
                 {error && (
@@ -216,7 +244,7 @@ export default function ResetPasswordPage() {
 
                 <button
                   type="submit"
-                  disabled={!newPassword || !confirmPassword || loading}
+                  disabled={!newPassword || !confirmPassword || !!newPasswordError || !!confirmPasswordError || loading}
                   className="w-full h-11 rounded-lg text-sm font-semibold text-white transition-all duration-200 bg-red-900 hover:bg-red-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-red-800 focus-visible:ring-offset-2"
                 >
                   {loading ? 'Resetting...' : 'Reset Password'}
