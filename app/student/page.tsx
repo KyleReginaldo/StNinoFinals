@@ -35,7 +35,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import {
   AlertCircle,
   Bell,
@@ -54,15 +54,7 @@ import {
 } from 'lucide-react';
 import { StudentSidebarContentOld } from './components/StudentSidebarOld';
 
-// Extend jsPDF type to include autoTable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable?: {
-      finalY: number;
-    };
-  }
-}
+
 
 interface Student {
   id: number;
@@ -1339,62 +1331,32 @@ export default function StudentDashboard() {
         actionTaken,
       ]);
 
-      // Create table using autoTable
-      // @ts-ignore - autoTable extends jsPDF
-      if (typeof (doc as any).autoTable === 'function') {
-        // @ts-ignore - autoTable extends jsPDF
-        (doc as any).autoTable({
-          startY: 80,
-          head: [['SUBJECT', 'SEM FINAL GRADE', 'ACTION TAKEN']],
-          body: tableData,
-          theme: 'grid',
-          headStyles: {
-            fillColor: [220, 220, 220],
-            textColor: [0, 0, 0],
-            fontStyle: 'bold',
-            fontSize: 10,
-          },
-          bodyStyles: {
-            fontSize: 9,
-            textColor: [0, 0, 0],
-          },
-          columnStyles: {
-            0: { cellWidth: 100 },
-            1: { cellWidth: 40, halign: 'center' },
-            2: { cellWidth: 50, halign: 'center' },
-          },
-          margin: { left: 10, right: 10 },
-        });
-      } else {
-        // Fallback: create table manually if autoTable is not available
-        console.warn('autoTable not available, using manual table');
-        let yPos = 80;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('SUBJECT', 10, yPos);
-        doc.text('SEM FINAL GRADE', 110, yPos);
-        doc.text('ACTION TAKEN', 150, yPos);
+      autoTable(doc, {
+        startY: 80,
+        head: [['SUBJECT', 'SEM FINAL GRADE', 'ACTION TAKEN']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [220, 220, 220],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+          fontSize: 10,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [0, 0, 0],
+        },
+        columnStyles: {
+          0: { cellWidth: 100 },
+          1: { cellWidth: 40, halign: 'center' },
+          2: { cellWidth: 50, halign: 'center' },
+        },
+        margin: { left: 10, right: 10 },
+      });
 
-        yPos += 10;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        tableData.forEach((row) => {
-          if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-          }
-          const subject = String(row[0]).substring(0, 50); // Truncate long subjects
-          doc.text(subject, 10, yPos);
-          doc.text(String(row[1]), 110, yPos, { align: 'center' });
-          doc.text(String(row[2]), 150, yPos, { align: 'center' });
-          yPos += 8;
-        });
-      }
-
-      // Certification text
-      let finalY = 200; // Default position if autoTable didn't work
-      if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
-        finalY = doc.lastAutoTable.finalY + 15;
+      let finalY = 200;
+      if ((doc as any).lastAutoTable?.finalY) {
+        finalY = (doc as any).lastAutoTable.finalY + 15;
       }
 
       doc.setFontSize(10);
@@ -1796,7 +1758,7 @@ export default function StudentDashboard() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="newPassword">New Password *</Label>
+                    <Label htmlFor="newPassword" required>New Password</Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -1814,7 +1776,7 @@ export default function StudentDashboard() {
                     <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters and include a letter and a number.</p>
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                    <Label htmlFor="confirmPassword" required>Confirm Password</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -1840,7 +1802,7 @@ export default function StudentDashboard() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName">First Name *</Label>
+                    <Label htmlFor="firstName" required>First Name</Label>
                     <Input
                       id="firstName"
                       value={firstLoginForm.firstName}
@@ -1867,7 +1829,7 @@ export default function StudentDashboard() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Label htmlFor="lastName" required>Last Name</Label>
                     <Input
                       id="lastName"
                       value={firstLoginForm.lastName}

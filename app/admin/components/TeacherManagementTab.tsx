@@ -177,7 +177,7 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
                   <form onSubmit={handleAddTeacher} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="teacherFirstName">First Name *</Label>
+                        <Label htmlFor="teacherFirstName" required>First Name</Label>
                         <Input
                           id="teacherFirstName"
                           value={newTeacher.first_name}
@@ -186,7 +186,7 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
                         />
                       </div>
                       <div>
-                        <Label htmlFor="teacherLastName">Last Name *</Label>
+                        <Label htmlFor="teacherLastName" required>Last Name</Label>
                         <Input
                           id="teacherLastName"
                           value={newTeacher.last_name}
@@ -204,7 +204,7 @@ export function TeacherManagementTab({ teachers, loadingTeachers, onTeacherAdded
                       />
                     </div>
                     <div>
-                      <Label htmlFor="teacherDepartment">Department *</Label>
+                      <Label htmlFor="teacherDepartment" required>Department</Label>
                       <Select
                         value={newTeacher.department}
                         onValueChange={(value) => setNewTeacher({ ...newTeacher, department: value })}

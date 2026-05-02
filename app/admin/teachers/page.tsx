@@ -33,7 +33,7 @@ import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Edit, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { ArchiveRestore, Edit, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -112,11 +112,13 @@ export default function TeacherManagementPage() {
   const [deletingTeacher, setDeletingTeacher] = useState(false);
   const [addError, setAddError] = useState('');
   const [editError, setEditError] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = async (archived = false) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/teachers');
+      const url = `/api/admin/teachers${archived ? '?archived=true' : ''}`;
+      const response = await fetch(url);
       const result = await response.json();
       if (result.success && result.teachers) {
         setTeachers(result.teachers);
@@ -129,8 +131,8 @@ export default function TeacherManagementPage() {
   };
 
   useEffect(() => {
-    fetchTeachers();
-  }, []);
+    fetchTeachers(showArchived);
+  }, [showArchived]);
 
   const tc = useTableControls(teachers, {
     searchFields: ['first_name', 'last_name', 'employee_number', 'email'],
@@ -142,6 +144,11 @@ export default function TeacherManagementPage() {
 
   const handleAddTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
+    const missing: string[] = [];
+    if (!newTeacher.first_name.trim()) missing.push('First Name');
+    if (!newTeacher.last_name.trim()) missing.push('Last Name');
+    if (!newTeacher.email.trim()) missing.push('Email');
+    if (missing.length) { setAddError(`Required: ${missing.join(', ')}`); return; }
     setAddingTeacher(true);
     setAddError('');
 
@@ -164,7 +171,7 @@ export default function TeacherManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to add teacher');
 
-      await fetchTeachers();
+      await fetchTeachers(showArchived);
       setNewTeacher({
         first_name: '',
         last_name: '',
@@ -194,6 +201,11 @@ export default function TeacherManagementPage() {
 
   const handleEditTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
+    const missing: string[] = [];
+    if (!editTeacher.first_name.trim()) missing.push('First Name');
+    if (!editTeacher.last_name.trim()) missing.push('Last Name');
+    if (!editTeacher.email.trim()) missing.push('Email');
+    if (missing.length) { setEditError(`Required: ${missing.join(', ')}`); return; }
     setUpdatingTeacher(true);
     setEditError('');
 
@@ -210,7 +222,7 @@ export default function TeacherManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to update teacher');
 
-      await fetchTeachers();
+      await fetchTeachers(showArchived);
       setShowEditDialog(false);
       showAlert({ message: 'Teacher updated successfully!', type: 'success' });
     } catch (error: any) {
@@ -242,15 +254,37 @@ export default function TeacherManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to delete teacher');
 
-      await fetchTeachers();
-      showAlert({ message: 'Teacher deleted successfully!', type: 'success' });
+      await fetchTeachers(showArchived);
+      showAlert({ message: 'Teacher archived successfully!', type: 'success' });
     } catch (error: any) {
       showAlert({
-        message: error?.message || 'Failed to delete teacher.',
+        message: error?.message || 'Failed to archive teacher.',
         type: 'error',
       });
     } finally {
       setDeletingTeacher(false);
+    }
+  };
+
+  const handleRestoreTeacher = async (teacherId: string, teacherName: string) => {
+    const confirmed = await showConfirm({
+      message: `Restore ${teacherName} from archive?`,
+      confirmText: 'Restore',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/admin/teachers/${teacherId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restore: true }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Failed to restore');
+      await fetchTeachers(showArchived);
+      showAlert({ message: 'Teacher restored successfully!', type: 'success' });
+    } catch (error: any) {
+      showAlert({ message: error?.message || 'Failed to restore teacher.', type: 'error' });
     }
   };
 
@@ -295,9 +329,19 @@ export default function TeacherManagementPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-base font-semibold text-gray-900">Teachers</h1>
+          <h1 className="text-base font-semibold text-gray-900">
+            Teachers {showArchived && <span className="text-xs font-normal text-amber-600 ml-1">(Archived)</span>}
+          </h1>
           <p className="text-xs text-gray-400 mt-0.5">{tc.filteredCount} of {tc.totalCount} records</p>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          >
+            {showArchived ? 'View Active' : 'View Archived'}
+          </button>
+          {!showArchived && (
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-900 hover:bg-gray-700 text-white rounded-lg transition-colors">
@@ -317,7 +361,7 @@ export default function TeacherManagementPage() {
               <form onSubmit={handleAddTeacher} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>First Name *</Label>
+                    <Label required>First Name</Label>
                     <Input
                       value={newTeacher.first_name}
                       onChange={(e) =>
@@ -331,7 +375,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Last Name *</Label>
+                    <Label required>Last Name</Label>
                     <Input
                       value={newTeacher.last_name}
                       onChange={(e) =>
@@ -358,7 +402,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Employee Number *</Label>
+                    <Label required>Employee Number</Label>
                     <Input
                       value={newTeacher.employee_number}
                       onChange={(e) =>
@@ -412,7 +456,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Email *</Label>
+                    <Label required>Email</Label>
                     <Input
                       type="email"
                       value={newTeacher.email}
@@ -499,7 +543,9 @@ export default function TeacherManagementPage() {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
+      </div>
 
         {/* Edit Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
@@ -511,7 +557,7 @@ export default function TeacherManagementPage() {
             <form onSubmit={handleEditTeacher} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>First Name *</Label>
+                  <Label required>First Name</Label>
                   <Input
                     value={editTeacher.first_name}
                     onChange={(e) =>
@@ -525,7 +571,7 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Last Name *</Label>
+                  <Label required>Last Name</Label>
                   <Input
                     value={editTeacher.last_name}
                     onChange={(e) =>
@@ -552,7 +598,7 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Employee Number *</Label>
+                  <Label required>Employee Number</Label>
                   <Input
                     value={editTeacher.employee_number}
                     onChange={(e) =>
@@ -606,7 +652,7 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Email *</Label>
+                  <Label required>Email</Label>
                   <Input
                     type="email"
                     value={editTeacher.email}
@@ -798,14 +844,6 @@ export default function TeacherManagementPage() {
                   </div>
                   <div className="pb-3 border-b">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
-                      Status
-                    </h3>
-                    <Badge className="bg-green-100 text-green-800">
-                      {selectedTeacher.status}
-                    </Badge>
-                  </div>
-                  <div className="pb-3 border-b">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">
                       Address
                     </h3>
                     <p className="text-base">
@@ -841,15 +879,7 @@ export default function TeacherManagementPage() {
             <option value="">All Departments</option>
             {deptOptions.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
-          <select
-            value={tc.filters['status'] ?? ''}
-            onChange={(e) => tc.setFilter('status', e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
-          >
-            <option value="">All Status</option>
-            {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          {(tc.search || tc.filters['department'] || tc.filters['status']) && (
+          {(tc.search || tc.filters['department']) && (
             <button onClick={tc.clearFilters} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors">
               <X className="w-3 h-3" /> Clear
             </button>
@@ -872,7 +902,6 @@ export default function TeacherManagementPage() {
                   <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <SortHeader label="Status"         sortKey="status"         currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5" />
                 </tr>
               </thead>
@@ -916,27 +945,34 @@ export default function TeacherManagementPage() {
                       <td className="px-4 py-3 text-[13px] text-gray-500 whitespace-nowrap">
                         {teacher.email}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                          {teacher.status || 'Active'}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => openEditDialog(teacher)}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTeacher(teacher.id, `${teacher.first_name} ${teacher.last_name}`)}
-                            disabled={deletingTeacher}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {showArchived ? (
+                            <button
+                              onClick={() => handleRestoreTeacher(teacher.id, `${teacher.first_name} ${teacher.last_name}`)}
+                              className="p-1.5 rounded-md text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                              title="Restore"
+                            >
+                              <ArchiveRestore className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => openEditDialog(teacher)}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTeacher(teacher.id, `${teacher.first_name} ${teacher.last_name}`)}
+                                disabled={deletingTeacher}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                title="Archive"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

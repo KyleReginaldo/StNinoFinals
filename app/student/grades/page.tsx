@@ -17,17 +17,10 @@ import {
 } from '@/components/ui/select';
 import { useAlert } from '@/lib/use-alert';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { Download, GraduationCap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable?: { finalY: number };
-  }
-}
 
 type GradeStatus = 'pending' | 'approved' | 'rejected' | null;
 
@@ -203,8 +196,8 @@ export default function GradesPage() {
         : 'N/A';
       tableData.push(['General Average for the quarter', numericAvg, parseFloat(numericAvg) >= 75 ? 'PROMOTED' : 'RETAINED']);
 
-      if (typeof (doc as any).autoTable === 'function') {
-        (doc as any).autoTable({
+      {
+        autoTable(doc, {
           startY: 80,
           head: [['SUBJECT', 'QUARTERLY GRADE', 'ACTION TAKEN']],
           body: tableData,
@@ -217,7 +210,7 @@ export default function GradesPage() {
       }
 
       let finalY = 200;
-      if (doc.lastAutoTable?.finalY) finalY = doc.lastAutoTable.finalY + 15;
+      if ((doc as any).lastAutoTable?.finalY) finalY = (doc as any).lastAutoTable.finalY + 15;
       doc.setFontSize(10); doc.setFont('helvetica', 'italic');
       doc.text('This certification is issued upon the request of the aforementioned student', 105, finalY, { align: 'center' });
       doc.text('for EDUCATIONAL ASSISTANCE and for the stated purpose only.', 105, finalY + 6, { align: 'center' });

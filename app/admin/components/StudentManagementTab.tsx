@@ -170,7 +170,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                   <form onSubmit={handleAddStudent} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="firstName">First Name *</Label>
+                        <Label htmlFor="firstName" required>First Name</Label>
                         <Input
                           id="firstName"
                           value={newStudent.first_name}
@@ -180,7 +180,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                         />
                       </div>
                       <div>
-                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Label htmlFor="lastName" required>Last Name</Label>
                         <Input
                           id="lastName"
                           placeholder="Enter last name"
@@ -200,7 +200,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                       />
                     </div>
                     <div>
-                      <Label htmlFor="gradeLevel">Grade Level *</Label>
+                      <Label htmlFor="gradeLevel" required>Grade Level</Label>
                       <Select value={newStudent.grade_level} onValueChange={(value) => setNewStudent({ ...newStudent, grade_level: value })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select grade level" />
@@ -213,7 +213,7 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="section">Section *</Label>
+                      <Label htmlFor="section" required>Section</Label>
                       <Input
                         id="section"
                         value={newStudent.section}

@@ -19,9 +19,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface GradeRow {
   grade_level: string;
-  male: number;
-  female: number;
-  other: number;
   total: number;
 }
 
@@ -76,24 +73,19 @@ export default function PopulationReportPage() {
     doc.text(`${yearLabel}  |  ${gradeLabel}`, 105, 39, { align: 'center' });
     doc.text(`Generated: ${new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}`, 105, 44, { align: 'center' });
 
-    const tableBody = data.byGrade.map((row) => [
-      row.grade_level, row.male, row.female, row.other > 0 ? row.other : '', row.total,
-    ]);
-    tableBody.push(['GRAND TOTAL', '', '', '', data.grandTotal] as any);
+    const tableBody = data.byGrade.map((row) => [row.grade_level, row.total]);
+    tableBody.push(['Total', data.grandTotal] as any);
 
     autoTable(doc, {
       startY: 50,
-      head: [['Grade Level', 'Male', 'Female', 'Other', 'Total']],
+      head: [['Grade Level', 'Total']],
       body: tableBody,
       theme: 'grid',
       headStyles: { fillColor: [153, 27, 27], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
       bodyStyles: { fontSize: 9 },
       columnStyles: {
-        0: { cellWidth: 70 },
-        1: { cellWidth: 25, halign: 'center' },
-        2: { cellWidth: 25, halign: 'center' },
-        3: { cellWidth: 25, halign: 'center' },
-        4: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
+        0: { cellWidth: 140 },
+        1: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },
       },
       didParseCell: (hookData: any) => {
         if (hookData.row.index === data.byGrade.length) {
@@ -116,9 +108,6 @@ export default function PopulationReportPage() {
     pageSize: 100,
   });
 
-  const totalMale   = data?.byGrade.reduce((s, r) => s + r.male, 0) ?? 0;
-  const totalFemale = data?.byGrade.reduce((s, r) => s + r.female, 0) ?? 0;
-  const totalOther  = data?.byGrade.reduce((s, r) => s + r.other, 0) ?? 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -190,12 +179,10 @@ export default function PopulationReportPage() {
 
         {/* Summary cards */}
         {data && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'Total Students', value: data.grandTotal },
               { label: 'Grade Levels',   value: data.byGrade.length },
-              { label: 'Male',           value: totalMale },
-              { label: 'Female',         value: totalFemale },
             ].map((s) => (
               <div key={s.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{s.label}</p>
@@ -228,9 +215,6 @@ export default function PopulationReportPage() {
               <thead>
                 <tr className="bg-gray-50">
                   <SortHeader label="Grade Level" sortKey="grade_level" currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
-                  <SortHeader label="Male"        sortKey="male"        currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <SortHeader label="Female"      sortKey="female"      currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <SortHeader label="Other"       sortKey="other"       currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Total"       sortKey="total"       currentSort={tc.sort} onSort={tc.toggleSort} />
                 </tr>
               </thead>
@@ -238,21 +222,11 @@ export default function PopulationReportPage() {
                 {tc.rows.map((row) => (
                   <tr key={row.grade_level} className="hover:bg-gray-50">
                     <td className="px-4 py-3 pl-4 text-sm font-medium text-gray-900">{row.grade_level}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.male}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.female}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
-                      {row.other || <span className="text-gray-300">—</span>}
-                    </td>
                     <td className="px-4 py-3 text-sm font-semibold text-gray-900">{row.total}</td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 border-t-2 border-gray-200">
-                  <td className="px-4 py-3 pl-4 text-sm font-bold text-gray-900">Grand Total</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">{totalMale}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">{totalFemale}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                    {totalOther || <span className="text-gray-300">—</span>}
-                  </td>
+                  <td className="px-4 py-3 pl-4 text-sm font-bold text-gray-900">Total</td>
                   <td className="px-4 py-3 text-sm font-bold text-gray-900">{data.grandTotal}</td>
                 </tr>
               </tbody>

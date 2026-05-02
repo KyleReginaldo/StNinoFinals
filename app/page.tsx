@@ -548,8 +548,9 @@ export default function HomePage() {
                         <Label
                           htmlFor="firstName"
                           className="text-sm font-medium text-gray-700"
+                          required
                         >
-                          Student's First Name *
+                          Student's First Name
                         </Label>
                         <Input
                           id="firstName"
@@ -570,8 +571,9 @@ export default function HomePage() {
                         <Label
                           htmlFor="lastName"
                           className="text-sm font-medium text-gray-700"
+                          required
                         >
-                          Student's Last Name *
+                          Student's Last Name
                         </Label>
                         <Input
                           id="lastName"
@@ -616,8 +618,9 @@ export default function HomePage() {
                       <Label
                         htmlFor="parentName"
                         className="text-sm font-medium text-gray-700"
+                        required
                       >
-                        Parent / Guardian Name *
+                        Parent / Guardian Name
                       </Label>
                       <Input
                         id="parentName"
@@ -640,8 +643,9 @@ export default function HomePage() {
                         <Label
                           htmlFor="emailAddress"
                           className="text-sm font-medium text-gray-700"
+                          required
                         >
-                          Email Address *
+                          Email Address
                         </Label>
                         <Input
                           id="emailAddress"
@@ -663,8 +667,9 @@ export default function HomePage() {
                         <Label
                           htmlFor="phoneNumber"
                           className="text-sm font-medium text-gray-700"
+                          required
                         >
-                          Phone Number *
+                          Phone Number
                         </Label>
                         <Input
                           id="phoneNumber"
@@ -691,8 +696,9 @@ export default function HomePage() {
                         <Label
                           htmlFor="intendedGradeLevel"
                           className="text-sm font-medium text-gray-700"
+                          required
                         >
-                          Intended Grade Level *
+                          Intended Grade Level
                         </Label>
                         <Select
                           value={admissionForm.intendedGradeLevel}

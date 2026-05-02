@@ -319,7 +319,6 @@ export default function ParentPortal() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="parent">Parent</SelectItem>
                           <SelectItem value="guardian">Guardian</SelectItem>
                           <SelectItem value="mother">Mother</SelectItem>
                           <SelectItem value="father">Father</SelectItem>

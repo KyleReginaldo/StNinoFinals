@@ -2,8 +2,10 @@ import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const showArchived = searchParams.get('archived') === 'true';
     const supabaseAdmin = getSupabaseAdmin();
 
     // Fetch all parents
@@ -11,6 +13,7 @@ export async function GET() {
       .from('users')
       .select('*')
       .eq('role', 'parent')
+      .eq('is_archived', showArchived)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -75,6 +78,13 @@ export async function POST(request: Request) {
       address,
       password,
     } = body;
+
+    if (!first_name || !last_name || !email) {
+      return NextResponse.json(
+        { success: false, error: 'First name, last name, and email are required' },
+        { status: 400 }
+      );
+    }
 
     const supabaseAdmin = getSupabaseAdmin();
 

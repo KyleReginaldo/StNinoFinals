@@ -103,6 +103,31 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const supabaseAdmin = getSupabaseAdmin()
+
+    if (body.restore === true) {
+      const { error } = await supabaseAdmin
+        .from('users')
+        .update({ is_archived: false } as any)
+        .eq('id', id)
+        .eq('role', 'teacher')
+      if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 })
+      return NextResponse.json({ success: true, message: 'Teacher restored successfully' })
+    }
+
+    return NextResponse.json({ success: false, error: 'Unknown patch operation' }, { status: 400 })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.message || 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -111,31 +136,17 @@ export async function DELETE(
     const { id } = await params
     const supabaseAdmin = getSupabaseAdmin()
 
-    // Delete from users table first
-    const { error: deleteError } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('users')
-      .delete()
+      .update({ is_archived: true } as any)
       .eq('id', id)
       .eq('role', 'teacher')
 
-    if (deleteError) {
-      return NextResponse.json(
-        { success: false, error: deleteError.message },
-        { status: 400 }
-      )
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 })
     }
 
-    // Delete auth user
-    try {
-      await supabaseAdmin.auth.admin.deleteUser(id)
-    } catch (authError) {
-      console.error('Failed to delete auth user:', authError)
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Teacher deleted successfully',
-    })
+    return NextResponse.json({ success: true, message: 'Teacher archived successfully' })
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || 'Internal server error' },

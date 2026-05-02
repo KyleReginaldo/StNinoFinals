@@ -19,15 +19,9 @@ import {
   XCircle,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 type GradeStatus = 'pending' | 'approved' | 'rejected';
 
@@ -189,8 +183,10 @@ export default function AdminGradesPage() {
     const pendingIds = group.entries.filter(e => e.status === 'pending').map(e => e.id);
     if (pendingIds.length === 0) return;
     const confirmed = await showConfirm({
-      title: 'Batch Approve Grades',
-      message: `Are you sure you want to approve all ${pendingIds.length} pending grades for ${group.subject}?`,
+      title: pendingIds.length === 1 ? 'Approve Grade' : 'Approve All Grades',
+      message: pendingIds.length === 1
+        ? `Are you sure you want to approve the pending grade for ${group.subject}?`
+        : `Are you sure you want to approve all ${pendingIds.length} pending grades for ${group.subject}?`,
     });
     if (!confirmed) return;
 
@@ -252,7 +248,7 @@ export default function AdminGradesPage() {
       g.grade,
       g.status.charAt(0).toUpperCase() + g.status.slice(1),
     ]);
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 36,
       head: [['Student', 'Student No.', 'Subject', 'Teacher', 'Grade', 'Status']],
       body: tableData,
@@ -415,7 +411,11 @@ export default function AdminGradesPage() {
                       className="bg-green-600 text-white hover:bg-green-700 shrink-0"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                      {batchProcessing ? 'Approving...' : `Approve All (${selectedGroup.pendingCount})`}
+                      {batchProcessing
+                        ? 'Approving...'
+                        : selectedGroup.pendingCount === 1
+                          ? 'Approve'
+                          : `Approve All (${selectedGroup.pendingCount})`}
                     </Button>
                   )}
                 </div>

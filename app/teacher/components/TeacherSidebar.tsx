@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   Calendar,
+  CalendarDays,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -73,9 +74,10 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Teaching',
     items: [
-      { label: 'My Classes',    href: '/teacher/classes', icon: BookOpen      },
-      { label: 'Manage Grades', href: '/teacher/grades',  icon: GraduationCap },
-      { label: 'Reports',       href: '/teacher/reports', icon: BarChart3     },
+      { label: 'My Classes',    href: '/teacher/classes',    icon: BookOpen      },
+      { label: 'Manage Grades', href: '/teacher/grades',     icon: GraduationCap },
+      { label: 'Attendance',    href: '/teacher/attendance', icon: CalendarDays  },
+      { label: 'Reports',       href: '/teacher/reports',    icon: BarChart3     },
     ],
   },
   {

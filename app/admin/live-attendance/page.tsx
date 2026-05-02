@@ -4,16 +4,24 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { supabase } from "@/lib/supabaseClient"
 import {
+  AlertTriangle,
   Clock,
   Radio,
   User,
-  Users
+  Users,
 } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
@@ -31,10 +39,18 @@ interface AttendanceRecord {
   role?: string
 }
 
+interface SecurityAlert {
+  rfidTag: string
+  strikes: number
+  occurredAt: string
+  deviceId?: string | null
+}
+
 export default function LiveAttendancePage() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [loadingAttendance, setLoadingAttendance] = useState(true)
   const [latestRecord, setLatestRecord] = useState<AttendanceRecord | null>(null)
+  const [securityAlert, setSecurityAlert] = useState<SecurityAlert | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastFetchedIdRef = useRef<string | null>(null)
 
@@ -88,19 +104,32 @@ export default function LiveAttendancePage() {
   useEffect(() => {
     fetchTodayAttendance()
 
-    // Subscribe to realtime changes
-    const channel = supabase
+    // Subscribe to attendance record inserts
+    const attendanceChannel = supabase
       .channel('live-attendance-changes')
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'attendance_records'
-        },
-        () => {
-          // Fetch new data when a record is inserted
-          fetchTodayAttendance()
+        { event: 'INSERT', schema: 'public', table: 'attendance_records' },
+        () => { fetchTodayAttendance() }
+      )
+      .subscribe()
+
+    // Subscribe to three-strike security alerts
+    const securityChannel = supabase
+      .channel('security-events')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'security_events' },
+        (payload: any) => {
+          const row = payload.new
+          if (row?.event_type === 'three_strike_alert') {
+            setSecurityAlert({
+              rfidTag: row.rfid_tag,
+              strikes: row.metadata?.strike_count ?? 3,
+              occurredAt: row.occurred_at,
+              deviceId: row.device_id ?? null,
+            })
+          }
         }
       )
       .subscribe()
@@ -110,7 +139,8 @@ export default function LiveAttendancePage() {
 
     return () => {
       clearInterval(interval)
-      supabase.removeChannel(channel)
+      supabase.removeChannel(attendanceChannel)
+      supabase.removeChannel(securityChannel)
       if (clearTimerRef.current) {
         clearTimeout(clearTimerRef.current)
       }
@@ -383,6 +413,57 @@ export default function LiveAttendancePage() {
           </p>
         </div>
       </div>
+
+      {/* Three-Strike Security Alert Modal */}
+      <Dialog open={!!securityAlert} onOpenChange={(open) => { if (!open) setSecurityAlert(null) }}>
+        <DialogContent className="max-w-md border-2 border-red-600">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700 text-xl">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+              Security Alert — Unauthorized RFID
+            </DialogTitle>
+            <DialogDescription className="text-red-600 font-medium">
+              Three consecutive unauthorized scan attempts detected.
+            </DialogDescription>
+          </DialogHeader>
+
+          {securityAlert && (
+            <div className="space-y-4 pt-2">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 font-medium">RFID Tag Attempted</span>
+                  <span className="font-mono font-bold text-red-800">{securityAlert.rfidTag}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 font-medium">Consecutive Attempts</span>
+                  <span className="font-bold text-red-700">{securityAlert.strikes}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 font-medium">Timestamp</span>
+                  <span className="text-gray-800">
+                    {new Date(securityAlert.occurredAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}
+                  </span>
+                </div>
+                {securityAlert.deviceId && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 font-medium">Device</span>
+                    <span className="text-gray-800">{securityAlert.deviceId}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">
+                This event has been logged to the security events table. Assign this RFID card in the Students or Teachers panel, or investigate the source.
+              </p>
+              <Button
+                className="w-full bg-red-700 hover:bg-red-800"
+                onClick={() => setSecurityAlert(null)}
+              >
+                Acknowledge &amp; Dismiss
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -17,7 +17,6 @@ interface Student {
   last_name: string;
   middle_name: string | null;
   student_number: string;
-  gender: string | null;
   email: string | null;
 }
 
@@ -31,13 +30,6 @@ interface GradeData {
   sections: SectionData[];
 }
 
-function formatGender(gender: string | null) {
-  if (!gender) return null;
-  const g = gender.toLowerCase();
-  if (g === 'm' || g === 'male') return 'Male';
-  if (g === 'f' || g === 'female') return 'Female';
-  return gender;
-}
 
 function SkeletonBlock() {
   return (
@@ -320,7 +312,6 @@ export default function ClassListPage() {
                                       <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-12">#</th>
                                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student Name</th>
                                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student No.</th>
-                                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Gender</th>
                                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Email</th>
                                     </tr>
                                   </thead>
@@ -336,9 +327,6 @@ export default function ClassListPage() {
                                           <span className="font-mono text-[12px] text-gray-500">
                                             {student.student_number || <span className="text-gray-300">—</span>}
                                           </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
-                                          {formatGender(student.gender) ?? <span className="text-gray-300">—</span>}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
                                           {student.email || <span className="text-gray-300">—</span>}

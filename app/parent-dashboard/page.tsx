@@ -1,8 +1,8 @@
 'use client';
 
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   Card,
   CardContent,
@@ -27,15 +27,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Badge } from '@/components/ui/badge';
 import {
   Calendar,
   Clock,
   Eye,
   GraduationCap,
+  Home,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -43,6 +44,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ParentDashboard } from './components/ParentDashboard';
@@ -336,7 +338,9 @@ export default function ParentDashboardPage() {
     if (!parent?.id) return;
     setEnrollmentLoading(true);
     try {
-      const res = await fetch(`/api/parent/enrollment-request?parentId=${parent.id}`);
+      const res = await fetch(
+        `/api/parent/enrollment-request?parentId=${parent.id}`
+      );
       const data = await res.json();
       if (data.success) setEnrollmentRequests(data.data || []);
     } catch (err) {
@@ -348,13 +352,20 @@ export default function ParentDashboardPage() {
 
   const handleEnrollSubmit = async () => {
     if (!enrollingChild || !enrollGradeLevel || !enrollSemester) {
-      showAlert({ message: 'Please fill in all required fields.', type: 'error' });
+      showAlert({
+        message: 'Please fill in all required fields.',
+        type: 'error',
+      });
       return;
     }
 
-    const needsStrand = enrollGradeLevel.includes('11') || enrollGradeLevel.includes('12');
+    const needsStrand =
+      enrollGradeLevel.includes('11') || enrollGradeLevel.includes('12');
     if (needsStrand && !enrollStrand) {
-      showAlert({ message: 'Please select a strand for Senior High School.', type: 'error' });
+      showAlert({
+        message: 'Please select a strand for Senior High School.',
+        type: 'error',
+      });
       return;
     }
 
@@ -374,14 +385,20 @@ export default function ParentDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showAlert({ message: 'Enrollment request submitted successfully!', type: 'success' });
+        showAlert({
+          message: 'Enrollment request submitted successfully!',
+          type: 'success',
+        });
         setEnrollingChild('');
         setEnrollGradeLevel('');
         setEnrollStrand('');
         setEnrollSemester('1');
         fetchEnrollmentRequests();
       } else {
-        showAlert({ message: data.error || 'Failed to submit enrollment request.', type: 'error' });
+        showAlert({
+          message: data.error || 'Failed to submit enrollment request.',
+          type: 'error',
+        });
       }
     } catch {
       showAlert({ message: 'Network error. Please try again.', type: 'error' });
@@ -399,9 +416,9 @@ export default function ParentDashboardPage() {
   }
 
   const parentName = parent
-    ? (parent.first_name && parent.last_name
-        ? `${parent.first_name} ${parent.last_name}`
-        : parent.name || parent.email?.split('@')[0] || 'Guardian')
+    ? parent.first_name && parent.last_name
+      ? `${parent.first_name} ${parent.last_name}`
+      : parent.name || parent.email?.split('@')[0] || 'Guardian'
     : 'Guardian';
 
   const avatarLetters = parentName
@@ -416,21 +433,32 @@ export default function ParentDashboardPage() {
       {/* Branding */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5 flex-shrink-0">
         <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-white/10">
-          <Image src="/logo.png" alt="Logo" width={36} height={36} className="object-cover w-full h-full" />
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={36}
+            height={36}
+            className="object-cover w-full h-full"
+          />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-white truncate leading-tight">St. Niño de Praga</p>
-          <p className="text-[10px] text-gray-500 leading-none mt-0.5">Guardian Portal</p>
+          <p className="text-xs font-bold text-white truncate leading-tight">
+            St. Niño de Praga
+          </p>
+          <p className="text-[10px] text-gray-500 leading-none mt-0.5">
+            Guardian Portal
+          </p>
         </div>
       </div>
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
         {[
-          { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
-          { key: 'children',   label: 'My Students', icon: User            },
-          { key: 'enrollment', label: 'Enrollment',  icon: GraduationCap   },
-          { key: 'attendance', label: 'Attendance',  icon: Clock           },
-          { key: 'schedule',   label: 'Schedule',    icon: Calendar        },
+          { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { key: 'children', label: 'My Students', icon: User },
+          { key: 'enrollment', label: 'Enrollment', icon: GraduationCap },
+          { key: 'attendance', label: 'Attendance', icon: Clock },
+          { key: 'schedule', label: 'Schedule', icon: Calendar },
+          { key: 'profile', label: 'My Profile', icon: Home },
         ].map(({ key, label, icon: Icon }) => {
           const active = activeTab === key;
           return (
@@ -442,11 +470,17 @@ export default function ParentDashboardPage() {
                 onNavigate?.();
               }}
               className={`group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 text-left ${
-                active ? 'bg-white/10 text-white font-medium' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                active
+                  ? 'bg-white/10 text-white font-medium'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
               }`}
             >
-              {active && <span className="absolute left-0 w-0.5 h-5 bg-red-400 rounded-full" />}
-              <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />
+              {active && (
+                <span className="absolute left-0 w-0.5 h-5 bg-red-400 rounded-full" />
+              )}
+              <Icon
+                className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`}
+              />
               <span className="flex-1 truncate">{label}</span>
             </button>
           );
@@ -456,14 +490,23 @@ export default function ParentDashboardPage() {
       <div className="px-3 py-3 border-t border-white/5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-red-800/40 flex items-center justify-center flex-shrink-0">
-            <span className="text-[11px] font-bold text-red-300">{avatarLetters}</span>
+            <span className="text-[11px] font-bold text-red-300">
+              {avatarLetters}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-300 truncate">{parentName}</p>
-            <p className="text-[10px] text-gray-600 leading-none mt-0.5">Guardian</p>
+            <p className="text-xs font-medium text-gray-300 truncate">
+              {parentName}
+            </p>
+            <p className="text-[10px] text-gray-600 leading-none mt-0.5">
+              Guardian
+            </p>
           </div>
-          <button onClick={handleLogout} title="Logout"
-            className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-colors">
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
+          >
             <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -567,7 +610,6 @@ export default function ParentDashboardPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="parent">Parent</SelectItem>
                             <SelectItem value="guardian">Guardian</SelectItem>
                             <SelectItem value="mother">Mother</SelectItem>
                             <SelectItem value="father">Father</SelectItem>
@@ -631,11 +673,16 @@ export default function ParentDashboardPage() {
                 {sidebarNav(() => {})}
               </SheetContent>
             </Sheet>
-            <span className="text-sm font-semibold text-gray-900">Guardian Portal</span>
+            <span className="text-sm font-semibold text-gray-900">
+              Guardian Portal
+            </span>
             <div className="ml-auto">
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white">
+                  <Button
+                    size="sm"
+                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                  >
                     <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                     Add Student
                   </Button>
@@ -643,29 +690,64 @@ export default function ParentDashboardPage() {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Add Your Student</DialogTitle>
-                    <DialogDescription>Enter the student number to link them to your account.</DialogDescription>
+                    <DialogDescription>
+                      Enter the student number to link them to your account.
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
                     <div>
-                      <Label htmlFor="studentNumberMobile">Student Number</Label>
-                      <Input id="studentNumberMobile" placeholder="e.g., SNPA-2024-001" value={studentNumber} onChange={(e) => setStudentNumber(e.target.value)} disabled={isAddingChild} />
+                      <Label htmlFor="studentNumberMobile">
+                        Student Number
+                      </Label>
+                      <Input
+                        id="studentNumberMobile"
+                        placeholder="e.g., SNPA-2024-001"
+                        value={studentNumber}
+                        onChange={(e) => setStudentNumber(e.target.value)}
+                        disabled={isAddingChild}
+                      />
                     </div>
                     <div>
                       <Label>Relationship</Label>
-                      <Select value={relationshipType} onValueChange={setRelationshipType} disabled={isAddingChild}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={relationshipType}
+                        onValueChange={setRelationshipType}
+                        disabled={isAddingChild}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="parent">Parent</SelectItem>
                           <SelectItem value="guardian">Guardian</SelectItem>
                           <SelectItem value="mother">Mother</SelectItem>
                           <SelectItem value="father">Father</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    {addError && <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">{addError}</div>}
+                    {addError && (
+                      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+                        {addError}
+                      </div>
+                    )}
                     <div className="flex gap-2">
-                      <Button onClick={handleAddChild} disabled={isAddingChild} className="flex-1 bg-gray-900 hover:bg-gray-800">{isAddingChild ? 'Adding...' : 'Add Student'}</Button>
-                      <Button variant="outline" onClick={() => { setShowAddDialog(false); setStudentNumber(''); setAddError(''); }} disabled={isAddingChild}>Cancel</Button>
+                      <Button
+                        onClick={handleAddChild}
+                        disabled={isAddingChild}
+                        className="flex-1 bg-gray-900 hover:bg-gray-800"
+                      >
+                        {isAddingChild ? 'Adding...' : 'Add Student'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowAddDialog(false);
+                          setStudentNumber('');
+                          setAddError('');
+                        }}
+                        disabled={isAddingChild}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 </DialogContent>
@@ -675,10 +757,15 @@ export default function ParentDashboardPage() {
 
           {/* Desktop top bar */}
           <div className="hidden md:flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 flex-shrink-0">
-            <span className="text-sm font-semibold text-gray-900">Guardian Portal</span>
+            <span className="text-sm font-semibold text-gray-900">
+              Guardian Portal
+            </span>
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white">
+                <Button
+                  size="sm"
+                  className="bg-gray-900 hover:bg-gray-800 text-white"
+                >
                   <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                   Add Student
                 </Button>
@@ -686,29 +773,62 @@ export default function ParentDashboardPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Your Student</DialogTitle>
-                  <DialogDescription>Enter the student number to link them to your account.</DialogDescription>
+                  <DialogDescription>
+                    Enter the student number to link them to your account.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
                     <Label htmlFor="studentNumber">Student Number</Label>
-                    <Input id="studentNumber" placeholder="e.g., SNPA-2024-001" value={studentNumber} onChange={(e) => setStudentNumber(e.target.value)} disabled={isAddingChild} />
+                    <Input
+                      id="studentNumber"
+                      placeholder="e.g., SNPA-2024-001"
+                      value={studentNumber}
+                      onChange={(e) => setStudentNumber(e.target.value)}
+                      disabled={isAddingChild}
+                    />
                   </div>
                   <div>
                     <Label>Relationship</Label>
-                    <Select value={relationshipType} onValueChange={setRelationshipType} disabled={isAddingChild}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={relationshipType}
+                      onValueChange={setRelationshipType}
+                      disabled={isAddingChild}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="parent">Parent</SelectItem>
                         <SelectItem value="guardian">Guardian</SelectItem>
                         <SelectItem value="mother">Mother</SelectItem>
                         <SelectItem value="father">Father</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {addError && <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">{addError}</div>}
+                  {addError && (
+                    <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+                      {addError}
+                    </div>
+                  )}
                   <div className="flex gap-2">
-                    <Button onClick={handleAddChild} disabled={isAddingChild} className="flex-1 bg-gray-900 hover:bg-gray-800">{isAddingChild ? 'Adding...' : 'Add Student'}</Button>
-                    <Button variant="outline" onClick={() => { setShowAddDialog(false); setStudentNumber(''); setAddError(''); }} disabled={isAddingChild}>Cancel</Button>
+                    <Button
+                      onClick={handleAddChild}
+                      disabled={isAddingChild}
+                      className="flex-1 bg-gray-900 hover:bg-gray-800"
+                    >
+                      {isAddingChild ? 'Adding...' : 'Add Student'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowAddDialog(false);
+                        setStudentNumber('');
+                        setAddError('');
+                      }}
+                      disabled={isAddingChild}
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
@@ -1026,7 +1146,9 @@ export default function ParentDashboardPage() {
                 {/* Enrollment Form */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-red-800">New Enrollment Request</CardTitle>
+                    <CardTitle className="text-red-800">
+                      New Enrollment Request
+                    </CardTitle>
                     <CardDescription>
                       Select a child and fill in the enrollment details.
                     </CardDescription>
@@ -1034,14 +1156,20 @@ export default function ParentDashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Select Child *</Label>
-                        <Select value={enrollingChild} onValueChange={setEnrollingChild}>
+                        <Label required>Select Child</Label>
+                        <Select
+                          value={enrollingChild}
+                          onValueChange={setEnrollingChild}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Choose a student" />
                           </SelectTrigger>
                           <SelectContent>
                             {children.map((child) => (
-                              <SelectItem key={String(child.id)} value={String(child.id)}>
+                              <SelectItem
+                                key={String(child.id)}
+                                value={String(child.id)}
+                              >
                                 {child.name} ({child.student_id || 'N/A'})
                               </SelectItem>
                             ))}
@@ -1050,22 +1178,46 @@ export default function ParentDashboardPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Grade Level *</Label>
-                        <Select value={enrollGradeLevel} onValueChange={(v) => { setEnrollGradeLevel(v); setEnrollStrand(''); }}>
+                        <Label required>Grade Level</Label>
+                        <Select
+                          value={enrollGradeLevel}
+                          onValueChange={(v) => {
+                            setEnrollGradeLevel(v);
+                            setEnrollStrand('');
+                          }}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select grade level" />
                           </SelectTrigger>
                           <SelectContent>
-                            {['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map((g) => (
-                              <SelectItem key={g} value={g}>{g}</SelectItem>
+                            {[
+                              'Grade 1',
+                              'Grade 2',
+                              'Grade 3',
+                              'Grade 4',
+                              'Grade 5',
+                              'Grade 6',
+                              'Grade 7',
+                              'Grade 8',
+                              'Grade 9',
+                              'Grade 10',
+                              'Grade 11',
+                              'Grade 12',
+                            ].map((g) => (
+                              <SelectItem key={g} value={g}>
+                                {g}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Quarter *</Label>
-                        <Select value={enrollSemester} onValueChange={setEnrollSemester}>
+                        <Label required>Quarter</Label>
+                        <Select
+                          value={enrollSemester}
+                          onValueChange={setEnrollSemester}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -1078,16 +1230,30 @@ export default function ParentDashboardPage() {
                         </Select>
                       </div>
 
-                      {(enrollGradeLevel.includes('11') || enrollGradeLevel.includes('12')) && (
+                      {(enrollGradeLevel.includes('11') ||
+                        enrollGradeLevel.includes('12')) && (
                         <div className="space-y-2">
-                          <Label>Strand *</Label>
-                          <Select value={enrollStrand} onValueChange={setEnrollStrand}>
+                          <Label required>Strand</Label>
+                          <Select
+                            value={enrollStrand}
+                            onValueChange={setEnrollStrand}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select strand" />
                             </SelectTrigger>
                             <SelectContent>
-                              {['STEM','ABM','HUMSS','GAS','TVL','Sports','Arts & Design'].map((s) => (
-                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              {[
+                                'STEM',
+                                'ABM',
+                                'HUMSS',
+                                'GAS',
+                                'TVL',
+                                'Sports',
+                                'Arts & Design',
+                              ].map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -1106,7 +1272,9 @@ export default function ParentDashboardPage() {
                       disabled={enrollSubmitting}
                     >
                       <GraduationCap className="w-4 h-4 mr-2" />
-                      {enrollSubmitting ? 'Submitting...' : 'Submit Enrollment Request'}
+                      {enrollSubmitting
+                        ? 'Submitting...'
+                        : 'Submit Enrollment Request'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -1114,7 +1282,9 @@ export default function ParentDashboardPage() {
                 {/* Enrollment Status */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-red-800">Enrollment History</CardTitle>
+                    <CardTitle className="text-red-800">
+                      Enrollment History
+                    </CardTitle>
                     <CardDescription>
                       Status of submitted enrollment requests.
                     </CardDescription>
@@ -1132,18 +1302,28 @@ export default function ParentDashboardPage() {
                     ) : (
                       <div className="space-y-3">
                         {enrollmentRequests.map((req: any) => {
-                          const child = children.find((c) => String(c.id) === String(req.student_id));
+                          const child = children.find(
+                            (c) => String(c.id) === String(req.student_id)
+                          );
                           return (
-                            <div key={req.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div
+                              key={req.id}
+                              className="flex items-center justify-between p-4 border rounded-lg"
+                            >
                               <div>
                                 <p className="font-medium text-gray-900">
                                   {child?.name || 'Unknown Student'}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {req.grade_level}{req.strand ? ` - ${req.strand}` : ''} | {req.school_year} | Q{req.quarter}
+                                  {req.grade_level}
+                                  {req.strand ? ` - ${req.strand}` : ''} |{' '}
+                                  {req.school_year} | Q{req.quarter}
                                 </p>
                                 <p className="text-xs text-gray-400 mt-1">
-                                  Submitted: {new Date(req.created_at).toLocaleDateString()}
+                                  Submitted:{' '}
+                                  {new Date(
+                                    req.created_at
+                                  ).toLocaleDateString()}
                                 </p>
                               </div>
                               <Badge
@@ -1156,7 +1336,8 @@ export default function ParentDashboardPage() {
                                       : 'bg-yellow-50 text-yellow-700 border-yellow-300'
                                 }
                               >
-                                {req.status?.charAt(0).toUpperCase() + req.status?.slice(1) || 'Pending'}
+                                {req.status?.charAt(0).toUpperCase() +
+                                  req.status?.slice(1) || 'Pending'}
                               </Badge>
                             </div>
                           );
@@ -1315,9 +1496,151 @@ export default function ParentDashboardPage() {
                 </div>
               </div>
             )}
+            {activeTab === 'profile' && (
+              <ProfileTab parent={parent} onSaved={(updated: any) => {
+                setParent(updated);
+                localStorage.setItem('parent', JSON.stringify(updated));
+              }} />
+            )}
           </main>
         </div>
       </div>
     </PasswordChangeWrapper>
+  );
+}
+
+function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({ first_name: '', last_name: '', middle_name: '', phone_number: '', address: '' });
+
+  const displayName = parent
+    ? `${parent.first_name || ''} ${parent.last_name || ''}`.trim() || parent.email?.split('@')[0] || 'Parent'
+    : 'Parent';
+
+  const handleEdit = () => {
+    setForm({
+      first_name:   parent.first_name   || '',
+      last_name:    parent.last_name    || '',
+      middle_name:  parent.middle_name  || '',
+      phone_number: parent.phone_number || parent.phone || '',
+      address:      parent.address      || '',
+    });
+    setError('');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.first_name.trim() || !form.last_name.trim()) {
+      setError('First name and last name are required.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/parent/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId: parent.id, ...form }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Failed to save.');
+      onSaved({ ...parent, ...form });
+      setEditing(false);
+    } catch (e: any) {
+      setError(e.message || 'Something went wrong.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5 max-w-2xl">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
+        <p className="text-sm text-gray-500 mt-0.5">Update your personal contact information</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <p className="text-sm font-semibold text-gray-900">Personal Information</p>
+          {!editing && (
+            <button
+              onClick={handleEdit}
+              className="text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+
+        {editing ? (
+          <div className="px-5 py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label required>First Name</Label>
+                <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+              </div>
+              <div>
+                <Label required>Last Name</Label>
+                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <Label>Middle Name</Label>
+              <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
+            </div>
+            <div>
+              <Label>Phone Number</Label>
+              <Input
+                value={form.phone_number}
+                placeholder="09XXXXXXXXX"
+                inputMode="numeric"
+                maxLength={11}
+                onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/\D/g, '') })}
+              />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street, Barangay, City" />
+            </div>
+            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => { setEditing(false); setError(''); }}
+                disabled={saving}
+                className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="text-sm px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 py-2 divide-y divide-gray-100">
+            {[
+              { label: 'Full Name',     value: displayName },
+              { label: 'Email',         value: parent?.email },
+              { label: 'Phone Number',  value: parent?.phone_number || parent?.phone },
+              { label: 'Address',       value: parent?.address },
+            ].map(({ label, value }) =>
+              value ? (
+                <div key={label} className="py-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">{value}</p>
+                </div>
+              ) : null
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

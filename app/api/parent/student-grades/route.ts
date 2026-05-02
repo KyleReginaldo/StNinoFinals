@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -12,6 +12,8 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabaseAdmin();
 
     // Fetch only approved grades from the database
     const { data: grades, error } = await supabase

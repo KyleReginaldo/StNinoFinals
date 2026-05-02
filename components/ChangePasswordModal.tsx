@@ -141,7 +141,7 @@ export function ChangePasswordModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
-            <Label htmlFor="currentPassword">Current Password *</Label>
+            <Label htmlFor="currentPassword" required>Current Password</Label>
             <div className="relative">
               <Input
                 id="currentPassword"
@@ -169,7 +169,7 @@ export function ChangePasswordModal({
           </div>
 
           <div>
-            <Label htmlFor="newPassword">New Password *</Label>
+            <Label htmlFor="newPassword" required>New Password</Label>
             <div className="relative">
               <Input
                 id="newPassword"
@@ -207,7 +207,7 @@ export function ChangePasswordModal({
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+            <Label htmlFor="confirmPassword" required>Confirm New Password</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"

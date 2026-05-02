@@ -170,7 +170,7 @@ export default function RoomsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="name">Room Name *</Label>
+              <Label htmlFor="name" required>Room Name</Label>
               <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Room 101" />
             </div>
             <div className="space-y-1.5">

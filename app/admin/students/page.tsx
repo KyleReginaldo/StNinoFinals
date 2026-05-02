@@ -32,8 +32,8 @@ import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { Edit, Search, Trash2, UserPlus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 interface Student {
@@ -42,6 +42,7 @@ interface Student {
   last_name: string;
   middle_name?: string;
   student_number: string;
+  lrn?: string;
   grade_level: string;
   section: string;
   email: string;
@@ -53,6 +54,69 @@ interface Student {
   street_details?: string;
   rfid?: string;
   status: string;
+}
+
+function RfidScanInput({
+  value,
+  onChange,
+  placeholder = 'Enter or scan RFID',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [scanning, setScanning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastSeenRef = useRef<string | null>(null);
+
+  const stopScan = () => {
+    setScanning(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const startScan = () => {
+    lastSeenRef.current = null;
+    setScanning(true);
+    intervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin/rfid-latest-scan?window=15');
+        const data = await res.json();
+        if (data.success && data.rfid && data.rfid !== lastSeenRef.current) {
+          lastSeenRef.current = data.rfid;
+          onChange(data.rfid);
+          stopScan();
+        }
+      } catch {}
+    }, 1500);
+  };
+
+  useEffect(() => () => stopScan(), []);
+
+  return (
+    <div className="flex gap-2 items-center">
+      <Input
+        value={value}
+        onChange={() => {}}
+        readOnly
+        placeholder={placeholder}
+        className="flex-1 cursor-not-allowed bg-gray-50"
+      />
+      {scanning ? (
+        <Button type="button" variant="outline" size="sm" onClick={stopScan} className="shrink-0 gap-1 text-red-700 border-red-300">
+          <Radio className="w-4 h-4 animate-pulse" />
+          Waiting…
+        </Button>
+      ) : (
+        <Button type="button" variant="outline" size="sm" onClick={startScan} className="shrink-0 gap-1">
+          <Radio className="w-4 h-4" />
+          Scan
+        </Button>
+      )}
+    </div>
+  );
 }
 
 export default function StudentManagementPage() {
@@ -70,6 +134,7 @@ export default function StudentManagementPage() {
     last_name: '',
     middle_name: '',
     student_number: '',
+    lrn: '',
     grade_level: '',
     section: '',
     email: '',
@@ -89,6 +154,7 @@ export default function StudentManagementPage() {
     last_name: '',
     middle_name: '',
     student_number: '',
+    lrn: '',
     grade_level: '',
     section: '',
     email: '',
@@ -107,6 +173,7 @@ export default function StudentManagementPage() {
   const [deletingStudent, setDeletingStudent] = useState(false);
   const [addError, setAddError] = useState('');
   const [editError, setEditError] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
   const [sectionsByGrade, setSectionsByGrade] = useState<
     Record<string, string[]>
   >({});
@@ -127,10 +194,11 @@ export default function StudentManagementPage() {
     fetchSections();
   }, []);
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (archived = false) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/students');
+      const url = `/api/admin/students${archived ? '?archived=true' : ''}`;
+      const response = await fetch(url);
       const result = await response.json();
       if (result.success && result.students) {
         setStudents(result.students);
@@ -143,8 +211,8 @@ export default function StudentManagementPage() {
   };
 
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    fetchStudents(showArchived);
+  }, [showArchived]);
 
   const tc = useTableControls(students, {
     searchFields: ['first_name', 'last_name', 'student_number', 'email'],
@@ -156,6 +224,13 @@ export default function StudentManagementPage() {
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+    const missing: string[] = [];
+    if (!newStudent.first_name.trim()) missing.push('First Name');
+    if (!newStudent.last_name.trim()) missing.push('Last Name');
+    if (!newStudent.student_number.trim()) missing.push('Student Number');
+    if (!newStudent.grade_level) missing.push('Grade Level');
+    if (!newStudent.email.trim()) missing.push('Email');
+    if (missing.length) { setAddError(`Required: ${missing.join(', ')}`); return; }
     setAddingStudent(true);
     setAddError('');
 
@@ -189,12 +264,13 @@ export default function StudentManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to add student');
 
-      await fetchStudents();
+      await fetchStudents(showArchived);
       setNewStudent({
         first_name: '',
         last_name: '',
         middle_name: '',
         student_number: '',
+        lrn: '',
         grade_level: '',
         section: '',
         email: '',
@@ -223,6 +299,12 @@ export default function StudentManagementPage() {
 
   const handleEditStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+    const missing: string[] = [];
+    if (!editStudent.first_name.trim()) missing.push('First Name');
+    if (!editStudent.last_name.trim()) missing.push('Last Name');
+    if (!editStudent.grade_level) missing.push('Grade Level');
+    if (!editStudent.email.trim()) missing.push('Email');
+    if (missing.length) { setEditError(`Required: ${missing.join(', ')}`); return; }
     setUpdatingStudent(true);
     setEditError('');
 
@@ -253,7 +335,7 @@ export default function StudentManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to update student');
 
-      await fetchStudents();
+      await fetchStudents(showArchived);
       setShowEditDialog(false);
       showAlert({ message: 'Student updated successfully!', type: 'success' });
     } catch (error: any) {
@@ -285,15 +367,37 @@ export default function StudentManagementPage() {
       if (!result.success)
         throw new Error(result.error || 'Failed to delete student');
 
-      await fetchStudents();
-      showAlert({ message: 'Student deleted successfully!', type: 'success' });
+      await fetchStudents(showArchived);
+      showAlert({ message: 'Student archived successfully!', type: 'success' });
     } catch (error: any) {
       showAlert({
-        message: error?.message || 'Failed to delete student.',
+        message: error?.message || 'Failed to archive student.',
         type: 'error',
       });
     } finally {
       setDeletingStudent(false);
+    }
+  };
+
+  const handleRestoreStudent = async (studentId: string, studentName: string) => {
+    const confirmed = await showConfirm({
+      message: `Restore ${studentName} from archive?`,
+      confirmText: 'Restore',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/admin/students/${studentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restore: true }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Failed to restore');
+      await fetchStudents(showArchived);
+      showAlert({ message: 'Student restored successfully!', type: 'success' });
+    } catch (error: any) {
+      showAlert({ message: error?.message || 'Failed to restore student.', type: 'error' });
     }
   };
 
@@ -304,6 +408,7 @@ export default function StudentManagementPage() {
       last_name: student.last_name,
       middle_name: student.middle_name || '',
       student_number: student.student_number,
+      lrn: student.lrn || '',
       grade_level: student.grade_level,
       section: student.section || '',
       email: student.email,
@@ -338,9 +443,19 @@ export default function StudentManagementPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-base font-semibold text-gray-900">Students</h1>
+          <h1 className="text-base font-semibold text-gray-900">
+            Students {showArchived && <span className="text-xs font-normal text-amber-600 ml-1">(Archived)</span>}
+          </h1>
           <p className="text-xs text-gray-400 mt-0.5">{tc.filteredCount} of {tc.totalCount} records</p>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          >
+            {showArchived ? 'View Active' : 'View Archived'}
+          </button>
+          {!showArchived && (
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-900 hover:bg-gray-700 text-white rounded-lg transition-colors">
@@ -360,7 +475,7 @@ export default function StudentManagementPage() {
               <form onSubmit={handleAddStudent} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>First Name *</Label>
+                    <Label required>First Name</Label>
                     <Input
                       value={newStudent.first_name}
                       placeholder="Enter first name"
@@ -374,7 +489,7 @@ export default function StudentManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Last Name *</Label>
+                    <Label required>Last Name</Label>
                     <Input
                       value={newStudent.last_name}
                       placeholder="Enter last name"
@@ -401,7 +516,7 @@ export default function StudentManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Student Number *</Label>
+                    <Label required>Student Number</Label>
                     <Input
                       value={newStudent.student_number}
                       placeholder="Enter student number"
@@ -415,7 +530,22 @@ export default function StudentManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Grade Level *</Label>
+                    <Label>LRN</Label>
+                    <Input
+                      value={newStudent.lrn}
+                      placeholder="11-digit Learner Reference Number"
+                      inputMode="numeric"
+                      maxLength={11}
+                      onChange={(e) =>
+                        setNewStudent({
+                          ...newStudent,
+                          lrn: e.target.value.replace(/\D/g, '').slice(0, 11),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label required>Grade Level</Label>
                     <Select
                       value={newStudent.grade_level}
                       onValueChange={(value) =>
@@ -469,7 +599,7 @@ export default function StudentManagementPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label>Email *</Label>
+                    <Label required>Email</Label>
                     <Input
                       type="email"
                       value={newStudent.email}
@@ -511,12 +641,9 @@ export default function StudentManagementPage() {
                   </div>
                   <div>
                     <Label>RFID Card Number</Label>
-                    <Input
+                    <RfidScanInput
                       value={newStudent.rfid}
-                      onChange={(e) =>
-                        setNewStudent({ ...newStudent, rfid: e.target.value })
-                      }
-                      placeholder="Enter RFID card number"
+                      onChange={(v) => setNewStudent({ ...newStudent, rfid: v })}
                     />
                   </div>
                 </div>
@@ -552,7 +679,9 @@ export default function StudentManagementPage() {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
+      </div>
 
         {/* Edit Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
@@ -564,7 +693,7 @@ export default function StudentManagementPage() {
             <form onSubmit={handleEditStudent} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>First Name *</Label>
+                  <Label required>First Name</Label>
                   <Input
                     value={editStudent.first_name}
                     onChange={(e) =>
@@ -577,7 +706,7 @@ export default function StudentManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Last Name *</Label>
+                  <Label required>Last Name</Label>
                   <Input
                     value={editStudent.last_name}
                     onChange={(e) =>
@@ -602,20 +731,31 @@ export default function StudentManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Student Number *</Label>
+                  <Label required>Student Number</Label>
                   <Input
                     value={editStudent.student_number}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        student_number: e.target.value,
-                      })
-                    }
-                    required
+                    readOnly
+                    className="bg-gray-50 cursor-not-allowed select-none"
+                    tabIndex={-1}
                   />
                 </div>
                 <div>
-                  <Label>Grade Level *</Label>
+                  <Label>LRN</Label>
+                  <Input
+                    value={editStudent.lrn}
+                    placeholder="11-digit Learner Reference Number"
+                    inputMode="numeric"
+                    maxLength={11}
+                    onChange={(e) =>
+                      setEditStudent({
+                        ...editStudent,
+                        lrn: e.target.value.replace(/\D/g, '').slice(0, 11),
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label required>Grade Level</Label>
                   <Select
                     value={editStudent.grade_level}
                     onValueChange={(value) =>
@@ -669,7 +809,7 @@ export default function StudentManagementPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Email *</Label>
+                  <Label required>Email</Label>
                   <Input
                     type="email"
                     value={editStudent.email}
@@ -709,12 +849,9 @@ export default function StudentManagementPage() {
                 </div>
                 <div>
                   <Label>RFID Card Number</Label>
-                  <Input
+                  <RfidScanInput
                     value={editStudent.rfid}
-                    onChange={(e) =>
-                      setEditStudent({ ...editStudent, rfid: e.target.value })
-                    }
-                    placeholder="Enter RFID card number"
+                    onChange={(v) => setEditStudent({ ...editStudent, rfid: v })}
                   />
                 </div>
               </div>
@@ -784,6 +921,14 @@ export default function StudentManagementPage() {
                   </div>
                   <div className="pb-3 border-b">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
+                      LRN
+                    </h3>
+                    <p className="text-base font-mono">
+                      {selectedStudent.lrn || 'N/A'}
+                    </p>
+                  </div>
+                  <div className="pb-3 border-b">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">
                       Grade Level
                     </h3>
                     <p className="text-base">{selectedStudent.grade_level}</p>
@@ -845,14 +990,6 @@ export default function StudentManagementPage() {
                   </div>
                   <div className="pb-3 border-b">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
-                      Status
-                    </h3>
-                    <Badge className="bg-green-100 text-green-800">
-                      {selectedStudent.status}
-                    </Badge>
-                  </div>
-                  <div className="pb-3 border-b">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">
                       Address
                     </h3>
                     <p className="text-base">
@@ -888,15 +1025,7 @@ export default function StudentManagementPage() {
             <option value="">All Grades</option>
             {gradeOptions.map((g) => <option key={g} value={g}>{g}</option>)}
           </select>
-          <select
-            value={tc.filters['status'] ?? ''}
-            onChange={(e) => tc.setFilter('status', e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
-          >
-            <option value="">All Status</option>
-            {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          {(tc.search || tc.filters['grade_level'] || tc.filters['status']) && (
+          {(tc.search || tc.filters['grade_level']) && (
             <button
               onClick={tc.clearFilters}
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
@@ -922,7 +1051,6 @@ export default function StudentManagementPage() {
                   <SortHeader label="Section" sortKey="section"      currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"  sortKey="email"         currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <SortHeader label="Status" sortKey="status"        currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5" />
                 </tr>
               </thead>
@@ -960,27 +1088,34 @@ export default function StudentManagementPage() {
                       <td className="px-4 py-3 text-[13px] text-gray-500 whitespace-nowrap">
                         {student.email}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                          {student.status || 'Active'}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => openEditDialog(student)}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteStudent(student.id, `${student.first_name} ${student.last_name}`)}
-                            disabled={deletingStudent}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {showArchived ? (
+                            <button
+                              onClick={() => handleRestoreStudent(student.id, `${student.first_name} ${student.last_name}`)}
+                              className="p-1.5 rounded-md text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                              title="Restore"
+                            >
+                              <ArchiveRestore className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => openEditDialog(student)}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteStudent(student.id, `${student.first_name} ${student.last_name}`)}
+                                disabled={deletingStudent}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                title="Archive"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

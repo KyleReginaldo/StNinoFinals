@@ -548,7 +548,7 @@ export default function ClassesManagementPage() {
           <div className="space-y-6 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="class_code">Class Code <span className="text-red-500">*</span></Label>
+                <Label htmlFor="class_code" required>Class Code</Label>
                 <Input
                   id="class_code"
                   value={formData.class_code}
@@ -557,7 +557,7 @@ export default function ClassesManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="class_name">Class Name <span className="text-red-500">*</span></Label>
+                <Label htmlFor="class_name" required>Class Name</Label>
                 <Input
                   id="class_name"
                   value={formData.class_name}
@@ -614,7 +614,7 @@ export default function ClassesManagementPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="school_year">School Year <span className="text-red-500">*</span></Label>
+                <Label htmlFor="school_year" required>School Year</Label>
                 <Input
                   id="school_year"
                   value={formData.school_year}
@@ -623,7 +623,7 @@ export default function ClassesManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="semester">Quarter <span className="text-red-500">*</span></Label>
+                <Label htmlFor="semester" required>Quarter</Label>
                 <Select
                   value={formData.semester}
                   onValueChange={value => setFormData({ ...formData, semester: value })}

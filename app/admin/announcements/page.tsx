@@ -44,17 +44,18 @@ interface Announcement {
 
 type FlatAnnouncement = Announcement & { announcementStatus: string };
 
-const PRIORITY_CONFIG: Record<string, { label: string; dot: string }> = {
-  high:   { label: 'High',   dot: 'bg-red-500'   },
-  normal: { label: 'Normal', dot: 'bg-amber-400'  },
-  low:    { label: 'Low',    dot: 'bg-blue-400'   },
+const PRIORITY_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
+  urgent: { label: 'Urgent', dot: 'bg-red-500',  badge: 'bg-red-50 text-red-700 ring-1 ring-red-200'  },
+  normal: { label: 'Normal', dot: 'bg-gray-400', badge: 'bg-gray-50 text-gray-600 ring-1 ring-gray-200' },
 };
 
 const PRIORITY_OPTIONS = [
-  { label: 'High',   value: 'high'   },
+  { label: 'Urgent', value: 'urgent' },
   { label: 'Normal', value: 'normal' },
-  { label: 'Low',    value: 'low'    },
 ];
+
+const normalizePriority = (p: string | null): 'urgent' | 'normal' =>
+  p === 'urgent' || p === 'high' ? 'urgent' : 'normal';
 
 const AUDIENCE_OPTIONS = [
   { label: 'All Users',        value: 'all'      },
@@ -106,7 +107,11 @@ export default function AdminAnnouncementsPage() {
     const now = new Date();
     return announcements.map((a) => {
       const isExpired = a.expires_at && new Date(a.expires_at) < now;
-      return { ...a, announcementStatus: a.is_active && !isExpired ? 'active' : 'inactive' };
+      return {
+        ...a,
+        priority: normalizePriority(a.priority),
+        announcementStatus: a.is_active && !isExpired ? 'active' : 'inactive',
+      };
     });
   }, [announcements]);
 
@@ -115,6 +120,15 @@ export default function AdminAnnouncementsPage() {
     defaultSort: { key: 'published_at', dir: 'desc' },
     pageSize: 25,
   });
+
+  // Urgent announcements always stack on top within whatever page/sort is active
+  const displayRows = useMemo(() => {
+    return [...tc.rows].sort((a, b) => {
+      if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
+      if (a.priority !== 'urgent' && b.priority === 'urgent') return 1;
+      return 0;
+    });
+  }, [tc.rows]);
 
   const counts = useMemo(() => {
     const active = flatAnnouncements.filter((a) => a.announcementStatus === 'active').length;
@@ -139,7 +153,7 @@ export default function AdminAnnouncementsPage() {
     setFormData({
       title: a.title,
       content: a.content,
-      priority: a.priority === 'medium' ? 'normal' : (a.priority || 'normal'),
+      priority: normalizePriority(a.priority),
       target_audience: a.target_audience || 'all',
       is_active: a.is_active ?? true,
       published_at: a.published_at
@@ -273,9 +287,8 @@ export default function AdminAnnouncementsPage() {
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           >
             <option value="">All Priority</option>
-            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
             <option value="normal">Normal</option>
-            <option value="low">Low</option>
           </select>
           <select
             value={tc.filters['target_audience'] ?? ''}
@@ -329,7 +342,7 @@ export default function AdminAnnouncementsPage() {
                 </td>
               </tr>
             ) : (
-              tc.rows.map((a) => {
+              displayRows.map((a) => {
                 const priCfg = PRIORITY_CONFIG[a.priority ?? 'normal'] ?? PRIORITY_CONFIG['normal'];
                 const isActive = a.announcementStatus === 'active';
                 return (
@@ -339,9 +352,9 @@ export default function AdminAnnouncementsPage() {
                       <p className="text-xs text-gray-400 truncate">{a.content}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${priCfg.badge}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${priCfg.dot}`} />
-                        <span className="text-xs text-gray-600">{priCfg.label}</span>
+                        {priCfg.label}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 capitalize">
@@ -407,7 +420,7 @@ export default function AdminAnnouncementsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" required>Title</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -416,7 +429,7 @@ export default function AdminAnnouncementsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="content">Content *</Label>
+              <Label htmlFor="content" required>Content</Label>
               <Textarea
                 id="content"
                 value={formData.content}
@@ -427,7 +440,7 @@ export default function AdminAnnouncementsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Priority</Label>
+                <Label required>Priority</Label>
                 <Select
                   value={formData.priority}
                   onValueChange={(v) => setFormData({ ...formData, priority: v })}

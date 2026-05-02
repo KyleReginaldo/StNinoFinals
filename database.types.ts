@@ -778,6 +778,7 @@ export type Database = {
           grade_level: string | null
           id: string
           last_name: string
+          lrn: string | null
           medical_notes: string | null
           middle_name: string | null
           password_change_required: boolean | null
@@ -811,6 +812,7 @@ export type Database = {
           grade_level?: string | null
           id: string
           last_name: string
+          lrn?: string | null
           medical_notes?: string | null
           middle_name?: string | null
           password_change_required?: boolean | null
@@ -844,6 +846,7 @@ export type Database = {
           grade_level?: string | null
           id?: string
           last_name?: string
+          lrn?: string | null
           medical_notes?: string | null
           middle_name?: string | null
           password_change_required?: boolean | null

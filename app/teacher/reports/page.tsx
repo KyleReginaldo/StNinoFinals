@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { Download, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -25,13 +25,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable?: { finalY: number };
-  }
-}
 
 interface ClassWithCount {
   id: string;
@@ -134,7 +127,7 @@ export default function TeacherReportsPage() {
     ]);
     tableBody.push(['TOTAL', '', '', '', '', totalStudents] as any);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 50,
       head: [['Class Name', 'Grade Level', 'Section', 'School Year', 'Quarter', 'Students']],
       body: tableBody,
@@ -151,7 +144,7 @@ export default function TeacherReportsPage() {
       margin: { left: 15, right: 15 },
     });
 
-    let startY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 15 : 160;
+    let startY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 15 : 160;
     if (doc.internal.pageSize.height - startY < 80) { doc.addPage(); startY = 20; }
 
     doc.setFontSize(10); doc.setFont('helvetica', 'bold');

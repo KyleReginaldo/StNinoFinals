@@ -693,6 +693,13 @@ export async function POST(request: Request) {
           console.log(
             `❌ No student or teacher found with RFID: ${rfidNormalized}`
           );
+          // Save raw RFID to the assignment queue so admin UI can detect it
+          try {
+            await supabaseClient.from('rfid_scan_queue' as any).insert({
+              rfid_tag: rfidNormalized,
+              scanned_at: new Date().toISOString(),
+            });
+          } catch (_) {}
           return NextResponse.json(
             {
               success: false,

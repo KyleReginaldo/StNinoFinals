@@ -455,7 +455,7 @@ const AdmissionPage = () => {
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label htmlFor="rejectionReason">Reason for Rejection *</Label>
+              <Label htmlFor="rejectionReason" required>Reason for Rejection</Label>
               <Textarea
                 id="rejectionReason"
                 placeholder="Enter the reason for rejection..."

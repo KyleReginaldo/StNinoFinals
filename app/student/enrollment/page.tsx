@@ -931,9 +931,7 @@ function EnrollmentForm({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="gradeLevel">
-              Grade Level <span className="text-red-600">*</span>
-            </Label>
+            <Label htmlFor="gradeLevel" required>Grade Level</Label>
             <Select value={gradeLevel} onValueChange={setGradeLevel}>
               <SelectTrigger id="gradeLevel">
                 <SelectValue placeholder="Select grade level" />
@@ -948,9 +946,7 @@ function EnrollmentForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="semester">
-              Quarter <span className="text-red-600">*</span>
-            </Label>
+            <Label htmlFor="semester" required>Quarter</Label>
             <Select value={semester} onValueChange={setSemester}>
               <SelectTrigger id="semester">
                 <SelectValue placeholder="Select quarter" />
@@ -967,9 +963,7 @@ function EnrollmentForm({
 
         {isSHS && (
           <div className="space-y-1.5">
-            <Label htmlFor="strand">
-              Strand <span className="text-red-600">*</span>
-            </Label>
+            <Label htmlFor="strand" required>Strand</Label>
             <Select value={strand} onValueChange={setStrand}>
               <SelectTrigger id="strand">
                 <SelectValue placeholder="Select strand (SHS only)" />

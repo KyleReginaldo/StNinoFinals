@@ -26,8 +26,11 @@ const mockStudents = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const showArchived = searchParams.get('archived') === 'true';
+
     // Use admin client for server-side operations (bypasses RLS)
     let supabaseClient;
     try {
@@ -52,8 +55,9 @@ export async function GET() {
       .from('users')
       .select('*')
       .eq('role', 'student')
+      .eq('is_archived', showArchived)
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(500);
 
     if (error) {
       console.error('Database error:', error);
@@ -100,6 +104,7 @@ export async function POST(request: Request) {
       last_name,
       middle_name,
       student_number,
+      lrn,
       grade_level,
       section,
       email,
@@ -186,6 +191,7 @@ export async function POST(request: Request) {
       email: email,
       phone_number: phone_number || null,
       student_number: student_number,
+      lrn: lrn || null,
       grade_level: grade_level,
       section: section || null,
       date_of_birth: date_of_birth || null,

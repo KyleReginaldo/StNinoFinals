@@ -3,14 +3,17 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
 // GET - Fetch all teachers
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const showArchived = searchParams.get('archived') === 'true';
     const admin = getSupabaseAdmin();
 
     const { data: teachers, error } = await admin
       .from('users')
       .select('*')
       .eq('role', 'teacher')
+      .eq('is_archived', showArchived)
       .order('created_at', { ascending: false });
 
     if (error) {

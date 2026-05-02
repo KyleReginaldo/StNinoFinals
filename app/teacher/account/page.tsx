@@ -1,43 +1,44 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { BookOpen, Hash, Mail, MapPin, Phone, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Teacher {
-  id: number;
+  id: string;
   email: string;
-  name?: string;
   first_name?: string;
   last_name?: string;
-  subject?: string;
-  subjects?: string;
+  middle_name?: string;
+  employee_number?: string;
   teacher_id?: string;
   department?: string;
+  specialization?: string;
+  phone_number?: string;
   phone?: string;
   contact_number?: string;
   address?: string;
+  date_of_birth?: string;
   [key: string]: any;
-}
-
-function Field({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-start gap-3 py-3">
-      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon className="w-4 h-4 text-gray-400" />
-      </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-medium text-gray-900 mt-0.5">{value}</p>
-      </div>
-    </div>
-  );
 }
 
 export default function TeacherAccount() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({
+    first_name: '',
+    last_name: '',
+    middle_name: '',
+    phone_number: '',
+    address: '',
+    date_of_birth: '',
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem('teacher');
@@ -58,11 +59,51 @@ export default function TeacherAccount() {
   }, [teacher]);
 
   const avatarLetters = displayName
-    .split(' ')
-    .map((n: string) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+    .split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
+
+  const handleEdit = () => {
+    if (!teacher) return;
+    setForm({
+      first_name:   teacher.first_name  || '',
+      last_name:    teacher.last_name   || '',
+      middle_name:  teacher.middle_name || '',
+      phone_number: teacher.phone_number || teacher.phone || teacher.contact_number || '',
+      address:      teacher.address     || '',
+      date_of_birth: teacher.date_of_birth || '',
+    });
+    setError('');
+    setEditing(true);
+  };
+
+  const handleCancel = () => { setEditing(false); setError(''); };
+
+  const handleSave = async () => {
+    if (!teacher) return;
+    if (!form.first_name.trim() || !form.last_name.trim()) {
+      setError('First name and last name are required.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/teacher/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherId: teacher.id, ...form }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Failed to save.');
+
+      const updated = { ...teacher, ...form };
+      setTeacher(updated);
+      localStorage.setItem('teacher', JSON.stringify(updated));
+      setEditing(false);
+    } catch (e: any) {
+      setError(e.message || 'Something went wrong.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!teacher) {
     return (
@@ -76,21 +117,26 @@ export default function TeacherAccount() {
     <div className="max-w-2xl mx-auto space-y-5">
 
       {/* Avatar + Name */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-xl font-bold text-amber-700">{avatarLetters}</span>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-between gap-5">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-xl font-bold text-amber-700">{avatarLetters}</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 capitalize">{displayName.toLowerCase()}</h2>
+            {(teacher.employee_number || teacher.teacher_id) && (
+              <p className="text-sm text-gray-400 mt-0.5">#{teacher.employee_number || teacher.teacher_id}</p>
+            )}
+            {(teacher.department) && (
+              <span className="inline-flex items-center mt-1.5 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
+                {teacher.department}
+              </span>
+            )}
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 capitalize">{displayName.toLowerCase()}</h2>
-          {teacher.teacher_id && (
-            <p className="text-sm text-gray-400 mt-0.5">#{teacher.teacher_id}</p>
-          )}
-          {(teacher.subjects || teacher.subject) && (
-            <span className="inline-flex items-center mt-1.5 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
-              {teacher.subjects || teacher.subject}
-            </span>
-          )}
-        </div>
+        {!editing && (
+          <Button variant="outline" size="sm" onClick={handleEdit}>Edit Profile</Button>
+        )}
       </div>
 
       {/* Personal Info */}
@@ -98,23 +144,96 @@ export default function TeacherAccount() {
         <div className="px-5 py-4 border-b border-gray-100">
           <p className="text-sm font-semibold text-gray-900">Personal Information</p>
         </div>
-        <div className="px-5 divide-y divide-gray-100">
-          <Field icon={User}     label="Full Name"   value={displayName} />
-          <Field icon={Hash}     label="Teacher ID"  value={teacher.teacher_id} />
-          <Field icon={Mail}     label="Email"       value={teacher.email} />
-          <Field icon={Phone}    label="Contact"     value={teacher.phone || teacher.contact_number} />
-          <Field icon={MapPin}   label="Address"     value={teacher.address} />
-        </div>
+
+        {editing ? (
+          <div className="px-5 py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label required>First Name</Label>
+                <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+              </div>
+              <div>
+                <Label required>Last Name</Label>
+                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <Label>Middle Name</Label>
+              <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
+            </div>
+            <div>
+              <Label>Phone Number</Label>
+              <Input
+                value={form.phone_number}
+                placeholder="09XXXXXXXXX"
+                inputMode="numeric"
+                maxLength={11}
+                onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/\D/g, '') })}
+              />
+            </div>
+            <div>
+              <Label>Date of Birth</Label>
+              <Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street, Barangay, City" />
+            </div>
+            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={handleCancel} disabled={saving}>Cancel</Button>
+              <Button onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white">
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 divide-y divide-gray-100">
+            {[
+              { icon: User,    label: 'Full Name',  value: displayName },
+              { icon: Hash,    label: 'Employee No.', value: teacher.employee_number || teacher.teacher_id },
+              { icon: Mail,    label: 'Email',       value: teacher.email },
+              { icon: Phone,   label: 'Contact',     value: teacher.phone_number || teacher.phone || teacher.contact_number },
+              { icon: MapPin,  label: 'Address',     value: teacher.address },
+            ].map(({ icon: Icon, label, value }) =>
+              value ? (
+                <div key={label} className="flex items-start gap-3 py-3">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+                    <p className="text-sm font-medium text-gray-900 mt-0.5">{value}</p>
+                  </div>
+                </div>
+              ) : null
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Teaching Info */}
+      {/* Teaching Info — always read-only */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
           <p className="text-sm font-semibold text-gray-900">Teaching Information</p>
         </div>
         <div className="px-5 divide-y divide-gray-100">
-          <Field icon={BookOpen} label="Subject(s)"  value={teacher.subjects || teacher.subject} />
-          <Field icon={Hash}     label="Department"  value={teacher.department} />
+          {[
+            { icon: BookOpen, label: 'Department',     value: teacher.department },
+            { icon: Hash,     label: 'Specialization', value: teacher.specialization },
+          ].map(({ icon: Icon, label, value }) =>
+            value ? (
+              <div key={label} className="flex items-start gap-3 py-3">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-gray-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">{value}</p>
+                </div>
+              </div>
+            ) : null
+          )}
         </div>
       </div>
     </div>
