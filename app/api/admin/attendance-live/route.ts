@@ -703,9 +703,15 @@ export async function POST(request: Request) {
           return NextResponse.json(
             {
               success: true,
-              message: 'Registered',
-              rfid: rfidNormalized,
-              action: 'rfid_assignment',
+              message: 'RFID Registered',
+              record: {
+                studentName: 'RFID Registered',
+                gradeLevel: 'Assign in Admin',
+                section: '',
+                status: 'Registered',
+                rfidCard: rfidNormalized,
+                scanType: 'assignment',
+              },
             },
             {
               status: 200,
