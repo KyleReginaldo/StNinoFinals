@@ -48,8 +48,6 @@ export async function POST(request: Request) {
       updateFields.phone_number = updateData.phone_number;
     if (updateData.date_of_birth !== undefined)
       updateFields.date_of_birth = updateData.date_of_birth;
-    if (updateData.gender !== undefined)
-      updateFields.gender = updateData.gender;
 
     // Update student in users table
     const { data, error } = await supabaseClient

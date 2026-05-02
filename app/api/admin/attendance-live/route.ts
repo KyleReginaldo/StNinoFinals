@@ -25,7 +25,7 @@ function isTimeoutModeActive(): boolean {
   return false;
 }
 
-export async function OPTIONS(request: Request) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
@@ -381,7 +381,7 @@ export async function GET(request: Request) {
       return {
         id: record.id,
         studentId:
-          person?.student_number || person?.employee_number || record.user_id,
+          person?.student_number || person?.employee_number || 'N/A',
         studentName: person
           ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() ||
             'Unknown'
@@ -732,6 +732,37 @@ export async function POST(request: Request) {
               { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
             );
           }
+
+          // Three-strike security tracking for unregistered cards
+          try {
+            const strikeWindow = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            const now = new Date().toISOString();
+
+            await supabaseClient.from('security_events' as any).insert({
+              event_type: 'unauthorized_scan',
+              rfid_tag: rfidNormalized,
+              occurred_at: now,
+              metadata: {},
+            });
+
+            const { count } = await (supabaseClient as any)
+              .from('security_events')
+              .select('*', { count: 'exact', head: true })
+              .eq('event_type', 'unauthorized_scan')
+              .eq('rfid_tag', rfidNormalized)
+              .gte('occurred_at', strikeWindow);
+
+            const strikes = (count as number) ?? 1;
+
+            if (strikes >= 3) {
+              await supabaseClient.from('security_events' as any).insert({
+                event_type: 'three_strike_alert',
+                rfid_tag: rfidNormalized,
+                occurred_at: now,
+                metadata: { strike_count: strikes },
+              });
+            }
+          } catch (_) {}
 
           return NextResponse.json(
             {

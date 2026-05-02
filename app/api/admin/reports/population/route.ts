@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     // Build main query
     let query = admin
       .from('enrollment_requests')
-      .select('grade_level, users!enrollment_requests_student_id_fkey(gender)')
+      .select('grade_level')
       .eq('status', 'approved');
 
     if (school_year) query = query.eq('school_year', school_year);
@@ -35,25 +35,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Aggregate by grade level
-    const map: Record<string, { male: number; female: number; other: number }> = {};
+    const map: Record<string, number> = {};
     (rows || []).forEach((row: any) => {
       const gl = row.grade_level || 'Unknown';
-      if (!map[gl]) map[gl] = { male: 0, female: 0, other: 0 };
-      const gender = (row.users?.gender || '').toLowerCase();
-      if (gender === 'male' || gender === 'm') map[gl].male++;
-      else if (gender === 'female' || gender === 'f') map[gl].female++;
-      else map[gl].other++;
+      map[gl] = (map[gl] || 0) + 1;
     });
 
     // Sort by grade order
     const byGrade = Object.entries(map)
-      .map(([grade_level, counts]) => ({
-        grade_level,
-        male: counts.male,
-        female: counts.female,
-        other: counts.other,
-        total: counts.male + counts.female + counts.other,
-      }))
+      .map(([grade_level, total]) => ({ grade_level, total }))
       .sort((a, b) => {
         const ai = GRADE_ORDER.indexOf(a.grade_level);
         const bi = GRADE_ORDER.indexOf(b.grade_level);

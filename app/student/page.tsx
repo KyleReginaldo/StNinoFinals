@@ -24,13 +24,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
@@ -746,7 +739,6 @@ export default function StudentDashboard() {
     address: '',
     phone: '',
     birthDate: '',
-    gender: '',
   });
   const [firstLoginError, setFirstLoginError] = useState<string | null>(null);
   const [isSavingFirstLogin, setIsSavingFirstLogin] = useState(false);
@@ -942,7 +934,6 @@ export default function StudentDashboard() {
           address: firstLoginForm.address,
           phone: firstLoginForm.phone,
           birth_date: firstLoginForm.birthDate,
-          gender: firstLoginForm.gender,
           firstLogin: false, // Mark as completed
         }),
       });
@@ -968,7 +959,6 @@ export default function StudentDashboard() {
           address: '',
           phone: '',
           birthDate: '',
-          gender: '',
         });
         showAlert({
           message:
@@ -1841,24 +1831,6 @@ export default function StudentDashboard() {
                       }
                       required
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select
-                      value={firstLoginForm.gender}
-                      onValueChange={(value) =>
-                        setFirstLoginForm({ ...firstLoginForm, gender: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="birthDate">Birth Date</Label>

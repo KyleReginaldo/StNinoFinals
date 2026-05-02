@@ -564,8 +564,9 @@ export default function AdminGradesPage() {
               <>
                 <Button
                   onClick={async () => {
-                    await handleReview(reviewingGrade, 'rejected');
+                    const grade = reviewingGrade;
                     setReviewingGrade(null);
+                    await handleReview(grade, 'rejected');
                   }}
                   disabled={processingId === reviewingGrade.id}
                   variant="outline"
@@ -576,8 +577,9 @@ export default function AdminGradesPage() {
                 </Button>
                 <Button
                   onClick={async () => {
-                    await handleReview(reviewingGrade, 'approved');
+                    const grade = reviewingGrade;
                     setReviewingGrade(null);
+                    await handleReview(grade, 'approved');
                   }}
                   disabled={processingId === reviewingGrade.id}
                   className="bg-green-600 text-white hover:bg-green-700"

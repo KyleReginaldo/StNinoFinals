@@ -37,6 +37,7 @@ interface AttendanceRecord {
   rfidCard: string
   studentPhoto?: string
   role?: string
+  scanType?: 'timein' | 'timeout' | null
 }
 
 interface SecurityAlert {
@@ -246,8 +247,14 @@ export default function LiveAttendancePage() {
                                 )}
                               </div>
                               <div className="flex items-center justify-between mt-1">
-                                <Badge variant="outline" className="text-xs">
-                                  {record.status}
+                                <Badge
+                                  className={`text-xs ${
+                                    record.scanType === 'timeout'
+                                      ? 'bg-orange-100 text-orange-800'
+                                      : 'bg-green-100 text-green-800'
+                                  }`}
+                                >
+                                  {record.scanType === 'timeout' ? 'Time Out' : 'Time In'}
                                 </Badge>
                                 <span className="text-xs font-medium text-gray-900">
                                   {formatTime(record.scanTime)}
@@ -386,8 +393,15 @@ export default function LiveAttendancePage() {
                             RFID Card: {latestRecord.rfidCard}
                           </p>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-red-200">
-                          <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
+                        <div className="mt-4 pt-4 border-t border-red-200 flex gap-2">
+                          <Badge className={`text-sm px-3 py-1 ${
+                            latestRecord.scanType === 'timeout'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {latestRecord.scanType === 'timeout' ? 'Time Out' : 'Time In'}
+                          </Badge>
+                          <Badge className="bg-blue-100 text-blue-800 text-sm px-3 py-1">
                             {latestRecord.status}
                           </Badge>
                         </div>

@@ -522,28 +522,15 @@ export default function StudentManagementPage() {
                     <Input
                       value={newStudent.student_number}
                       placeholder="Enter student number"
-                      onChange={(e) =>
-                        setNewStudent({
-                          ...newStudent,
-                          student_number: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label>LRN</Label>
-                    <Input
-                      value={newStudent.lrn}
-                      placeholder="11-digit Learner Reference Number"
                       inputMode="numeric"
                       maxLength={11}
                       onChange={(e) =>
                         setNewStudent({
                           ...newStudent,
-                          lrn: e.target.value.replace(/\D/g, '').slice(0, 11),
+                          student_number: e.target.value.replace(/\D/g, '').slice(0, 11),
                         })
                       }
+                      required
                     />
                   </div>
                   <div>
@@ -742,21 +729,6 @@ export default function StudentManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>LRN</Label>
-                  <Input
-                    value={editStudent.lrn}
-                    placeholder="11-digit Learner Reference Number"
-                    inputMode="numeric"
-                    maxLength={11}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        lrn: e.target.value.replace(/\D/g, '').slice(0, 11),
-                      })
-                    }
-                  />
-                </div>
-                <div>
                   <Label required>Grade Level</Label>
                   <Select
                     value={editStudent.grade_level}
@@ -919,14 +891,6 @@ export default function StudentManagementPage() {
                     </h3>
                     <p className="text-base font-mono">
                       {selectedStudent.student_number}
-                    </p>
-                  </div>
-                  <div className="pb-3 border-b">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">
-                      LRN
-                    </h3>
-                    <p className="text-base font-mono">
-                      {selectedStudent.lrn || 'N/A'}
                     </p>
                   </div>
                   <div className="pb-3 border-b">
