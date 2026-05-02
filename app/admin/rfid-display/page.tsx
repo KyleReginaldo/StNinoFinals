@@ -397,6 +397,19 @@ export default function RfidDisplayPage() {
               <RefreshCcw className={`w-4 h-4 mr-2 ${loadingAttendance ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const res = await fetch('/api/admin/test-security-alert', { method: 'POST' });
+                const data = await res.json();
+                if (!data.success) showAlert({ message: data.error, type: 'error' });
+              }}
+              className="border-red-700 bg-red-950 text-red-400 hover:bg-red-900 w-full md:w-auto"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Test Alert
+            </Button>
           </div>
         </div>
 

@@ -1,11 +1,24 @@
 'use client';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { cn } from '@/lib/utils';
-import { LogIn, LogOut, Radio, RefreshCw, User } from 'lucide-react';
+import { AlertTriangle, LogIn, LogOut, Radio, RefreshCw, User } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+interface SecurityAlert {
+  rfidTag: string;
+  strikes: number;
+  occurredAt: string;
+}
 
 interface AttendanceRecord {
   id: string;
@@ -40,6 +53,7 @@ export function RfidDisplayTab() {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [timeoutModeActive, setTimeoutModeActive] = useState(false);
   const [timeoutCountdown, setTimeoutCountdown] = useState(0);
+  const [securityAlert, setSecurityAlert] = useState<SecurityAlert | null>(null);
   const { showAlert } = useAlert();
 
   const fetchLive = useCallback(async (onlyNew = false) => {
@@ -90,6 +104,20 @@ export function RfidDisplayTab() {
     const iv = setInterval(() => fetchLive(true), 10000);
     return () => clearInterval(iv);
   }, [fetchLive]);
+
+  // Security alert subscription
+  useEffect(() => {
+    const ch = supabase
+      .channel('rfid-tab-security')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, (payload: any) => {
+        const row = payload.new;
+        if (row?.event_type === 'three_strike_alert') {
+          setSecurityAlert({ rfidTag: row.rfid_tag, strikes: row.metadata?.strike_count ?? 3, occurredAt: row.occurred_at });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
   useEffect(() => {
     const tick = () => setCurrentTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     tick();
@@ -205,6 +233,19 @@ export function RfidDisplayTab() {
             <RefreshCw className={cn('w-3.5 h-3.5', loadingAttendance && 'animate-spin')} />
             Refresh
           </button>
+
+          {/* Test Alert */}
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/admin/test-security-alert', { method: 'POST' });
+              const data = await res.json();
+              if (!data.success) showAlert({ message: data.error, type: 'error' });
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-300 bg-red-950/60 hover:bg-red-950 border border-red-800/50 rounded-lg transition-colors"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Test Alert
+          </button>
         </div>
       </div>
 
@@ -301,6 +342,47 @@ export function RfidDisplayTab() {
           </div>
         </div>
       )}
+
+      {/* Three-Strike Security Alert */}
+      <Dialog open={!!securityAlert} onOpenChange={(open) => { if (!open) setSecurityAlert(null); }}>
+        <DialogContent className="max-w-md border-2 border-red-600 bg-gray-900 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-400 text-xl">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+              SECURITY ALERT
+            </DialogTitle>
+            <DialogDescription className="text-red-300 font-medium">
+              3 consecutive unauthorized RFID scan attempts detected!
+            </DialogDescription>
+          </DialogHeader>
+          {securityAlert && (
+            <div className="space-y-4 pt-2">
+              <div className="bg-red-950 border border-red-700 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">RFID Tag</span>
+                  <span className="font-mono font-bold text-red-300">{securityAlert.rfidTag}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Attempts</span>
+                  <span className="font-bold text-red-400">{securityAlert.strikes}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Time</span>
+                  <span className="text-white">
+                    {new Date(securityAlert.occurredAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}
+                  </span>
+                </div>
+              </div>
+              <button
+                className="w-full py-2 bg-red-700 hover:bg-red-800 text-white font-semibold rounded-lg transition-colors"
+                onClick={() => setSecurityAlert(null)}
+              >
+                Acknowledge &amp; Dismiss
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

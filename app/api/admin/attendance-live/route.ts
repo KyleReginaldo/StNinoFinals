@@ -779,7 +779,9 @@ export async function POST(request: Request) {
                 { status: 403, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
               );
             }
-          } catch (_) {}
+          } catch (strikeErr) {
+            console.error('Three-strike tracking error:', strikeErr);
+          }
 
           return NextResponse.json(
             {
