@@ -761,6 +761,23 @@ export async function POST(request: Request) {
                 occurred_at: now,
                 metadata: { strike_count: strikes },
               });
+              // Return alarm message to LCD
+              return NextResponse.json(
+                {
+                  success: false,
+                  error: 'SECURITY ALERT',
+                  message: 'SECURITY ALERT',
+                  record: {
+                    studentName: '!! SECURITY ALERT !!',
+                    gradeLevel: 'Unauthorized Access',
+                    section: '',
+                    status: 'ALERT',
+                    rfidCard: rfidNormalized,
+                  },
+                  strikes,
+                },
+                { status: 403, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
+              );
             }
           } catch (_) {}
 

@@ -3,11 +3,24 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { supabase } from "@/lib/supabaseClient"
 import { useAlert } from "@/lib/use-alert"
-import { LogIn, LogOut, Radio, RefreshCcw, User } from "lucide-react"
+import { AlertTriangle, LogIn, LogOut, Radio, RefreshCcw, User } from "lucide-react"
 import Image from "next/image"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
+interface SecurityAlert {
+  rfidTag: string
+  strikes: number
+  occurredAt: string
+}
 
 interface AttendanceRecord {
   id: string
@@ -39,6 +52,7 @@ export default function RfidDisplayPage() {
   const [currentTime, setCurrentTime] = useState<string>("")
   const [timeoutModeActive, setTimeoutModeActive] = useState(false)
   const [timeoutCountdown, setTimeoutCountdown] = useState(0)
+  const [securityAlert, setSecurityAlert] = useState<SecurityAlert | null>(null)
   const { showAlert } = useAlert()
 
   const fetchLiveAttendance = useCallback(async (onlyNew = false) => {
@@ -180,6 +194,28 @@ export default function RfidDisplayPage() {
       supabase.removeChannel(channel)
     }
   }, [fetchLiveAttendance])
+
+  // Subscribe to three-strike security alerts
+  useEffect(() => {
+    const channel = supabase
+      .channel('rfid-display-security')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'security_events' },
+        (payload: any) => {
+          const row = payload.new
+          if (row?.event_type === 'three_strike_alert') {
+            setSecurityAlert({
+              rfidTag: row.rfid_tag,
+              strikes: row.metadata?.strike_count ?? 3,
+              occurredAt: row.occurred_at,
+            })
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   // Auto-refresh: Poll for new records every 10 seconds as fallback
   useEffect(() => {
@@ -460,6 +496,47 @@ export default function RfidDisplayPage() {
           </Card>
         )}
       </div>
+
+      {/* Three-Strike Security Alert */}
+      <Dialog open={!!securityAlert} onOpenChange={(open) => { if (!open) setSecurityAlert(null) }}>
+        <DialogContent className="max-w-md border-2 border-red-600 bg-gray-900 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-400 text-xl">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+              SECURITY ALERT
+            </DialogTitle>
+            <DialogDescription className="text-red-300 font-medium">
+              3 consecutive unauthorized RFID scan attempts detected!
+            </DialogDescription>
+          </DialogHeader>
+          {securityAlert && (
+            <div className="space-y-4 pt-2">
+              <div className="bg-red-950 border border-red-700 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">RFID Tag</span>
+                  <span className="font-mono font-bold text-red-300">{securityAlert.rfidTag}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Attempts</span>
+                  <span className="font-bold text-red-400">{securityAlert.strikes}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Time</span>
+                  <span className="text-white">
+                    {new Date(securityAlert.occurredAt).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}
+                  </span>
+                </div>
+              </div>
+              <Button
+                className="w-full bg-red-700 hover:bg-red-800"
+                onClick={() => setSecurityAlert(null)}
+              >
+                Acknowledge &amp; Dismiss
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
