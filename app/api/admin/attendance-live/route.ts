@@ -702,13 +702,13 @@ export async function POST(request: Request) {
           } catch (_) {}
           return NextResponse.json(
             {
-              success: false,
-              error: `No student or teacher found for RFID: ${rfidNormalized}. Please assign this RFID card in the admin panel.`,
-              searchedRfid: rfidNormalized,
-              message: `RFID ${rfidNormalized} not assigned to any student or teacher`,
+              success: true,
+              message: 'Registered',
+              rfid: rfidNormalized,
+              action: 'rfid_assignment',
             },
             {
-              status: 404,
+              status: 200,
               headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
