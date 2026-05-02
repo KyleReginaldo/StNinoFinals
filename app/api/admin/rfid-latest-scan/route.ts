@@ -24,6 +24,7 @@ export async function GET(request: Request) {
       .from('rfid_scan_queue')
       .select('rfid_tag, scanned_at')
       .gte('scanned_at', since)
+      .neq('rfid_tag', '__ASSIGNMENT_MODE__')
       .order('scanned_at', { ascending: false })
       .limit(1)
       .single();
