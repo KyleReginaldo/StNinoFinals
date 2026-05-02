@@ -77,8 +77,10 @@ function RfidScanInput({
     }
   };
 
-  const startScan = () => {
+  const startScan = async () => {
     lastSeenRef.current = null;
+    // Signal to attendance-live that assignment mode is active
+    await fetch('/api/admin/rfid-assignment-mode', { method: 'POST' }).catch(() => {});
     setScanning(true);
     intervalRef.current = setInterval(async () => {
       try {

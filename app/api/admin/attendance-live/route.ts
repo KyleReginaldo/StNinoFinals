@@ -693,25 +693,52 @@ export async function POST(request: Request) {
           console.log(
             `❌ No student or teacher found with RFID: ${rfidNormalized}`
           );
-          // Save raw RFID to the assignment queue so admin UI can detect it
+
+          // Check if admin has assignment mode active (Scan button was clicked within last 60 sec)
+          const since = new Date(Date.now() - 60 * 1000).toISOString();
+          let assignmentModeActive = false;
           try {
-            await supabaseClient.from('rfid_scan_queue' as any).insert({
-              rfid_tag: rfidNormalized,
-              scanned_at: new Date().toISOString(),
-            });
+            const { data: modeRow } = await supabaseClient
+              .from('rfid_scan_queue' as any)
+              .select('id')
+              .eq('rfid_tag', '__ASSIGNMENT_MODE__')
+              .gte('scanned_at', since)
+              .limit(1)
+              .single();
+            assignmentModeActive = !!modeRow;
           } catch (_) {}
+
+          if (assignmentModeActive) {
+            // Save actual RFID to queue for admin UI polling
+            try {
+              await supabaseClient.from('rfid_scan_queue' as any).insert({
+                rfid_tag: rfidNormalized,
+                scanned_at: new Date().toISOString(),
+              });
+            } catch (_) {}
+            return NextResponse.json(
+              {
+                success: true,
+                message: 'RFID Registered',
+                record: {
+                  studentName: 'RFID Registered',
+                  gradeLevel: 'Assign in Admin',
+                  section: '',
+                  status: 'Registered',
+                  rfidCard: rfidNormalized,
+                  scanType: 'assignment',
+                },
+              },
+              { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
+            );
+          }
+
           return NextResponse.json(
             {
-              success: true,
-              message: 'RFID Registered',
-              record: {
-                studentName: 'RFID Registered',
-                gradeLevel: 'Assign in Admin',
-                section: '',
-                status: 'Registered',
-                rfidCard: rfidNormalized,
-                scanType: 'assignment',
-              },
+              success: false,
+              error: `No student or teacher found for RFID: ${rfidNormalized}. Please assign this RFID card in the admin panel.`,
+              searchedRfid: rfidNormalized,
+              message: `RFID ${rfidNormalized} not assigned to any student or teacher`,
             },
             {
               status: 200,
