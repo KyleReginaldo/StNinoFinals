@@ -1,5 +1,6 @@
 'use client';
 
+import { AnnouncementCards } from '@/components/AnnouncementCards';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -178,46 +179,7 @@ export default function StudentDashboardPage() {
         </div>
       )}
 
-      {/* Announcements Banner */}
-      {announcements.length > 0 && (
-        <div className="bg-gradient-to-r from-red-900 to-red-800 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-5 w-5" />
-            <h3 className="font-bold text-lg">Announcements</h3>
-            <span className="ml-auto bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-              {announcements.length} new
-            </span>
-          </div>
-          <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-            {announcements.map((a: any) => (
-              <div
-                key={a.id}
-                className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/10 cursor-pointer hover:bg-white/20 transition-colors"
-                onClick={() => setSelectedAnnouncement(a)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-white text-sm">{a.title}</h4>
-                    {a.content && (
-                      <p className="text-red-100 text-xs mt-1 line-clamp-2">{a.content}</p>
-                    )}
-                    <p className="text-xs text-red-200 mt-2">
-                      {a.published_at
-                        ? new Date(a.published_at).toLocaleDateString('en-PH')
-                        : ''}
-                    </p>
-                  </div>
-                  {a.priority === 'high' && (
-                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 uppercase">
-                      Urgent
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnnouncementCards announcements={announcements} onSelect={setSelectedAnnouncement} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -474,7 +436,7 @@ export default function StudentDashboardPage() {
 
       {selectedAnnouncement && (
         <Dialog open={!!selectedAnnouncement} onOpenChange={() => setSelectedAnnouncement(null)}>
-          <DialogContent className="sm:max-w-md p-0 overflow-hidden [&>button]:text-white [&>button]:hover:bg-white/20 [&>button]:rounded-md [&>button]:opacity-80 [&>button]:hover:opacity-100">
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[85vh] flex flex-col [&>button]:text-white [&>button]:hover:bg-white/20 [&>button]:rounded-md [&>button]:opacity-80 [&>button]:hover:opacity-100">
             <DialogTitle className="sr-only">{selectedAnnouncement.title}</DialogTitle>
             <div className="bg-gradient-to-br from-red-900 to-red-800 px-5 pt-5 pb-4 pr-14">
               <div className="flex items-center gap-2 mb-3">
@@ -495,7 +457,7 @@ export default function StudentDashboardPage() {
                 </p>
               )}
             </div>
-            <div className="px-5 py-5">
+            <div className="px-5 py-5 overflow-y-auto flex-1">
               <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{selectedAnnouncement.content}</p>
             </div>
           </DialogContent>

@@ -75,7 +75,10 @@ export async function POST(request: Request) {
 
     if (flagError) {
       console.error('Failed to clear password change flag:', flagError);
-      // Don't fail the request, password was already changed
+      return NextResponse.json(
+        { success: false, error: 'Password changed but failed to update flag. Please try again or contact support.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

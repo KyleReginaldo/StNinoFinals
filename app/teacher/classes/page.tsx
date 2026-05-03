@@ -1,5 +1,39 @@
 'use client';
 
+const DAY_LABELS: Record<string, string> = { M: 'Mon', T: 'Tue', W: 'Wed', Th: 'Thu', F: 'Fri' };
+const DAY_ORDER = ['M', 'T', 'W', 'Th', 'F'];
+
+function formatTime(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  const suffix = h < 12 ? 'AM' : 'PM';
+  const hour = h % 12 || 12;
+  return m === 0 ? `${hour} ${suffix}` : `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+function formatSchedule(raw: string | null): string {
+  if (!raw) return '';
+  try {
+    const entries: { day: string; start: string; end: string }[] = JSON.parse(raw);
+    // Group days that share the same start/end time
+    const groups = new Map<string, string[]>();
+    for (const e of entries) {
+      const key = `${e.start}|${e.end}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(e.day);
+    }
+    return Array.from(groups.entries())
+      .map(([key, days]) => {
+        const [start, end] = key.split('|');
+        const sorted = [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+        const dayStr = sorted.map(d => DAY_LABELS[d] ?? d).join(', ');
+        return `${dayStr}  ${formatTime(start)}–${formatTime(end)}`;
+      })
+      .join('\n');
+  } catch {
+    return raw;
+  }
+}
+
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
@@ -151,9 +185,11 @@ export default function TeacherClassesPage() {
                   </div>
                 )}
                 {classItem.schedule && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Schedule</span>
-                    <span className="font-medium text-gray-900">{classItem.schedule}</span>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500 shrink-0">Schedule</span>
+                    <span className="font-medium text-gray-900 text-right whitespace-pre-line">
+                      {formatSchedule(classItem.schedule)}
+                    </span>
                   </div>
                 )}
                 <div className="pt-2">

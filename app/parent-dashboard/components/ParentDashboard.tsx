@@ -1,5 +1,6 @@
 'use client';
 
+import { AnnouncementCards } from '@/components/AnnouncementCards';
 import {
   Card,
   CardContent,
@@ -149,50 +150,7 @@ export function ParentDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Sticky Announcements Banner */}
-      {allAnnouncements.length > 0 && (
-        <div className="top-0 z-10">
-          <div className="bg-gradient-to-r from-red-900 to-red-800 rounded-xl shadow-lg p-5 text-white">
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="h-5 w-5" />
-              <h3 className="font-bold text-lg">Announcements</h3>
-              <span className="ml-auto bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                {allAnnouncements.length} new
-              </span>
-            </div>
-            <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-              {allAnnouncements.map((a) => (
-                <div
-                  key={a.id}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/10"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-white text-sm">
-                        {a.title}
-                      </h4>
-                      {(a as any).content && (
-                        <p className="text-red-100 text-xs mt-1 line-clamp-2">
-                          {(a as any).content}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-red-200">
-                        <span>From: {a.from || 'School Admin'}</span>
-                        <span>{formatDate(a.date)}</span>
-                      </div>
-                    </div>
-                    {a.priority === 'high' && (
-                      <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 uppercase">
-                        Urgent
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <AnnouncementCards announcements={allAnnouncements} />
 
       {/* Quick Access - Parent Use Cases */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">

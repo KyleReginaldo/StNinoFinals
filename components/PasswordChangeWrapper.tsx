@@ -22,15 +22,16 @@ export function PasswordChangeWrapper({
   useEffect(() => {
     const checkPasswordChangeRequired = async () => {
       if (!userId) {
-        console.log('[PasswordChangeWrapper] No userId provided');
         setIsChecking(false);
         return;
       }
 
-      console.log(
-        '[PasswordChangeWrapper] Checking password change for userId:',
-        userId
-      );
+      // Skip the network check if we already cleared the flag locally this session
+      const localCleared = localStorage.getItem(`pwd_changed_${userId}`);
+      if (localCleared === 'true') {
+        setIsChecking(false);
+        return;
+      }
 
       try {
         const response = await fetch(
@@ -38,17 +39,11 @@ export function PasswordChangeWrapper({
         );
         const result = await response.json();
 
-        console.log('[PasswordChangeWrapper] Response:', result);
-
         if (result.success) {
           setPasswordChangeRequired(result.passwordChangeRequired);
           if (result.passwordChangeRequired) {
             setShowModal(true);
           }
-          console.log(
-            '[PasswordChangeWrapper] Password change required:',
-            result.passwordChangeRequired
-          );
         } else {
           console.error('[PasswordChangeWrapper] Error:', result.error);
         }
@@ -69,6 +64,21 @@ export function PasswordChangeWrapper({
     setPasswordChangeRequired(false);
     setShowModal(false);
     setShowBanner(false);
+    // Persist locally so a page refresh doesn't re-show the modal
+    if (userId) {
+      localStorage.setItem(`pwd_changed_${userId}`, 'true');
+    }
+    // Also clear flag in any stored user objects in localStorage
+    for (const key of ['teacher', 'student', 'parent', 'admin']) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const data = JSON.parse(raw);
+        if (String(data.id) === userId) {
+          localStorage.setItem(key, JSON.stringify({ ...data, password_change_required: false }));
+        }
+      } catch {}
+    }
   };
 
   const handleCloseModal = () => {

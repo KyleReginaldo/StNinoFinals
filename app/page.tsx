@@ -52,7 +52,9 @@ export default function HomePage() {
 
   const scrollToInquiry = () => {
     setAdmissionTab('inquiry');
-    document.getElementById('admissions')?.scrollIntoView({ behavior: 'smooth' });
+    document
+      .getElementById('admissions')
+      ?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
@@ -161,15 +163,15 @@ export default function HomePage() {
               <Image
                 src="/logo.png"
                 alt="Sto Niño de Praga Academy"
-                width={44}
-                height={44}
+                width={64}
+                height={64}
                 className="rounded-full ring-2 ring-red-100"
               />
               <div className="hidden sm:block">
-                <p className="text-sm font-bold text-red-900 leading-tight">
+                <p className="text-md font-bold text-red-900 leading-tight">
                   Sto. Niño de Praga Academy
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   Excellence in Education Since 1998
                 </p>
               </div>
@@ -397,7 +399,11 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-5xl">
-            <Tabs value={admissionTab} onValueChange={setAdmissionTab} className="w-full">
+            <Tabs
+              value={admissionTab}
+              onValueChange={setAdmissionTab}
+              className="w-full"
+            >
               <TabsList className="inline-flex bg-gray-100 rounded-full p-1 mb-10 gap-1">
                 <TabsTrigger
                   value="requirements"
@@ -517,12 +523,30 @@ export default function HomePage() {
                 {submissionSuccess ? (
                   <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8 sm:p-10 text-center">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      <svg
+                        className="w-8 h-8 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Application Submitted!
+                    </h3>
                     <p className="text-gray-500 mb-6">
-                      Thank you for your interest in Sto. Niño de Praga Academy.<br />
-                      We will contact you at <strong>{submittedEmail}</strong> with next steps.
+                      Thank you for your interest in Sto. Niño de Praga Academy.
+                      <br />
+                      We will contact you at <strong>
+                        {submittedEmail}
+                      </strong>{' '}
+                      with next steps.
                     </p>
                     <button
                       onClick={() => setSubmissionSuccess(false)}
@@ -532,254 +556,265 @@ export default function HomePage() {
                     </button>
                   </div>
                 ) : (
-                <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8 sm:p-10">
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
-                      Admission Inquiry Form
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Fill out this form and we'll be in touch with program
-                      details.
-                    </p>
-                  </div>
-                  <form onSubmit={handleAdmissionSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_80px] gap-5">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="firstName"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Student's First Name
-                        </Label>
-                        <Input
-                          id="firstName"
-                          value={admissionForm.firstName}
-                          placeholder="First name"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              firstName: e.target.value,
-                            })
-                          }
-                          required
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="lastName"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Student's Last Name
-                        </Label>
-                        <Input
-                          id="lastName"
-                          value={admissionForm.lastName}
-                          placeholder="Last name"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              lastName: e.target.value,
-                            })
-                          }
-                          required
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="middleInitial"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          M.I.
-                        </Label>
-                        <Input
-                          id="middleInitial"
-                          value={admissionForm.middleInitial}
-                          placeholder="M.I."
-                          maxLength={2}
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              middleInitial: e.target.value,
-                            })
-                          }
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
+                  <div className="bg-gray-50 rounded-2xl border border-gray-100 p-8 sm:p-10">
+                    <div className="mb-8">
+                      <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        Admission Inquiry Form
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Fill out this form and we'll be in touch with program
+                        details.
+                      </p>
                     </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="parentName"
-                        className="text-sm font-medium text-gray-700"
-                        required
-                      >
-                        Parent / Guardian Name
-                      </Label>
-                      <Input
-                        id="parentName"
-                        value={admissionForm.parentName}
-                        placeholder="Full name of parent or guardian"
-                        onChange={(e) =>
-                          setAdmissionForm({
-                            ...admissionForm,
-                            parentName: e.target.value,
-                          })
-                        }
-                        required
-                        disabled={isSubmittingAdmission}
-                        className="h-11 bg-white border-gray-200"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="emailAddress"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Email Address
-                        </Label>
-                        <Input
-                          id="emailAddress"
-                          type="email"
-                          value={admissionForm.emailAddress}
-                          placeholder="you@example.com"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              emailAddress: e.target.value,
-                            })
-                          }
-                          required
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="phoneNumber"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Phone Number
-                        </Label>
-                        <Input
-                          id="phoneNumber"
-                          type="tel"
-                          maxLength={13}
-                          value={admissionForm.phoneNumber}
-                          placeholder="+63XXXXXXXXXX"
-                          onChange={(e) => {
-                            let val = e.target.value;
-                            // Always keep +63 prefix; allow only digits after it
-                            if (!val.startsWith('+63')) val = '+63';
-                            const digits = val.slice(3).replace(/\D/g, '').slice(0, 10);
-                            setAdmissionForm({ ...admissionForm, phoneNumber: '+63' + digits });
-                          }}
-                          required
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="intendedGradeLevel"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Intended Grade Level
-                        </Label>
-                        <Select
-                          value={admissionForm.intendedGradeLevel}
-                          onValueChange={(v) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              intendedGradeLevel: v,
-                            })
-                          }
-                          disabled={isSubmittingAdmission}
-                        >
-                          <SelectTrigger className="h-11 bg-white border-gray-200">
-                            <SelectValue placeholder="Select grade level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="kindergarten">
-                              Kindergarten
-                            </SelectItem>
-                            {Array.from({ length: 12 }, (_, i) => (
-                              <SelectItem key={i + 1} value={`grade${i + 1}`}>
-                                Grade {i + 1}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="previousSchool"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          Previous School
-                        </Label>
-                        <Input
-                          id="previousSchool"
-                          value={admissionForm.previousSchool}
-                          placeholder="Previous school name (if any)"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              previousSchool: e.target.value,
-                            })
-                          }
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="additionalMessage"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Additional Message
-                      </Label>
-                      <Textarea
-                        id="additionalMessage"
-                        placeholder="Tell us about your child's interests, needs, or any questions…"
-                        value={admissionForm.additionalMessage}
-                        onChange={(e) =>
-                          setAdmissionForm({
-                            ...admissionForm,
-                            additionalMessage: e.target.value,
-                          })
-                        }
-                        rows={4}
-                        disabled={isSubmittingAdmission}
-                        className="bg-white border-gray-200 resize-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmittingAdmission}
-                      className="w-full h-12 rounded-xl bg-red-900 hover:bg-red-800 text-white font-semibold text-sm transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                    <form
+                      onSubmit={handleAdmissionSubmit}
+                      className="space-y-5"
                     >
-                      {isSubmittingAdmission ? 'Submitting…' : 'Submit Inquiry'}
-                    </button>
-                  </form>
-                </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_80px] gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="firstName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Student's First Name
+                          </Label>
+                          <Input
+                            id="firstName"
+                            value={admissionForm.firstName}
+                            placeholder="First name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                firstName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="lastName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Student's Last Name
+                          </Label>
+                          <Input
+                            id="lastName"
+                            value={admissionForm.lastName}
+                            placeholder="Last name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                lastName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="middleInitial"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            M.I.
+                          </Label>
+                          <Input
+                            id="middleInitial"
+                            value={admissionForm.middleInitial}
+                            placeholder="M.I."
+                            maxLength={2}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                middleInitial: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="parentName"
+                          className="text-sm font-medium text-gray-700"
+                          required
+                        >
+                          Parent / Guardian Name
+                        </Label>
+                        <Input
+                          id="parentName"
+                          value={admissionForm.parentName}
+                          placeholder="Full name of parent or guardian"
+                          onChange={(e) =>
+                            setAdmissionForm({
+                              ...admissionForm,
+                              parentName: e.target.value,
+                            })
+                          }
+                          required
+                          disabled={isSubmittingAdmission}
+                          className="h-11 bg-white border-gray-200"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="emailAddress"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Email Address
+                          </Label>
+                          <Input
+                            id="emailAddress"
+                            type="email"
+                            value={admissionForm.emailAddress}
+                            placeholder="you@example.com"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                emailAddress: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="phoneNumber"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Phone Number
+                          </Label>
+                          <Input
+                            id="phoneNumber"
+                            type="tel"
+                            maxLength={13}
+                            value={admissionForm.phoneNumber}
+                            placeholder="+63XXXXXXXXXX"
+                            onChange={(e) => {
+                              let val = e.target.value;
+                              // Always keep +63 prefix; allow only digits after it
+                              if (!val.startsWith('+63')) val = '+63';
+                              const digits = val
+                                .slice(3)
+                                .replace(/\D/g, '')
+                                .slice(0, 10);
+                              setAdmissionForm({
+                                ...admissionForm,
+                                phoneNumber: '+63' + digits,
+                              });
+                            }}
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="intendedGradeLevel"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Intended Grade Level
+                          </Label>
+                          <Select
+                            value={admissionForm.intendedGradeLevel}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                intendedGradeLevel: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="Select grade level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="kindergarten">
+                                Kindergarten
+                              </SelectItem>
+                              {Array.from({ length: 12 }, (_, i) => (
+                                <SelectItem key={i + 1} value={`grade${i + 1}`}>
+                                  Grade {i + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="previousSchool"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Previous School
+                          </Label>
+                          <Input
+                            id="previousSchool"
+                            value={admissionForm.previousSchool}
+                            placeholder="Previous school name (if any)"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                previousSchool: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="additionalMessage"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Additional Message
+                        </Label>
+                        <Textarea
+                          id="additionalMessage"
+                          placeholder="Tell us about your child's interests, needs, or any questions…"
+                          value={admissionForm.additionalMessage}
+                          onChange={(e) =>
+                            setAdmissionForm({
+                              ...admissionForm,
+                              additionalMessage: e.target.value,
+                            })
+                          }
+                          rows={4}
+                          disabled={isSubmittingAdmission}
+                          className="bg-white border-gray-200 resize-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmittingAdmission}
+                        className="w-full h-12 rounded-xl bg-red-900 hover:bg-red-800 text-white font-semibold text-sm transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                      >
+                        {isSubmittingAdmission
+                          ? 'Submitting…'
+                          : 'Submit Inquiry'}
+                      </button>
+                    </form>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>

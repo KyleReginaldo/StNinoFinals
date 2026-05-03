@@ -1,5 +1,6 @@
 "use client"
 
+import { AnnouncementCards } from "@/components/AnnouncementCards"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -266,48 +267,7 @@ export function ParentDashboard({
             </Card>
           </div>
 
-          {/* Announcements & Messages */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                School Announcements
-              </CardTitle>
-              <CardDescription>Important updates from teachers and school</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {childAnnouncements.slice(0, 5).map((announcement) => (
-                  <div key={announcement.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                    <div className={`mt-1 rounded-full p-1 ${
-                      announcement.priority === 'high' ? 'bg-red-100' :
-                      announcement.priority === 'medium' ? 'bg-yellow-100' :
-                      'bg-blue-100'
-                    }`}>
-                      <AlertCircle className={`h-4 w-4 ${
-                        announcement.priority === 'high' ? 'text-red-600' :
-                        announcement.priority === 'medium' ? 'text-yellow-600' :
-                        'text-blue-600'
-                      }`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-1">
-                        <h4 className="font-medium">{announcement.title}</h4>
-                        <Badge variant={announcement.priority === 'high' ? 'destructive' : 'secondary'}>
-                          {announcement.priority}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">From: {announcement.from}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{formatDate(announcement.date)}</p>
-                    </div>
-                  </div>
-                ))}
-                {childAnnouncements.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">No announcements</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <AnnouncementCards announcements={childAnnouncements} />
         </>
       )}
     </div>

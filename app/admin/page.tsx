@@ -1,5 +1,6 @@
 'use client';
 
+import { AnnouncementCards } from '@/components/AnnouncementCards';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -278,34 +279,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Announcements */}
-      {announcements.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-              <Bell className="w-4 h-4 text-gray-400" />
-              Recent Announcements
-            </p>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {announcements.slice(0, 5).map((a: any) => (
-              <div key={a.id} className="px-5 py-3.5 flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{a.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{a.content}</p>
-                  <p className="text-xs text-gray-300 mt-0.5">
-                    {a.published_at ? new Date(a.published_at).toLocaleDateString('en-PH') : ''}
-                    {a.target_audience && a.target_audience !== 'all' ? ` · ${a.target_audience}` : ''}
-                  </p>
-                </div>
-                {a.priority === 'high' && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 shrink-0">HIGH</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnnouncementCards announcements={announcements} />
 
       {/* Student List Dialog */}
       <Dialog open={!!selectedGradeLevel} onOpenChange={open => !open && setSelectedGradeLevel(null)}>

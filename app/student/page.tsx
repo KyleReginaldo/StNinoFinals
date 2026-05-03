@@ -2462,14 +2462,6 @@ export default function StudentDashboard() {
                 <h2 className="text-2xl font-bold text-gray-900">
                   Grades & Reports
                 </h2>
-                <Button
-                  onClick={generateGradesPDF}
-                  className="bg-red-800 hover:bg-red-700 text-white"
-                  disabled={!student}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Certificate (PDF)
-                </Button>
               </div>
               <Card className="bg-white border border-gray-200">
                 <CardHeader>

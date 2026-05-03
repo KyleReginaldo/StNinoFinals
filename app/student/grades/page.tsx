@@ -250,15 +250,6 @@ export default function GradesPage() {
           <h2 className="text-2xl font-bold text-gray-900">Grades & Reports</h2>
           <p className="text-sm text-gray-500 mt-0.5">Your academic performance history</p>
         </div>
-        <Button
-          onClick={generateGradesPDF}
-          className="bg-red-800 hover:bg-red-700 text-white"
-          disabled={filteredGrades.length === 0}
-          title={filteredGrades.length === 0 ? 'No approved grades to download' : 'Download Certificate of Grades'}
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Download Certificate
-        </Button>
       </div>
 
       {/* Filters */}
