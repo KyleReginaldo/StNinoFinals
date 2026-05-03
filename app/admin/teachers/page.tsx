@@ -33,8 +33,73 @@ import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { ArchiveRestore, Edit, Search, Trash2, UserPlus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+function RfidScanInput({
+  value,
+  onChange,
+  placeholder = 'Enter or scan RFID',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [scanning, setScanning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastSeenRef = useRef<string | null>(null);
+
+  const stopScan = () => {
+    setScanning(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    fetch('/api/admin/rfid-assignment-mode', { method: 'DELETE' }).catch(() => {});
+  };
+
+  const startScan = async () => {
+    lastSeenRef.current = null;
+    await fetch('/api/admin/rfid-assignment-mode', { method: 'POST' }).catch(() => {});
+    setScanning(true);
+    intervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin/rfid-latest-scan?window=15');
+        const data = await res.json();
+        if (data.success && data.rfid && data.rfid !== lastSeenRef.current) {
+          lastSeenRef.current = data.rfid;
+          onChange(data.rfid);
+          stopScan();
+        }
+      } catch {}
+    }, 1500);
+  };
+
+  useEffect(() => () => stopScan(), []);
+
+  return (
+    <div className="flex gap-2 items-center">
+      <Input
+        value={value}
+        onChange={() => {}}
+        readOnly
+        placeholder={placeholder}
+        className="flex-1 cursor-not-allowed bg-gray-50"
+      />
+      {scanning ? (
+        <Button type="button" variant="outline" size="sm" onClick={stopScan} className="shrink-0 gap-1 text-red-700 border-red-300">
+          <Radio className="w-4 h-4 animate-pulse" />
+          Waiting…
+        </Button>
+      ) : (
+        <Button type="button" variant="outline" size="sm" onClick={startScan} className="shrink-0 gap-1">
+          <Radio className="w-4 h-4" />
+          Scan
+        </Button>
+      )}
+    </div>
+  );
+}
 import { useAuth } from '../hooks/useAuth';
 
 interface Teacher {
@@ -500,12 +565,9 @@ export default function TeacherManagementPage() {
                   </div>
                   <div>
                     <Label>RFID Card Number</Label>
-                    <Input
+                    <RfidScanInput
                       value={newTeacher.rfid}
-                      onChange={(e) =>
-                        setNewTeacher({ ...newTeacher, rfid: e.target.value })
-                      }
-                      placeholder="Enter RFID card number"
+                      onChange={(v) => setNewTeacher({ ...newTeacher, rfid: v })}
                     />
                   </div>
                   <div className="col-span-2">
@@ -696,12 +758,9 @@ export default function TeacherManagementPage() {
                 </div>
                 <div>
                   <Label>RFID Card Number</Label>
-                  <Input
+                  <RfidScanInput
                     value={editTeacher.rfid}
-                    onChange={(e) =>
-                      setEditTeacher({ ...editTeacher, rfid: e.target.value })
-                    }
-                    placeholder="Enter RFID card number"
+                    onChange={(v) => setEditTeacher({ ...editTeacher, rfid: v })}
                   />
                 </div>
                 <div className="col-span-2">

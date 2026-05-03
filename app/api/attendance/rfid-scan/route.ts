@@ -43,6 +43,36 @@ export async function POST(request: Request) {
 
     if (!user) {
       const now = new Date().toISOString();
+
+      // Check if admin has assignment mode active — if so, queue this tag for pickup
+      const assignmentSince = new Date(Date.now() - 60 * 1000).toISOString();
+      let assignmentModeActive = false;
+      try {
+        const { data: modeRow } = await (admin as any)
+          .from('rfid_scan_queue')
+          .select('id')
+          .eq('rfid_tag', '__ASSIGNMENT_MODE__')
+          .gte('scanned_at', assignmentSince)
+          .limit(1)
+          .single();
+        assignmentModeActive = !!modeRow;
+      } catch (_) {}
+
+      if (assignmentModeActive) {
+        try {
+          await (admin as any).from('rfid_scan_queue').insert({
+            rfid_tag: rfidNorm,
+            scanned_at: now,
+          });
+        } catch (_) {}
+        return NextResponse.json({
+          success: true,
+          message: 'RFID queued for assignment',
+          assignment_mode: true,
+          rfid: rfidNorm,
+        }, { headers: CORS });
+      }
+
       const windowStart = new Date(Date.now() - STRIKE_WINDOW_MS).toISOString();
       const securityTable = (admin as any).from('security_events');
 
