@@ -320,7 +320,7 @@ export default function AdminAnnouncementsPage() {
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</th>
               <SortHeader label="Published" sortKey="published_at"    currentSort={tc.sort} onSort={tc.toggleSort} />
               <SortHeader label="Expires"   sortKey="expires_at"      currentSort={tc.sort} onSort={tc.toggleSort} />
-              <th className="px-4 py-2.5 w-20" />
+              <th className="px-4 py-2.5 w-20 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -377,7 +377,7 @@ export default function AdminAnnouncementsPage() {
                         : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3 pr-4">
-                      <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 justify-end ">
                         <button
                           onClick={() => openEditDialog(a)}
                           className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700"

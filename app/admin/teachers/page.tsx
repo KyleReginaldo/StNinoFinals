@@ -902,7 +902,7 @@ export default function TeacherManagementPage() {
                   <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -946,7 +946,7 @@ export default function TeacherManagementPage() {
                         {teacher.email}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1 ">
                           {showArchived ? (
                             <button
                               onClick={() => handleRestoreTeacher(teacher.id, `${teacher.first_name} ${teacher.last_name}`)}

@@ -37,10 +37,11 @@ import {
   User2,
   XCircle,
 } from 'lucide-react';
+import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
-const CURRENT_SCHOOL_YEAR = '2025-2026';
+const CURRENT_SCHOOL_YEAR = getEnrollmentSchoolYear();
 
 const GRADE_LEVELS = [
   'Grade 1',

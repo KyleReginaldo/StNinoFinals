@@ -291,7 +291,7 @@ const AdmissionPage = () => {
                       })}
                     </td>
                     <td className="px-4 py-3 pr-4 text-right">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer">
                         View →
                       </span>
                     </td>

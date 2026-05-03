@@ -15,3 +15,18 @@ export async function POST() {
     return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
   }
 }
+
+// DELETE — called when the scan is stopped (dialog closed, scan cancelled, or card captured)
+// Removes the sentinel so attendance-live stops treating unknown cards as "Registered"
+export async function DELETE() {
+  try {
+    const admin = getSupabaseAdmin();
+    await (admin as any)
+      .from('rfid_scan_queue')
+      .delete()
+      .eq('rfid_tag', '__ASSIGNMENT_MODE__');
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
+  }
+}

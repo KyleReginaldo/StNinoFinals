@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Mail, MessageSquare, RefreshCw, Save, Settings as SettingsIcon, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, Mail, MapPin, MessageSquare, Phone, RefreshCw, Save, Settings as SettingsIcon, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SystemSettings {
@@ -12,9 +12,13 @@ interface SystemSettings {
   emailNotifications: boolean;
   studentPortal: boolean;
   teacherPortal: boolean;
+  phone: string;
+  contactEmail: string;
+  address: string;
+  officeHours: string;
 }
 
-type StringSettingKey = 'schoolName' | 'academicYear';
+type StringSettingKey = 'schoolName' | 'phone' | 'contactEmail' | 'address' | 'officeHours';
 type BoolSettingKey =
   | 'automaticBackup'
   | 'rfidIntegration'
@@ -69,6 +73,10 @@ export default function SettingsPage() {
     emailNotifications: true,
     studentPortal: true,
     teacherPortal: true,
+    phone: '',
+    contactEmail: '',
+    address: '',
+    officeHours: '',
   });
   const [saving, setSaving] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
@@ -220,16 +228,13 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="academicYear" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Academic Year
               </label>
-              <input
-                id="academicYear"
-                value={settings.academicYear}
-                onChange={e => handleInputChange('academicYear', e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-                placeholder="e.g. 2024-2025"
-              />
+              <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                {settings.academicYear}
+                <span className="ml-auto text-[10px] text-gray-400 font-medium uppercase tracking-wide">Auto-calculated</span>
+              </div>
             </div>
           </div>
         </div>
@@ -253,6 +258,61 @@ export default function SettingsPage() {
                 />
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Information */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">Contact Information</p>
+          <p className="text-xs text-gray-400 mt-0.5">Displayed on the public landing page</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-5 py-4">
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Phone className="w-3 h-3" /> Phone
+            </label>
+            <input
+              value={settings.phone}
+              onChange={e => handleInputChange('phone', e.target.value)}
+              placeholder="e.g. (02) 123-4567"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Mail className="w-3 h-3" /> Contact Email
+            </label>
+            <input
+              type="email"
+              value={settings.contactEmail}
+              onChange={e => handleInputChange('contactEmail', e.target.value)}
+              placeholder="e.g. info@school.edu.ph"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <MapPin className="w-3 h-3" /> Address
+            </label>
+            <input
+              value={settings.address}
+              onChange={e => handleInputChange('address', e.target.value)}
+              placeholder="e.g. 123 Education St, Manila"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Clock className="w-3 h-3" /> Office Hours
+            </label>
+            <input
+              value={settings.officeHours}
+              onChange={e => handleInputChange('officeHours', e.target.value)}
+              placeholder="e.g. Mon–Fri, 7:00 AM – 5:00 PM"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
           </div>
         </div>
       </div>

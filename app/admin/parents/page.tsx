@@ -586,7 +586,7 @@ export default function ParentManagementPage() {
                   <SortHeader label="Email"    sortKey="email"         currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Phone"    sortKey="phone_number"  currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Children</th>
-                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -616,7 +616,7 @@ export default function ParentManagementPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1 ">
                           {showArchived ? (
                             <button
                               onClick={() => handleRestoreParent(parent.id, `${parent.first_name} ${parent.last_name}`)}

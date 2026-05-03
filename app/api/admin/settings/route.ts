@@ -1,17 +1,20 @@
-import { NextResponse } from "next/server"
+import { getActiveSchoolYear } from '@/lib/school-year'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { NextResponse } from "next/server"
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   schoolName: "Sto Niño de Praga Academy",
-  academicYear: "2024-2025",
   automaticBackup: "true",
   rfidIntegration: "true",
   emailNotifications: "true",
   studentPortal: "true",
   teacherPortal: "true",
+  phone: "(02) 123-4567",
+  contactEmail: "info@stonino-praga.edu.ph",
+  address: "123 Education Street, Manila, Philippines",
+  officeHours: "Monday – Friday, 7:00 AM – 5:00 PM",
 }
 
-// GET - Fetch settings from system_settings table
 export async function GET() {
   try {
     const supabase = getSupabaseAdmin()
@@ -21,10 +24,7 @@ export async function GET() {
 
     if (error) {
       console.error("Error fetching settings:", error)
-      return NextResponse.json({
-        success: true,
-        settings: parseSettings({}),
-      })
+      return NextResponse.json({ success: true, settings: parseSettings({}) })
     }
 
     const dbSettings: Record<string, string> = {}
@@ -32,36 +32,31 @@ export async function GET() {
       dbSettings[row.setting_key] = row.setting_value || ''
     }
 
-    return NextResponse.json({
-      success: true,
-      settings: parseSettings(dbSettings),
-    })
+    return NextResponse.json({ success: true, settings: parseSettings(dbSettings) })
   } catch (error: any) {
     console.error("Error fetching settings:", error)
-    return NextResponse.json({
-      success: true,
-      settings: parseSettings({}),
-    })
+    return NextResponse.json({ success: true, settings: parseSettings({}) })
   }
 }
 
-// POST - Save settings to system_settings table
 export async function POST(request: Request) {
   try {
     const supabase = getSupabaseAdmin()
     const body = await request.json()
 
     const settingsToSave: Record<string, string> = {
-      schoolName: body.schoolName || DEFAULT_SETTINGS.schoolName,
-      academicYear: body.academicYear || DEFAULT_SETTINGS.academicYear,
-      automaticBackup: String(body.automaticBackup ?? true),
-      rfidIntegration: String(body.rfidIntegration ?? true),
+      schoolName:         body.schoolName         || DEFAULT_SETTINGS.schoolName,
+      automaticBackup:    String(body.automaticBackup    ?? true),
+      rfidIntegration:    String(body.rfidIntegration    ?? true),
       emailNotifications: String(body.emailNotifications ?? true),
-      studentPortal: String(body.studentPortal ?? true),
-      teacherPortal: String(body.teacherPortal ?? true),
+      studentPortal:      String(body.studentPortal      ?? true),
+      teacherPortal:      String(body.teacherPortal      ?? true),
+      phone:        body.phone        || DEFAULT_SETTINGS.phone,
+      contactEmail: body.contactEmail || DEFAULT_SETTINGS.contactEmail,
+      address:      body.address      || DEFAULT_SETTINGS.address,
+      officeHours:  body.officeHours  || DEFAULT_SETTINGS.officeHours,
     }
 
-    // Save each setting as a key-value row (check exists then update or insert)
     for (const [key, value] of Object.entries(settingsToSave)) {
       const { data: existing } = await supabase
         .from("system_settings")
@@ -83,9 +78,7 @@ export async function POST(request: Request) {
         error = result.error
       }
 
-      if (error) {
-        console.error(`Error saving setting ${key}:`, error)
-      }
+      if (error) console.error(`Error saving setting ${key}:`, error)
     }
 
     return NextResponse.json({
@@ -102,14 +95,18 @@ export async function POST(request: Request) {
   }
 }
 
-function parseSettings(dbSettings: Record<string, string>) {
+function parseSettings(db: Record<string, string>) {
   return {
-    schoolName: dbSettings.schoolName || DEFAULT_SETTINGS.schoolName,
-    academicYear: dbSettings.academicYear || DEFAULT_SETTINGS.academicYear,
-    automaticBackup: (dbSettings.automaticBackup || DEFAULT_SETTINGS.automaticBackup) === "true",
-    rfidIntegration: (dbSettings.rfidIntegration || DEFAULT_SETTINGS.rfidIntegration) === "true",
-    emailNotifications: (dbSettings.emailNotifications || DEFAULT_SETTINGS.emailNotifications) === "true",
-    studentPortal: (dbSettings.studentPortal || DEFAULT_SETTINGS.studentPortal) === "true",
-    teacherPortal: (dbSettings.teacherPortal || DEFAULT_SETTINGS.teacherPortal) === "true",
+    schoolName:         db.schoolName         || DEFAULT_SETTINGS.schoolName,
+    academicYear:       getActiveSchoolYear(),
+    automaticBackup:    (db.automaticBackup    || DEFAULT_SETTINGS.automaticBackup)    === "true",
+    rfidIntegration:    (db.rfidIntegration    || DEFAULT_SETTINGS.rfidIntegration)    === "true",
+    emailNotifications: (db.emailNotifications || DEFAULT_SETTINGS.emailNotifications) === "true",
+    studentPortal:      (db.studentPortal      || DEFAULT_SETTINGS.studentPortal)      === "true",
+    teacherPortal:      (db.teacherPortal      || DEFAULT_SETTINGS.teacherPortal)      === "true",
+    phone:        db.phone        || DEFAULT_SETTINGS.phone,
+    contactEmail: db.contactEmail || DEFAULT_SETTINGS.contactEmail,
+    address:      db.address      || DEFAULT_SETTINGS.address,
+    officeHours:  db.officeHours  || DEFAULT_SETTINGS.officeHours,
   }
 }

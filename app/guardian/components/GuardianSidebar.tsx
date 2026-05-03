@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { FileText, GraduationCap, LayoutDashboard, User } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface GuardianSidebarContentProps {
   activeNav: string;
@@ -24,7 +25,7 @@ export function GuardianSidebarContent({
     <div className="flex flex-col h-full bg-white border-r border-gray-100 overflow-hidden">
 
       {/* Branding */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-100 flex-shrink-0">
+      <Link href="/" className="flex items-center gap-3 px-4 py-5 border-b border-gray-100 flex-shrink-0 hover:bg-gray-50 transition-colors">
         <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-red-100">
           <Image
             src="/logo.png"
@@ -42,7 +43,7 @@ export function GuardianSidebarContent({
             Guardian Portal
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* Section label */}
       <p className="px-4 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 select-none">

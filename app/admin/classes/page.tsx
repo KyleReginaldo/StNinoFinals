@@ -24,6 +24,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { getActiveSchoolYear } from '@/lib/school-year';
 import { BookOpen, Download, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -184,7 +185,7 @@ export default function ClassesManagementPage() {
         class_name: '',
         grade_level: '',
         section: '',
-        school_year: new Date().getFullYear().toString(),
+        school_year: getActiveSchoolYear(),
         semester: '1',
         teacher_id: '',
         room: '',
@@ -488,7 +489,7 @@ export default function ClassesManagementPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 pr-4">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-1 ">
                       <button
                         onClick={() => handleViewStudents(classItem)}
                         title="View Students"

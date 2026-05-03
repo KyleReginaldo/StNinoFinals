@@ -2,6 +2,7 @@
 
 import type React from 'react';
 
+import { getActiveSchoolYear } from '@/lib/school-year';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,6 +18,7 @@ import { useAlert } from '@/lib/use-alert';
 import {
   Award,
   BookOpen,
+  Clock,
   GraduationCap,
   Mail,
   MapPin,
@@ -25,14 +27,49 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { SchoolMap } from '@/components/SchoolMap';
+import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
+  const [schoolContact, setSchoolContact] = useState({
+    phone: '(02) 123-4567',
+    contactEmail: 'info@stonino-praga.edu.ph',
+    address: '123 Education Street, Manila, Philippines',
+    officeHours: 'Monday – Friday, 7:00 AM – 5:00 PM',
+  });
+  const [liveStats, setLiveStats] = useState<{
+    students: number;
+    teachers: number;
+    classes: number;
+    schoolYear: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.settings) {
+          setSchoolContact({
+            phone: d.settings.phone || schoolContact.phone,
+            contactEmail: d.settings.contactEmail || schoolContact.contactEmail,
+            address: d.settings.address || schoolContact.address,
+            officeHours: d.settings.officeHours || schoolContact.officeHours,
+          });
+        }
+      })
+      .catch(() => {});
+    fetch('/api/public/stats')
+      .then(r => r.json())
+      .then(d => { if (d.success) setLiveStats(d.stats); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { showAlert } = useAlert();
   const [admissionForm, setAdmissionForm] = useState({
     firstName: '',
@@ -49,6 +86,38 @@ export default function HomePage() {
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [admissionTab, setAdmissionTab] = useState('requirements');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const FAQS = [
+    {
+      q: 'Magkano ang tuition fee?',
+      a: 'Ang tuition fee ay nag-iiba depende sa grade level. Para sa pinaka-updated na listahan ng bayarin, makipag-ugnayan sa aming opisina o mag-inquire sa pamamagitan ng aming enrollment form.',
+    },
+    {
+      q: 'Paano mag-enroll ng bagong estudyante?',
+      a: 'Pumunta sa aming Admissions section at punan ang inquiry form. Makikipag-ugnayan ang aming admission team sa inyo upang gabayan kayo sa proseso ng enrollment at ipaaalam ang mga susunod na hakbang.',
+    },
+    {
+      q: 'Ano ang mga requirements para sa bagong estudyante?',
+      a: 'Karaniwan na kailangan: PSA Birth Certificate (orihinal + photocopy), Report Card / Form 138, Certificate of Good Moral Character, at 2x2 ID photos. Maaaring may dagdag na requirements depende sa grade level.',
+    },
+    {
+      q: 'Anong grade levels ang inaalok ng paaralan?',
+      a: "Nag-aalok kami ng kompletong K-12 program — mula Kinder hanggang Grade 12, kasama ang Junior at Senior High School (JHS at SHS) na may iba't ibang strand.",
+    },
+    {
+      q: 'Ano ang oras ng klase?',
+      a: 'Ang regular na klase ay nagsisimula ng 7:30 AM hanggang 4:00 PM, Lunes hanggang Biyernes. Ang eksaktong pasukan ay naka-anunsyo bago mag-school year.',
+    },
+    {
+      q: 'May school bus o service ba?',
+      a: 'Para sa pinaka-updated na impormasyon tungkol sa school service at iba pang arrangements, makipag-ugnayan sa aming opisina. Maaaring mag-inquire din kayo sa ibang magulang o guardian ng estudyante.',
+    },
+    {
+      q: 'May scholarship o financial assistance ba?',
+      a: 'Nagbibigay kami ng merit scholarships para sa mga nangunguna sa klase. Makipag-ugnayan sa aming Student Affairs Office para sa detalye ng aming financial assistance programs.',
+    },
+  ];
 
   const scrollToInquiry = () => {
     setAdmissionTab('inquiry');
@@ -122,12 +191,17 @@ export default function HomePage() {
     { href: '#contact', label: 'Contact' },
   ];
 
-  const STATS = [
-    { value: '25+', label: 'Years of Excellence' },
-    { value: '1,200+', label: 'Alumni Worldwide' },
-    { value: '98%', label: 'College Acceptance' },
-    { value: '40+', label: 'Dedicated Educators' },
-  ];
+  const STATS = liveStats
+    ? [
+        { value: liveStats.students.toLocaleString(), label: 'Enrolled Students' },
+        { value: liveStats.teachers.toLocaleString(), label: 'Dedicated Educators' },
+        { value: liveStats.classes.toLocaleString(), label: 'Active Classes' },
+      ]
+    : [
+        { value: '—', label: 'Enrolled Students' },
+        { value: '—', label: 'Dedicated Educators' },
+        { value: '—', label: 'Active Classes' },
+      ];
 
   const FEATURES = [
     {
@@ -148,7 +222,7 @@ export default function HomePage() {
     {
       icon: Award,
       title: 'Proven Track Record',
-      desc: '25+ years of excellence with graduates thriving in top universities and careers.',
+      desc: 'A strong track record of excellence with graduates thriving in top universities and careers.',
     },
   ];
 
@@ -165,7 +239,7 @@ export default function HomePage() {
                 alt="Sto Niño de Praga Academy"
                 width={64}
                 height={64}
-                className="rounded-full ring-2 ring-red-100"
+                className="rounded-full ring-2 ring-red-100 w-10 h-10 sm:w-14 sm:h-14"
               />
               <div className="hidden sm:block">
                 <p className="text-md font-bold text-red-900 leading-tight">
@@ -254,27 +328,29 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <section
         id="home"
-        className="relative overflow-hidden bg-gradient-to-br from-red-950 via-red-900 to-rose-800 text-white"
+        className="relative overflow-hidden text-white"
+        style={{
+          backgroundImage: 'url(/stnino_bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
-        {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-white/5 blur-3xl" />
-          <div className="absolute bottom-0 -left-20 w-96 h-96 rounded-full bg-amber-400/10 blur-3xl" />
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                'radial-gradient(circle, #fff 1px, transparent 1px)',
-              backgroundSize: '32px 32px',
-            }}
-          />
-        </div>
+        {/* Dark overlay so text stays readable */}
+        <div className="absolute inset-0 bg-red-950/70" />
+        {/* Subtle dot grid on top */}
+        <div
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
           <div className="max-w-3xl">
             <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 tracking-wider uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              S.Y. 2026–2027
+              S.Y. {getActiveSchoolYear()}
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
@@ -330,7 +406,7 @@ export default function HomePage() {
       {/* ── STATS STRIP ── */}
       <section className="bg-white py-10 border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-3 gap-8">
             {STATS.map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-3xl sm:text-4xl font-extrabold text-red-900 mb-1">
@@ -384,7 +460,7 @@ export default function HomePage() {
       {/* ── ADMISSIONS ── */}
       <section id="admissions" className="py-20 sm:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-14">
+          <div className="max-w-2xl mx-auto mb-14 text-center">
             <span className="text-xs font-bold tracking-widest uppercase text-red-700 mb-3 block">
               Enrollment
             </span>
@@ -398,7 +474,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="max-w-5xl">
+          <div className="max-w-5xl mx-auto">
             <Tabs
               value={admissionTab}
               onValueChange={setAdmissionTab}
@@ -822,6 +898,56 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section className="py-20 sm:py-28 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="mb-12 text-center">
+            <span className="text-xs font-bold tracking-widest uppercase text-red-700 mb-3 block">
+              FAQ
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+              Mga Karaniwang Tanong
+            </h2>
+            <p className="mt-4 text-gray-500 text-base">
+              Narito ang mga sagot sa mga madalas na itinatanong ng mga magulang at guardian.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQS.map((faq, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <div
+                  key={i}
+                  className={`border rounded-2xl overflow-hidden transition-colors duration-200 ${
+                    isOpen ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-white hover:border-gray-200'
+                  }`}
+                >
+                  <button
+                    className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                  >
+                    <span className={`font-semibold text-sm sm:text-base leading-snug ${isOpen ? 'text-red-800' : 'text-gray-800'}`}>
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-red-600' : 'text-gray-400'
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-6 pb-5">
+                      <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── CONTACT ── */}
       <section id="contact" className="py-20 sm:py-28 bg-gray-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -838,25 +964,27 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-5 max-w-3xl">
+          <div className="grid sm:grid-cols-4 gap-5 max-w-4xl mx-auto">
             {[
               {
                 Icon: Phone,
                 title: 'Phone',
-                lines: ['(02) 123-4567', '0917-123-4567'],
+                lines: [schoolContact.phone],
               },
               {
                 Icon: Mail,
                 title: 'Email',
-                lines: [
-                  'info@stonino-praga.edu.ph',
-                  'admissions@stonino-praga.edu.ph',
-                ],
+                lines: [schoolContact.contactEmail],
               },
               {
                 Icon: MapPin,
                 title: 'Address',
-                lines: ['123 Education Street', 'Manila, Philippines'],
+                lines: [schoolContact.address],
+              },
+              {
+                Icon: Clock,
+                title: 'Office Hours',
+                lines: [schoolContact.officeHours],
               },
             ].map(({ Icon, title, lines }) => (
               <div
@@ -879,6 +1007,14 @@ export default function HomePage() {
                 ))}
               </div>
             ))}
+          </div>
+
+          {/* Map */}
+          <div className="mt-10 max-w-4xl mx-auto">
+            <p className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-3">
+              Find Us
+            </p>
+            <SchoolMap />
           </div>
         </div>
       </section>
@@ -904,10 +1040,15 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <p className="text-xs text-gray-600 text-center sm:text-right">
-              © {new Date().getFullYear()} Sto. Niño de Praga Academy. All
-              rights reserved.
-            </p>
+            <div className="flex flex-col sm:items-end gap-1">
+              <div className="flex items-center gap-4">
+                <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Terms of Service</Link>
+                <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
+              </div>
+              <p className="text-xs text-gray-600 text-center sm:text-right">
+                © {new Date().getFullYear()} Sto. Niño de Praga Academy. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>

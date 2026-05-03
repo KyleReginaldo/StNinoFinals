@@ -121,8 +121,7 @@ export default function RoomsPage() {
     }
   };
 
-  const active = rooms.filter((r) => r.is_active);
-  const inactive = rooms.filter((r) => !r.is_active);
+  const activeCount = rooms.filter((r) => r.is_active).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -139,7 +138,7 @@ export default function RoomsPage() {
               <DoorOpen className="w-5 h-5" />
               Room Management
             </h1>
-            <p className="text-sm text-gray-500">{rooms.length} total rooms · {active.length} active</p>
+            <p className="text-sm text-gray-500">{rooms.length} total rooms · {activeCount} active</p>
           </div>
           <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white" onClick={openAdd}>
             <Plus className="w-3.5 h-3.5 mr-1" />
@@ -148,18 +147,13 @@ export default function RoomsPage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-6 space-y-4">
+      <div className="container mx-auto px-6 py-6">
         {loading ? (
           <div className="flex justify-center py-16">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-900 border-t-transparent" />
           </div>
         ) : (
-          <>
-            <RoomTable title="Active Rooms" rooms={active} onEdit={openEdit} onDelete={handleDelete} onToggle={handleToggleActive} />
-            {inactive.length > 0 && (
-              <RoomTable title="Inactive Rooms" rooms={inactive} onEdit={openEdit} onDelete={handleDelete} onToggle={handleToggleActive} />
-            )}
-          </>
+          <RoomTable rooms={rooms} onEdit={openEdit} onDelete={handleDelete} onToggle={handleToggleActive} />
         )}
       </div>
 
@@ -195,9 +189,8 @@ export default function RoomsPage() {
 }
 
 function RoomTable({
-  title, rooms, onEdit, onDelete, onToggle,
+  rooms, onEdit, onDelete, onToggle,
 }: {
-  title: string;
   rooms: Room[];
   onEdit: (r: Room) => void;
   onDelete: (r: Room) => void;
@@ -205,12 +198,8 @@ function RoomTable({
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-        <p className="text-xs text-gray-400">{rooms.length} room{rooms.length !== 1 ? 's' : ''}</p>
-      </div>
       {rooms.length === 0 ? (
-        <p className="text-center text-sm text-gray-400 py-8">No rooms here.</p>
+        <p className="text-center text-sm text-gray-400 py-8">No rooms added yet.</p>
       ) : (
         <table className="w-full">
           <thead>
@@ -218,15 +207,22 @@ function RoomTable({
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Name</th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Capacity</th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Description</th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
               <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rooms.map((room) => (
-              <tr key={room.id} className="hover:bg-gray-50">
+              <tr key={room.id} className={`transition-colors hover:bg-gray-50 ${!room.is_active ? 'opacity-40' : ''}`}>
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">{room.name}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{room.capacity ?? <span className="text-gray-300">—</span>}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{room.description || <span className="text-gray-300">—</span>}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${room.is_active ? 'text-green-700' : 'text-gray-400'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${room.is_active ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    {room.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-3">
                     <Switch

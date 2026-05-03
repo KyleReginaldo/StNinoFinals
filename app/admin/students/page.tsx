@@ -75,11 +75,11 @@ function RfidScanInput({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    fetch('/api/admin/rfid-assignment-mode', { method: 'DELETE' }).catch(() => {});
   };
 
   const startScan = async () => {
     lastSeenRef.current = null;
-    // Signal to attendance-live that assignment mode is active
     await fetch('/api/admin/rfid-assignment-mode', { method: 'POST' }).catch(() => {});
     setScanning(true);
     intervalRef.current = setInterval(async () => {
@@ -1017,7 +1017,7 @@ export default function StudentManagementPage() {
                   <SortHeader label="Section" sortKey="section"      currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"  sortKey="email"         currentSort={tc.sort} onSort={tc.toggleSort} />
-                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1055,7 +1055,7 @@ export default function StudentManagementPage() {
                         {student.email}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1 ">
                           {showArchived ? (
                             <button
                               onClick={() => handleRestoreStudent(student.id, `${student.first_name} ${student.last_name}`)}

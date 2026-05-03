@@ -114,7 +114,7 @@ export default function TeacherSidebarContent({ teacher, onLogout }: TeacherSide
     <div className="flex flex-col h-full bg-[#111827] overflow-hidden">
 
       {/* Branding */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5 flex-shrink-0">
+      <Link href="/" className="flex items-center gap-3 px-4 py-5 border-b border-white/5 flex-shrink-0 hover:bg-white/5 transition-colors">
         <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-white/10">
           <Image src="/logo.png" alt="Logo" width={36} height={36} className="object-cover w-full h-full" />
         </div>
@@ -122,7 +122,7 @@ export default function TeacherSidebarContent({ teacher, onLogout }: TeacherSide
           <p className="text-xs font-bold text-white truncate leading-tight">St. Niño de Praga</p>
           <p className="text-[10px] text-gray-500 leading-none mt-0.5">Teacher Portal</p>
         </div>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 relative">
