@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { BookOpen, Hash, Mail, MapPin, Phone, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Teacher {
@@ -163,17 +164,24 @@ export default function TeacherAccount() {
             </div>
             <div>
               <Label>Phone Number</Label>
-              <Input
-                value={form.phone_number}
-                placeholder="09XXXXXXXXX"
-                inputMode="numeric"
-                maxLength={11}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/\D/g, '') })}
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                <Input
+                  className="rounded-l-none"
+                  value={form.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                  placeholder="9XXXXXXXXX"
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(e) => {
+                    const d = e.target.value.replace(/\D/g, '');
+                    setForm({ ...form, phone_number: d ? `+63${d}` : '' });
+                  }}
+                />
+              </div>
             </div>
             <div>
               <Label>Date of Birth</Label>
-              <Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} />
+              <DatePicker value={form.date_of_birth} onChange={(v) => setForm({ ...form, date_of_birth: v })} placeholder="Select date of birth" />
             </div>
             <div>
               <Label>Address</Label>

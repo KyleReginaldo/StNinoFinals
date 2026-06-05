@@ -18,6 +18,7 @@ import { useConfirm } from '@/lib/use-confirm';
 import { CheckCircle2, Clock, Download, GraduationCap, Save, Search, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { useRefresh } from '@/lib/refresh-context';
 
 interface Teacher {
   id: number;
@@ -53,6 +54,7 @@ const STATUS_CONFIG = {
 
 export default function TeacherGrades() {
   const router = useRouter();
+  const { refreshKey } = useRefresh();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [teacherClasses, setTeacherClasses] = useState<any[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
@@ -105,7 +107,7 @@ export default function TeacherGrades() {
       setGradesData([]);
       fetchGradesData();
     }
-  }, [teacher, selectedClassId]);
+  }, [teacher, selectedClassId, refreshKey]);
 
   const fetchTeacherClasses = async () => {
     if (!teacher || !teacher.id) return;

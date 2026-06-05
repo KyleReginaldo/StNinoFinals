@@ -3,19 +3,38 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GraduationCap, Hash, Layers, Mail, MapPin, Phone, User } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { Camera, GraduationCap, Hash, Layers, Mail, MapPin, Phone, User } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
 export default function ProfilePage() {
-  const { student, isLoading } = useStudentAuth();
+  const { student, setStudent, isLoading } = useStudentAuth();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (student?.profile_picture) setAvatarUrl(student.profile_picture);
+  }, [student?.profile_picture]);
+  const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     phone_number: '',
     date_of_birth: '',
     address: '',
@@ -32,12 +51,50 @@ export default function ProfilePage() {
     displayName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase(),
   [displayName]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !student) return;
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const ext  = file.name.split('.').pop();
+      const path = `avatars/${student.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
+      const url = urlData.publicUrl;
+
+      const res = await fetch('/api/student/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: student.id, profile_picture: url }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+
+      setAvatarUrl(url);
+      const stored = localStorage.getItem('student');
+      if (stored) {
+        localStorage.setItem('student', JSON.stringify({ ...JSON.parse(stored), profile_picture: url }));
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = () => {
     if (!student) return;
     setForm({
       first_name:   student.first_name  || '',
       last_name:    student.last_name   || '',
       middle_name:  student.middle_name || '',
+      suffix:       (student as any).suffix || '',
       phone_number: student.phone_number || student.phone || student.contact_number || '',
       date_of_birth: student.date_of_birth || '',
       address:      student.address     || '',
@@ -65,15 +122,11 @@ export default function ProfilePage() {
       const result = await res.json();
       if (!result.success) throw new Error(result.error || 'Failed to save.');
 
-      // Sync localStorage
-      const stored = localStorage.getItem('student');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        localStorage.setItem('student', JSON.stringify({ ...parsed, ...form }));
-      }
+      // Update state and localStorage without reloading
+      const updated = { ...student, ...form };
+      setStudent(updated);
+      localStorage.setItem('student', JSON.stringify(updated));
       setEditing(false);
-      // Reload to reflect updated name
-      window.location.reload();
     } catch (e: any) {
       setError(e.message || 'Something went wrong.');
     } finally {
@@ -99,8 +152,26 @@ export default function ProfilePage() {
       {/* Avatar + Name */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-between gap-5">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-blue-700/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl font-bold text-blue-700">{avatarLetters}</span>
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-full bg-blue-700/20 flex items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-blue-700">{avatarLetters}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 w-5 h-5 bg-gray-900 hover:bg-gray-700 rounded-full flex items-center justify-center transition"
+              title="Change photo"
+            >
+              {uploadingAvatar
+                ? <span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />
+                : <Camera className="w-3 h-3 text-white" />}
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900 capitalize">{displayName.toLowerCase()}</h2>
@@ -135,7 +206,23 @@ export default function ProfilePage() {
               </div>
               <div>
                 <Label required>Last Name</Label>
-                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                <div className="flex gap-2">
+                  <Input className="flex-1" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                  <Select
+                    value={form.suffix || 'none'}
+                    onValueChange={(v) => setForm({ ...form, suffix: v === 'none' ? '' : v })}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue placeholder="Sfx" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {SUFFIX_OPTIONS.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div>
@@ -144,17 +231,24 @@ export default function ProfilePage() {
             </div>
             <div>
               <Label>Phone Number</Label>
-              <Input
-                value={form.phone_number}
-                placeholder="09XXXXXXXXX"
-                inputMode="numeric"
-                maxLength={11}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/\D/g, '') })}
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                <Input
+                  className="rounded-l-none"
+                  value={form.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                  placeholder="9XXXXXXXXX"
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(e) => {
+                    const d = e.target.value.replace(/\D/g, '');
+                    setForm({ ...form, phone_number: d ? `+63${d}` : '' });
+                  }}
+                />
+              </div>
             </div>
             <div>
               <Label>Date of Birth</Label>
-              <Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} />
+              <DatePicker value={form.date_of_birth} onChange={(v) => setForm({ ...form, date_of_birth: v })} placeholder="Select date of birth" />
             </div>
             <div>
               <Label>Address</Label>

@@ -234,13 +234,21 @@ export function StudentManagementTab({ students, loadingStudents, onStudentAdded
                     </div>
                     <div>
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={newStudent.phone_number}
-                        placeholder="Enter phone number"
-                        onChange={(e) => setNewStudent({ ...newStudent, phone_number: e.target.value })}
-                      />
+                      <div className="flex">
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                        <Input
+                          id="phone"
+                          className="rounded-l-none"
+                          value={newStudent.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                          placeholder="9XXXXXXXXX"
+                          inputMode="numeric"
+                          maxLength={10}
+                          onChange={(e) => {
+                            const d = e.target.value.replace(/\D/g, '');
+                            setNewStudent({ ...newStudent, phone_number: d ? `+63${d}` : '' });
+                          }}
+                        />
+                      </div>
                     </div>
                     <div className="flex justify-end space-x-2">
                       {studentFormError && (

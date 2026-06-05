@@ -9,6 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -18,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import jsPDF from 'jspdf';
@@ -37,7 +46,6 @@ import {
   User2,
   XCircle,
 } from 'lucide-react';
-import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
@@ -164,6 +172,9 @@ export default function EnrollmentPage() {
     null
   );
   const [submitting, setSubmitting] = useState(false);
+  const [coeDialogOpen, setCoeDialogOpen]     = useState(false);
+  const [coePurposeType, setCoePurposeType]   = useState('general');
+  const [coeDetails, setCoeDetails]           = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayName = useMemo(() => {
@@ -316,112 +327,287 @@ export default function EnrollmentPage() {
   const enrollment = enrollmentData?.enrollment;
   const classes = enrollmentData?.classes || [];
 
-  const generateCertificationPDF = useCallback(async () => {
-    if (!student || !enrollment?.isEnrolled || classes.length === 0) {
+  const generateCertificationPDF = useCallback(async (purpose: string) => {
+    if (!student || !enrollment?.isEnrolled) {
       showAlert({
         message: 'No enrollment data available to generate certificate.',
         type: 'warning',
       });
       return;
     }
+
     try {
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 20, { align: 'center' });
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('OF LA PAZ HOMES II, INC.', 105, 26, { align: 'center' });
-      doc.text('La Paz Homes II/Karlaville Parkhomes, Trece', 105, 30, {
-        align: 'center',
-      });
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CERTIFICATION OF ENROLLMENT', 105, 45, { align: 'center' });
-      const studentName = info?.name || displayName;
-      const gradeStr = info?.gradeLevel || student.grade_level || 'N/A';
-      const academicYear = enrollment?.schoolYear || CURRENT_SCHOOL_YEAR;
-      const semStr = enrollment?.semester || '';
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(
-        `This is to certify that ${studentName.toUpperCase()}`,
-        105,
-        65,
-        { align: 'center' }
-      );
-      doc.text(
-        `is officially enrolled as a student of Grade ${gradeStr}`,
-        105,
-        72,
-        { align: 'center' }
-      );
-      doc.text(`for Quarter ${semStr} of Academic Year ${academicYear}.`, 105, 79, {
-        align: 'center',
-      });
-      if (classes.length > 0) {
-        let yPos = 95;
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Enrolled Subjects:', 20, yPos);
-        yPos += 8;
-        doc.setFontSize(10);
-        doc.text('SUBJECT', 25, yPos);
-        doc.text('TEACHER', 120, yPos);
-        yPos += 6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        classes.forEach((cls) => {
-          if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-          }
-          doc.text(cls.className, 25, yPos);
-          doc.text(cls.teacher, 120, yPos);
-          yPos += 6;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      const pageW    = 210;
+      const margin   = 20;
+      const contentW = pageW - margin * 2; // 170mm
+
+      // ── 1. Logo ────────────────────────────────────────────────────────────
+      const logoX = 10;
+      const logoY = 8;
+      const logoW = 20;
+      const logoH = 20;
+      try {
+        const res  = await fetch('/logo.png');
+        const blob = await res.blob();
+        const b64  = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror  = reject;
+          reader.readAsDataURL(blob);
         });
+        doc.addImage(b64, 'PNG', logoX, logoY, logoW, logoH);
+      } catch {
+        // logo unavailable – skip silently
       }
-      const finalY = classes.length > 0 ? 160 : 100;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'italic');
-      doc.text(
-        'This certification is issued upon the request of the student',
-        105,
-        finalY,
-        { align: 'center' }
-      );
-      doc.text('for whatever legal purpose it may serve.', 105, finalY + 6, {
-        align: 'center',
-      });
-      const currentDate = new Date().toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
+
+      // ── 2. School header ───────────────────────────────────────────────────
+      // School name: left-aligned flush to the logo, matching the website header
+      const nameX   = logoX + logoW + 4;          // 42mm — 4mm gap after logo
+      const subCx   = (nameX + pageW - margin) / 2; // center of remaining area
+
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text('STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.', nameX, 16);
+
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
+      doc.text('La Paz Homes II/Karlaville Parkhomes, Trece Martires City', subCx, 21, { align: 'center' });
+      doc.text('(046) 443-3367 / 09171560082',                              subCx, 25, { align: 'center' });
+      doc.text('sto.ninodepragaacademyLPH@gmail.com',                       subCx, 29, { align: 'center' });
+
+      // ── 3. Double horizontal rule ──────────────────────────────────────────
+      doc.setLineWidth(1.0);
+      doc.line(margin, 35, pageW - margin, 35);
+
+      // ── 4. Italic tagline ──────────────────────────────────────────────────
+      doc.setFontSize(10);
+      doc.setFont('times', 'italic');
       doc.text(
-        `Issued this ${currentDate} at SNDPA-LPH, Trece Martires City.`,
-        105,
-        finalY + 15,
-        { align: 'center' }
+        '"The Home of Multi-Talented Children and Dedicated Teachers"',
+        pageW / 2, 43, { align: 'center' }
       );
-      const signatureY = finalY + 35;
-      doc.text('MRS. CORAZON R. ULEP', 50, signatureY);
-      doc.text('School Registrar', 50, signatureY + 5);
-      doc.text('COL GILMAR N GALICIA PA(Res) ME', 150, signatureY);
-      doc.text('Principal / Administrator', 150, signatureY + 5);
-      doc.save(
-        `Enrollment_Certificate_${studentName.replace(/\s+/g, '_')}.pdf`
+
+      // ── 5. Date (right-aligned) ────────────────────────────────────────────
+      const now       = new Date();
+      const day       = now.getDate();
+      const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+      const year      = now.getFullYear();
+
+      const ordinal = (n: number) => {
+        if (n > 3 && n < 21) return 'th';
+        switch (n % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(`${monthName} ${day}, ${year}`, pageW - margin, 54, { align: 'right' });
+
+      // ── 6. Title — Times bold, no letter-spacing ───────────────────────────
+      doc.setFontSize(22);
+      doc.setFont('times', 'bold');
+      doc.text('CERTIFICATION', pageW / 2, 73, { align: 'center' });
+
+      // ── 7. Mixed-bold + justified paragraph helper ─────────────────────────
+      type Seg  = { text: string; bold?: boolean };
+      type Word = { w: string; bold: boolean };
+
+      doc.setFontSize(12);
+
+      const getW = (text: string, bold: boolean): number => {
+        doc.setFont('times', bold ? 'bold' : 'normal');
+        doc.setFontSize(12);
+        return doc.getTextWidth(text);
+      };
+      const spaceW = getW(' ', false);
+
+      // Renders segments with first-line indent, full justification, mixed bold.
+      const renderPara = (
+        segs: Seg[],
+        x: number,
+        y0: number,
+        maxW: number,
+        lh: number,
+        firstIndent = 0,
+      ): number => {
+        // tokenise into words preserving bold flag
+        const words: Word[] = [];
+        for (const seg of segs) {
+          seg.text.split(' ').forEach(t => {
+            if (t) words.push({ w: t, bold: !!seg.bold });
+          });
+        }
+
+        // layout into lines
+        const lines: Word[][] = [];
+        let cur: Word[]  = [];
+        let curW = 0;
+
+        for (const word of words) {
+          const lineMax = lines.length === 0 ? maxW - firstIndent : maxW;
+          const wW  = getW(word.w, word.bold);
+          const addW = cur.length > 0 ? spaceW + wW : wW;
+
+          if (cur.length > 0 && curW + addW > lineMax + 0.5) {
+            lines.push(cur);
+            cur  = [word];
+            curW = wW;
+          } else {
+            cur.push(word);
+            curW += addW;
+          }
+        }
+        if (cur.length > 0) lines.push(cur);
+
+        // render with full justification (last line left-aligned)
+        let y = y0;
+        for (let li = 0; li < lines.length; li++) {
+          const line    = lines[li];
+          const isLast  = li === lines.length - 1;
+          const lineX   = li === 0 ? x + firstIndent : x;
+          const lineMax = li === 0 ? maxW - firstIndent : maxW;
+
+          if (isLast || line.length === 1) {
+            let cx = lineX;
+            for (let i = 0; i < line.length; i++) {
+              doc.setFont('times', line[i].bold ? 'bold' : 'normal');
+              doc.text(line[i].w, cx, y);
+              cx += getW(line[i].w, line[i].bold) + (i < line.length - 1 ? spaceW : 0);
+            }
+          } else {
+            const totalW = line.reduce((s, wd) => s + getW(wd.w, wd.bold), 0);
+            const gap    = (lineMax - totalW) / (line.length - 1);
+            let cx = lineX;
+            for (let i = 0; i < line.length; i++) {
+              doc.setFont('times', line[i].bold ? 'bold' : 'normal');
+              doc.text(line[i].w, cx, y);
+              cx += getW(line[i].w, line[i].bold) + (i < line.length - 1 ? gap : 0);
+            }
+          }
+          y += lh;
+        }
+        return y;
+      };
+
+      // ── 8. Student / grade data ────────────────────────────────────────────
+      const studentName  = (info?.name || displayName).toUpperCase();
+      const gradeRaw     = info?.gradeLevel || student.grade_level || '';
+      const gradeNum     = parseInt(String(gradeRaw).replace(/\D/g, ''));
+      const academicYear = enrollment?.schoolYear || CURRENT_SCHOOL_YEAR;
+
+      const gradeWordMap: Record<number, string> = {
+        1: 'One',   2: 'Two',    3: 'Three', 4: 'Four',  5: 'Five',
+        6: 'Six',   7: 'Seven',  8: 'Eight', 9: 'Nine',  10: 'Ten',
+        11: 'Eleven', 12: 'Twelve',
+      };
+      const gradeLabel = gradeWordMap[gradeNum] ?? String(gradeRaw);
+
+      const strandMap: Record<string, string> = {
+        STEM:            'Science, Technology, Engineering and Mathematics (STEM)',
+        ABM:             'Accounting Business and Management (ABM)',
+        HUMSS:           'Humanities and Social Sciences (HUMSS)',
+        GAS:             'General Academic Strand (GAS)',
+        TVL:             'Technical-Vocational-Livelihood (TVL)',
+        Sports:          'Sports Track',
+        'Arts & Design': 'Arts and Design Track',
+      };
+
+      const isSHS      = gradeNum === 11 || gradeNum === 12;
+      const strandCode = enrollmentRequest?.strand ?? null;
+      const fullStrand = strandCode ? (strandMap[strandCode] ?? strandCode) : null;
+
+      // ── 9. Body paragraphs ─────────────────────────────────────────────────
+      const lh     = 7;   // line height in mm
+      const indent = 10;  // first-line paragraph indent in mm
+      let y = 85;
+
+      // Para 1 — enrollment fact (student name, grade, strand, year in bold)
+      const p1: Seg[] = isSHS && fullStrand
+        ? [
+            { text: 'This is to certify that ' },
+            { text: studentName, bold: true },
+            { text: ' is officially enrolled in this institution as ' },
+            { text: `Grade ${gradeLabel}`, bold: true },
+            { text: ' under ' },
+            { text: `${fullStrand} Strand`, bold: true },
+            { text: ' for ' },
+            { text: `Academic Year ${academicYear}`, bold: true },
+            { text: '.' },
+          ]
+        : [
+            { text: 'This is to certify that ' },
+            { text: studentName, bold: true },
+            { text: ' is officially enrolled in this institution as a ' },
+            { text: `Grade ${gradeLabel}`, bold: true },
+            { text: ' student for ' },
+            { text: `Academic Year ${academicYear}`, bold: true },
+            { text: '.' },
+          ];
+
+      y = renderPara(p1, margin, y, contentW, lh, indent);
+      y += 5;
+
+      // Para 2 — purpose clause
+      const isGeneral = purpose === 'whatever legal purpose it may serve';
+      const p2: Seg[] = isGeneral
+        ? [
+            { text: 'This certification is issued upon the request of the aforementioned student for ' },
+            { text: purpose, bold: true },
+            { text: '.' },
+          ]
+        : [
+            { text: 'This certification is issued upon the request of the aforementioned student for ' },
+            { text: purpose, bold: true },
+            { text: '. This certification is issued for the stated purpose only.' },
+          ];
+      y = renderPara(p2, margin, y, contentW, lh, indent);
+      y += 5;
+
+      // Para 3 — issuance line (centered, single line)
+      doc.setFont('times', 'normal');
+      doc.setFontSize(12);
+      doc.text(
+        `Issued this ${day} ${ordinal(day)} day of ${monthName} ${year} at SNDPA-LPH, Trece Martires City, Cavite.`,
+        pageW / 2, y, { align: 'center' }
       );
+      y += lh + 22;
+
+      // ── 10. Signature block (right-aligned) ───────────────────────────────
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('COL GILMAR N GALICIA PA (Res) MBA,MPM', pageW - margin, y,     { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.text('Principal / Administrator',              pageW - margin, y + 6, { align: 'right' });
+      y += 20;
+
+      // ── 11. Verification note ──────────────────────────────────────────────
+      doc.setFont('times', 'italic');
+      doc.setFontSize(9);
+      doc.text('Note:  Should there be a need to verify this document?',  pageW - margin, y,     { align: 'right' });
+      doc.text('Please call (046) 443-33-67 Office of the Principal',     pageW - margin, y + 5, { align: 'right' });
+
+      // ── 12. NOT VALID WITHOUT SCHOOL SEAL ─────────────────────────────────
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text('NOT VALID',   margin, 265);
+      doc.setFont('helvetica', 'bold');
+      doc.text('WITHOUT',     margin, 270);
+      doc.setFont('helvetica', 'normal');
+      doc.text('SCHOOL SEAL', margin, 275);
+
+      doc.save(`COE_${studentName.replace(/\s+/g, '_')}.pdf`);
+
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       showAlert({ message: `Failed to generate PDF: ${msg}`, type: 'error' });
     }
-  }, [student, enrollment, classes, info, displayName, showAlert]);
+  }, [student, enrollment, info, displayName, enrollmentRequest, showAlert]);
 
   const generateHistoryPDF = useCallback(() => {
     if (!enrollmentHistory || enrollmentHistory.length === 0) {
@@ -512,7 +698,7 @@ export default function EnrollmentPage() {
               Download History
             </Button>
             <Button
-              onClick={generateCertificationPDF}
+              onClick={() => setCoeDialogOpen(true)}
               disabled={dataLoading}
               className="bg-red-800 hover:bg-red-700 text-white"
             >
@@ -661,6 +847,85 @@ export default function EnrollmentPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* COE purpose dialog */}
+        <Dialog open={coeDialogOpen} onOpenChange={setCoeDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Certificate of Enrollment</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label>Purpose</Label>
+                <Select
+                  value={coePurposeType}
+                  onValueChange={(v) => { setCoePurposeType(v); setCoeDetails(''); }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select purpose" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General / Whatever legal purpose</SelectItem>
+                    <SelectItem value="entrance">Entrance Examination</SelectItem>
+                    <SelectItem value="scholarship">Scholarship Application</SelectItem>
+                    <SelectItem value="employment">Employment Purposes</SelectItem>
+                    <SelectItem value="other">Other (specify)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {coePurposeType !== 'general' && (
+                <div className="space-y-1.5">
+                  <Label>
+                    {coePurposeType === 'entrance'    ? 'School / Institution' :
+                     coePurposeType === 'other'       ? 'Specify purpose' :
+                     'Additional details (optional)'}
+                  </Label>
+                  <Input
+                    placeholder={
+                      coePurposeType === 'entrance'    ? 'e.g. Cavite State University – Main Campus' :
+                      coePurposeType === 'scholarship' ? 'e.g. CHED Scholarship Program' :
+                      coePurposeType === 'employment'  ? 'e.g. ABC Company' :
+                      'Describe the purpose…'
+                    }
+                    value={coeDetails}
+                    onChange={(e) => setCoeDetails(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCoeDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-800 hover:bg-red-700 text-white"
+                disabled={coePurposeType === 'other' && !coeDetails.trim()}
+                onClick={() => {
+                  const purposeBase: Record<string, string> = {
+                    general:    'whatever legal purpose it may serve',
+                    entrance:   'Entrance Examination',
+                    scholarship:'Scholarship Application',
+                    employment: 'Employment Purposes',
+                  };
+                  const base    = coePurposeType === 'other' ? '' : purposeBase[coePurposeType];
+                  const details = coeDetails.trim();
+                  const purpose = coePurposeType === 'other'
+                    ? details
+                    : coePurposeType === 'entrance' && details
+                      ? `${base} Slated for ${details}`
+                      : details ? `${base} ${details}` : base;
+                  setCoeDialogOpen(false);
+                  generateCertificationPDF(purpose);
+                }}
+              >
+                Generate PDF
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

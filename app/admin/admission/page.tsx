@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Database } from '@/database.types';
@@ -17,9 +18,11 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import {
   CheckCircle,
+  ChevronDown,
   Mail,
   Phone,
   Search,
+  Send,
   User,
   X,
   XCircle,
@@ -35,6 +38,24 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string }> = {
   rejected: { label: 'Rejected', dot: 'bg-red-500'    },
 };
 
+const QUICK_TEMPLATES = [
+  {
+    label: 'Interview Invitation',
+    subject: 'Admission Interview Invitation — {name}',
+    body: `Dear {parent},\n\nThank you for submitting an admission inquiry for {name}. We would like to invite you for an admission interview.\n\nPlease reply to this email to schedule a convenient date and time.\n\nBest regards,\nSto. Niño de Praga Academy`,
+  },
+  {
+    label: 'Request Documents',
+    subject: 'Additional Documents Required — {name}',
+    body: `Dear {parent},\n\nThank you for applying to Sto. Niño de Praga Academy. To continue processing the admission for {name}, we need the following documents:\n\n• Report Card / Form 138\n• Birth Certificate (PSA)\n• 2x2 ID Photos\n\nPlease bring or send these documents at your earliest convenience.\n\nBest regards,\nSto. Niño de Praga Academy`,
+  },
+  {
+    label: 'Under Review',
+    subject: 'Admission Application Update — {name}',
+    body: `Dear {parent},\n\nWe would like to inform you that the admission application for {name} is currently under review by our admissions committee.\n\nWe will notify you of the outcome as soon as a decision has been made. Thank you for your patience.\n\nBest regards,\nSto. Niño de Praga Academy`,
+  },
+];
+
 const AdmissionPage = () => {
   const [admissions, setAdmissions] = useState<Admission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +65,59 @@ const AdmissionPage = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingAdmissionId, setRejectingAdmissionId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  // Email compose modal
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailTarget, setEmailTarget] = useState<Admission | null>(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
   const { showAlert } = useAlert();
+
+  const openEmailDialog = (admission: Admission) => {
+    const name = `${admission.first_name} ${admission.last_name}`;
+    setEmailTarget(admission);
+    setEmailSubject(`Re: Admission Inquiry — ${name}`);
+    setEmailBody('');
+    // Close details dialog first to avoid stacked modal focus-trap issues
+    setDialogOpen(false);
+    // Small delay so Radix cleans up the first dialog before opening the next
+    setTimeout(() => setEmailDialogOpen(true), 80);
+  };
+
+  const applyTemplate = (tpl: typeof QUICK_TEMPLATES[number]) => {
+    if (!emailTarget) return;
+    const name = `${emailTarget.first_name} ${emailTarget.last_name}`;
+    const parent = emailTarget.parent_name || 'Parent/Guardian';
+    setEmailSubject(tpl.subject.replace('{name}', name));
+    setEmailBody(tpl.body.replace(/{name}/g, name).replace(/{parent}/g, parent));
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailTarget || !emailSubject.trim() || !emailBody.trim()) return;
+    setSendingEmail(true);
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailTarget.email_address,
+          subject: emailSubject.trim(),
+          text: emailBody.trim(),
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        showAlert({ message: 'Email sent successfully.', type: 'success' });
+        setEmailDialogOpen(false);
+      } else {
+        showAlert({ message: result.error || 'Failed to send email.', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const fetchAdmissions = async () => {
     setLoading(true);
@@ -255,14 +328,14 @@ const AdmissionPage = () => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">{admission.parent_name}</td>
                     <td className="px-4 py-3 text-sm">
-                      <a
-                        href={`mailto:${admission.email_address}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); openEmailDialog(admission); }}
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-left"
                       >
                         <Mail className="w-3 h-3 shrink-0" />
                         {admission.email_address}
-                      </a>
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <a
@@ -428,11 +501,7 @@ const AdmissionPage = () => {
                 )}
                 <Button
                   className={`${!selectedAdmission.status || selectedAdmission.status === 'pending' ? '' : 'flex-1'} bg-blue-600 hover:bg-blue-700`}
-                  onClick={() =>
-                    window.open(
-                      `mailto:${selectedAdmission.email_address}?subject=Re: Admission Inquiry for ${selectedAdmission.first_name} ${selectedAdmission.last_name}`
-                    )
-                  }
+                  onClick={() => openEmailDialog(selectedAdmission)}
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Send Email
@@ -441,6 +510,75 @@ const AdmissionPage = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Compose Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-blue-600" />
+              Compose Email
+            </DialogTitle>
+            <DialogDescription>
+              Sending to <span className="font-medium text-gray-700">{emailTarget?.email_address}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-1">
+            {/* Quick Templates */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Templates</p>
+              <div className="flex flex-wrap gap-2">
+                {QUICK_TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.label}
+                    type="button"
+                    onClick={() => applyTemplate(tpl)}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                  >
+                    <ChevronDown className="w-3 h-3" />
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label required>Subject</Label>
+              <Input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Email subject"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label required>Message</Label>
+              <Textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder="Write your message here..."
+                rows={9}
+                className="resize-none font-mono text-sm"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => setEmailDialogOpen(false)} disabled={sendingEmail}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleSendEmail}
+                disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {sendingEmail ? 'Sending...' : 'Send Email'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

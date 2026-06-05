@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -15,6 +16,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { CalendarDays, Download, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRefresh } from '@/lib/refresh-context';
 
 interface AttendanceRecord {
   id: string;
@@ -35,6 +37,7 @@ const thirtyDaysAgo = (() => {
 
 export default function TeacherAttendancePage() {
   const router = useRouter();
+  const { refreshKey } = useRefresh();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [sections, setSections] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +68,7 @@ export default function TeacherAttendancePage() {
     if (!stored) { router.push('/login?role=teacher'); return; }
     fetchAttendance();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [refreshKey]);
 
   const tc = useTableControls(records, {
     searchFields: ['student_name', 'student_number', 'section'],
@@ -136,11 +139,11 @@ export default function TeacherAttendancePage() {
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500 mb-1.5">From</p>
-            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-sm w-36" />
+            <DatePicker value={startDate} onChange={setStartDate} placeholder="Start date" />
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500 mb-1.5">To</p>
-            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 text-sm w-36" />
+            <DatePicker value={endDate} onChange={setEndDate} placeholder="End date" />
           </div>
           <Button onClick={fetchAttendance} disabled={loading} className="h-9 bg-gray-900 hover:bg-gray-800 text-white text-sm">
             {loading ? 'Loading...' : 'Apply'}

@@ -22,6 +22,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useRefresh } from '@/lib/refresh-context';
 
 type GradeStatus = 'pending' | 'approved' | 'rejected';
 
@@ -69,6 +70,7 @@ const STATUS_CONFIG = {
 
 export default function AdminGradesPage() {
   const { admin } = useAuth();
+  const { refreshKey } = useRefresh();
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
@@ -98,7 +100,7 @@ export default function AdminGradesPage() {
     }
   }, [showAlert]);
 
-  useEffect(() => { fetchGrades(); }, [fetchGrades]);
+  useEffect(() => { fetchGrades(); }, [fetchGrades, refreshKey]);
 
   const counts = useMemo(() => ({
     total:    grades.length,

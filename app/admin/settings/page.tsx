@@ -273,12 +273,20 @@ export default function SettingsPage() {
             <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               <Phone className="w-3 h-3" /> Phone
             </label>
-            <input
-              value={settings.phone}
-              onChange={e => handleInputChange('phone', e.target.value)}
-              placeholder="e.g. (02) 123-4567"
-              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            />
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-sm text-gray-500 select-none">+63</span>
+              <input
+                value={settings.phone.replace(/^\+63/, '').replace(/^0/, '')}
+                onChange={e => {
+                  const d = e.target.value.replace(/\D/g, '');
+                  handleInputChange('phone', d ? `+63${d}` : '');
+                }}
+                placeholder="9XXXXXXXXX"
+                inputMode="numeric"
+                maxLength={10}
+                className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">

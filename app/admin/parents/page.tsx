@@ -29,6 +29,7 @@ import { useConfirm } from "@/lib/use-confirm"
 import { ArchiveRestore, Edit, Search, Trash2, UserPlus, Users, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAuth } from "../hooks/useAuth"
+import { useRefresh } from "@/lib/refresh-context"
 
 interface Parent {
   id: string
@@ -56,6 +57,7 @@ interface Student {
 
 export default function ParentManagementPage() {
   const { admin, loading: authLoading } = useAuth()
+  const { refreshKey } = useRefresh()
   const [parents, setParents] = useState<Parent[]>([])
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(false)
@@ -131,7 +133,7 @@ export default function ParentManagementPage() {
   useEffect(() => {
     fetchParents(showArchived)
     fetchStudents()
-  }, [showArchived])
+  }, [showArchived, refreshKey])
 
   const tc = useTableControls(parents, {
     searchFields: ['first_name', 'last_name', 'email', 'phone_number'],
@@ -382,7 +384,21 @@ export default function ParentManagementPage() {
                   </div>
                   <div>
                     <Label required>Phone Number</Label>
-                    <Input value={newParent.phone_number} onChange={(e) => setNewParent({ ...newParent, phone_number: e.target.value })} placeholder="Enter phone number" required />
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                      <Input
+                        className="rounded-l-none"
+                        value={newParent.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                        placeholder="9XXXXXXXXX"
+                        inputMode="numeric"
+                        maxLength={10}
+                        onChange={(e) => {
+                          const d = e.target.value.replace(/\D/g, '');
+                          setNewParent({ ...newParent, phone_number: d ? `+63${d}` : '' });
+                        }}
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="col-span-2">
                     <Label>Address</Label>
@@ -428,7 +444,20 @@ export default function ParentManagementPage() {
                 </div>
                 <div>
                   <Label>Phone Number</Label>
-                  <Input value={editParent.phone_number} onChange={(e) => setEditParent({ ...editParent, phone_number: e.target.value })} placeholder="Enter phone number" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                    <Input
+                      className="rounded-l-none"
+                      value={editParent.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                      placeholder="9XXXXXXXXX"
+                      inputMode="numeric"
+                      maxLength={10}
+                      onChange={(e) => {
+                        const d = e.target.value.replace(/\D/g, '');
+                        setEditParent({ ...editParent, phone_number: d ? `+63${d}` : '' });
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <Label>Address</Label>

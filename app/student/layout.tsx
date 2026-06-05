@@ -1,9 +1,11 @@
 'use client';
 
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
+import { RefreshButton } from '@/components/RefreshButton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
+import { RefreshProvider } from '@/lib/refresh-context';
 import { useConfirm } from '@/lib/use-confirm';
 import {
   FileText,
@@ -132,47 +134,53 @@ export default function StudentLayout({
   );
 
   return (
-    <PasswordChangeWrapper userId={String(student.id)}>
-      <div className="flex h-screen overflow-hidden bg-[#F9FAFB]">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-56 h-full flex-shrink-0">
-          <StudentSidebarContent
-            student={student}
-            navItems={NAV_ITEMS}
-            currentPath={pathname}
-            onLogout={handleLogout}
-          />
-        </aside>
+    <RefreshProvider>
+      <PasswordChangeWrapper userId={String(student.id)}>
+        <div className="flex h-screen overflow-hidden bg-[#F9FAFB]">
+          {/* Desktop Sidebar */}
+          <aside className="hidden md:block w-56 h-full flex-shrink-0">
+            <StudentSidebarContent
+              student={student}
+              navItems={NAV_ITEMS}
+              currentPath={pathname}
+              onLogout={handleLogout}
+            />
+          </aside>
 
-        {/* Main Content */}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Mobile Header */}
-          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-56 p-0">
-                <StudentSidebarContent
-                  student={student}
-                  navItems={NAV_ITEMS}
-                  currentPath={pathname}
-                  onLogout={handleLogout}
-                />
-              </SheetContent>
-            </Sheet>
-            <h1 className="text-sm font-bold text-gray-800">Student Portal</h1>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </header>
+          {/* Main Content */}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Top bar (mobile + desktop refresh) */}
+            <header className="flex items-center px-4 py-3 bg-white border-b border-gray-200">
+              <div className="md:hidden flex items-center gap-2">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Menu className="h-6 w-6" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-56 p-0">
+                    <StudentSidebarContent
+                      student={student}
+                      navItems={NAV_ITEMS}
+                      currentPath={pathname}
+                      onLogout={handleLogout}
+                    />
+                  </SheetContent>
+                </Sheet>
+                <h1 className="text-sm font-bold text-gray-800">Student Portal</h1>
+              </div>
+              <div className="flex-1" />
+              <RefreshButton />
+              <Button variant="ghost" size="icon" className="md:hidden ml-1" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </header>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-y-auto">{children}</main>
+            {/* Page Content */}
+            <main className="flex-1 overflow-y-auto">{children}</main>
+          </div>
         </div>
-      </div>
-    </PasswordChangeWrapper>
+      </PasswordChangeWrapper>
+    </RefreshProvider>
   );
 }

@@ -41,5 +41,5 @@ export function useStudentAuth() {
     setIsLoading(false);
   }, [router]);
 
-  return { student, isLoading };
+  return { student, setStudent, isLoading };
 }

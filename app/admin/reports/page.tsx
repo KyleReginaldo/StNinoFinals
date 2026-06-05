@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import { BarChart3, Filter, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import {
@@ -115,23 +116,13 @@ export default function ReportsPage() {
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Start Date
             </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-              className="block px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            />
+            <DatePicker value={startDate} onChange={setStartDate} placeholder="Start date" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               End Date
             </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-              className="block px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            />
+            <DatePicker value={endDate} onChange={setEndDate} placeholder="End date" />
           </div>
           <Button
             onClick={handleApplyFilter}

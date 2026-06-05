@@ -35,6 +35,7 @@ import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useRefresh } from '@/lib/refresh-context';
 
 function RfidScanInput({
   value,
@@ -121,6 +122,7 @@ interface Teacher {
 
 export default function TeacherManagementPage() {
   const { admin, loading: authLoading } = useAuth();
+  const { refreshKey } = useRefresh();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -197,7 +199,7 @@ export default function TeacherManagementPage() {
 
   useEffect(() => {
     fetchTeachers(showArchived);
-  }, [showArchived]);
+  }, [showArchived, refreshKey]);
 
   const tc = useTableControls(teachers, {
     searchFields: ['first_name', 'last_name', 'employee_number', 'email'],
@@ -534,16 +536,20 @@ export default function TeacherManagementPage() {
                   </div>
                   <div>
                     <Label>Phone Number</Label>
-                    <Input
-                      value={newTeacher.phone_number}
-                      onChange={(e) =>
-                        setNewTeacher({
-                          ...newTeacher,
-                          phone_number: e.target.value,
-                        })
-                      }
-                      placeholder="Enter phone number"
-                    />
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                      <Input
+                        className="rounded-l-none"
+                        value={newTeacher.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                        placeholder="9XXXXXXXXX"
+                        inputMode="numeric"
+                        maxLength={10}
+                        onChange={(e) => {
+                          const d = e.target.value.replace(/\D/g, '');
+                          setNewTeacher({ ...newTeacher, phone_number: d ? `+63${d}` : '' });
+                        }}
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label>Date of Birth</Label>
@@ -727,16 +733,20 @@ export default function TeacherManagementPage() {
                 </div>
                 <div>
                   <Label>Phone Number</Label>
-                  <Input
-                    value={editTeacher.phone_number}
-                    onChange={(e) =>
-                      setEditTeacher({
-                        ...editTeacher,
-                        phone_number: e.target.value,
-                      })
-                    }
-                    placeholder="Enter phone number"
-                  />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                    <Input
+                      className="rounded-l-none"
+                      value={editTeacher.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                      placeholder="9XXXXXXXXX"
+                      inputMode="numeric"
+                      maxLength={10}
+                      onChange={(e) => {
+                        const d = e.target.value.replace(/\D/g, '');
+                        setEditTeacher({ ...editTeacher, phone_number: d ? `+63${d}` : '' });
+                      }}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>Date of Birth</Label>

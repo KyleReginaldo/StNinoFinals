@@ -26,9 +26,10 @@ export function PasswordChangeWrapper({
         return;
       }
 
-      // Skip the network check if we already cleared the flag locally this session
+      // Skip if already changed or dismissed this session
       const localCleared = localStorage.getItem(`pwd_changed_${userId}`);
-      if (localCleared === 'true') {
+      const snoozed = sessionStorage.getItem(`pwd_snoozed_${userId}`);
+      if (localCleared === 'true' || snoozed === 'true') {
         setIsChecking(false);
         return;
       }
@@ -84,6 +85,8 @@ export function PasswordChangeWrapper({
   const handleCloseModal = () => {
     setShowModal(false);
     if (passwordChangeRequired) {
+      // Snooze for this session so it doesn't re-appear on every page load
+      sessionStorage.setItem(`pwd_snoozed_${userId}`, 'true');
       setShowBanner(true);
     }
   };

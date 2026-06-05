@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DatePicker } from "@/components/ui/date-picker"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -229,24 +230,12 @@ export default function TeacherAttendancePage() {
 
             <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full md:w-auto">
               <div className="flex items-center space-x-2 w-full md:w-auto">
-                <Label htmlFor="startDate" className="text-sm">Start Date:</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full md:w-40"
-                />
+                <Label className="text-sm">Start Date:</Label>
+                <DatePicker value={startDate} onChange={setStartDate} placeholder="Start date" />
               </div>
               <div className="flex items-center space-x-2 w-full md:w-auto">
-                <Label htmlFor="endDate" className="text-sm">End Date:</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full md:w-40"
-                />
+                <Label className="text-sm">End Date:</Label>
+                <DatePicker value={endDate} onChange={setEndDate} placeholder="End date" />
               </div>
               <div className="w-full md:w-auto">
                 <Button onClick={fetchData} variant="outline" size="sm" className="w-full md:w-auto">

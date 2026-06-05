@@ -1,6 +1,8 @@
 'use client';
 import AdminSidebar, { AdminSidebarContent } from '@/components/admin/sidebar';
 import { MobileSidebar } from '@/components/admin/mobile-sidebar';
+import { RefreshButton } from '@/components/RefreshButton';
+import { RefreshProvider } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 
@@ -32,18 +34,24 @@ export default function RootLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile top bar */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
-          <MobileSidebar>
-            <AdminSidebarContent />
-          </MobileSidebar>
-          <span className="text-sm font-semibold text-gray-900">Admin Portal</span>
+    <RefreshProvider>
+      <div className="flex h-screen overflow-hidden">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Top bar */}
+          <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+            <div className="md:hidden">
+              <MobileSidebar>
+                <AdminSidebarContent />
+              </MobileSidebar>
+            </div>
+            <span className="md:hidden text-sm font-semibold text-gray-900">Admin Portal</span>
+            <div className="flex-1" />
+            <RefreshButton />
+          </div>
+          <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
-        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
-    </div>
+    </RefreshProvider>
   );
 }

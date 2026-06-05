@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAlert } from '@/lib/use-alert';
+import { useRefresh } from '@/lib/refresh-context';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Download, GraduationCap } from 'lucide-react';
@@ -57,6 +58,7 @@ function gradeBg(grade: number) {
 
 export default function GradesPage() {
   const { student, isLoading } = useStudentAuth();
+  const { refreshKey } = useRefresh();
   const { showAlert } = useAlert();
   const [gradesData, setGradesData] = useState<GradesData | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
@@ -116,7 +118,7 @@ export default function GradesPage() {
 
   useEffect(() => {
     if (student) fetchGradesData();
-  }, [student, fetchGradesData]);
+  }, [student, fetchGradesData, refreshKey]);
 
   const allGrades = (gradesData?.grades || []).filter((g) => g.status === 'approved');
   const enrollmentInfo = gradesData?.enrollment;

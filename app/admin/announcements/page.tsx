@@ -27,6 +27,7 @@ import { useConfirm } from '@/lib/use-confirm';
 import { Bell, Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useRefresh } from '@/lib/refresh-context';
 
 interface Announcement {
   id: string;
@@ -76,6 +77,7 @@ const defaultForm = {
 
 export default function AdminAnnouncementsPage() {
   const { admin } = useAuth();
+  const { refreshKey } = useRefresh();
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
@@ -101,7 +103,7 @@ export default function AdminAnnouncementsPage() {
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [fetchAnnouncements]);
+  }, [fetchAnnouncements, refreshKey]);
 
   const flatAnnouncements: FlatAnnouncement[] = useMemo(() => {
     const now = new Date();

@@ -15,35 +15,49 @@ interface DatePickerProps {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
+  fromYear?: number;
+  toYear?: number;
 }
 
-export function DatePicker({ value, onChange, placeholder }: DatePickerProps) {
+export function DatePicker({
+  value,
+  onChange,
+  placeholder,
+  fromYear = 1940,
+  toYear = new Date().getFullYear() + 5,
+}: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
+  const [month, setMonth] = React.useState<Date | undefined>();
 
   const selected = React.useMemo(() => {
     if (!value) return undefined;
-    const d = new Date(value);
+    const d = new Date(value + 'T00:00:00');
     return isNaN(d.getTime()) ? undefined : d;
   }, [value]);
+
+  // When opening, jump to selected date or 18 years ago
+  const handleOpenChange = (next: boolean) => {
+    if (next && !month) {
+      if (selected) {
+        setMonth(selected);
+      } else {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 18);
+        setMonth(d);
+      }
+    }
+    setOpen(next);
+  };
 
   const handleSelect = (date: Date | undefined) => {
     setOpen(false);
     if (date && onChange) {
-      const iso = date.toISOString().slice(0, 10);
-      onChange(iso);
+      onChange(format(date, 'yyyy-MM-dd'));
     }
   };
 
-  // Set default month to the selected date, or 18 years ago if no date selected
-  const defaultMonth = React.useMemo(() => {
-    if (selected) return selected;
-    const eighteenYearsAgo = new Date();
-    eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-    return eighteenYearsAgo;
-  }, [selected]);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -51,9 +65,7 @@ export function DatePicker({ value, onChange, placeholder }: DatePickerProps) {
           className="w-full justify-between"
         >
           <span className="text-left truncate">
-            {selected
-              ? format(selected, 'yyyy-MM-dd')
-              : placeholder || 'Select date'}
+            {selected ? format(selected, 'yyyy-MM-dd') : placeholder || 'Select date'}
           </span>
           <CalendarIcon className="h-4 w-4 text-muted-foreground" />
         </Button>
@@ -63,7 +75,11 @@ export function DatePicker({ value, onChange, placeholder }: DatePickerProps) {
           mode="single"
           selected={selected}
           onSelect={handleSelect}
-          defaultMonth={defaultMonth}
+          month={month}
+          onMonthChange={setMonth}
+          captionLayout="dropdown"
+          startMonth={new Date(fromYear, 0)}
+          endMonth={new Date(toYear, 11)}
         />
       </PopoverContent>
     </Popover>

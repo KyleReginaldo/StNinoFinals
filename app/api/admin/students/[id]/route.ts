@@ -42,6 +42,8 @@ export async function PUT(
       first_name,
       last_name,
       middle_name,
+      suffix,
+      student_number,
       lrn,
       grade_level,
       section,
@@ -54,11 +56,30 @@ export async function PUT(
 
     const supabaseAdmin = getSupabaseAdmin()
 
+    // Check student_number uniqueness if it's being changed
+    if (student_number !== undefined) {
+      const { data: existing } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('student_number', student_number)
+        .neq('id', id)
+        .maybeSingle()
+
+      if (existing) {
+        return NextResponse.json(
+          { success: false, error: 'Student number is already in use by another student.' },
+          { status: 409 }
+        )
+      }
+    }
+
     // Build update object with only defined values
     const updateData: any = {}
     if (first_name !== undefined) updateData.first_name = first_name
     if (last_name !== undefined) updateData.last_name = last_name
     if (middle_name !== undefined) updateData.middle_name = middle_name || null
+    if (suffix !== undefined) updateData.suffix = suffix || null
+    if (student_number !== undefined) updateData.student_number = student_number || null
     if (lrn !== undefined) updateData.lrn = lrn || null
     if (grade_level !== undefined) updateData.grade_level = grade_level
     if (section !== undefined) updateData.section = section || null

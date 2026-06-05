@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -1834,16 +1835,10 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     <Label htmlFor="birthDate">Birth Date</Label>
-                    <Input
-                      id="birthDate"
-                      type="date"
+                    <DatePicker
                       value={firstLoginForm.birthDate}
-                      onChange={(e) =>
-                        setFirstLoginForm({
-                          ...firstLoginForm,
-                          birthDate: e.target.value,
-                        })
-                      }
+                      onChange={(v) => setFirstLoginForm({ ...firstLoginForm, birthDate: v })}
+                      placeholder="Select birth date"
                     />
                   </div>
                   <div>

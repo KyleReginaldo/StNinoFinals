@@ -1,9 +1,11 @@
 'use client';
 
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
+import { RefreshButton } from '@/components/RefreshButton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
+import { RefreshProvider } from '@/lib/refresh-context';
 import { useConfirm } from '@/lib/use-confirm';
 import { Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -92,33 +94,39 @@ export default function TeacherLayout({
   }
 
   return (
-    <PasswordChangeWrapper userId={String(teacher.id)}>
-      <div className="flex h-screen overflow-hidden">
+    <RefreshProvider>
+      <PasswordChangeWrapper userId={String(teacher.id)}>
+        <div className="flex h-screen overflow-hidden">
 
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-56 h-full flex-shrink-0">
-          <TeacherSidebarContent teacher={teacher} onLogout={handleLogout} />
-        </aside>
+          {/* Desktop Sidebar */}
+          <aside className="hidden md:block w-56 h-full flex-shrink-0">
+            <TeacherSidebarContent teacher={teacher} onLogout={handleLogout} />
+          </aside>
 
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {/* Mobile top bar */}
-          <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" aria-label="Toggle menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-56">
-                <TeacherSidebarContent teacher={teacher} onLogout={handleLogout} />
-              </SheetContent>
-            </Sheet>
-            <span className="text-sm font-semibold text-gray-900">Teacher Portal</span>
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            {/* Top bar */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+              <div className="md:hidden flex items-center gap-3">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="sm" aria-label="Toggle menu">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="p-0 w-56">
+                    <TeacherSidebarContent teacher={teacher} onLogout={handleLogout} />
+                  </SheetContent>
+                </Sheet>
+                <span className="text-sm font-semibold text-gray-900">Teacher Portal</span>
+              </div>
+              <div className="flex-1" />
+              <RefreshButton />
+            </div>
+
+            <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
           </div>
-
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
         </div>
-      </div>
-    </PasswordChangeWrapper>
+      </PasswordChangeWrapper>
+    </RefreshProvider>
   );
 }

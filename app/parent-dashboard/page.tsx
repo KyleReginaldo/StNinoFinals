@@ -1,6 +1,8 @@
 'use client';
 
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
+import { RefreshButton } from '@/components/RefreshButton';
+import { useRefresh } from '@/lib/refresh-context';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +63,7 @@ interface Child {
 
 export default function ParentDashboardPage() {
   const router = useRouter();
+  const { refreshKey } = useRefresh();
   const [parent, setParent] = useState<any>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -247,7 +250,7 @@ export default function ParentDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, refreshKey]);
 
   const handleLogout = async () => {
     const confirmed = await showConfirm({
@@ -676,7 +679,8 @@ export default function ParentDashboardPage() {
             <span className="text-sm font-semibold text-gray-900">
               Guardian Portal
             </span>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <RefreshButton />
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
                   <Button
@@ -756,10 +760,11 @@ export default function ParentDashboardPage() {
           </div>
 
           {/* Desktop top bar */}
-          <div className="hidden md:flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-200 flex-shrink-0">
             <span className="text-sm font-semibold text-gray-900">
               Guardian Portal
             </span>
+            <RefreshButton />
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
                 <Button
@@ -1593,13 +1598,20 @@ function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) 
             </div>
             <div>
               <Label>Phone Number</Label>
-              <Input
-                value={form.phone_number}
-                placeholder="09XXXXXXXXX"
-                inputMode="numeric"
-                maxLength={11}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/\D/g, '') })}
-              />
+              <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                <Input
+                  className="rounded-l-none"
+                  value={form.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                  placeholder="9XXXXXXXXX"
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(e) => {
+                    const d = e.target.value.replace(/\D/g, '');
+                    setForm({ ...form, phone_number: d ? `+63${d}` : '' });
+                  }}
+                />
+              </div>
             </div>
             <div>
               <Label>Address</Label>

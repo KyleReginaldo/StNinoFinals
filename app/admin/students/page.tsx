@@ -33,14 +33,17 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useRefresh } from '@/lib/refresh-context';
 
 interface Student {
   id: string;
   first_name: string;
   last_name: string;
   middle_name?: string;
+  suffix?: string;
   student_number: string;
   lrn?: string;
   grade_level: string;
@@ -54,6 +57,7 @@ interface Student {
   street_details?: string;
   rfid?: string;
   status: string;
+  profile_picture?: string | null;
 }
 
 function RfidScanInput({
@@ -123,6 +127,7 @@ function RfidScanInput({
 
 export default function StudentManagementPage() {
   const { admin, loading: authLoading } = useAuth();
+  const { refreshKey } = useRefresh();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -131,10 +136,13 @@ export default function StudentManagementPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+
   const [newStudent, setNewStudent] = useState({
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     student_number: '',
     lrn: '',
     grade_level: '',
@@ -155,6 +163,7 @@ export default function StudentManagementPage() {
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     student_number: '',
     lrn: '',
     grade_level: '',
@@ -214,7 +223,7 @@ export default function StudentManagementPage() {
 
   useEffect(() => {
     fetchStudents(showArchived);
-  }, [showArchived]);
+  }, [showArchived, refreshKey]);
 
   const tc = useTableControls(students, {
     searchFields: ['first_name', 'last_name', 'student_number', 'email'],
@@ -271,6 +280,7 @@ export default function StudentManagementPage() {
         first_name: '',
         last_name: '',
         middle_name: '',
+        suffix: '',
         student_number: '',
         lrn: '',
         grade_level: '',
@@ -409,6 +419,7 @@ export default function StudentManagementPage() {
       first_name: student.first_name,
       last_name: student.last_name,
       middle_name: student.middle_name || '',
+      suffix: (student as any).suffix || '',
       student_number: student.student_number,
       lrn: student.lrn || '',
       grade_level: student.grade_level,
@@ -492,17 +503,31 @@ export default function StudentManagementPage() {
                   </div>
                   <div>
                     <Label required>Last Name</Label>
-                    <Input
-                      value={newStudent.last_name}
-                      placeholder="Enter last name"
-                      onChange={(e) =>
-                        setNewStudent({
-                          ...newStudent,
-                          last_name: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        className="flex-1"
+                        value={newStudent.last_name}
+                        placeholder="Enter last name"
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, last_name: e.target.value })
+                        }
+                        required
+                      />
+                      <Select
+                        value={newStudent.suffix || 'none'}
+                        onValueChange={(v) => setNewStudent({ ...newStudent, suffix: v === 'none' ? '' : v })}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue placeholder="Sfx" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">—</SelectItem>
+                          {SUFFIX_OPTIONS.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
                     <Label>Middle Name</Label>
@@ -601,31 +626,29 @@ export default function StudentManagementPage() {
                   </div>
                   <div>
                     <Label>Phone Number</Label>
-                    <Input
-                      value={newStudent.phone_number}
-                      placeholder="09XXXXXXXXX"
-                      inputMode="numeric"
-                      maxLength={11}
-                      onChange={(e) =>
-                        setNewStudent({
-                          ...newStudent,
-                          phone_number: e.target.value.replace(/\D/g, ''),
-                        })
-                      }
-                    />
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
+                        +63
+                      </span>
+                      <Input
+                        className="rounded-l-none"
+                        value={newStudent.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                        placeholder="9XXXXXXXXX"
+                        inputMode="numeric"
+                        maxLength={10}
+                        onChange={(e) => {
+                          const d = e.target.value.replace(/\D/g, '');
+                          setNewStudent({ ...newStudent, phone_number: d ? `+63${d}` : '' });
+                        }}
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label>Date of Birth</Label>
-                    <Input
-                      type="date"
+                    <DatePicker
                       value={newStudent.date_of_birth}
+                      onChange={(v) => setNewStudent({ ...newStudent, date_of_birth: v })}
                       placeholder="Select date of birth"
-                      onChange={(e) =>
-                        setNewStudent({
-                          ...newStudent,
-                          date_of_birth: e.target.value,
-                        })
-                      }
                     />
                   </div>
                   <div>
@@ -696,16 +719,30 @@ export default function StudentManagementPage() {
                 </div>
                 <div>
                   <Label required>Last Name</Label>
-                  <Input
-                    value={editStudent.last_name}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        last_name: e.target.value,
-                      })
-                    }
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      className="flex-1"
+                      value={editStudent.last_name}
+                      onChange={(e) =>
+                        setEditStudent({ ...editStudent, last_name: e.target.value })
+                      }
+                      required
+                    />
+                    <Select
+                      value={editStudent.suffix || 'none'}
+                      onValueChange={(v) => setEditStudent({ ...editStudent, suffix: v === 'none' ? '' : v })}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue placeholder="Sfx" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">—</SelectItem>
+                        {SUFFIX_OPTIONS.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div>
                   <Label>Middle Name</Label>
@@ -723,9 +760,10 @@ export default function StudentManagementPage() {
                   <Label required>Student Number</Label>
                   <Input
                     value={editStudent.student_number}
-                    readOnly
-                    className="bg-gray-50 cursor-not-allowed select-none"
-                    tabIndex={-1}
+                    onChange={(e) =>
+                      setEditStudent({ ...editStudent, student_number: e.target.value })
+                    }
+                    placeholder="e.g. 2024-0001"
                   />
                 </div>
                 <div>
@@ -795,30 +833,29 @@ export default function StudentManagementPage() {
                 </div>
                 <div>
                   <Label>Phone Number</Label>
-                  <Input
-                    value={editStudent.phone_number}
-                    placeholder="09XXXXXXXXX"
-                    inputMode="numeric"
-                    maxLength={11}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        phone_number: e.target.value.replace(/\D/g, ''),
-                      })
-                    }
-                  />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
+                      +63
+                    </span>
+                    <Input
+                      className="rounded-l-none"
+                      value={editStudent.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                      placeholder="9XXXXXXXXX"
+                      inputMode="numeric"
+                      maxLength={10}
+                      onChange={(e) => {
+                        const d = e.target.value.replace(/\D/g, '');
+                        setEditStudent({ ...editStudent, phone_number: d ? `+63${d}` : '' });
+                      }}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>Date of Birth</Label>
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={editStudent.date_of_birth}
-                    onChange={(e) =>
-                      setEditStudent({
-                        ...editStudent,
-                        date_of_birth: e.target.value,
-                      })
-                    }
+                    onChange={(v) => setEditStudent({ ...editStudent, date_of_birth: v })}
+                    placeholder="Select date of birth"
                   />
                 </div>
                 <div>
@@ -876,6 +913,36 @@ export default function StudentManagementPage() {
             </SheetHeader>
             {selectedStudent && (
               <div className="space-y-6 mt-6">
+
+                {/* Avatar / profile photo */}
+                <div className="flex flex-col items-center gap-3 pb-5 border-b">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-red-100 flex items-center justify-center ring-4 ring-red-50">
+                    {selectedStudent.profile_picture ? (
+                      <img
+                        src={selectedStudent.profile_picture}
+                        alt={`${selectedStudent.first_name} ${selectedStudent.last_name}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl font-bold text-red-700">
+                        {`${selectedStudent.first_name[0]}${selectedStudent.last_name[0]}`.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold text-gray-900 text-lg leading-tight">
+                      {[selectedStudent.first_name, selectedStudent.middle_name, selectedStudent.last_name, selectedStudent.suffix]
+                        .filter(Boolean).join(' ')}
+                    </p>
+                    <p className="text-sm text-gray-400 mt-0.5">{selectedStudent.student_number}</p>
+                    {selectedStudent.grade_level && (
+                      <span className="inline-flex items-center mt-1.5 text-xs font-medium bg-red-50 text-red-700 px-2.5 py-0.5 rounded-full">
+                        {[selectedStudent.grade_level, selectedStudent.section].filter(Boolean).join(' — ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div className="pb-3 border-b">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
