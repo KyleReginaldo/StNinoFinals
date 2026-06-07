@@ -44,10 +44,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
-import { BookOpen, Download, Search, Users } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { BookOpen, Search, Users, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Student {
   id: string;
@@ -77,6 +87,39 @@ export default function TeacherClassesPage() {
   const [loading, setLoading] = useState(true);
   const [viewingClass, setViewingClass] = useState<ClassItem | null>(null);
   const { refreshKey } = useRefresh();
+
+  const [search, setSearch] = useState('');
+  const [filterGrade, setFilterGrade] = useState('all');
+  const [filterQuarter, setFilterQuarter] = useState('all');
+  const [filterYear, setFilterYear] = useState('all');
+
+  const gradeOptions = useMemo(() =>
+    [...new Set(classes.map(c => c.grade_level).filter(Boolean))].sort() as string[],
+  [classes]);
+
+  const yearOptions = useMemo(() =>
+    [...new Set(classes.map(c => c.school_year).filter(Boolean))].sort().reverse() as string[],
+  [classes]);
+
+  const filteredClasses = useMemo(() => {
+    const q = search.toLowerCase();
+    return classes.filter(c => {
+      if (q && !c.class_name.toLowerCase().includes(q) && !c.class_code.toLowerCase().includes(q)) return false;
+      if (filterGrade !== 'all' && c.grade_level !== filterGrade) return false;
+      if (filterQuarter !== 'all' && c.quarter !== filterQuarter) return false;
+      if (filterYear !== 'all' && c.school_year !== filterYear) return false;
+      return true;
+    });
+  }, [classes, search, filterGrade, filterQuarter, filterYear]);
+
+  const hasFilters = search || filterGrade !== 'all' || filterQuarter !== 'all' || filterYear !== 'all';
+
+  const clearFilters = () => {
+    setSearch('');
+    setFilterGrade('all');
+    setFilterQuarter('all');
+    setFilterYear('all');
+  };
 
   const studentTc = useTableControls(viewingClass?.students ?? [], {
     searchFields: ['last_name', 'first_name', 'student_number'],
@@ -108,20 +151,51 @@ export default function TeacherClassesPage() {
     fetchClasses();
   }, [refreshKey]);
 
-  const handleExportCSV = (classItem: ClassItem) => {
+  const handleExportExcel = async (classItem: ClassItem) => {
     if (!classItem.students.length) return;
-    const header = 'Student Number,Last Name,First Name,Grade Level,Section';
-    const rows = classItem.students.map(s =>
-      `${s.student_number},${s.last_name},${s.first_name},${s.grade_level || ''},${s.section || ''}`
-    );
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${classItem.class_name}_students.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`${classItem.class_name}_students`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'CLASS LIST',
+        `Class: ${classItem.class_name}${classItem.grade_level ? `  |  ${classItem.grade_level}${classItem.section ? ` — ${classItem.section}` : ''}` : ''}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['#', 'Student Number', 'Last Name', 'First Name', 'Grade Level', 'Section'],
+      colWidths: [8, 20, 30, 30, 18, 18],
+      rows: classItem.students.map((s, i) => [i + 1, s.student_number, s.last_name, s.first_name, s.grade_level || '', s.section || '']),
+      headerColor: 'blue',
+    });
+  };
+
+  const handleExportPDF = (classItem: ClassItem) => {
+    if (!classItem.students.length) return;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 15, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('CLASS LIST', 105, 30, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`${classItem.class_name}${classItem.grade_level ? `  |  ${classItem.grade_level}${classItem.section ? ` — ${classItem.section}` : ''}` : ''}`, 105, 37, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 105, 42, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 48,
+      head: [['#', 'Student Number', 'Last Name', 'First Name', 'Grade Level', 'Section']],
+      body: classItem.students.map((s, i) => [i + 1, s.student_number, s.last_name, s.first_name, s.grade_level || '—', s.section || '—']),
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 10 } },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.save(`${classItem.class_name}_students.pdf`);
   };
 
   if (loading) {
@@ -134,10 +208,83 @@ export default function TeacherClassesPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">My Classes</h2>
-        <p className="text-sm text-gray-500 mt-0.5">View your assigned classes and enrolled students</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">My Classes</h2>
+          <p className="text-sm text-gray-500 mt-0.5">View your assigned classes and enrolled students</p>
+        </div>
+        {classes.length > 0 && (
+          <p className="text-sm text-gray-400 self-end">
+            {filteredClasses.length} of {classes.length} class{classes.length !== 1 ? 'es' : ''}
+          </p>
+        )}
       </div>
+
+      {/* Filter bar */}
+      {classes.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+              placeholder="Search class name or code…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Grade Level */}
+          <Select value={filterGrade} onValueChange={setFilterGrade}>
+            <SelectTrigger className="h-8 text-xs w-36 border-gray-200">
+              <SelectValue placeholder="Grade Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Grades</SelectItem>
+              {gradeOptions.map(g => (
+                <SelectItem key={g} value={g}>{g}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Quarter */}
+          <Select value={filterQuarter} onValueChange={setFilterQuarter}>
+            <SelectTrigger className="h-8 text-xs w-32 border-gray-200">
+              <SelectValue placeholder="Quarter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Quarters</SelectItem>
+              {['1','2','3','4'].map(q => (
+                <SelectItem key={q} value={q}>Quarter {q}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* School Year */}
+          <Select value={filterYear} onValueChange={setFilterYear}>
+            <SelectTrigger className="h-8 text-xs w-36 border-gray-200">
+              <SelectValue placeholder="School Year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              {yearOptions.map(y => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Clear */}
+          {hasFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {classes.length === 0 ? (
         <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center justify-center text-center">
@@ -145,9 +292,17 @@ export default function TeacherClassesPage() {
           <p className="text-base font-semibold text-gray-700">No classes assigned yet</p>
           <p className="text-sm text-gray-500 mt-1">Contact the admin to get assigned to classes.</p>
         </div>
+      ) : filteredClasses.length === 0 ? (
+        <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center justify-center text-center">
+          <Search className="w-12 h-12 text-gray-300 mb-4" />
+          <p className="text-base font-semibold text-gray-700">No classes match your filters</p>
+          <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-900 mt-1 underline underline-offset-2">
+            Clear filters
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {classes.map(classItem => (
+          {filteredClasses.map(classItem => (
             <div
               key={classItem.id}
               className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-gray-900 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -293,10 +448,13 @@ export default function TeacherClassesPage() {
                     />
                   )}
                 </div>
-                <Button variant="outline" size="sm" onClick={() => viewingClass && handleExportCSV(viewingClass)}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
+                {viewingClass && (
+                  <ExportDropdown
+                    onPDF={() => handleExportPDF(viewingClass)}
+                    onExcel={() => handleExportExcel(viewingClass)}
+                    size="sm"
+                  />
+                )}
               </div>
             </>
           )}

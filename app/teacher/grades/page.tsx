@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -15,7 +16,9 @@ import {
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { CheckCircle2, Clock, Download, GraduationCap, Save, Search, XCircle } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { CheckCircle2, Clock, GraduationCap, Lock, Save, Search, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
@@ -61,6 +64,7 @@ export default function TeacherGrades() {
   const [gradesData, setGradesData] = useState<GradeRow[]>([]);
   const [isSavingGrades, setIsSavingGrades] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [gradingLocked, setGradingLocked] = useState(false);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
@@ -112,11 +116,19 @@ export default function TeacherGrades() {
   const fetchTeacherClasses = async () => {
     if (!teacher || !teacher.id) return;
     try {
-      const response = await fetch(`/api/teacher/classes?teacherId=${teacher.id}`);
-      const data = await response.json();
-      if (data.success && data.classes) {
-        setTeacherClasses(data.classes);
-        if (data.classes.length > 0 && !selectedClassId) setSelectedClassId(data.classes[0].id);
+      const [classRes, periodRes] = await Promise.all([
+        fetch(`/api/teacher/classes?teacherId=${teacher.id}`),
+        fetch('/api/admin/academic-periods'),
+      ]);
+      const classData = await classRes.json();
+      if (classData.success && classData.classes) {
+        setTeacherClasses(classData.classes);
+        if (classData.classes.length > 0 && !selectedClassId) setSelectedClassId(classData.classes[0].id);
+      }
+      const periodData = await periodRes.json();
+      if (periodData.success && periodData.data) {
+        const active = periodData.data.find((p: any) => p.isActive);
+        setGradingLocked(active ? !active.isGradingOpen : false);
       }
     } catch (error) {
       console.error('Error fetching teacher classes:', error);
@@ -144,6 +156,10 @@ export default function TeacherGrades() {
   const handleSaveGrades = async () => {
     if (!teacher || !teacher.id) {
       showAlert({ message: 'Teacher information not found', type: 'error' });
+      return;
+    }
+    if (gradingLocked) {
+      showAlert({ message: 'Grading period is locked. Contact your administrator.', type: 'error' });
       return;
     }
     const submittable = gradesData.filter(s => s.status !== 'approved' && s.grade && parseFloat(s.grade) > 0);
@@ -188,24 +204,62 @@ export default function TeacherGrades() {
     }
   };
 
-  const handleExportToCSV = () => {
+  const handleExportExcel = async () => {
+    if (!teacher || gradesData.length === 0) {
+      showAlert({ message: 'No grades data to export.', type: 'warning' });
+      return;
+    }
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const selectedClass = teacherClasses.find(c => c.id === selectedClassId);
+    const className = selectedClass ? selectedClass.class_name : 'Class';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`${className}_grades`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'STUDENT GRADES',
+        `Class: ${className}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['Student Number', 'Student Name', 'Grade', 'Status'],
+      colWidths: [20, 40, 14, 18],
+      rows: gradesData.map(s => [s.studentId || '', s.name || '', s.grade || '', s.status || 'Not submitted']),
+      headerColor: 'red',
+    });
+    showAlert({ message: 'Grades exported successfully!', type: 'success' });
+  };
+
+  const handleExportPDF = () => {
     if (!teacher || gradesData.length === 0) {
       showAlert({ message: 'No grades data to export.', type: 'warning' });
       return;
     }
     const selectedClass = teacherClasses.find(c => c.id === selectedClassId);
     const className = selectedClass ? selectedClass.class_name : 'Class';
-    const headers = ['Student Number', 'Student Name', 'Grade', 'Status'];
-    const rows = gradesData.map(s => [s.studentId || '', s.name || '', s.grade || '', s.status || 'Not submitted']);
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.setAttribute('href', URL.createObjectURL(blob));
-    link.setAttribute('download', `${className}_grades.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 15, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('STUDENT GRADES', 105, 30, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Class: ${className}`, 105, 37, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 105, 42, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 48,
+      head: [['Student Number', 'Student Name', 'Grade', 'Status']],
+      body: gradesData.map(s => [s.studentId || '', s.name || '', s.grade || '', s.status || 'Not submitted']),
+      theme: 'grid',
+      headStyles: { fillColor: [153, 27, 27], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 2: { halign: 'center' }, 3: { halign: 'center' } },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.save(`${className}_grades.pdf`);
     showAlert({ message: 'Grades exported successfully!', type: 'success' });
   };
 
@@ -299,6 +353,18 @@ export default function TeacherGrades() {
             )}
           </div>
 
+          {gradingLocked && (
+            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <Lock className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-red-800">Grading Period is Locked</p>
+                <p className="text-xs text-red-600 mt-0.5">
+                  Grade submission is currently disabled by the administrator. You can still view existing grades.
+                </p>
+              </div>
+            </div>
+          )}
+
           {isLoadingData ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-900 border-t-transparent mx-auto" />
@@ -362,11 +428,11 @@ export default function TeacherGrades() {
                             <td className="px-4 py-2.5">
                               <span className="font-mono text-[12px] text-gray-500">{student.studentId}</span>
                             </td>
-                            <td className="p-0 w-36">
+                            <td className="px-4 py-2.5 w-36">
                               {isApproved ? (
-                                <div className={`flex items-center justify-center h-10 px-3 font-semibold text-sm ${parseFloat(student.grade) >= 75 ? 'text-yellow-700' : 'text-red-700'}`}>
+                                <span className={`font-semibold text-sm ${parseFloat(student.grade) >= 75 ? 'text-yellow-700' : 'text-red-700'}`}>
                                   {student.grade}
-                                </div>
+                                </span>
                               ) : (
                                 <Input
                                   type="number"
@@ -375,18 +441,21 @@ export default function TeacherGrades() {
                                   step="0.01"
                                   value={student.grade}
                                   onChange={e => updateGrade(student.id, e.target.value)}
-                                  className={`border-0 rounded-none text-center focus:ring-2 h-10 ${
-                                    student.status === 'rejected'
-                                      ? 'bg-red-50 text-red-900 focus:ring-red-500'
-                                      : student.status === 'pending'
-                                        ? 'bg-amber-50 text-amber-900 focus:ring-amber-500'
-                                        : 'focus:ring-gray-900/20'
+                                  disabled={gradingLocked}
+                                  className={`text-center h-8 text-sm ${
+                                    gradingLocked
+                                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                      : student.status === 'rejected'
+                                        ? 'bg-red-50 text-red-900'
+                                        : student.status === 'pending'
+                                          ? 'bg-amber-50 text-amber-900'
+                                          : ''
                                   }`}
-                                  placeholder="Enter grade"
+                                  placeholder="—"
                                 />
                               )}
                             </td>
-                            <td className="px-4 py-2.5 text-center">
+                            <td className="px-4 py-2.5">
                               {cfg ? (
                                 <span className="inline-flex items-center gap-1.5 text-sm">
                                   <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -440,15 +509,22 @@ export default function TeacherGrades() {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-3">
-                <Button onClick={handleExportToCSV} variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export to CSV
-                </Button>
-                <Button onClick={handleSaveGrades} disabled={isSavingGrades} className="bg-gray-900 hover:bg-gray-800 text-white">
+                <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} />
+                <Button
+                  onClick={handleSaveGrades}
+                  disabled={isSavingGrades || gradingLocked}
+                  title={gradingLocked ? 'Grading period is locked' : undefined}
+                  className="bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50"
+                >
                   {isSavingGrades ? (
                     <>
                       <Save className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
+                    </>
+                  ) : gradingLocked ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Grading Locked
                     </>
                   ) : (
                     <>

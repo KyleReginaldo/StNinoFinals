@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Database } from '@/database.types';
 import { useTableControls } from '@/hooks/use-table-controls';
+import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import {
   CheckCircle,
@@ -27,16 +28,15 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 
 type Admission = Database['public']['Tables']['admissions']['Row'];
 type FlatAdmission = Admission & { normalizedStatus: string };
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string }> = {
-  pending:  { label: 'Pending',  dot: 'bg-amber-400' },
-  approved: { label: 'Approved', dot: 'bg-green-500'  },
-  rejected: { label: 'Rejected', dot: 'bg-red-500'    },
+  pending: { label: 'Pending', dot: 'bg-amber-400' },
+  approved: { label: 'Approved', dot: 'bg-green-500' },
+  rejected: { label: 'Rejected', dot: 'bg-red-500' },
 };
 
 const QUICK_TEMPLATES = [
@@ -60,38 +60,46 @@ const QUICK_TEMPLATES = [
 const AdmissionPage = () => {
   const [admissions, setAdmissions] = useState<Admission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAdmission, setSelectedAdmission] = useState<Admission | null>(null);
+  const [selectedAdmission, setSelectedAdmission] = useState<Admission | null>(
+    null
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [rejectingAdmissionId, setRejectingAdmissionId] = useState<number | null>(null);
+  const [rejectingAdmissionId, setRejectingAdmissionId] = useState<
+    number | null
+  >(null);
   const [rejectionReason, setRejectionReason] = useState('');
   // Email compose modal
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailTarget, setEmailTarget] = useState<Admission | null>(null);
+  const [emailTo, setEmailTo] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [approvingAdmission, setApprovingAdmission] = useState<{ id: number; isOverride: boolean } | null>(null);
   const { showAlert } = useAlert();
   const { refreshKey } = useRefresh();
 
-  const openEmailDialog = (admission: Admission) => {
+  const openEmailDialog = (admission: Admission, toAddress?: string) => {
     const name = `${admission.first_name} ${admission.last_name}`;
     setEmailTarget(admission);
+    setEmailTo(toAddress ?? admission.email_address);
     setEmailSubject(`Re: Admission Inquiry — ${name}`);
     setEmailBody('');
-    // Close details dialog first to avoid stacked modal focus-trap issues
     setDialogOpen(false);
-    // Small delay so Radix cleans up the first dialog before opening the next
     setTimeout(() => setEmailDialogOpen(true), 80);
   };
 
-  const applyTemplate = (tpl: typeof QUICK_TEMPLATES[number]) => {
+  const applyTemplate = (tpl: (typeof QUICK_TEMPLATES)[number]) => {
     if (!emailTarget) return;
     const name = `${emailTarget.first_name} ${emailTarget.last_name}`;
-    const parent = emailTarget.parent_name || 'Parent/Guardian';
+    const parent = emailTarget.parent_name || 'Guardian';
     setEmailSubject(tpl.subject.replace('{name}', name));
-    setEmailBody(tpl.body.replace(/{name}/g, name).replace(/{parent}/g, parent));
+    setEmailBody(
+      tpl.body.replace(/{name}/g, name).replace(/{parent}/g, parent)
+    );
   };
 
   const handleSendEmail = async () => {
@@ -102,7 +110,7 @@ const AdmissionPage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: emailTarget.email_address,
+          to: emailTo,
           subject: emailSubject.trim(),
           text: emailBody.trim(),
         }),
@@ -112,7 +120,10 @@ const AdmissionPage = () => {
         showAlert({ message: 'Email sent successfully.', type: 'success' });
         setEmailDialogOpen(false);
       } else {
-        showAlert({ message: result.error || 'Failed to send email.', type: 'error' });
+        showAlert({
+          message: result.error || 'Failed to send email.',
+          type: 'error',
+        });
       }
     } catch {
       showAlert({ message: 'Network error. Please try again.', type: 'error' });
@@ -158,33 +169,34 @@ const AdmissionPage = () => {
     setDialogOpen(true);
   };
 
-  const handleApprove = async (admissionId: number, currentStatus?: string | null) => {
-    const isOverride = currentStatus === 'rejected';
-    const message = isOverride
-      ? 'This admission was previously rejected. Approving will create (or reactivate) a student account and send credentials via email. Continue?'
-      : 'Are you sure you want to approve this admission? This will create a student account and send credentials via email.';
-    if (!confirm(message)) return;
+  const handleApprove = (admissionId: number, currentStatus?: string | null) => {
+    setApprovingAdmission({ id: admissionId, isOverride: currentStatus === 'rejected' });
+    setDialogOpen(false);
+    setTimeout(() => setApproveDialogOpen(true), 150);
+  };
 
-    setProcessingId(admissionId);
+  const confirmApprove = async () => {
+    if (!approvingAdmission) return;
+    setApproveDialogOpen(false);
+    setProcessingId(approvingAdmission.id);
     try {
       const response = await fetch('/api/admissions/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ admissionId, action: 'approve' }),
+        body: JSON.stringify({ admissionId: approvingAdmission.id, action: 'approve' }),
       });
       const result = await response.json();
       if (result.success) {
         showAlert({ message: 'Admission approved! Student account created and email sent.', type: 'success' });
         fetchAdmissions();
-        setDialogOpen(false);
       } else {
         showAlert({ message: result.error || 'Failed to approve admission', type: 'error' });
       }
-    } catch (error) {
-      console.error('Approval error:', error);
+    } catch {
       showAlert({ message: 'Network error. Please try again.', type: 'error' });
     } finally {
       setProcessingId(null);
+      setApprovingAdmission(null);
     }
   };
 
@@ -214,7 +226,10 @@ const AdmissionPage = () => {
         setDialogOpen(false);
         setRejectDialogOpen(false);
       } else {
-        showAlert({ message: result.error || 'Failed to reject admission', type: 'error' });
+        showAlert({
+          message: result.error || 'Failed to reject admission',
+          type: 'error',
+        });
       }
     } catch (error) {
       console.error('Rejection error:', error);
@@ -232,7 +247,9 @@ const AdmissionPage = () => {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Admission Inquiries</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Admission Inquiries
+        </h2>
         <p className="text-sm text-gray-500 mt-0.5">
           View and manage admission applications from prospective students
         </p>
@@ -262,17 +279,24 @@ const AdmissionPage = () => {
           </select>
           <select
             value={tc.filters['intended_grade_level'] ?? ''}
-            onChange={(e) => tc.setFilter('intended_grade_level', e.target.value)}
+            onChange={(e) =>
+              tc.setFilter('intended_grade_level', e.target.value)
+            }
             className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           >
             <option value="">All Grades</option>
             {gradeOptions.map((g) => (
-              <option key={g} value={g}>{g}</option>
+              <option key={g} value={g}>
+                {g}
+              </option>
             ))}
           </select>
           {hasFilters && (
             <button
-              onClick={() => { tc.clearFilters(); tc.setSearch(''); }}
+              onClick={() => {
+                tc.clearFilters();
+                tc.setSearch('');
+              }}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
             >
               <X className="w-3 h-3" />
@@ -284,13 +308,40 @@ const AdmissionPage = () => {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50">
-              <SortHeader label="Name"      sortKey="last_name"            currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Parent / Guardian</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Email</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Phone</th>
-              <SortHeader label="Grade"     sortKey="intended_grade_level" currentSort={tc.sort} onSort={tc.toggleSort} />
-              <SortHeader label="Status"    sortKey="normalizedStatus"     currentSort={tc.sort} onSort={tc.toggleSort} />
-              <SortHeader label="Submitted" sortKey="created_at"           currentSort={tc.sort} onSort={tc.toggleSort} />
+              <SortHeader
+                label="Name"
+                sortKey="last_name"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+                className="pl-4"
+              />
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Guardian
+              </th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Email
+              </th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Phone
+              </th>
+              <SortHeader
+                label="Grade"
+                sortKey="intended_grade_level"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+              />
+              <SortHeader
+                label="Status"
+                sortKey="normalizedStatus"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+              />
+              <SortHeader
+                label="Submitted"
+                sortKey="created_at"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+              />
               <th className="px-4 py-2.5 w-16" />
             </tr>
           </thead>
@@ -314,7 +365,9 @@ const AdmissionPage = () => {
               </tr>
             ) : (
               tc.rows.map((admission) => {
-                const cfg = STATUS_CONFIG[admission.normalizedStatus] ?? STATUS_CONFIG['pending'];
+                const cfg =
+                  STATUS_CONFIG[admission.normalizedStatus] ??
+                  STATUS_CONFIG['pending'];
                 return (
                   <tr
                     key={admission.id}
@@ -324,15 +377,23 @@ const AdmissionPage = () => {
                     <td className="px-4 py-3 pl-4">
                       <p className="text-sm font-medium text-gray-900">
                         {admission.first_name}{' '}
-                        {admission.middle_initial ? `${admission.middle_initial}. ` : ''}
+                        {admission.middle_initial
+                          ? `${admission.middle_initial}. `
+                          : ''}
                         {admission.last_name}
+                        {(admission as any).suffix ? ` ${(admission as any).suffix}` : ''}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{admission.parent_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      {admission.parent_name}
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); openEmailDialog(admission); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEmailDialog(admission);
+                        }}
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-left"
                       >
                         <Mail className="w-3 h-3 shrink-0" />
@@ -350,20 +411,29 @@ const AdmissionPage = () => {
                       </a>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">
-                      {admission.intended_grade_level ?? <span className="text-gray-300">—</span>}
+                      {admission.intended_grade_level ?? (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                        <span className="text-xs text-gray-600">{cfg.label}</span>
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}
+                        />
+                        <span className="text-xs text-gray-600">
+                          {cfg.label}
+                        </span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
-                      {new Date(admission.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+                      {new Date(admission.created_at).toLocaleDateString(
+                        'en-US',
+                        {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }
+                      )}
                     </td>
                     <td className="px-4 py-3 pr-4 text-right">
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer">
@@ -390,128 +460,105 @@ const AdmissionPage = () => {
 
       {/* Details Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 text-xl">Admission Inquiry Details</DialogTitle>
-            <DialogDescription>Complete information about this admission inquiry</DialogDescription>
+            <DialogTitle className="text-base font-semibold text-gray-900">Admission Inquiry</DialogTitle>
+            <DialogDescription className="sr-only">Complete information about this admission inquiry</DialogDescription>
           </DialogHeader>
-          {selectedAdmission && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Student Information
-                  </h4>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs text-gray-500">Full Name</p>
-                      <p className="font-medium">
-                        {selectedAdmission.first_name}{' '}
-                        {selectedAdmission.middle_initial ? `${selectedAdmission.middle_initial}. ` : ''}
-                        {selectedAdmission.last_name}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Intended Grade</p>
-                      <p className="font-medium">{selectedAdmission.intended_grade_level}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Previous School</p>
-                      <p className="font-medium">{selectedAdmission.previous_school || 'Not provided'}</p>
-                    </div>
+          {selectedAdmission && (() => {
+            const cfg = STATUS_CONFIG[selectedAdmission.status ?? 'pending'] ?? STATUS_CONFIG['pending'];
+            const fullName = [
+              selectedAdmission.first_name,
+              selectedAdmission.middle_initial ? `${selectedAdmission.middle_initial}.` : '',
+              selectedAdmission.last_name,
+              (selectedAdmission as any).suffix || '',
+            ].filter(Boolean).join(' ');
+            const gradeLabel = (selectedAdmission.intended_grade_level || '')
+              .replace(/^grade(\d+)$/i, 'Grade $1')
+              .replace(/^kindergarten$/i, 'Kindergarten');
+            const statusBadge: Record<string, string> = {
+              pending:  'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+              approved: 'bg-green-50 text-green-700 ring-1 ring-green-200',
+              rejected: 'bg-red-50 text-red-700 ring-1 ring-red-200',
+            };
+            return (
+              <div className="space-y-4">
+                {/* Name + status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-bold text-gray-900 leading-tight">{fullName}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{gradeLabel}{selectedAdmission.previous_school ? ` · ${selectedAdmission.previous_school}` : ''}</p>
                   </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${statusBadge[selectedAdmission.status ?? 'pending']}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                    {cfg.label}
+                  </span>
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Contact Information</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs text-gray-500">Parent/Guardian Name</p>
-                      <p className="font-medium">{selectedAdmission.parent_name}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Email Address</p>
-                      <a href={`mailto:${selectedAdmission.email_address}`} className="text-blue-600 hover:underline font-medium">
-                        {selectedAdmission.email_address}
-                      </a>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Phone Number</p>
-                      <a href={`tel:${selectedAdmission.phone_number}`} className="text-blue-600 hover:underline font-medium">
-                        {selectedAdmission.phone_number}
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              {selectedAdmission.additional_message && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Additional Message</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-700">{selectedAdmission.additional_message}</p>
-                  </div>
+                {/* Info rows */}
+                <div className="divide-y divide-gray-100 rounded-xl border border-gray-100 overflow-hidden">
+                  {[
+                    { label: 'Guardian', value: selectedAdmission.parent_name },
+                    (selectedAdmission as any).parent_email ? { label: 'Guardian Email', value: (selectedAdmission as any).parent_email, href: `mailto:${(selectedAdmission as any).parent_email}`, compose: (selectedAdmission as any).parent_email } : null,
+                    { label: 'Applicant Email', value: selectedAdmission.email_address, href: `mailto:${selectedAdmission.email_address}` },
+                    { label: 'Phone', value: selectedAdmission.phone_number, href: `tel:${selectedAdmission.phone_number}` },
+                  ].filter(Boolean).map((row: any) => (
+                    <div key={row.label} className="flex items-center justify-between px-4 py-2.5 bg-white">
+                      <span className="text-xs text-gray-400 w-32 shrink-0">{row.label}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {row.href ? (
+                          <a href={row.href} className="text-sm text-blue-600 hover:underline text-right truncate">{row.value}</a>
+                        ) : (
+                          <span className="text-sm font-medium text-gray-800 text-right">{row.value || '—'}</span>
+                        )}
+                        {row.compose && (
+                          <button
+                            type="button"
+                            title="Compose email to guardian"
+                            onClick={() => openEmailDialog(selectedAdmission, row.compose)}
+                            className="shrink-0 p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
 
-              <div className="border-t pt-4">
-                <p className="text-xs text-gray-500">
-                  Submitted on {new Date(selectedAdmission.created_at).toLocaleString()}
+                {selectedAdmission.additional_message && (
+                  <div className="bg-gray-50 rounded-xl px-4 py-3">
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Note</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{selectedAdmission.additional_message}</p>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-gray-400">
+                  Submitted {new Date(selectedAdmission.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Status:</span>
-                  {(() => {
-                    const cfg = STATUS_CONFIG[selectedAdmission.status ?? 'pending'] ?? STATUS_CONFIG['pending'];
-                    return (
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                        <span className="text-xs text-gray-700">{cfg.label}</span>
-                      </span>
-                    );
-                  })()}
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-1">
+                  {selectedAdmission.status !== 'approved' && (
+                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApprove(selectedAdmission.id, selectedAdmission.status)} disabled={processingId === selectedAdmission.id}>
+                      <CheckCircle className="h-4 w-4 mr-1.5" />
+                      {processingId === selectedAdmission.id ? 'Processing…' : selectedAdmission.status === 'rejected' ? 'Override: Approve' : 'Approve'}
+                    </Button>
+                  )}
+                  {selectedAdmission.status !== 'rejected' && (
+                    <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white" onClick={() => openRejectDialog(selectedAdmission.id)} disabled={processingId === selectedAdmission.id}>
+                      <XCircle className="h-4 w-4 mr-1.5" />
+                      {selectedAdmission.status === 'approved' ? 'Override: Reject' : 'Reject'}
+                    </Button>
+                  )}
+                  <Button variant="outline" className="gap-1.5" onClick={() => openEmailDialog(selectedAdmission)}>
+                    <Mail className="h-4 w-4" /> Email
+                  </Button>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Close</Button>
                 </div>
               </div>
-
-              <div className="flex gap-3">
-                {selectedAdmission.status !== 'approved' && (
-                  <Button
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                    onClick={() => handleApprove(selectedAdmission.id, selectedAdmission.status)}
-                    disabled={processingId === selectedAdmission.id}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {processingId === selectedAdmission.id
-                      ? 'Processing...'
-                      : selectedAdmission.status === 'rejected'
-                        ? 'Override: Approve'
-                        : 'Approve & Create Account'}
-                  </Button>
-                )}
-                {selectedAdmission.status !== 'rejected' && (
-                  <Button
-                    className="flex-1 bg-red-600 hover:bg-red-700"
-                    onClick={() => openRejectDialog(selectedAdmission.id)}
-                    disabled={processingId === selectedAdmission.id}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    {processingId === selectedAdmission.id
-                      ? 'Processing...'
-                      : selectedAdmission.status === 'approved'
-                        ? 'Override: Reject'
-                        : 'Reject'}
-                  </Button>
-                )}
-                <Button
-                  className={`${!selectedAdmission.status || selectedAdmission.status === 'pending' ? '' : 'flex-1'} bg-blue-600 hover:bg-blue-700`}
-                  onClick={() => openEmailDialog(selectedAdmission)}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Email
-                </Button>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Close</Button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -524,14 +571,19 @@ const AdmissionPage = () => {
               Compose Email
             </DialogTitle>
             <DialogDescription>
-              Sending to <span className="font-medium text-gray-700">{emailTarget?.email_address}</span>
+              Sending to{' '}
+              <span className="font-medium text-gray-700">
+                {emailTo}
+              </span>
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 mt-1">
             {/* Quick Templates */}
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Templates</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Quick Templates
+              </p>
               <div className="flex flex-wrap gap-2">
                 {QUICK_TEMPLATES.map((tpl) => (
                   <button
@@ -568,13 +620,19 @@ const AdmissionPage = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setEmailDialogOpen(false)} disabled={sendingEmail}>
+              <Button
+                variant="outline"
+                onClick={() => setEmailDialogOpen(false)}
+                disabled={sendingEmail}
+              >
                 Cancel
               </Button>
               <Button
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={handleSendEmail}
-                disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
+                disabled={
+                  sendingEmail || !emailSubject.trim() || !emailBody.trim()
+                }
               >
                 <Send className="w-4 h-4 mr-2" />
                 {sendingEmail ? 'Sending...' : 'Send Email'}
@@ -585,17 +643,49 @@ const AdmissionPage = () => {
       </Dialog>
 
       {/* Rejection Reason Dialog */}
+      {/* Approve Confirmation Dialog */}
+      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              {approvingAdmission?.isOverride ? 'Override & Approve' : 'Approve Admission'}
+            </DialogTitle>
+            <DialogDescription className="sr-only">Approval confirmation</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {approvingAdmission?.isOverride
+                  ? 'This admission was previously rejected. Approving will reactivate the student account and resend credentials via email.'
+                  : 'This will create a student account and send login credentials to the applicant via email.'}
+              </p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>Cancel</Button>
+              <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={confirmApprove}>
+                <CheckCircle className="h-4 w-4 mr-1.5" />
+                Confirm Approval
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-red-800">Reject Admission</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting this admission. This will be sent to the applicant via email.
+              Please provide a reason for rejecting this admission. This will be
+              sent to the applicant via email.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label htmlFor="rejectionReason" required>Reason for Rejection</Label>
+              <Label htmlFor="rejectionReason" required>
+                Reason for Rejection
+              </Label>
               <Textarea
                 id="rejectionReason"
                 placeholder="Enter the reason for rejection..."
@@ -605,14 +695,24 @@ const AdmissionPage = () => {
               />
             </div>
             <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => setRejectDialogOpen(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 className="bg-red-600 hover:bg-red-700"
                 onClick={handleReject}
-                disabled={!rejectionReason.trim() || processingId === rejectingAdmissionId}
+                disabled={
+                  !rejectionReason.trim() ||
+                  processingId === rejectingAdmissionId
+                }
               >
                 <XCircle className="h-4 w-4 mr-2" />
-                {processingId === rejectingAdmissionId ? 'Rejecting...' : 'Confirm Rejection'}
+                {processingId === rejectingAdmissionId
+                  ? 'Rejecting...'
+                  : 'Confirm Rejection'}
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { AnnouncementCards } from '@/components/AnnouncementCards';
+import { ActivePeriodBadge } from '@/components/ui/active-period-badge';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -111,7 +112,7 @@ export default function AdminPage() {
   const statCards = [
     { label: 'Total Students',  value: stats.totalStudents,  sub: 'All grade levels',                         icon: Users    },
     { label: 'Total Teachers',  value: stats.totalTeachers,  sub: 'Active faculty',                           icon: Shield   },
-    { label: 'Total Parents',   value: stats.totalParents,   sub: 'Active guardians',                         icon: UserCog  },
+    { label: 'Total Guardians', value: stats.totalParents,   sub: 'Active guardians',                         icon: UserCog  },
     { label: 'Attendance Rate', value: `${stats.attendanceRate ?? 0}%`, sub: filteredStats ? 'Filtered' : "Today", icon: Activity },
   ];
 
@@ -125,6 +126,7 @@ export default function AdminPage() {
           <p className="text-sm text-gray-500 mt-0.5">
             Welcome back, {admin.first_name || 'Admin'}.
           </p>
+          <div className="mt-1.5"><ActivePeriodBadge /></div>
         </div>
         <div className="flex items-center gap-2">
           <DateRangePicker value={dateRange} onChange={handleDateRangeChange} placeholder="Select date range" />

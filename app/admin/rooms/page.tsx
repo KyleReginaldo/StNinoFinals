@@ -2,6 +2,7 @@
 
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
+import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -39,6 +40,7 @@ export default function RoomsPage() {
   const { showAlert } = useAlert();
   const { refreshKey } = useRefresh();
   const { showConfirm } = useConfirm();
+  const { showDeletePrompt } = useDeletePrompt();
 
   const fetchRooms = async () => {
     setLoading(true);
@@ -105,13 +107,14 @@ export default function RoomsPage() {
   };
 
   const handleDelete = async (room: Room) => {
-    const confirmed = await showConfirm({
+    const result = await showDeletePrompt({
       title: 'Delete Room',
       message: `Delete "${room.name}"? This cannot be undone.`,
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      reasonLabel: 'Reason for deletion (optional)',
     });
-    if (!confirmed) return;
+    if (!result?.confirmed) return;
     try {
       const res = await fetch(`/api/admin/rooms?id=${room.id}`, { method: 'DELETE' });
       const data = await res.json();

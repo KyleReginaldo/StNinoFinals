@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
-import { Clock, Radio, User, Users } from 'lucide-react';
+import { Clock, Radio, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -17,19 +17,44 @@ interface AttendanceRecord {
   rfidCard: string;
   studentPhoto?: string;
   role?: string;
+  scanType?: 'timein' | 'timeout' | null;
 }
+
+const SCAN_TYPE_META = {
+  timein: {
+    label: 'Time In',
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  timeout: {
+    label: 'Time Out',
+    bg: 'bg-amber-100',
+    text: 'text-amber-700',
+    dot: 'bg-amber-500',
+  },
+} as const;
 
 const STATUS_META: Record<string, { bg: string; text: string; dot: string }> = {
   PR: { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-  LA: { bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
-  AC: { bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
-  EX: { bg: 'bg-blue-100',    text: 'text-blue-700',    dot: 'bg-blue-500'    },
+  LA: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500' },
+  AC: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+  EX: { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
 };
 const getStatus = (code: string) =>
-  STATUS_META[code] ?? { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' };
+  STATUS_META[code] ?? {
+    bg: 'bg-gray-100',
+    text: 'text-gray-600',
+    dot: 'bg-gray-400',
+  };
 
 function initials(name: string) {
-  return name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 }
 
 export function LiveAttendanceTab() {
@@ -70,7 +95,11 @@ export function LiveAttendanceTab() {
     fetchToday();
     const channel = supabase
       .channel('live-attendance-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attendance_records' }, fetchToday)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'attendance_records' },
+        fetchToday
+      )
       .subscribe();
     const interval = setInterval(fetchToday, 5000);
     return () => {
@@ -81,31 +110,39 @@ export function LiveAttendanceTab() {
   }, []);
 
   const formatTime = (ts: string) =>
-    new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    new Date(ts).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
 
   const formatFullDate = (ts: string) =>
-    new Date(ts).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    new Date(ts).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-full">
-
       {/* ── Scan List ─────────────────────────────────────────── */}
       <div className="md:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-
         {/* List header */}
         <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-xs font-semibold text-gray-800">Today's Scans</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{records.length} records</p>
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-200">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-semibold text-emerald-700">Live</span>
+            <p className="text-xs font-semibold text-gray-800">Scan History</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {records.length} records
+            </p>
           </div>
         </div>
 
         {/* Scroll area */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5" style={{ maxHeight: '65vh' }}>
+        <div
+          className="flex-1 overflow-y-auto p-3 space-y-1.5"
+          style={{ maxHeight: '65vh' }}
+        >
           {loading ? (
             <div className="flex items-center justify-center py-10">
               <div className="w-6 h-6 border-2 border-red-800 border-t-transparent rounded-full animate-spin" />
@@ -131,15 +168,23 @@ export function LiveAttendanceTab() {
                   )}
                 >
                   <div className="flex items-center gap-2 mb-1.5">
-                    <div className={cn(
-                      'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0',
-                      isSpotlit ? 'bg-red-200 text-red-800' : 'bg-gray-200 text-gray-600'
-                    )}>
+                    <div
+                      className={cn(
+                        'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0',
+                        isSpotlit
+                          ? 'bg-red-200 text-red-800'
+                          : 'bg-gray-200 text-gray-600'
+                      )}
+                    >
                       {initials(rec.studentName)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-800 truncate">{rec.studentName}</p>
-                      <p className="text-[10px] text-gray-400 truncate">{rec.gradeLevel} · {rec.section}</p>
+                      <p className="text-xs font-semibold text-gray-800 truncate">
+                        {rec.studentName}
+                      </p>
+                      <p className="text-[10px] text-gray-400 truncate">
+                        {rec.gradeLevel} · {rec.section}
+                      </p>
                     </div>
                     {i === 0 && (
                       <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full flex-shrink-0">
@@ -148,10 +193,36 @@ export function LiveAttendanceTab() {
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded', meta.bg, meta.text)}>
-                      {rec.status}
+                    {rec.scanType && SCAN_TYPE_META[rec.scanType] ? (
+                      <span
+                        className={cn(
+                          'text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1',
+                          SCAN_TYPE_META[rec.scanType].bg,
+                          SCAN_TYPE_META[rec.scanType].text
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'w-1.5 h-1.5 rounded-full inline-block',
+                            SCAN_TYPE_META[rec.scanType].dot
+                          )}
+                        />
+                        {SCAN_TYPE_META[rec.scanType].label}
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                          meta.bg,
+                          meta.text
+                        )}
+                      >
+                        {rec.status}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      {new Date(rec.scanTime).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })} · {formatTime(rec.scanTime)}
                     </span>
-                    <span className="text-[10px] text-gray-500 font-medium">{formatTime(rec.scanTime)}</span>
                   </div>
                 </button>
               );
@@ -162,10 +233,11 @@ export function LiveAttendanceTab() {
 
       {/* ── Spotlight Panel ───────────────────────────────────── */}
       <div className="md:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
-
         <div className="px-6 py-3.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-xs font-semibold text-gray-800">User Information</p>
+            <p className="text-xs font-semibold text-gray-800">
+              User Information
+            </p>
             <p className="text-[10px] text-gray-400 mt-0.5">
               Displays 10s after new scan · click any record to inspect
             </p>
@@ -173,7 +245,9 @@ export function LiveAttendanceTab() {
           {spotlight && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-200">
               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-semibold text-emerald-700">Active scan</span>
+              <span className="text-[10px] font-semibold text-emerald-700">
+                Active scan
+              </span>
             </div>
           )}
         </div>
@@ -182,7 +256,6 @@ export function LiveAttendanceTab() {
           {spotlight ? (
             <div className="w-full max-w-lg">
               <div className="flex flex-col sm:flex-row items-center gap-8">
-
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   {spotlight.studentPhoto ? (
@@ -195,7 +268,9 @@ export function LiveAttendanceTab() {
                     />
                   ) : (
                     <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl bg-red-50 border-4 border-white ring-2 ring-red-100 shadow-md flex items-center justify-center">
-                      <span className="text-4xl font-bold text-red-300">{initials(spotlight.studentName)}</span>
+                      <span className="text-4xl font-bold text-red-300">
+                        {initials(spotlight.studentName)}
+                      </span>
                     </div>
                   )}
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 border-4 border-white rounded-full flex items-center justify-center shadow">
@@ -206,9 +281,14 @@ export function LiveAttendanceTab() {
                 {/* Details */}
                 <div className="flex-1 text-center sm:text-left space-y-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{spotlight.studentName}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {spotlight.studentName}
+                    </h2>
                     <p className="text-sm text-gray-400 mt-0.5">
-                      {spotlight.role === 'teacher' ? 'Employee No.' : 'Student ID'}: {spotlight.studentId}
+                      {spotlight.role === 'teacher'
+                        ? 'Employee No.'
+                        : 'Student ID'}
+                      : {spotlight.studentId}
                     </p>
                   </div>
 
@@ -216,35 +296,72 @@ export function LiveAttendanceTab() {
                     <div className="bg-gray-50 rounded-xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Users className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Grade</span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
+                          Grade
+                        </span>
                       </div>
-                      <p className="text-sm font-bold text-gray-800">{spotlight.gradeLevel || 'N/A'}</p>
+                      <p className="text-sm font-bold text-gray-800">
+                        {spotlight.gradeLevel || 'N/A'}
+                      </p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Users className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Section</span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
+                          Section
+                        </span>
                       </div>
-                      <p className="text-sm font-bold text-gray-800">{spotlight.section || 'N/A'}</p>
+                      <p className="text-sm font-bold text-gray-800">
+                        {spotlight.section || 'N/A'}
+                      </p>
                     </div>
                   </div>
 
                   <div className="bg-red-50 border border-red-100 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="w-3.5 h-3.5 text-red-500" />
-                      <span className="text-[10px] font-semibold text-red-700 uppercase tracking-wide">Scan Time</span>
-                    </div>
-                    <p className="text-xl font-bold text-gray-900">{formatTime(spotlight.scanTime)}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{formatFullDate(spotlight.scanTime)}</p>
-                    <div className="mt-3 pt-3 border-t border-red-100 flex items-center justify-between">
-                      <span className={cn(
-                        'text-xs font-bold px-2.5 py-1 rounded-full',
-                        getStatus(spotlight.status).bg,
-                        getStatus(spotlight.status).text
-                      )}>
-                        {spotlight.status}
+                      <span className="text-[10px] font-semibold text-red-700 uppercase tracking-wide">
+                        Scan Time
                       </span>
-                      <span className="text-[10px] text-gray-400 font-mono">{spotlight.rfidCard}</span>
+                    </div>
+                    <p className="text-xl font-bold text-gray-900">
+                      {formatTime(spotlight.scanTime)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {formatFullDate(spotlight.scanTime)}
+                    </p>
+                    <div className="mt-3 pt-3 border-t border-red-100 flex items-center justify-between">
+                      {spotlight.scanType &&
+                      SCAN_TYPE_META[spotlight.scanType] ? (
+                        <span
+                          className={cn(
+                            'text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5',
+                            SCAN_TYPE_META[spotlight.scanType].bg,
+                            SCAN_TYPE_META[spotlight.scanType].text
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'w-2 h-2 rounded-full',
+                              SCAN_TYPE_META[spotlight.scanType].dot
+                            )}
+                          />
+                          {SCAN_TYPE_META[spotlight.scanType].label}
+                        </span>
+                      ) : (
+                        <span
+                          className={cn(
+                            'text-xs font-bold px-2.5 py-1 rounded-full',
+                            getStatus(spotlight.status).bg,
+                            getStatus(spotlight.status).text
+                          )}
+                        >
+                          {spotlight.status}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {spotlight.rfidCard}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -255,8 +372,12 @@ export function LiveAttendanceTab() {
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
                 <Radio className="w-7 h-7 text-gray-300 animate-pulse" />
               </div>
-              <p className="text-sm font-medium text-gray-500">Waiting for RFID scan…</p>
-              <p className="text-xs text-gray-400">Student information will appear here when scanned</p>
+              <p className="text-sm font-medium text-gray-500">
+                Waiting for RFID scan…
+              </p>
+              <p className="text-xs text-gray-400">
+                Student information will appear here when scanned
+              </p>
             </div>
           )}
         </div>

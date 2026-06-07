@@ -30,6 +30,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const showArchived = searchParams.get('archived') === 'true';
+    const gradeLevel = searchParams.get('gradeLevel');
+    const section = searchParams.get('section');
 
     // Use admin client for server-side operations (bypasses RLS)
     let supabaseClient;
@@ -51,13 +53,16 @@ export async function GET(request: Request) {
       });
     }
 
-    const { data, error } = await supabaseClient
+    let query = supabaseClient
       .from('users')
       .select('*')
       .eq('role', 'student')
       .eq('is_archived', showArchived)
-      .order('created_at', { ascending: false })
-      .limit(500);
+      .order('created_at', { ascending: false });
+    if (gradeLevel) query = query.eq('grade_level', gradeLevel);
+    if (section) query = query.eq('section', section);
+    if (!gradeLevel && !section) query = query.limit(500);
+    const { data, error } = await query;
 
     if (error) {
       console.error('Database error:', error);

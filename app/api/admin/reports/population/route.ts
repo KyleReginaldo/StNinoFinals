@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -18,15 +19,19 @@ export async function GET(request: NextRequest) {
       .from('enrollment_requests')
       .select('school_year')
       .eq('status', 'approved');
-    const schoolYears = [...new Set((yearRows || []).map((r: any) => r.school_year).filter(Boolean))].sort().reverse();
+    const schoolYears = [...new Set((yearRows || []).map((r: any) => normalizeSchoolYear(r.school_year)).filter(Boolean))].sort().reverse();
 
-    // Build main query
+    // Build main query — match both normalized and bare-year formats in DB
     let query = admin
       .from('enrollment_requests')
       .select('grade_level')
       .eq('status', 'approved');
 
-    if (school_year) query = query.eq('school_year', school_year);
+    if (school_year) {
+      // Accept "2026-2027" and also match legacy bare "2026" records
+      const bare = school_year.split('-')[0];
+      query = query.in('school_year', [school_year, bare]);
+    }
     if (grade_level) query = query.eq('grade_level', grade_level);
 
     const { data: rows, error } = await query;

@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from '@/lib/school-year'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
                     day: day,
                     timeStart: timeSlot.timeStart || timeSlot.start,
                     timeEnd: timeSlot.timeEnd || timeSlot.end,
-                    schoolYear: classInfo.school_year,
+                    schoolYear: normalizeSchoolYear(classInfo.school_year),
                     semester: (classInfo as any).quarter
                   })
                 })

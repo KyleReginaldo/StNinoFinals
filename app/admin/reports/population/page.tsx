@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
 import { useTableControls } from '@/hooks/use-table-controls';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ArrowLeft, Download, RefreshCcw, Users } from 'lucide-react';
+import { ArrowLeft, RefreshCcw, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -64,7 +65,7 @@ export default function PopulationReportPage() {
     doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('STUDENT POPULATION REPORT', 105, 32, { align: 'center' });
+    doc.text('STUDENT ENROLLMENT REPORT', 105, 32, { align: 'center' });
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -97,7 +98,29 @@ export default function PopulationReportPage() {
     });
 
     const suffix = selectedYear !== 'all' ? `_${selectedYear.replace(/[^a-z0-9]/gi, '-')}` : '';
-    doc.save(`Population_Report${suffix}.pdf`);
+    doc.save(`Enrollment_Report${suffix}.pdf`);
+  };
+
+  const handleDownloadExcel = async () => {
+    if (!data) return;
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const yearLabel = selectedYear !== 'all' ? `A.Y. ${selectedYear}` : 'All School Years';
+    const gradeLabel = selectedGrade !== 'all' ? selectedGrade : 'All Grade Levels';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const suffix = selectedYear !== 'all' ? `_${selectedYear.replace(/[^a-z0-9]/gi, '-')}` : '';
+    await downloadExcel(`Enrollment_Report${suffix}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'STUDENT ENROLLMENT REPORT',
+        `${yearLabel}  |  ${gradeLabel}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['Grade Level', 'Total'],
+      colWidths: [40, 18],
+      rows: data.byGrade.map((r) => [r.grade_level, r.total]),
+      totalRow: ['Total', data.grandTotal],
+      headerColor: 'red',
+    });
   };
 
   const gradeOptions = data?.byGrade.map((r) => r.grade_level) || [];
@@ -122,7 +145,7 @@ export default function PopulationReportPage() {
           <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Population Report
+              Enrollment Report
             </h1>
             <p className="text-sm text-gray-500">Student enrollment counts by grade level</p>
           </div>
@@ -165,15 +188,12 @@ export default function PopulationReportPage() {
               <RefreshCcw className="w-3.5 h-3.5 mr-1" />
               Refresh
             </Button>
-            <Button
-              size="sm"
-              className="bg-gray-900 hover:bg-gray-800 text-white"
-              onClick={handleDownloadPDF}
+            <ExportDropdown
+              onPDF={handleDownloadPDF}
+              onExcel={handleDownloadExcel}
               disabled={!data || data.byGrade.length === 0}
-            >
-              <Download className="w-3.5 h-3.5 mr-1" />
-              Download PDF
-            </Button>
+              size="sm"
+            />
           </div>
         </div>
 

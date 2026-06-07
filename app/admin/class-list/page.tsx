@@ -136,11 +136,11 @@ export default function ClassListPage() {
   }, [data, selectedGrade, search]);
 
   const stats = useMemo(() => {
-    const totalStudents = data.reduce((acc, g) => acc + g.sections.reduce((a, s) => a + s.students.length, 0), 0);
-    const totalSections = data.reduce((acc, g) => acc + g.sections.length, 0);
-    const totalGrades   = data.length;
+    const totalStudents = filteredData.reduce((acc, g) => acc + g.sections.reduce((a, s) => a + s.students.length, 0), 0);
+    const totalSections = filteredData.reduce((acc, g) => acc + g.sections.length, 0);
+    const totalGrades   = filteredData.length;
     return { totalStudents, totalSections, totalGrades };
-  }, [data]);
+  }, [filteredData]);
 
   const filteredStudentCount = useMemo(
     () => filteredData.reduce((acc, g) => acc + g.sections.reduce((a, s) => a + s.students.length, 0), 0),

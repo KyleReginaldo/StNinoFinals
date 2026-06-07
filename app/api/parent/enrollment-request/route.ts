@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -53,15 +54,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { parentId, studentId, gradeLevel, strand, schoolYear, semester } =
-      body;
+    const {
+      parentId,
+      studentId,
+      gradeLevel,
+      strand,
+      schoolYear,
+      enrollmentType = 'new',
+      previousSchool,
+    } = body;
 
-    if (!parentId || !studentId || !gradeLevel || !schoolYear || !semester) {
+    if (!parentId || !studentId || !gradeLevel || !schoolYear) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'parentId, studentId, gradeLevel, schoolYear, and semester are required',
+          error: 'parentId, studentId, gradeLevel, and schoolYear are required',
         },
         { status: 400 }
       );
@@ -112,8 +119,9 @@ export async function POST(request: NextRequest) {
         submitted_by: parentId,
         grade_level: gradeLevel,
         strand: strand ?? null,
-        school_year: schoolYear,
-        quarter: Number(semester),
+        school_year: normalizeSchoolYear(schoolYear),
+        enrollment_type: enrollmentType,
+        previous_school: previousSchool ?? null,
         status: 'pending',
       })
       .select()

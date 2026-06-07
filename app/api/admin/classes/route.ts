@@ -1,4 +1,5 @@
 import { parseScheduleTime, timesOverlap } from '@/lib/rooms';
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -95,12 +96,13 @@ export async function GET(request: NextRequest) {
 
           return {
             ...classItem,
+            school_year: normalizeSchoolYear(classItem.school_year),
             teacher_name: teacher
               ? `${teacher.first_name} ${teacher.last_name}`
               : null,
           };
         }
-        return { ...classItem, teacher_name: null };
+        return { ...classItem, school_year: normalizeSchoolYear(classItem.school_year), teacher_name: null };
       })
     );
 

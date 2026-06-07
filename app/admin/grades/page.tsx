@@ -10,10 +10,10 @@ import {
 } from '@/components/ui/dialog';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import {
   CheckCircle,
   CheckCircle2,
-  Download,
   GraduationCap,
   Search,
   XCircle,
@@ -82,6 +82,7 @@ export default function AdminGradesPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [reviewingGrade, setReviewingGrade] = useState<GradeEntry | null>(null);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetchGrades = useCallback(async () => {
     setLoading(true);
@@ -150,6 +151,10 @@ export default function AdminGradesPage() {
     }
   }, [subjectGroups, selectedGroup]);
 
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [selectedGroupKey]);
+
   const handleReview = async (grade: GradeEntry, status: 'approved' | 'rejected') => {
     const studentName = grade.student
       ? `${grade.student.first_name} ${grade.student.last_name}`
@@ -213,25 +218,80 @@ export default function AdminGradesPage() {
     }
   };
 
-  const handleExportCSV = () => {
-    const headers = ['Student', 'Student No.', 'Subject', 'Teacher', 'Grade', 'Status', 'Submitted'];
-    const rows = filteredGrades.map(g => [
-      g.student ? `${g.student.first_name} ${g.student.last_name}` : 'N/A',
-      g.student?.student_number || 'N/A',
-      g.subject,
-      g.teacher ? `${g.teacher.first_name} ${g.teacher.last_name}` : 'N/A',
-      g.grade,
-      g.status,
-      g.created_at ? new Date(g.created_at).toLocaleDateString('en-PH') : '',
-    ]);
-    const csv = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `grade-approvals-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
+  const handleBatchAction = async (status: 'approved' | 'rejected') => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    const confirmed = await showConfirm({
+      title: status === 'approved' ? 'Approve Selected' : 'Reject Selected',
+      message: `Are you sure you want to ${status === 'approved' ? 'approve' : 'reject'} ${ids.length} selected grade${ids.length !== 1 ? 's' : ''}?`,
+    });
+    if (!confirmed) return;
+
+    setBatchProcessing(true);
+    try {
+      const response = await fetch('/api/admin/grades', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, status, reviewedBy: admin?.id ?? null }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        showAlert({ message: `${result.count || ids.length} grades ${status}.`, type: 'success' });
+        setSelectedIds(new Set());
+        fetchGrades();
+      } else {
+        showAlert({ message: result.error || 'Action failed.', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
+  const toggleSelectId = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectGroup = (group: SubjectGroup) => {
+    const pendingIds = group.entries.filter(e => e.status === 'pending').map(e => e.id);
+    const allSelected = pendingIds.every(id => selectedIds.has(id));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allSelected) pendingIds.forEach(id => next.delete(id));
+      else pendingIds.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const handleExportExcel = async () => {
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const date = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const tab = activeTab !== 'all' ? ` — ${STATUS_CONFIG[activeTab as GradeStatus]?.label ?? activeTab}` : '';
+    await downloadExcel(`grade-approvals-${new Date().toISOString().slice(0, 10)}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        `Grade Approvals Report${tab}`,
+        `Generated: ${date}`,
+      ],
+      columns: ['Student', 'Student No.', 'Subject', 'Teacher', 'Grade', 'Status', 'Submitted'],
+      colWidths: [36, 18, 28, 30, 12, 16, 18],
+      rows: filteredGrades.map(g => [
+        g.student ? `${g.student.first_name} ${g.student.last_name}` : 'N/A',
+        g.student?.student_number || 'N/A',
+        g.subject,
+        g.teacher ? `${g.teacher.first_name} ${g.teacher.last_name}` : 'N/A',
+        g.grade,
+        STATUS_CONFIG[g.status]?.label ?? g.status,
+        g.created_at ? new Date(g.created_at).toLocaleDateString('en-PH') : '',
+      ]),
+      headerColor: 'red',
+    });
   };
 
   const handleExportPDF = () => {
@@ -273,16 +333,12 @@ export default function AdminGradesPage() {
             <p className="text-sm text-gray-500 mt-0.5">Review and approve grades submitted by faculty</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleExportCSV} variant="outline" size="sm" disabled={filteredGrades.length === 0}>
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            CSV
-          </Button>
-          <Button onClick={handleExportPDF} variant="outline" size="sm" disabled={filteredGrades.length === 0}>
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            PDF
-          </Button>
-        </div>
+        <ExportDropdown
+          onPDF={handleExportPDF}
+          onExcel={handleExportExcel}
+          disabled={filteredGrades.length === 0}
+          size="sm"
+        />
       </div>
 
       {/* Stat Cards — clickable filters */}
@@ -405,27 +461,61 @@ export default function AdminGradesPage() {
                       )}
                     </p>
                   </div>
-                  {selectedGroup.pendingCount > 0 && (
-                    <Button
-                      onClick={() => handleBatchApprove(selectedGroup)}
-                      disabled={batchProcessing}
-                      size="sm"
-                      className="bg-green-600 text-white hover:bg-green-700 shrink-0"
-                    >
-                      <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                      {batchProcessing
-                        ? 'Approving...'
-                        : selectedGroup.pendingCount === 1
-                          ? 'Approve'
-                          : `Approve All (${selectedGroup.pendingCount})`}
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {selectedIds.size > 0 ? (
+                      <>
+                        <Button
+                          onClick={() => handleBatchAction('rejected')}
+                          disabled={batchProcessing}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                          Reject ({selectedIds.size})
+                        </Button>
+                        <Button
+                          onClick={() => handleBatchAction('approved')}
+                          disabled={batchProcessing}
+                          size="sm"
+                          className="bg-green-600 text-white hover:bg-green-700"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                          Approve ({selectedIds.size})
+                        </Button>
+                      </>
+                    ) : selectedGroup.pendingCount > 0 && (
+                      <Button
+                        onClick={() => handleBatchApprove(selectedGroup)}
+                        disabled={batchProcessing}
+                        size="sm"
+                        className="bg-green-600 text-white hover:bg-green-700"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                        {batchProcessing
+                          ? 'Approving...'
+                          : selectedGroup.pendingCount === 1
+                            ? 'Approve'
+                            : `Approve All (${selectedGroup.pendingCount})`}
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student</th>
+                      <th className="pl-4 pr-2 py-2.5 w-8">
+                        {selectedGroup.pendingCount > 0 && (
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-gray-900 focus:ring-gray-900/10 cursor-pointer"
+                            checked={selectedGroup.entries.filter(e => e.status === 'pending').every(e => selectedIds.has(e.id))}
+                            onChange={() => toggleSelectGroup(selectedGroup)}
+                          />
+                        )}
+                      </th>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student</th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Student No.</th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Grade</th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
@@ -437,23 +527,33 @@ export default function AdminGradesPage() {
                     {selectedGroup.entries.map(entry => {
                       const cfg = STATUS_CONFIG[entry.status];
                       const isPassing = entry.grade >= 75;
+                      const isChecked = selectedIds.has(entry.id);
                       return (
                         <tr
                           key={entry.id}
-                          className="hover:bg-gray-50 group cursor-pointer"
-                          onClick={() => setReviewingGrade(entry)}
+                          className={`group cursor-pointer ${isChecked ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                         >
-                          <td className="px-5 py-3 text-sm font-medium text-gray-900">
+                          <td className="pl-4 pr-2 py-3" onClick={e => e.stopPropagation()}>
+                            {entry.status === 'pending' && (
+                              <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-gray-900 focus:ring-gray-900/10 cursor-pointer"
+                                checked={isChecked}
+                                onChange={() => toggleSelectId(entry.id)}
+                              />
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-sm font-medium text-gray-900" onClick={() => setReviewingGrade(entry)}>
                             {entry.student
                               ? `${entry.student.last_name}, ${entry.student.first_name}`
                               : <span className="text-gray-300">—</span>}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3" onClick={() => setReviewingGrade(entry)}>
                             <span className="font-mono text-[12px] text-gray-500">
                               {entry.student?.student_number ?? <span className="text-gray-300">—</span>}
                             </span>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3" onClick={() => setReviewingGrade(entry)}>
                             <span className={`text-sm font-bold tabular-nums ${isPassing ? 'text-gray-900' : 'text-red-600'}`}>
                               {entry.grade}
                             </span>
@@ -461,18 +561,18 @@ export default function AdminGradesPage() {
                               <span className="ml-1.5 text-[10px] font-medium text-red-400">FAIL</span>
                             )}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3" onClick={() => setReviewingGrade(entry)}>
                             <span className="inline-flex items-center gap-1.5">
                               <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                               <span className="text-xs text-gray-600">{cfg.label}</span>
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
+                          <td className="px-4 py-3 text-sm text-gray-500" onClick={() => setReviewingGrade(entry)}>
                             {entry.created_at
                               ? new Date(entry.created_at).toLocaleDateString('en-PH')
                               : <span className="text-gray-300">—</span>}
                           </td>
-                          <td className="px-4 py-3 pr-5 text-right">
+                          <td className="px-4 py-3 pr-5 text-right" onClick={() => setReviewingGrade(entry)}>
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer">
                               {entry.status === 'pending' ? 'Review' : 'View'} →
                             </span>

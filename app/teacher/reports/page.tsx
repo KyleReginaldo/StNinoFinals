@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
 import { useTableControls } from '@/hooks/use-table-controls';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Download, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -114,7 +115,7 @@ export default function TeacherReportsPage() {
     doc.setFontSize(10); doc.setFont('helvetica', 'normal');
     doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
     doc.setFontSize(13); doc.setFont('helvetica', 'bold');
-    doc.text('CLASS POPULATION REPORT', 105, 31, { align: 'center' });
+    doc.text('ENROLLMENT REPORT', 105, 31, { align: 'center' });
     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text(`Teacher: ${teacherName}`, 105, 38, { align: 'center' });
     doc.text(
@@ -172,7 +173,26 @@ export default function TeacherReportsPage() {
       doc.text(`${c.class_name}`.slice(0, 8), x + barWidth / 2, startY + chartHeight + 5, { align: 'center' });
     });
 
-    doc.save(`Class_Population_${teacherName.replace(/\s+/g, '_')}_${selectedYear !== 'all' ? selectedYear : 'All'}.pdf`);
+    doc.save(`Enrollment_Report_${teacherName.replace(/\s+/g, '_')}_${selectedYear !== 'all' ? selectedYear : 'All'}.pdf`);
+  };
+
+  const handleDownloadExcel = async () => {
+    if (filtered.length === 0) return;
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`Enrollment_Report_${teacherName.replace(/\s+/g, '_')}_${selectedYear !== 'all' ? selectedYear : 'All'}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'ENROLLMENT REPORT',
+        `Teacher: ${teacherName}`,
+        `${selectedYear !== 'all' ? `A.Y. ${selectedYear}` : 'All School Years'}  |  Generated: ${generated}`,
+      ],
+      columns: ['Class Name', 'Grade Level', 'Section', 'School Year', 'Quarter', 'Students'],
+      colWidths: [32, 18, 18, 18, 14, 14],
+      rows: filtered.map(c => [c.class_name, c.grade_level || '—', c.section || '—', c.school_year, `Q${c.semester}`, c.student_count]),
+      totalRow: ['TOTAL', '', '', '', '', totalStudents],
+      headerColor: 'red',
+    });
   };
 
   if (!teacher) return null;
@@ -184,7 +204,7 @@ export default function TeacherReportsPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="w-6 h-6" />
-            Class Population Report
+            Enrollment Report
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">Student count per class — {teacherName}</p>
         </div>
@@ -199,15 +219,12 @@ export default function TeacherReportsPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button
-            className="bg-gray-900 hover:bg-gray-800 text-white"
-            size="sm"
-            onClick={handleDownloadPDF}
+          <ExportDropdown
+            onPDF={handleDownloadPDF}
+            onExcel={handleDownloadExcel}
             disabled={filtered.length === 0}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
-          </Button>
+            size="sm"
+          />
         </div>
       </div>
 
@@ -239,7 +256,7 @@ export default function TeacherReportsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 20, bottom: 60, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-35} textAnchor="end" interval={0} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip formatter={(v: number) => [`${v} students`, 'Count']} />
                   <Bar dataKey="students" radius={[4, 4, 0, 0]}>

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { getActiveSchoolYear } from '@/lib/school-year';
+import { SchoolMap } from '@/components/SchoolMap';
 import {
   Dialog,
   DialogContent,
@@ -21,10 +21,12 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { getActiveSchoolYear } from '@/lib/school-year';
 import { useAlert } from '@/lib/use-alert';
 import {
   Award,
   BookOpen,
+  ChevronDown,
   Clock,
   GraduationCap,
   Mail,
@@ -34,8 +36,6 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { SchoolMap } from '@/components/SchoolMap';
-import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -59,8 +59,8 @@ export default function HomePage() {
 
   useEffect(() => {
     fetch('/api/admin/settings')
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (d.success && d.settings) {
           setSchoolContact({
             phone: d.settings.phone || schoolContact.phone,
@@ -72,23 +72,31 @@ export default function HomePage() {
       })
       .catch(() => {});
     fetch('/api/public/stats')
-      .then(r => r.json())
-      .then(d => { if (d.success) setLiveStats(d.stats); })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setLiveStats(d.stats);
+      })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const { showAlert } = useAlert();
   const [admissionForm, setAdmissionForm] = useState({
     firstName: '',
     lastName: '',
     middleInitial: '',
+    suffix: '',
     parentName: '',
+    parentEmail: '',
     emailAddress: '',
     phoneNumber: '+63',
     intendedGradeLevel: '',
     previousSchool: '',
     additionalMessage: '',
   });
+
+  const GRADE_6_AND_BELOW = ['kindergarten', 'grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'];
+  const needsParentEmail = GRADE_6_AND_BELOW.includes(admissionForm.intendedGradeLevel);
+  const ADMISSION_SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
   const [isSubmittingAdmission, setIsSubmittingAdmission] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
@@ -149,7 +157,9 @@ export default function HomePage() {
           first_name: admissionForm.firstName,
           last_name: admissionForm.lastName,
           middle_initial: admissionForm.middleInitial,
+          suffix: admissionForm.suffix || null,
           parent_name: admissionForm.parentName,
+          parent_email: admissionForm.parentEmail || null,
           email_address: admissionForm.emailAddress,
           phone_number: admissionForm.phoneNumber,
           intended_grade_level: admissionForm.intendedGradeLevel,
@@ -168,7 +178,9 @@ export default function HomePage() {
           firstName: '',
           lastName: '',
           middleInitial: '',
+          suffix: '',
           parentName: '',
+          parentEmail: '',
           emailAddress: '',
           phoneNumber: '+63',
           intendedGradeLevel: '',
@@ -202,8 +214,14 @@ export default function HomePage() {
 
   const STATS = liveStats
     ? [
-        { value: liveStats.students.toLocaleString(), label: 'Enrolled Students' },
-        { value: liveStats.teachers.toLocaleString(), label: 'Dedicated Educators' },
+        {
+          value: liveStats.students.toLocaleString(),
+          label: 'Enrolled Students',
+        },
+        {
+          value: liveStats.teachers.toLocaleString(),
+          label: 'Dedicated Educators',
+        },
         { value: liveStats.classes.toLocaleString(), label: 'Active Classes' },
       ]
     : [
@@ -350,7 +368,8 @@ export default function HomePage() {
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
-            backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+            backgroundImage:
+              'radial-gradient(circle, #fff 1px, transparent 1px)',
             backgroundSize: '32px 32px',
           }}
         />
@@ -634,7 +653,10 @@ export default function HomePage() {
                       with next steps.
                     </p>
                     <button
-                      onClick={() => { setSubmissionSuccess(false); setAgreeAdmissionTerms(false); }}
+                      onClick={() => {
+                        setSubmissionSuccess(false);
+                        setAgreeAdmissionTerms(false);
+                      }}
                       className="inline-flex items-center gap-2 bg-red-900 hover:bg-red-800 text-white font-semibold text-sm px-7 py-3 rounded-xl transition-colors"
                     >
                       Submit Another Inquiry
@@ -655,7 +677,7 @@ export default function HomePage() {
                       onSubmit={handleAdmissionSubmit}
                       className="space-y-5"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_80px] gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_70px_110px] gap-5">
                         <div className="space-y-1.5">
                           <Label
                             htmlFor="firstName"
@@ -724,30 +746,84 @@ export default function HomePage() {
                             className="h-11 bg-white border-gray-200"
                           />
                         </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-medium text-gray-700">
+                            Suffix
+                          </Label>
+                          <Select
+                            value={admissionForm.suffix || 'none'}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                suffix: v === 'none' ? '' : v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="None" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {ADMISSION_SUFFIX_OPTIONS.map((s) => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="parentName"
-                          className="text-sm font-medium text-gray-700"
-                          required
-                        >
-                          Parent / Guardian Name
-                        </Label>
-                        <Input
-                          id="parentName"
-                          value={admissionForm.parentName}
-                          placeholder="Full name of parent or guardian"
-                          onChange={(e) =>
-                            setAdmissionForm({
-                              ...admissionForm,
-                              parentName: e.target.value,
-                            })
-                          }
-                          required
-                          disabled={isSubmittingAdmission}
-                          className="h-11 bg-white border-gray-200"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="parentName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Guardian Name
+                          </Label>
+                          <Input
+                            id="parentName"
+                            value={admissionForm.parentName}
+                            placeholder="Full name of parent or guardian"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                parentName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="parentEmail"
+                            className="text-sm font-medium text-gray-700"
+                            required={needsParentEmail}
+                          >
+                            Guardian Email
+                            {needsParentEmail && (
+                              <span className="ml-1 text-xs text-gray-400 font-normal">(required for Grade 6 &amp; below)</span>
+                            )}
+                          </Label>
+                          <Input
+                            id="parentEmail"
+                            type="email"
+                            value={admissionForm.parentEmail}
+                            placeholder="guardian@example.com"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                parentEmail: e.target.value,
+                              })
+                            }
+                            required={needsParentEmail}
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -924,10 +1000,14 @@ export default function HomePage() {
                           }}
                         >
                           I have read and agree to the{' '}
-                          <span className="text-red-700 font-medium">Terms of Service</span>
-                          {' '}and{' '}
-                          <span className="text-red-700 font-medium">Privacy Policy</span>
-                          {' '}of Sto. Niño de Praga Academy.
+                          <span className="text-red-700 font-medium">
+                            Terms of Service
+                          </span>{' '}
+                          and{' '}
+                          <span className="text-red-700 font-medium">
+                            Privacy Policy
+                          </span>{' '}
+                          of Sto. Niño de Praga Academy.
                         </label>
                       </div>
 
@@ -960,7 +1040,8 @@ export default function HomePage() {
               Mga Karaniwang Tanong
             </h2>
             <p className="mt-4 text-gray-500 text-base">
-              Narito ang mga sagot sa mga madalas na itinatanong ng mga magulang at guardian.
+              Narito ang mga sagot sa mga madalas na itinatanong ng mga magulang
+              at guardian.
             </p>
           </div>
 
@@ -971,14 +1052,18 @@ export default function HomePage() {
                 <div
                   key={i}
                   className={`border rounded-2xl overflow-hidden transition-colors duration-200 ${
-                    isOpen ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-white hover:border-gray-200'
+                    isOpen
+                      ? 'border-red-200 bg-red-50'
+                      : 'border-gray-100 bg-white hover:border-gray-200'
                   }`}
                 >
                   <button
                     className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                   >
-                    <span className={`font-semibold text-sm sm:text-base leading-snug ${isOpen ? 'text-red-800' : 'text-gray-800'}`}>
+                    <span
+                      className={`font-semibold text-sm sm:text-base leading-snug ${isOpen ? 'text-red-800' : 'text-gray-800'}`}
+                    >
                       {faq.q}
                     </span>
                     <ChevronDown
@@ -989,7 +1074,9 @@ export default function HomePage() {
                   </button>
                   {isOpen && (
                     <div className="px-6 pb-5">
-                      <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {faq.a}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1093,11 +1180,22 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col sm:items-end gap-1">
               <div className="flex items-center gap-4">
-                <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Terms of Service</Link>
-                <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
+                <Link
+                  href="/terms"
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Terms of Service
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
               </div>
               <p className="text-xs text-gray-600 text-center sm:text-right">
-                © {new Date().getFullYear()} Sto. Niño de Praga Academy. All rights reserved.
+                © {new Date().getFullYear()} Sto. Niño de Praga Academy. All
+                rights reserved.
               </p>
             </div>
           </div>
@@ -1108,32 +1206,63 @@ export default function HomePage() {
       <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Terms of Service &amp; Privacy Policy</DialogTitle>
+            <DialogTitle className="text-gray-900">
+              Terms of Service &amp; Privacy Policy
+            </DialogTitle>
           </DialogHeader>
 
           <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
             <div>
               <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
-              <p>By using the Sto. Niño de Praga Academy portal, you agree to use the system only for lawful, school-related purposes. Accounts are personal and non-transferable. Misuse, unauthorized access, or sharing of credentials may result in account suspension.</p>
+              <p>
+                By using the Sto. Niño de Praga Academy portal, you agree to use
+                the system only for lawful, school-related purposes. Accounts
+                are personal and non-transferable. Misuse, unauthorized access,
+                or sharing of credentials may result in account suspension.
+              </p>
             </div>
             <div>
               <p className="font-bold text-gray-800 mb-1">Privacy Policy</p>
-              <p>We collect personal information (name, contact details, grades, attendance) solely to manage enrollment and school operations, in compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data will not be sold or shared with third parties outside of authorized school personnel and required government agencies.</p>
+              <p>
+                We collect personal information (name, contact details, grades,
+                attendance) solely to manage enrollment and school operations,
+                in compliance with the{' '}
+                <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data
+                will not be sold or shared with third parties outside of
+                authorized school personnel and required government agencies.
+              </p>
             </div>
             <div>
               <p className="font-bold text-gray-800 mb-1">Data You Provide</p>
               <ul className="list-disc pl-4 space-y-1 text-gray-500">
                 <li>Student name, grade level, and contact information</li>
-                <li>Parent / Guardian name and email address</li>
+                <li>Guardian name and email address</li>
                 <li>Previous school details submitted in this inquiry</li>
               </ul>
             </div>
             <div>
               <p className="font-bold text-gray-800 mb-1">Your Rights</p>
-              <p>You may request access, correction, or deletion of your data by contacting us at <span className="text-red-700">info@stnino.ph</span>. For the full policies, see{' '}
-                <Link href="/terms" target="_blank" className="text-red-700 hover:underline">Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/privacy" target="_blank" className="text-red-700 hover:underline">Privacy Policy</Link>.
+              <p>
+                You may request access, correction, or deletion of your data by
+                contacting us at{' '}
+                <span className="text-red-700">info@stnino.ph</span>. For the
+                full policies, see{' '}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="text-red-700 hover:underline"
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-red-700 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+                .
               </p>
             </div>
           </div>
@@ -1148,7 +1277,10 @@ export default function HomePage() {
             </button>
             <button
               type="button"
-              onClick={() => { setAgreeAdmissionTerms(true); setTermsModalOpen(false); }}
+              onClick={() => {
+                setAgreeAdmissionTerms(true);
+                setTermsModalOpen(false);
+              }}
               className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors"
             >
               I Agree

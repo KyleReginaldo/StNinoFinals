@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Dialog,
   DialogContent,
@@ -21,13 +22,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { supabase } from '@/lib/supabaseClient';
 import { useRefresh } from '@/lib/refresh-context';
+import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import autoTable from 'jspdf-autotable';
@@ -48,8 +48,6 @@ import {
   User,
 } from 'lucide-react';
 import { StudentSidebarContentOld } from './components/StudentSidebarOld';
-
-
 
 interface Student {
   id: number;
@@ -201,7 +199,7 @@ const calendarActivities: CalendarActivity[] = [
   },
   {
     date: '2025-06-26',
-    title: 'Parents Orientation of Student Manual',
+    title: 'Guardian Orientation of Student Manual',
     category: 'event',
   },
   { date: '2025-06-27', title: 'TEAM BUILDING', category: 'event' },
@@ -907,7 +905,9 @@ export default function StudentDashboard() {
     }
 
     if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(firstLoginForm.newPassword)) {
-      setFirstLoginError('Password must contain at least one letter and one number.');
+      setFirstLoginError(
+        'Password must contain at least one letter and one number.'
+      );
       return;
     }
 
@@ -1750,7 +1750,9 @@ export default function StudentDashboard() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="newPassword" required>New Password</Label>
+                    <Label htmlFor="newPassword" required>
+                      New Password
+                    </Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -1765,10 +1767,15 @@ export default function StudentDashboard() {
                       minLength={8}
                       placeholder="At least 8 characters"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters and include a letter and a number.</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Must be at least 8 characters and include a letter and a
+                      number.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword" required>Confirm Password</Label>
+                    <Label htmlFor="confirmPassword" required>
+                      Confirm Password
+                    </Label>
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -1794,7 +1801,9 @@ export default function StudentDashboard() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName" required>First Name</Label>
+                    <Label htmlFor="firstName" required>
+                      First Name
+                    </Label>
                     <Input
                       id="firstName"
                       value={firstLoginForm.firstName}
@@ -1821,7 +1830,9 @@ export default function StudentDashboard() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" required>Last Name</Label>
+                    <Label htmlFor="lastName" required>
+                      Last Name
+                    </Label>
                     <Input
                       id="lastName"
                       value={firstLoginForm.lastName}
@@ -1838,7 +1849,9 @@ export default function StudentDashboard() {
                     <Label htmlFor="birthDate">Birth Date</Label>
                     <DatePicker
                       value={firstLoginForm.birthDate}
-                      onChange={(v) => setFirstLoginForm({ ...firstLoginForm, birthDate: v })}
+                      onChange={(v) =>
+                        setFirstLoginForm({ ...firstLoginForm, birthDate: v })
+                      }
                       placeholder="Select birth date"
                     />
                   </div>

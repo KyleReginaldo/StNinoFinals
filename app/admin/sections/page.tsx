@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAlert } from '@/lib/use-alert';
-import { Plus, Save, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
+import { useAlert } from '@/lib/use-alert';
+import { Loader2, Plus, Save, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const GRADE_LEVELS = [
@@ -18,8 +18,12 @@ const GRADE_LEVELS = [
   ...Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`),
 ];
 
-export default function SectionsPage() {
-  const [sectionsByGrade, setSectionsByGrade] = useState<Record<string, string[]>>({});
+// ─── Section template management (system_settings JSON blob) ─────────────────
+
+function TemplateSectionsPanel() {
+  const [sectionsByGrade, setSectionsByGrade] = useState<
+    Record<string, string[]>
+  >({});
   const [selectedGrade, setSelectedGrade] = useState('');
   const [newSectionName, setNewSectionName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -29,39 +33,57 @@ export default function SectionsPage() {
   const { refreshKey } = useRefresh();
 
   useEffect(() => {
-    const loadSections = async () => {
+    const load = async () => {
       try {
         const res = await fetch('/api/admin/settings/sections');
         const data = await res.json();
         if (data.success && data.sections) setSectionsByGrade(data.sections);
-      } catch (error) {
-        console.error('Error loading sections:', error);
+      } catch {
+        // silent
       } finally {
         setLoading(false);
       }
     };
-    loadSections();
+    load();
   }, [refreshKey]);
 
-  const handleAddSection = () => {
+  const handleAdd = () => {
     if (!selectedGrade || !newSectionName.trim()) return;
     const name = newSectionName.trim();
     const existing = sectionsByGrade[selectedGrade] || [];
-    if (existing.map(s => s.toLowerCase()).includes(name.toLowerCase())) {
+    if (existing.map((s) => s.toLowerCase()).includes(name.toLowerCase())) {
       setAddError(`"${name}" already exists in ${selectedGrade}.`);
       return;
     }
     setAddError(null);
-    setSectionsByGrade(prev => ({
+    setSectionsByGrade((prev) => ({
       ...prev,
       [selectedGrade]: [...(prev[selectedGrade] || []), name].sort(),
     }));
     setNewSectionName('');
   };
 
-  const handleRemoveSection = (grade: string, section: string) => {
-    setSectionsByGrade(prev => {
-      const updated = (prev[grade] || []).filter(s => s !== section);
+  const handleRemove = async (grade: string, section: string) => {
+    try {
+      const res = await fetch(
+        `/api/admin/students?gradeLevel=${encodeURIComponent(grade)}&section=${encodeURIComponent(section)}`
+      );
+      const data = await res.json();
+      const enrolled = (data.students || []).filter(
+        (s: { is_archived?: boolean }) => !s.is_archived
+      ).length;
+      if (enrolled > 0) {
+        showAlert({
+          message: `Cannot remove "${section}" — ${enrolled} student${enrolled !== 1 ? 's are' : ' is'} enrolled in this section.`,
+          type: 'error',
+        });
+        return;
+      }
+    } catch {
+      // allow removal if check fails
+    }
+    setSectionsByGrade((prev) => {
+      const updated = (prev[grade] || []).filter((s) => s !== section);
       if (updated.length === 0) {
         const { [grade]: _, ...rest } = prev;
         return rest;
@@ -80,9 +102,12 @@ export default function SectionsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showAlert({ message: 'Sections saved successfully!', type: 'success' });
+        showAlert({
+          message: 'Templates saved successfully!',
+          type: 'success',
+        });
       } else {
-        showAlert({ message: 'Failed to save sections.', type: 'error' });
+        showAlert({ message: 'Failed to save.', type: 'error' });
       }
     } catch {
       showAlert({ message: 'Network error. Please try again.', type: 'error' });
@@ -91,28 +116,51 @@ export default function SectionsPage() {
     }
   };
 
-  const totalSections = Object.values(sectionsByGrade).reduce((sum, arr) => sum + arr.length, 0);
-  const gradesWithSections = Object.keys(sectionsByGrade).filter(g => sectionsByGrade[g].length > 0).length;
+  const total = Object.values(sectionsByGrade).reduce(
+    (n, a) => n + a.length,
+    0
+  );
+  const gradeCount = Object.keys(sectionsByGrade).filter(
+    (g) => sectionsByGrade[g].length > 0
+  ).length;
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-900 border-t-transparent" />
+      <div className="py-8 flex justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     );
-  }
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
-      {/* Add Section + Save */}
+    <div className="space-y-3">
+      <div>
+        <h3 className="text-sm font-semibold text-gray-800">
+          Section Name Templates
+        </h3>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Define which section names exist per grade. These are used as
+          templates when creating formal sections for a school year.
+        </p>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
         <div className="flex flex-col sm:flex-row gap-2">
-          <Select value={selectedGrade} onValueChange={v => { setSelectedGrade(v); setAddError(null); }}>
+          <Select
+            value={selectedGrade}
+            onValueChange={(v) => {
+              setSelectedGrade(v);
+              setAddError(null);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-48 h-8 text-sm">
               <SelectValue placeholder="Grade level" />
             </SelectTrigger>
             <SelectContent>
-              {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              {GRADE_LEVELS.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex-1 space-y-1">
@@ -124,16 +172,17 @@ export default function SectionsPage() {
               }`}
               placeholder="Section name (e.g. St. Mary, Section A)"
               value={newSectionName}
-              onChange={e => { setNewSectionName(e.target.value); setAddError(null); }}
-              onKeyDown={e => e.key === 'Enter' && handleAddSection()}
+              onChange={(e) => {
+                setNewSectionName(e.target.value);
+                setAddError(null);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             />
-            {addError && (
-              <p className="text-xs text-red-500">{addError}</p>
-            )}
+            {addError && <p className="text-xs text-red-500">{addError}</p>}
           </div>
           <Button
             size="sm"
-            onClick={handleAddSection}
+            onClick={handleAdd}
             disabled={!selectedGrade || !newSectionName.trim()}
             className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
           >
@@ -148,29 +197,28 @@ export default function SectionsPage() {
             className="shrink-0"
           >
             <Save className="w-3.5 h-3.5 mr-1.5" />
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? 'Saving…' : 'Save'}
           </Button>
         </div>
       </div>
 
-      {/* Sections Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50">
               <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-44">
-                Grade Level
+                Grade
               </th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                 Sections
               </th>
-              <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-20 pr-5">
+              <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-16 pr-5">
                 Count
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {GRADE_LEVELS.map(grade => {
+            {GRADE_LEVELS.map((grade) => {
               const sections = sectionsByGrade[grade] || [];
               return (
                 <tr key={grade} className="hover:bg-gray-50">
@@ -182,15 +230,14 @@ export default function SectionsPage() {
                       <span className="text-gray-300 text-sm">—</span>
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
-                        {sections.map(section => (
+                        {sections.map((section) => (
                           <span
                             key={section}
                             className="inline-flex items-center gap-1 text-xs font-medium bg-gray-100 text-gray-700 pl-2.5 pr-1.5 py-1 rounded-full"
                           >
                             {section}
                             <button
-                              onClick={() => handleRemoveSection(grade, section)}
-                              title={`Remove ${section}`}
+                              onClick={() => handleRemove(grade, section)}
                               className="rounded-full p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-300 transition-colors"
                             >
                               <X className="w-3 h-3" />
@@ -216,10 +263,395 @@ export default function SectionsPage() {
         </table>
         <div className="px-5 py-2.5 border-t border-gray-100">
           <span className="text-[11px] text-gray-400">
-            {totalSections} section{totalSections !== 1 ? 's' : ''} across {gradesWithSections} grade level{gradesWithSections !== 1 ? 's' : ''}
+            {total} section{total !== 1 ? 's' : ''} across {gradeCount} grade
+            level{gradeCount !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Formal sections per school year (sections table) ────────────────────────
+
+interface SectionRow {
+  id: string;
+  name: string;
+  grade_level: string;
+  school_year: string;
+  max_capacity: number;
+  student_count: number;
+  class_count: number;
+}
+
+function FormalSectionsPanel() {
+  const [schoolYear, setSchoolYear] = useState('');
+  const [sections, setSections] = useState<SectionRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [templates, setTemplates] = useState<Record<string, string[]>>({});
+  const [importing, setImporting] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Add section form
+  const [addGrade, setAddGrade] = useState('');
+  const [addName, setAddName] = useState('');
+  const [addCapacity, setAddCapacity] = useState('45');
+  const [adding, setAdding] = useState(false);
+
+  const { showAlert } = useAlert();
+
+  // Derive school year options from existing sections + a few upcoming years
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from(
+    { length: 4 },
+    (_, i) => `${currentYear + i - 1}-${currentYear + i}`
+  );
+
+  useEffect(() => {
+    // Default to the first year option (current-ish)
+    setSchoolYear(yearOptions[1]);
+    // Load templates for "Import from template" button
+    fetch('/api/admin/settings/sections')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setTemplates(d.sections ?? {});
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadSections = async (sy: string) => {
+    if (!sy) return;
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/admin/sections?schoolYear=${encodeURIComponent(sy)}`
+      );
+      const data = await res.json();
+      if (data.success) setSections(data.sections ?? []);
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (schoolYear) loadSections(schoolYear);
+  }, [schoolYear]);
+
+  const handleDelete = async (id: string, name: string) => {
+    setDeleting(id);
+    try {
+      const res = await fetch(`/api/admin/sections?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSections((prev) => prev.filter((s) => s.id !== id));
+        showAlert({ message: `Removed section "${name}".`, type: 'success' });
+      } else {
+        showAlert({
+          message: data.error || 'Failed to delete.',
+          type: 'error',
+        });
+      }
+    } catch {
+      showAlert({ message: 'Network error.', type: 'error' });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleAdd = async () => {
+    if (!addGrade || !addName.trim() || !schoolYear) return;
+    setAdding(true);
+    try {
+      const res = await fetch('/api/admin/sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: addName.trim(),
+          gradeLevel: addGrade,
+          schoolYear,
+          maxCapacity: parseInt(addCapacity) || 45,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSections((prev) => [...prev, data.section]);
+        setAddName('');
+        showAlert({
+          message: `Section "${data.section.name}" created.`,
+          type: 'success',
+        });
+      } else {
+        showAlert({
+          message: data.error || 'Failed to create.',
+          type: 'error',
+        });
+      }
+    } catch {
+      showAlert({ message: 'Network error.', type: 'error' });
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleImportFromTemplate = async () => {
+    if (!schoolYear) return;
+    const toCreate: { grade: string; name: string }[] = [];
+    for (const [grade, names] of Object.entries(templates)) {
+      for (const name of names) {
+        // Skip if already exists
+        if (!sections.some((s) => s.grade_level === grade && s.name === name)) {
+          toCreate.push({ grade, name });
+        }
+      }
+    }
+    if (toCreate.length === 0) {
+      showAlert({
+        message: 'All template sections already exist for this school year.',
+        type: 'info',
+      });
+      return;
+    }
+    setImporting(true);
+    let created = 0;
+    for (const { grade, name } of toCreate) {
+      try {
+        const res = await fetch('/api/admin/sections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            gradeLevel: grade,
+            schoolYear,
+            maxCapacity: 45,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) created++;
+      } catch {
+        // continue
+      }
+    }
+    setImporting(false);
+    showAlert({
+      message: `Imported ${created} section${created !== 1 ? 's' : ''} from templates.`,
+      type: 'success',
+    });
+    loadSections(schoolYear);
+  };
+
+  const grouped = GRADE_LEVELS.reduce<Record<string, SectionRow[]>>(
+    (acc, g) => {
+      acc[g] = sections.filter((s) => s.grade_level === g);
+      return acc;
+    },
+    {}
+  );
+
+  const hasTemplates = Object.values(templates).some((a) => a.length > 0);
+  const gradesWithSections = GRADE_LEVELS.filter((g) => grouped[g].length > 0);
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <h3 className="text-sm font-semibold text-gray-800">Sections</h3>
+        <p className="text-xs text-gray-400 mt-0.5">
+          These are the actual sections that students get enrolled into. Each
+          section spans all quarters and tracks enrollment capacity.
+        </p>
+      </div>
+
+      {/* Controls row */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={schoolYear} onValueChange={setSchoolYear}>
+            <SelectTrigger className="w-44 h-8 text-sm">
+              <SelectValue placeholder="School year" />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((y) => (
+                <SelectItem key={y} value={y}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {hasTemplates && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleImportFromTemplate}
+              disabled={importing}
+              className="text-xs h-8"
+            >
+              {importing ? (
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+              )}
+              {importing
+                ? 'Importing…'
+                : `Import from templates for ${schoolYear}`}
+            </Button>
+          )}
+        </div>
+
+        {/* Quick add row */}
+        <div className="flex flex-col sm:flex-row gap-2 border-t border-gray-100 pt-3">
+          <Select value={addGrade} onValueChange={setAddGrade}>
+            <SelectTrigger className="w-full sm:w-40 h-8 text-sm">
+              <SelectValue placeholder="Grade" />
+            </SelectTrigger>
+            <SelectContent>
+              {GRADE_LEVELS.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <input
+            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            placeholder="Section name"
+            value={addName}
+            onChange={(e) => setAddName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+          />
+          <input
+            type="number"
+            className="w-20 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            placeholder="Cap."
+            value={addCapacity}
+            onChange={(e) => setAddCapacity(e.target.value)}
+            min={1}
+          />
+          <Button
+            size="sm"
+            onClick={handleAdd}
+            disabled={adding || !addGrade || !addName.trim()}
+            className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+          >
+            {adding ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Plus className="w-3.5 h-3.5 mr-1" />
+            )}
+            Add
+          </Button>
+        </div>
+      </div>
+
+      {/* Sections table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {loading ? (
+          <div className="py-12 flex justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+          </div>
+        ) : gradesWithSections.length === 0 ? (
+          <div className="py-12 text-center text-sm text-gray-400">
+            No sections for {schoolYear} yet.
+            {hasTemplates && (
+              <span>
+                {' '}
+                Use &ldquo;Import from templates&rdquo; to create them
+                automatically.
+              </span>
+            )}
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-40">
+                  Grade
+                </th>
+                <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Section
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-24">
+                  Enrolled
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-24">
+                  Capacity
+                </th>
+                <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-20">
+                  Classes
+                </th>
+                <th className="px-4 py-2.5 w-12" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {gradesWithSections.flatMap((grade) =>
+                grouped[grade].map((sec, i) => (
+                  <tr key={sec.id} className="hover:bg-gray-50">
+                    <td className="px-5 py-2.5 text-sm font-medium text-gray-900 whitespace-nowrap">
+                      {i === 0 ? grade : ''}
+                    </td>
+                    <td className="px-4 py-2.5 text-sm text-gray-800">
+                      {sec.name}
+                    </td>
+                    <td className="px-4 py-2.5 text-center text-sm tabular-nums">
+                      <span
+                        className={
+                          sec.student_count >= sec.max_capacity
+                            ? 'text-red-600 font-semibold'
+                            : 'text-gray-700'
+                        }
+                      >
+                        {sec.student_count}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-center text-sm text-gray-500 tabular-nums">
+                      {sec.max_capacity}
+                    </td>
+                    <td className="px-4 py-2.5 text-center text-sm text-gray-500 tabular-nums">
+                      {sec.class_count}
+                    </td>
+                    <td className="px-4 py-2.5 text-right pr-4">
+                      <button
+                        onClick={() => handleDelete(sec.id, sec.name)}
+                        disabled={deleting === sec.id || sec.student_count > 0}
+                        title={
+                          sec.student_count > 0
+                            ? 'Cannot delete — students are enrolled'
+                            : `Delete ${sec.name}`
+                        }
+                        className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {deleting === sec.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
+        <div className="px-5 py-2.5 border-t border-gray-100">
+          <span className="text-[11px] text-gray-400">
+            {sections.length} section{sections.length !== 1 ? 's' : ''} for{' '}
+            {schoolYear}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function SectionsPage() {
+  return (
+    <div className="p-4 md:p-6">
+      <FormalSectionsPanel />
     </div>
   );
 }

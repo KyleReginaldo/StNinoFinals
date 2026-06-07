@@ -32,7 +32,8 @@ import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { useDeletePrompt } from '@/lib/use-delete-prompt';
+import { AlertTriangle, ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -136,6 +137,7 @@ export default function StudentManagementPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const { showDeletePrompt } = useDeletePrompt();
   const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
 
   const [newStudent, setNewStudent] = useState({
@@ -361,23 +363,28 @@ export default function StudentManagementPage() {
     studentId: string,
     studentName: string
   ) => {
-    const confirmed = await showConfirm({
-      message: `Are you sure you want to delete ${studentName}? This action cannot be undone.`,
-      confirmText: 'Delete',
+    const result = await showDeletePrompt({
+      title: 'Archive Student',
+      message: `Archive ${studentName}? They will no longer appear in active lists.`,
+      confirmText: 'Archive',
       cancelText: 'Cancel',
-      variant: 'destructive',
+      reasonLabel: 'Reason for archiving',
+      reasonRequired: true,
+      presets: ['Transferred', 'Graduated', 'Dropped Out', 'Long Absence', 'Duplicate Record', 'Other'],
     });
 
-    if (!confirmed) return;
+    if (!result?.confirmed) return;
 
     setDeletingStudent(true);
     try {
       const response = await fetch(`/api/admin/students/${studentId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: result.reason || undefined }),
       });
-      const result = await response.json();
-      if (!result.success)
-        throw new Error(result.error || 'Failed to delete student');
+      const data = await response.json();
+      if (!data.success)
+        throw new Error(data.error || 'Failed to archive student');
 
       await fetchStudents(showArchived);
       showAlert({ message: 'Student archived successfully!', type: 'success' });
@@ -530,7 +537,7 @@ export default function StudentManagementPage() {
                     </div>
                   </div>
                   <div>
-                    <Label>Middle Name</Label>
+                    <Label>M.I. / Middle Name</Label>
                     <Input
                       value={newStudent.middle_name}
                       placeholder="Enter middle name"
@@ -546,13 +553,13 @@ export default function StudentManagementPage() {
                     <Label required>Student Number</Label>
                     <Input
                       value={newStudent.student_number}
-                      placeholder="Enter student number"
+                      placeholder="e.g. 202400000001"
                       inputMode="numeric"
-                      maxLength={11}
+                      maxLength={12}
                       onChange={(e) =>
                         setNewStudent({
                           ...newStudent,
-                          student_number: e.target.value.replace(/\D/g, '').slice(0, 11),
+                          student_number: e.target.value.replace(/\D/g, '').slice(0, 12),
                         })
                       }
                       required
@@ -760,10 +767,12 @@ export default function StudentManagementPage() {
                   <Label required>Student Number</Label>
                   <Input
                     value={editStudent.student_number}
+                    inputMode="numeric"
+                    maxLength={12}
                     onChange={(e) =>
-                      setEditStudent({ ...editStudent, student_number: e.target.value })
+                      setEditStudent({ ...editStudent, student_number: e.target.value.replace(/\D/g, '').slice(0, 12) })
                     }
-                    placeholder="e.g. 2024-0001"
+                    placeholder="e.g. 202400000001"
                   />
                 </div>
                 <div>
@@ -949,7 +958,7 @@ export default function StudentManagementPage() {
                       Full Name
                     </h3>
                     <p className="text-base font-semibold">
-                      {`${selectedStudent.first_name} ${selectedStudent.middle_name || ''} ${selectedStudent.last_name}`.trim()}
+                      {[selectedStudent.first_name, selectedStudent.middle_name, selectedStudent.last_name, selectedStudent.suffix].filter(Boolean).join(' ')}
                     </p>
                   </div>
                   <div className="pb-3 border-b">
@@ -1084,6 +1093,9 @@ export default function StudentManagementPage() {
                   <SortHeader label="Section" sortKey="section"      currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"  sortKey="email"         currentSort={tc.sort} onSort={tc.toggleSort} />
+                  {showArchived && (
+                    <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Reason</th>
+                  )}
                   <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -1115,12 +1127,26 @@ export default function StudentManagementPage() {
                             {student.rfid}
                           </span>
                         ) : (
-                          <span className="text-gray-300 text-xs">—</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded font-medium">
+                            <AlertTriangle className="w-3 h-3" />
+                            No RFID
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-[13px] text-gray-500 whitespace-nowrap">
                         {student.email}
                       </td>
+                      {showArchived && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {student.status && student.status !== 'Active' ? (
+                            <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded font-medium">
+                              {student.status}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 text-[12px]">—</span>
+                          )}
+                        </td>
+                      )}
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1 ">
                           {showArchived ? (

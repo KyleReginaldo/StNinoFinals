@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      academic_periods: {
+        Row: {
+          id: string
+          school_year: string
+          quarter: number
+          label: string
+          start_date: string | null
+          end_date: string | null
+          is_active: boolean
+          is_grading_open: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          school_year: string
+          quarter: number
+          label: string
+          start_date?: string | null
+          end_date?: string | null
+          is_active?: boolean
+          is_grading_open?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          school_year?: string
+          quarter?: number
+          label?: string
+          start_date?: string | null
+          end_date?: string | null
+          is_active?: boolean
+          is_grading_open?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
       admissions: {
         Row: {
           additional_message: string | null
@@ -63,11 +99,13 @@ export type Database = {
           intended_grade_level: string
           last_name: string
           middle_initial: string | null
+          parent_email: string | null
           parent_name: string
           phone_number: string
           previous_school: string
           rejection_reason: string | null
           status: Database["public"]["Enums"]["admission_status"] | null
+          suffix: string | null
           updated_at: string | null
         }
         Insert: {
@@ -79,11 +117,13 @@ export type Database = {
           intended_grade_level: string
           last_name: string
           middle_initial?: string | null
+          parent_email?: string | null
           parent_name: string
           phone_number: string
           previous_school: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["admission_status"] | null
+          suffix?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -95,11 +135,13 @@ export type Database = {
           intended_grade_level?: string
           last_name?: string
           middle_initial?: string | null
+          parent_email?: string | null
           parent_name?: string
           phone_number?: string
           previous_school?: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["admission_status"] | null
+          suffix?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -297,10 +339,12 @@ export type Database = {
           grade_level: string | null
           id: string
           is_active: boolean | null
+          quarter: number | null
           room: string | null
           schedule: string | null
           school_year: string
           section: string | null
+          section_id: string | null
           semester: string
           teacher_id: string | null
           updated_at: string | null
@@ -313,10 +357,12 @@ export type Database = {
           grade_level?: string | null
           id?: string
           is_active?: boolean | null
+          quarter?: number | null
           room?: string | null
           schedule?: string | null
           school_year: string
           section?: string | null
+          section_id?: string | null
           semester: string
           teacher_id?: string | null
           updated_at?: string | null
@@ -329,10 +375,12 @@ export type Database = {
           grade_level?: string | null
           id?: string
           is_active?: boolean | null
+          quarter?: number | null
           room?: string | null
           schedule?: string | null
           school_year?: string
           section?: string | null
+          section_id?: string | null
           semester?: string
           teacher_id?: string | null
           updated_at?: string | null
@@ -343,12 +391,15 @@ export type Database = {
         Row: {
           admin_notes: string | null
           assigned_class_id: string | null
+          assigned_section_id: string | null
           created_at: string
+          enrollment_type: string | null
+          entry_quarter: number | null
           grade_level: string
           id: string
           previous_grades_url: string | null
+          previous_school: string | null
           school_year: string
-          semester: number
           status: Database["public"]["Enums"]["enrollment_request_status"]
           strand: string | null
           student_id: string
@@ -358,12 +409,15 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           assigned_class_id?: string | null
+          assigned_section_id?: string | null
           created_at?: string
+          enrollment_type?: string | null
+          entry_quarter?: number | null
           grade_level: string
           id?: string
           previous_grades_url?: string | null
+          previous_school?: string | null
           school_year: string
-          semester: number
           status?: Database["public"]["Enums"]["enrollment_request_status"]
           strand?: string | null
           student_id: string
@@ -373,12 +427,15 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           assigned_class_id?: string | null
+          assigned_section_id?: string | null
           created_at?: string
+          enrollment_type?: string | null
+          entry_quarter?: number | null
           grade_level?: string
           id?: string
           previous_grades_url?: string | null
+          previous_school?: string | null
           school_year?: string
-          semester?: number
           status?: Database["public"]["Enums"]["enrollment_request_status"]
           strand?: string | null
           student_id?: string
@@ -391,6 +448,13 @@ export type Database = {
             columns: ["assigned_class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_requests_assigned_section_id_fkey"
+            columns: ["assigned_section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
             referencedColumns: ["id"]
           },
           {
@@ -408,6 +472,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      enrollment_withdrawals: {
+        Row: {
+          created_at: string | null
+          enrollment_id: string
+          id: string
+          processed_by: string | null
+          school_year: string
+          student_id: string
+          withdrawal_date: string
+          withdrawal_reason: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enrollment_id: string
+          id?: string
+          processed_by?: string | null
+          school_year: string
+          student_id: string
+          withdrawal_date?: string
+          withdrawal_reason?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enrollment_id?: string
+          id?: string
+          processed_by?: string | null
+          school_year?: string
+          student_id?: string
+          withdrawal_date?: string
+          withdrawal_reason?: string | null
+        }
+        Relationships: []
+      }
+      sections: {
+        Row: {
+          adviser_id: string | null
+          created_at: string
+          grade_level: string
+          id: string
+          is_active: boolean
+          max_capacity: number
+          name: string
+          school_year: string
+          strand: string | null
+        }
+        Insert: {
+          adviser_id?: string | null
+          created_at?: string
+          grade_level: string
+          id?: string
+          is_active?: boolean
+          max_capacity?: number
+          name: string
+          school_year: string
+          strand?: string | null
+        }
+        Update: {
+          adviser_id?: string | null
+          created_at?: string
+          grade_level?: string
+          id?: string
+          is_active?: boolean
+          max_capacity?: number
+          name?: string
+          school_year?: string
+          strand?: string | null
+        }
+        Relationships: []
       }
       grades: {
         Row: {
@@ -791,6 +924,7 @@ export type Database = {
           specialization: string | null
           status: string | null
           student_number: string | null
+          suffix: string | null
           updated_at: string | null
           zip_code: string | null
         }
@@ -825,6 +959,7 @@ export type Database = {
           specialization?: string | null
           status?: string | null
           student_number?: string | null
+          suffix?: string | null
           updated_at?: string | null
           zip_code?: string | null
         }
@@ -859,6 +994,7 @@ export type Database = {
           specialization?: string | null
           status?: string | null
           student_number?: string | null
+          suffix?: string | null
           updated_at?: string | null
           zip_code?: string | null
         }

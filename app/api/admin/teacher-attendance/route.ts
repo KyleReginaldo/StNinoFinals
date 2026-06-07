@@ -25,8 +25,8 @@ export async function GET(request: Request) {
     // Fetch all teachers
     const { data: teachers, error: teachersError } = await admin
       .from('users')
-      .eq('role', 'teacher')
       .select('*')
+      .eq('role', 'teacher')
       .limit(1000)
     
     if (teachersError) {

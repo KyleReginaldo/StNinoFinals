@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ import { useAlert } from '@/lib/use-alert';
 import { useRefresh } from '@/lib/refresh-context';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Download, GraduationCap } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
@@ -164,6 +165,44 @@ export default function GradesPage() {
     catch { return ds; }
   };
 
+  const generateGradesCSV = useCallback(async () => {
+    if (!student) return;
+    if (filteredGrades.length === 0) {
+      showAlert({ message: 'No approved grades available to download.', type: 'warning' });
+      return;
+    }
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const studentName = `${student.first_name || ''} ${(student as any).middle_name || ''} ${student.last_name || ''}`.trim() || displayName;
+    const academicYear = selectedYear !== 'all' ? selectedYear : (enrollmentInfo?.academicYear || '');
+    const quarterLabel = selectedQuarter !== 'all' ? `Quarter ${selectedQuarter}` : 'All Quarters';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const avg = filteredGrades.length > 0
+      ? (filteredGrades.reduce((s, g) => s + parseFloat(g.grade), 0) / filteredGrades.length).toFixed(0)
+      : 'N/A';
+
+    await downloadExcel(
+      `Grades_${studentName.replace(/\s+/g, '_')}${academicYear ? '_' + academicYear : ''}`,
+      {
+        title: [
+          'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+          'CERTIFICATE OF GRADES',
+          `Student: ${studentName.toUpperCase()}`,
+          `${quarterLabel} | Academic Year: ${academicYear}`,
+          `Generated: ${generated}`,
+        ],
+        columns: ['Subject', 'Quarterly Grade', 'Action Taken'],
+        colWidths: [40, 20, 20],
+        rows: filteredGrades.map((g) => {
+          const num = parseFloat(g.grade);
+          const action = !isNaN(num) && num >= 75 ? 'PASSED' : 'FAILED';
+          return [g.subject || 'N/A', g.grade, action];
+        }),
+        totalRow: ['General Average', avg, parseFloat(avg) >= 75 ? 'PROMOTED' : 'RETAINED'],
+        headerColor: 'red',
+      }
+    );
+  }, [student, filteredGrades, enrollmentInfo, displayName, selectedYear, selectedQuarter, showAlert]);
+
   const generateGradesPDF = useCallback(async () => {
     if (!student) return;
     if (filteredGrades.length === 0) {
@@ -252,6 +291,9 @@ export default function GradesPage() {
           <h2 className="text-2xl font-bold text-gray-900">Grades & Reports</h2>
           <p className="text-sm text-gray-500 mt-0.5">Your academic performance history</p>
         </div>
+        {filteredGrades.length > 0 && (
+          <ExportDropdown onPDF={generateGradesPDF} onExcel={generateGradesCSV} size="sm" />
+        )}
       </div>
 
       {/* Filters */}

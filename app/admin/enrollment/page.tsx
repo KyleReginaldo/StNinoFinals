@@ -49,10 +49,13 @@ interface EnrollmentRequest {
   grade_level: string;
   strand: string | null;
   school_year: string;
-  quarter: number;
+  quarter: number | null;
+  entry_quarter: number | null;
+  enrollment_type: 'new' | 'returning' | 'transferee' | 'returnee' | 'repeater' | null;
   status: 'pending' | 'approved' | 'rejected';
   admin_notes: string | null;
   assigned_class_id: string | null;
+  assigned_section_id: string | null;
   created_at: string;
   previous_grades_url: string | null;
   student: StudentInfo | null;
@@ -67,11 +70,39 @@ interface ClassOption {
   section: string | null;
 }
 
+interface SectionOption {
+  id: string;
+  name: string;
+  grade_level: string;
+  school_year: string;
+  max_capacity: number;
+  student_count: number;
+  class_count: number;
+}
+
 const STATUS_CONFIG = {
   pending:  { label: 'Pending',  dot: 'bg-amber-400' },
   approved: { label: 'Approved', dot: 'bg-green-500'  },
   rejected: { label: 'Rejected', dot: 'bg-red-500'    },
 };
+
+const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
+  new:        { label: 'New',        className: 'bg-blue-50   text-blue-700   border-blue-200'   },
+  returning:  { label: 'Returning',  className: 'bg-green-50  text-green-700  border-green-200'  },
+  transferee: { label: 'Transferee', className: 'bg-amber-50  text-amber-700  border-amber-200'  },
+  returnee:   { label: 'Returnee',   className: 'bg-purple-50 text-purple-700 border-purple-200' },
+  repeater:   { label: 'Repeater',   className: 'bg-orange-50 text-orange-700 border-orange-200' },
+};
+
+function EnrollmentTypeBadge({ type }: { type: string | null | undefined }) {
+  const cfg = type ? (TYPE_CONFIG[type] ?? { label: type, className: 'bg-gray-50 text-gray-600 border-gray-200' }) : null;
+  if (!cfg) return <span className="text-gray-300 text-xs">—</span>;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${cfg.className}`}>
+      {cfg.label}
+    </span>
+  );
+}
 
 function getStudentName(req: EnrollmentRequest) {
   if (!req.student) return req.student_id;
@@ -89,10 +120,29 @@ export default function AdminEnrollmentPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [assignedClassId, setAssignedClassId] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
+  // Phase 3: section-based assignment
+  const [sectionsFromDB, setSectionsFromDB] = useState<SectionOption[]>([]);
+  const [assignedSectionId, setAssignedSectionId] = useState('');
+  const [sectionsFetching, setSectionsFetching] = useState(false);
+  // Phase 4: entry quarter for transferees / returnees
+  const [entryQuarter, setEntryQuarter] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectOtherText, setRejectOtherText] = useState('');
+  const [showRejectSection, setShowRejectSection] = useState(false);
   const [submitting, setSubmitting] = useState<'approved' | 'rejected' | null>(null);
   const [classAutoSelected, setClassAutoSelected] = useState(false);
-  const { refreshKey } = useRefresh();
+
+  const REJECT_PRESETS = [
+    'Incomplete documents',
+    'Over capacity',
+    'Wrong grade level',
+    'Failed requirements',
+    'Duplicate submission',
+    'Other',
+  ];
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -125,60 +175,94 @@ export default function AdminEnrollmentPage() {
   const openModal = async (req: EnrollmentRequest) => {
     setSelectedRequest(req);
     setAdminNotes(req.admin_notes ?? '');
+    setSelectedSection('');
+    setAssignedClassId('');
+    setAssignedSectionId('');
+    setSectionsFromDB([]);
+    setEntryQuarter(req.entry_quarter ? String(req.entry_quarter) : '');
+    setRejectReason('');
+    setRejectOtherText('');
+    setShowRejectSection(false);
+    setClassAutoSelected(false);
     setModalOpen(true);
 
+    if (req.status !== 'pending') return;
+
+    // ── Fetch formal sections from DB for this grade + school year ────────────
+    setSectionsFetching(true);
+    try {
+      const params = new URLSearchParams({ gradeLevel: req.grade_level, schoolYear: req.school_year });
+      const res = await fetch(`/api/admin/sections?${params}`);
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok && payload?.success) {
+        setSectionsFromDB(payload.sections ?? []);
+        // Pre-select if the request already has an assigned section
+        if (req.assigned_section_id) setAssignedSectionId(req.assigned_section_id);
+      }
+    } catch (e) {
+      console.error('Failed to fetch sections', e);
+    } finally {
+      setSectionsFetching(false);
+    }
+
+    // ── Fallback: pre-select from legacy assigned_class_id ────────────────────
     if (req.assigned_class_id) {
+      const prevClass = classes.find((c) => c.id === req.assigned_class_id);
+      if (prevClass?.section) setSelectedSection(prevClass.section);
       setAssignedClassId(req.assigned_class_id);
-      setClassAutoSelected(false);
       return;
     }
 
-    // Fetch student's current classes from user_classes table
+    // ── Auto-select from the student's existing class enrolment ───────────────
     try {
       const res = await fetch(`/api/admin/student-class?studentId=${req.student_id}`);
       const payload = await res.json().catch(() => ({}));
       if (res.ok && payload?.success && payload.classIds?.length > 0) {
-        // Find a class that matches the requested grade level
         const matchingClass = classes.find(
           (c) =>
             payload.classIds.includes(c.id) &&
             c.grade_level?.trim().toLowerCase() === req.grade_level.trim().toLowerCase()
         );
         if (matchingClass) {
+          if (matchingClass.section) setSelectedSection(matchingClass.section);
           setAssignedClassId(matchingClass.id);
           setClassAutoSelected(true);
-          return;
-        }
-        // Fallback: use any of their enrolled classes (different grade — still helpful as a hint)
-        const anyClass = classes.find((c) => payload.classIds.includes(c.id));
-        if (anyClass) {
-          setAssignedClassId(anyClass.id);
-          setClassAutoSelected(true);
-          return;
         }
       }
     } catch (e) {
       console.error('Failed to fetch student current class', e);
     }
-
-    setAssignedClassId('');
-    setClassAutoSelected(false);
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setSelectedRequest(null);
     setAssignedClassId('');
+    setAssignedSectionId('');
+    setSectionsFromDB([]);
+    setSelectedSection('');
+    setEntryQuarter('');
     setAdminNotes('');
+    setRejectReason('');
+    setRejectOtherText('');
+    setShowRejectSection(false);
     setClassAutoSelected(false);
   };
 
   const handleDecision = async (decision: 'approved' | 'rejected') => {
     if (!selectedRequest) return;
-    if (decision === 'approved' && !assignedClassId) {
-      showAlert({ message: 'Please select a class to assign before approving.', type: 'warning' });
+    const hasAssignment = assignedSectionId || assignedClassId;
+    if (decision === 'approved' && !hasAssignment) {
+      showAlert({ message: 'Please select a section to assign before approving.', type: 'warning' });
       return;
     }
+    if (decision === 'rejected' && !rejectReason) {
+      showAlert({ message: 'Please select a rejection reason.', type: 'warning' });
+      return;
+    }
+    const resolvedNotes = decision === 'rejected'
+      ? (rejectReason === 'Other' ? (rejectOtherText.trim() || 'Other') : rejectReason)
+      : (adminNotes || undefined);
     setSubmitting(decision);
     try {
       const res = await fetch('/api/admin/enrollment-requests', {
@@ -187,8 +271,11 @@ export default function AdminEnrollmentPage() {
         body: JSON.stringify({
           requestId: selectedRequest.id,
           status: decision,
-          classId: decision === 'approved' ? assignedClassId : undefined,
-          adminNotes: adminNotes || undefined,
+          // Prefer sectionId (Phase 3); fall back to classId (legacy)
+          sectionId:   decision === 'approved' && assignedSectionId ? assignedSectionId : undefined,
+          classId:     decision === 'approved' && !assignedSectionId && assignedClassId ? assignedClassId : undefined,
+          entryQuarter: decision === 'approved' && entryQuarter ? parseInt(entryQuarter) : undefined,
+          adminNotes: resolvedNotes,
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -202,6 +289,7 @@ export default function AdminEnrollmentPage() {
       });
       closeModal();
       fetchRequests();
+      triggerRefresh();
     } catch {
       showAlert({ message: 'Something went wrong.', type: 'error' });
     } finally {
@@ -236,6 +324,8 @@ export default function AdminEnrollmentPage() {
           c.grade_level.trim().toLowerCase() === selectedRequest.grade_level.trim().toLowerCase()
       )
     : [];
+
+  const availableSections = [...new Set(relevantClasses.map((c) => c.section).filter(Boolean))].sort() as string[];
 
   const hasFilters = !!tc.search || !!tc.filters['status'] || !!tc.filters['grade_level'];
 
@@ -319,7 +409,7 @@ export default function AdminEnrollmentPage() {
               <SortHeader label="Grade"     sortKey="grade_level"  currentSort={tc.sort} onSort={tc.toggleSort} />
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Strand</th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">School Year</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Quarter</th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Type</th>
               <SortHeader label="Submitted" sortKey="created_at"   currentSort={tc.sort} onSort={tc.toggleSort} />
               <SortHeader label="Status"    sortKey="status"       currentSort={tc.sort} onSort={tc.toggleSort} />
               <th className="px-4 py-2.5 w-16" />
@@ -363,7 +453,9 @@ export default function AdminEnrollmentPage() {
                       {req.strand ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">{req.school_year}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">Q{req.quarter}</td>
+                    <td className="px-4 py-3">
+                      <EnrollmentTypeBadge type={req.enrollment_type} />
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {new Date(req.created_at).toLocaleDateString('en-US', {
                         month: 'short',
@@ -439,9 +531,9 @@ export default function AdminEnrollmentPage() {
                   School Year:{' '}
                   <span className="font-medium text-gray-900">{selectedRequest.school_year}</span>
                 </div>
-                <div className="text-gray-600">
-                  Quarter:{' '}
-                  <span className="font-medium text-gray-900">Quarter {selectedRequest.quarter}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600">Type:</span>
+                  <EnrollmentTypeBadge type={selectedRequest.enrollment_type} />
                 </div>
               </div>
 
@@ -469,35 +561,73 @@ export default function AdminEnrollmentPage() {
 
               {selectedRequest.status === 'pending' && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="classAssign">
-                    Assign to Class{' '}
+                  <Label htmlFor="sectionAssign">
+                    Assign to Section{' '}
                     <span className="text-red-600 text-xs">(required for approval)</span>
                   </Label>
-                  {relevantClasses.length > 0 ? (
+                  {sectionsFetching ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-400 py-1.5">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading sections…
+                    </div>
+                  ) : sectionsFromDB.length > 0 ? (
+                    // Primary: sections from the formal sections table
+                    <Select value={assignedSectionId} onValueChange={setAssignedSectionId}>
+                      <SelectTrigger id="sectionAssign">
+                        <SelectValue placeholder="Select a section…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sectionsFromDB.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                            {s.max_capacity > 0 && (
+                              <span className="text-xs text-gray-400 ml-2">
+                                {s.student_count}/{s.max_capacity}
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : availableSections.length > 0 ? (
+                    // Fallback: derive from class text fields (pre-migration compat)
                     <>
-                      <Select value={assignedClassId} onValueChange={(v) => { setAssignedClassId(v); setClassAutoSelected(false); }}>
-                        <SelectTrigger id="classAssign">
-                          <SelectValue placeholder="Select a class..." />
+                      <Select
+                        value={selectedSection}
+                        onValueChange={(section) => {
+                          setSelectedSection(section);
+                          setClassAutoSelected(false);
+                          const cls = relevantClasses.find((c) => c.section === section);
+                          setAssignedClassId(cls?.id ?? '');
+                        }}
+                      >
+                        <SelectTrigger id="sectionAssign">
+                          <SelectValue placeholder="Select a section…" />
                         </SelectTrigger>
                         <SelectContent>
-                          {relevantClasses.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.class_name}{c.section ? ` — ${c.section}` : ''}
-                            </SelectItem>
+                          {availableSections.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                        Loaded from class data — run the Phase 3 migration to enable capacity tracking.
+                      </p>
                       {classAutoSelected && (
-                        <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 mt-1">
+                        <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">
                           Auto-selected based on previous enrollment
                         </p>
                       )}
                     </>
                   ) : (
                     <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                      No classes found for {selectedRequest.grade_level}.{' '}
+                      No sections found for {selectedRequest.grade_level}.{' '}
+                      <a href="/admin/sections" className="underline font-medium hover:text-amber-800">
+                        Set up sections
+                      </a>{' '}
+                      or{' '}
                       <a href="/admin/classes" className="underline font-medium hover:text-amber-800">
-                        Create a class
+                        create classes
                       </a>{' '}
                       for this grade level first.
                     </p>
@@ -505,15 +635,72 @@ export default function AdminEnrollmentPage() {
                 </div>
               )}
 
+              {/* Entry Quarter — shown for transferees / returnees entering mid-year */}
+              {selectedRequest.status === 'pending' &&
+                (selectedRequest.enrollment_type === 'transferee' ||
+                  selectedRequest.enrollment_type === 'returnee') && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="entryQuarter">
+                      Entry Quarter{' '}
+                      <span className="text-gray-400 text-xs font-normal">(which quarter is this student starting from?)</span>
+                    </Label>
+                    <Select value={entryQuarter} onValueChange={setEntryQuarter}>
+                      <SelectTrigger id="entryQuarter">
+                        <SelectValue placeholder="Full year (Q1 onwards)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Full year (all quarters)</SelectItem>
+                        <SelectItem value="1">Quarter 1</SelectItem>
+                        <SelectItem value="2">Quarter 2</SelectItem>
+                        <SelectItem value="3">Quarter 3</SelectItem>
+                        <SelectItem value="4">Quarter 4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {entryQuarter && parseInt(entryQuarter) > 1 && (
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                        Quarters 1–{parseInt(entryQuarter) - 1} will be recorded as not applicable for this student.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+              {(selectedRequest.status === 'pending' || selectedRequest.status === 'approved') && showRejectSection && (
+                <div className="space-y-3 border border-red-100 bg-red-50/40 rounded-xl p-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rejectReason" className="text-red-800">
+                      Rejection Reason <span className="text-red-600 text-xs">(required)</span>
+                    </Label>
+                    <Select value={rejectReason} onValueChange={setRejectReason}>
+                      <SelectTrigger id="rejectReason" className="bg-white">
+                        <SelectValue placeholder="Select a reason..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REJECT_PRESETS.map((r) => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {rejectReason === 'Other' && (
+                    <Textarea
+                      value={rejectOtherText}
+                      onChange={(e) => setRejectOtherText(e.target.value)}
+                      placeholder="Describe the reason..."
+                      className="min-h-[60px] resize-none bg-white text-sm"
+                    />
+                  )}
+                </div>
+              )}
+
               {selectedRequest.status === 'pending' && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="adminNotes">Admin Notes (optional)</Label>
+                  <Label htmlFor="adminNotes">Admin Notes for Approval (optional)</Label>
                   <Textarea
                     id="adminNotes"
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
-                    placeholder="Add notes or reason for decision..."
-                    className="min-h-[70px] resize-none"
+                    placeholder="Add notes for the student..."
+                    className="min-h-[60px] resize-none"
                   />
                 </div>
               )}
@@ -537,8 +724,8 @@ export default function AdminEnrollmentPage() {
               <Button
                 variant="outline"
                 onClick={() => handleDecision('rejected')}
-                disabled={!!submitting}
-                className="bg-red-600 text-white hover:bg-red-700"
+                disabled={!!submitting || !rejectReason}
+                className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {submitting === 'rejected' ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <XCircle className="w-4 h-4 mr-1.5" />}
                 {submitting === 'rejected' ? 'Rejecting...' : 'Reject'}
@@ -546,25 +733,47 @@ export default function AdminEnrollmentPage() {
             )}
             {selectedRequest?.status === 'pending' && (
               <>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDecision('rejected')}
-                  disabled={!!submitting}
-                  className="bg-red-600 text-white hover:bg-red-700 min-w-[120px]"
-                >
-                  {submitting === 'rejected'
-                    ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Rejecting...</>
-                    : <><XCircle className="w-4 h-4 mr-1.5" />Reject Form</>}
-                </Button>
-                <Button
-                  onClick={() => handleDecision('approved')}
-                  disabled={!!submitting || !assignedClassId}
-                  className="bg-green-700 hover:bg-green-600 text-white min-w-[140px]"
-                >
-                  {submitting === 'approved'
-                    ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Enrolling...</>
-                    : <><CheckCircle2 className="w-4 h-4 mr-1.5" />Approve & Enroll</>}
-                </Button>
+                {showRejectSection ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => { setShowRejectSection(false); setRejectReason(''); setRejectOtherText(''); }}
+                      disabled={!!submitting}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => handleDecision('rejected')}
+                      disabled={!!submitting || !rejectReason}
+                      className="bg-red-600 text-white hover:bg-red-700 min-w-[120px]"
+                    >
+                      {submitting === 'rejected'
+                        ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Rejecting...</>
+                        : <><XCircle className="w-4 h-4 mr-1.5" />Confirm Reject</>}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowRejectSection(true)}
+                      disabled={!!submitting}
+                      className="text-red-600 border-red-200 hover:bg-red-50 min-w-[120px]"
+                    >
+                      <XCircle className="w-4 h-4 mr-1.5" />
+                      Reject Form
+                    </Button>
+                    <Button
+                      onClick={() => handleDecision('approved')}
+                      disabled={!!submitting || (!assignedSectionId && !assignedClassId)}
+                      className="bg-green-700 hover:bg-green-600 text-white min-w-[140px]"
+                    >
+                      {submitting === 'approved'
+                        ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Enrolling...</>
+                        : <><CheckCircle2 className="w-4 h-4 mr-1.5" />Approve & Enroll</>}
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </DialogFooter>

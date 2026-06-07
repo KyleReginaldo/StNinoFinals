@@ -1,3 +1,5 @@
+import { getSemesterLabel } from '@/lib/academic-period';
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -46,6 +48,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (!userClasses || userClasses.length === 0) {
+      // Check if there's an approved enrollment request (classes may not be
+      // linked yet but the student is administratively approved).
+      const { data: approvedReq } = await supabase
+        .from('enrollment_requests')
+        .select('school_year, grade_level')
+        .eq('student_id', studentId)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       return NextResponse.json({
         success: true,
         data: {
@@ -58,9 +71,9 @@ export async function GET(request: NextRequest) {
             status: student.status,
           },
           enrollment: {
-            schoolYear: null,
+            schoolYear: approvedReq ? normalizeSchoolYear(approvedReq.school_year) : null,
             semester: null,
-            isEnrolled: false,
+            isEnrolled: !!approvedReq,
           },
           classes: [],
         },
@@ -108,14 +121,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Determine current school year and semester from active classes
+    // Determine current school year from active classes
     const activeClasses = (classes || []).filter((c) => c.is_active);
     const primaryClass =
       activeClasses.length > 0 ? activeClasses[0] : classes?.[0];
 
-    const semesterLabel = (sem: string | number | null) => {
-      if (sem === null || sem === undefined || sem === '') return null;
-      return `Quarter ${sem}`;
+    // Build per-class semester label using the student's grade level
+    const makeSemesterLabel = (quarter: number | null | undefined, gradeLevel: string | null): string | null => {
+      if (!quarter) return null;
+      return getSemesterLabel(quarter, gradeLevel ?? '');
     };
 
     const formattedClasses = (classes || []).map((cls) => ({
@@ -124,8 +138,8 @@ export async function GET(request: NextRequest) {
       classCode: cls.class_code,
       gradeLevel: cls.grade_level,
       section: cls.section,
-      semester: semesterLabel((cls as any).quarter),
-      schoolYear: cls.school_year,
+      semester: makeSemesterLabel((cls as any).quarter, cls.grade_level),
+      schoolYear: normalizeSchoolYear(cls.school_year),
       room: cls.room,
       schedule: cls.schedule,
       isActive: cls.is_active,
@@ -144,8 +158,9 @@ export async function GET(request: NextRequest) {
           status: student.status,
         },
         enrollment: {
-          schoolYear: primaryClass?.school_year ?? null,
-          semester: semesterLabel((primaryClass as any)?.quarter ?? null),
+          schoolYear: primaryClass ? normalizeSchoolYear(primaryClass.school_year) : null,
+          // semester is kept for backward compat but enrollment is annual — display just shows AY
+          semester: makeSemesterLabel((primaryClass as any)?.quarter ?? null, student.grade_level),
           isEnrolled: formattedClasses.length > 0,
         },
         classes: formattedClasses,

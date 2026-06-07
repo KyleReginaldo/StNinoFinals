@@ -33,7 +33,8 @@ import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
-import { ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
+import { useDeletePrompt } from '@/lib/use-delete-prompt';
+import { AlertTriangle, ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
 
@@ -108,6 +109,7 @@ interface Teacher {
   first_name: string;
   last_name: string;
   middle_name?: string;
+  suffix?: string;
   employee_number: string;
   department?: string;
   specialization?: string;
@@ -132,6 +134,7 @@ export default function TeacherManagementPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const { showDeletePrompt } = useDeletePrompt();
   const initialAddress: AddressData = {
     barangay: '',
     barangayName: '',
@@ -145,10 +148,13 @@ export default function TeacherManagementPage() {
     return date.toISOString().split('T')[0];
   };
 
+  const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+
   const [newTeacher, setNewTeacher] = useState({
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     employee_number: '',
     department: '',
     specialization: '',
@@ -164,6 +170,7 @@ export default function TeacherManagementPage() {
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     employee_number: '',
     department: '',
     specialization: '',
@@ -243,6 +250,7 @@ export default function TeacherManagementPage() {
         first_name: '',
         last_name: '',
         middle_name: '',
+        suffix: '',
         employee_number: '',
         department: '',
         specialization: '',
@@ -303,23 +311,28 @@ export default function TeacherManagementPage() {
     teacherId: string,
     teacherName: string
   ) => {
-    const confirmed = await showConfirm({
-      message: `Are you sure you want to delete ${teacherName}? This action cannot be undone.`,
-      confirmText: 'Delete',
+    const result = await showDeletePrompt({
+      title: 'Archive Teacher',
+      message: `Archive ${teacherName}? They will no longer appear in active lists.`,
+      confirmText: 'Archive',
       cancelText: 'Cancel',
-      variant: 'destructive',
+      reasonLabel: 'Reason for archiving',
+      reasonRequired: true,
+      presets: ['Resigned', 'Terminated', 'Retired', 'Contract Ended', 'Long Absence', 'Other'],
     });
 
-    if (!confirmed) return;
+    if (!result?.confirmed) return;
 
     setDeletingTeacher(true);
     try {
       const response = await fetch(`/api/admin/teachers/${teacherId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: result.reason || undefined }),
       });
-      const result = await response.json();
-      if (!result.success)
-        throw new Error(result.error || 'Failed to delete teacher');
+      const data = await response.json();
+      if (!data.success)
+        throw new Error(data.error || 'Failed to archive teacher');
 
       await fetchTeachers(showArchived);
       showAlert({ message: 'Teacher archived successfully!', type: 'success' });
@@ -361,6 +374,7 @@ export default function TeacherManagementPage() {
       first_name: teacher.first_name,
       last_name: teacher.last_name,
       middle_name: teacher.middle_name || '',
+      suffix: teacher.suffix || '',
       employee_number: teacher.employee_number,
       department: teacher.department || '',
       specialization: teacher.specialization || '',
@@ -443,17 +457,29 @@ export default function TeacherManagementPage() {
                   </div>
                   <div>
                     <Label required>Last Name</Label>
-                    <Input
-                      value={newTeacher.last_name}
-                      onChange={(e) =>
-                        setNewTeacher({
-                          ...newTeacher,
-                          last_name: e.target.value,
-                        })
-                      }
-                      placeholder="Enter last name"
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        className="flex-1"
+                        value={newTeacher.last_name}
+                        onChange={(e) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
+                        placeholder="Enter last name"
+                        required
+                      />
+                      <Select
+                        value={newTeacher.suffix || 'none'}
+                        onValueChange={(v) => setNewTeacher({ ...newTeacher, suffix: v === 'none' ? '' : v })}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue placeholder="Sfx" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">—</SelectItem>
+                          {SUFFIX_OPTIONS.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
                     <Label>Middle Name</Label>
@@ -472,13 +498,15 @@ export default function TeacherManagementPage() {
                     <Label required>Employee Number</Label>
                     <Input
                       value={newTeacher.employee_number}
+                      inputMode="numeric"
+                      maxLength={12}
                       onChange={(e) =>
                         setNewTeacher({
                           ...newTeacher,
-                          employee_number: e.target.value,
+                          employee_number: e.target.value.replace(/\D/g, '').slice(0, 12),
                         })
                       }
-                      placeholder="Enter employee number"
+                      placeholder="e.g. 202400000001"
                       required
                     />
                   </div>
@@ -640,17 +668,29 @@ export default function TeacherManagementPage() {
                 </div>
                 <div>
                   <Label required>Last Name</Label>
-                  <Input
-                    value={editTeacher.last_name}
-                    onChange={(e) =>
-                      setEditTeacher({
-                        ...editTeacher,
-                        last_name: e.target.value,
-                      })
-                    }
-                    placeholder="Enter last name"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      className="flex-1"
+                      value={editTeacher.last_name}
+                      onChange={(e) => setEditTeacher({ ...editTeacher, last_name: e.target.value })}
+                      placeholder="Enter last name"
+                      required
+                    />
+                    <Select
+                      value={editTeacher.suffix || 'none'}
+                      onValueChange={(v) => setEditTeacher({ ...editTeacher, suffix: v === 'none' ? '' : v })}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue placeholder="Sfx" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">—</SelectItem>
+                        {SUFFIX_OPTIONS.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div>
                   <Label>Middle Name</Label>
@@ -669,13 +709,15 @@ export default function TeacherManagementPage() {
                   <Label required>Employee Number</Label>
                   <Input
                     value={editTeacher.employee_number}
+                    inputMode="numeric"
+                    maxLength={12}
                     onChange={(e) =>
                       setEditTeacher({
                         ...editTeacher,
-                        employee_number: e.target.value,
+                        employee_number: e.target.value.replace(/\D/g, '').slice(0, 12),
                       })
                     }
-                    placeholder="Enter employee number"
+                    placeholder="e.g. 202400000001"
                     required
                   />
                 </div>
@@ -829,7 +871,7 @@ export default function TeacherManagementPage() {
                       Full Name
                     </h3>
                     <p className="text-base font-semibold">
-                      {`${selectedTeacher.first_name} ${selectedTeacher.middle_name || ''} ${selectedTeacher.last_name}`.trim()}
+                      {[selectedTeacher.first_name, selectedTeacher.middle_name, selectedTeacher.last_name, selectedTeacher.suffix].filter(Boolean).join(' ')}
                     </p>
                   </div>
                   <div className="pb-3 border-b">
@@ -971,6 +1013,9 @@ export default function TeacherManagementPage() {
                   <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
+                  {showArchived && (
+                    <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Reason</th>
+                  )}
                   <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -1008,12 +1053,26 @@ export default function TeacherManagementPage() {
                             {teacher.rfid}
                           </span>
                         ) : (
-                          <span className="text-gray-300 text-xs">—</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded font-medium">
+                            <AlertTriangle className="w-3 h-3" />
+                            No RFID
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-[13px] text-gray-500 whitespace-nowrap">
                         {teacher.email}
                       </td>
+                      {showArchived && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {teacher.status && teacher.status !== 'Active' ? (
+                            <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded font-medium">
+                              {teacher.status}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 text-[12px]">—</span>
+                          )}
+                        </td>
+                      )}
                       <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1 ">
                           {showArchived ? (

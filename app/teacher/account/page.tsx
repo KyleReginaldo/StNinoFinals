@@ -3,10 +3,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BookOpen, Hash, Mail, MapPin, Phone, User } from 'lucide-react';
+import { BookOpen, Camera, Hash, Mail, MapPin, Phone, User } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { DatePicker } from '@/components/ui/date-picker';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Teacher {
   id: string;
@@ -14,6 +21,7 @@ interface Teacher {
   first_name?: string;
   last_name?: string;
   middle_name?: string;
+  suffix?: string;
   employee_number?: string;
   teacher_id?: string;
   department?: string;
@@ -23,6 +31,7 @@ interface Teacher {
   contact_number?: string;
   address?: string;
   date_of_birth?: string;
+  photo_url?: string;
   [key: string]: any;
 }
 
@@ -32,10 +41,17 @@ export default function TeacherAccount() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
     middle_name: '',
+    suffix: '',
     phone_number: '',
     address: '',
     date_of_birth: '',
@@ -45,7 +61,9 @@ export default function TeacherAccount() {
     const stored = localStorage.getItem('teacher');
     if (!stored) { router.push('/login?role=teacher'); return; }
     try {
-      setTeacher(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      setTeacher(parsed);
+      if (parsed.photo_url) setAvatarUrl(parsed.photo_url);
     } catch {
       localStorage.removeItem('teacher');
       router.push('/login?role=teacher');
@@ -54,22 +72,62 @@ export default function TeacherAccount() {
 
   const displayName = useMemo(() => {
     if (!teacher) return 'Teacher';
-    if (teacher.first_name && teacher.last_name)
-      return `${teacher.first_name} ${teacher.last_name}`;
+    if (teacher.first_name && teacher.last_name) {
+      return [teacher.first_name, teacher.middle_name, teacher.last_name, teacher.suffix]
+        .filter(Boolean).join(' ');
+    }
     return teacher.name || teacher.email?.split('@')[0] || 'Teacher';
   }, [teacher]);
 
   const avatarLetters = displayName
     .split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !teacher) return;
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('userId', teacher.id);
+      fd.append('role', 'teacher');
+
+      const uploadRes = await fetch('/api/upload-avatar', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.success) throw new Error(uploadData.error);
+      const url = uploadData.url;
+
+      const res = await fetch('/api/teacher/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherId: teacher.id, photo_url: url }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+
+      setAvatarUrl(url);
+      const stored = localStorage.getItem('teacher');
+      if (stored) {
+        localStorage.setItem('teacher', JSON.stringify({ ...JSON.parse(stored), photo_url: url }));
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = () => {
     if (!teacher) return;
     setForm({
-      first_name:   teacher.first_name  || '',
-      last_name:    teacher.last_name   || '',
-      middle_name:  teacher.middle_name || '',
-      phone_number: teacher.phone_number || teacher.phone || teacher.contact_number || '',
-      address:      teacher.address     || '',
+      first_name:    teacher.first_name  || '',
+      last_name:     teacher.last_name   || '',
+      middle_name:   teacher.middle_name || '',
+      suffix:        teacher.suffix || '',
+      phone_number:  teacher.phone_number || teacher.phone || teacher.contact_number || '',
+      address:       teacher.address     || '',
       date_of_birth: teacher.date_of_birth || '',
     });
     setError('');
@@ -120,15 +178,33 @@ export default function TeacherAccount() {
       {/* Avatar + Name */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-between gap-5">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-amber-700/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl font-bold text-amber-700">{avatarLetters}</span>
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-full bg-amber-700/20 flex items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-amber-700">{avatarLetters}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 w-5 h-5 bg-gray-900 hover:bg-gray-700 rounded-full flex items-center justify-center transition"
+              title="Change photo"
+            >
+              {uploadingAvatar
+                ? <span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />
+                : <Camera className="w-3 h-3 text-white" />}
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900 capitalize">{displayName.toLowerCase()}</h2>
             {(teacher.employee_number || teacher.teacher_id) && (
               <p className="text-sm text-gray-400 mt-0.5">#{teacher.employee_number || teacher.teacher_id}</p>
             )}
-            {(teacher.department) && (
+            {teacher.department && (
               <span className="inline-flex items-center mt-1.5 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
                 {teacher.department}
               </span>
@@ -155,11 +231,27 @@ export default function TeacherAccount() {
               </div>
               <div>
                 <Label required>Last Name</Label>
-                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                <div className="flex gap-2">
+                  <Input className="flex-1" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                  <Select
+                    value={form.suffix || 'none'}
+                    onValueChange={(v) => setForm({ ...form, suffix: v === 'none' ? '' : v })}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue placeholder="Sfx" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {SUFFIX_OPTIONS.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div>
-              <Label>Middle Name</Label>
+              <Label>M.I. (Middle Name)</Label>
               <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
             </div>
             <div>
@@ -198,11 +290,11 @@ export default function TeacherAccount() {
         ) : (
           <div className="px-5 divide-y divide-gray-100">
             {[
-              { icon: User,    label: 'Full Name',  value: displayName },
-              { icon: Hash,    label: 'Employee No.', value: teacher.employee_number || teacher.teacher_id },
-              { icon: Mail,    label: 'Email',       value: teacher.email },
-              { icon: Phone,   label: 'Contact',     value: teacher.phone_number || teacher.phone || teacher.contact_number },
-              { icon: MapPin,  label: 'Address',     value: teacher.address },
+              { icon: User,   label: 'Full Name',    value: displayName },
+              { icon: Hash,   label: 'Employee No.', value: teacher.employee_number || teacher.teacher_id },
+              { icon: Mail,   label: 'Email',        value: teacher.email },
+              { icon: Phone,  label: 'Contact',      value: teacher.phone_number || teacher.phone || teacher.contact_number },
+              { icon: MapPin, label: 'Address',      value: teacher.address },
             ].map(({ icon: Icon, label, value }) =>
               value ? (
                 <div key={label} className="flex items-start gap-3 py-3">

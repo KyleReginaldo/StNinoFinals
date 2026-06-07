@@ -1,6 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
+import { Input } from '@/components/ui/input';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -20,9 +24,8 @@ import {
   ArrowLeft,
   CalendarIcon,
   CheckCircle2,
-  Clock,
-  Download,
   RefreshCw,
+  Search,
   Trophy,
   Users,
   XCircle,
@@ -69,7 +72,7 @@ interface AttendanceReportsData {
 }
 
 const CODE_META: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  PR: { label: 'Present',      bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  PR: { label: 'Time In / Time Out', bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
   AC: { label: 'Absent',       bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
   LA: { label: 'Late',         bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
   EX: { label: 'Excused',      bg: 'bg-blue-100',    text: 'text-blue-700',    dot: 'bg-blue-500'    },
@@ -103,6 +106,7 @@ export default function AttendanceReportsPage() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [gradeLevel, setGradeLevel] = useState<string>('all');
   const [section, setSection] = useState<string>('all');
+  const [dailySearch, setDailySearch] = useState<string>('');
 
   useEffect(() => {
     const end = new Date();
@@ -183,25 +187,58 @@ export default function AttendanceReportsPage() {
     return breakdown;
   }, [selectedStudent]);
 
-  const exportToCSV = () => {
+  const exportToExcel = async () => {
     if (!data || !data.students.length) return;
-    const headers = ['#', 'Name', 'Grade', 'Section', 'Total Days', 'Present', 'Absent', 'Late', 'Excused', '%',
-      ...dateColumns.map((d) => format(new Date(d), 'MM/dd'))];
-    const rows = [headers, ...data.students.map((s, i) => [
-      String(i + 1), s.studentName, s.gradeLevel, s.section,
-      String(s.totalDays), String(s.present), String(s.absent), String(s.late), String(s.excused),
-      `${s.percentage}%`, ...dateColumns.map((d) => s.dailyAttendance[d] || '-'),
-    ])];
-    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `attendance-${dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start'}-to-${dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : 'end'}.csv`;
-    a.style.visibility = 'hidden';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const fromStr = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const toStr = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : 'end';
+    await downloadExcel(`attendance-${fromStr}-to-${toStr}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'STUDENT ATTENDANCE REPORT',
+        `Period: ${fromStr} to ${toStr}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['#', 'Name', 'Grade', 'Section', 'Total Days', 'Time In', 'Absent', 'Late', 'Excused', '%',
+        ...dateColumns.map((d) => format(new Date(d), 'MM/dd'))],
+      colWidths: [6, 32, 16, 16, 14, 12, 12, 10, 12, 10, ...dateColumns.map(() => 10)],
+      rows: data.students.map((s, i) => [
+        i + 1, s.studentName, s.gradeLevel, s.section,
+        s.totalDays, s.present, s.absent, s.late, s.excused,
+        `${s.percentage}%`, ...dateColumns.map((d) => s.dailyAttendance[d] || '-'),
+      ]),
+      headerColor: 'red',
+    });
+  };
+
+  const exportToPDF = () => {
+    if (!data || !data.students.length) return;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const fromStr = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const toStr = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : 'end';
+
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.', 148.5, 14, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text('STUDENT ATTENDANCE REPORT', 148.5, 21, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${fromStr} to ${toStr}`, 148.5, 27, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 148.5, 32, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 38,
+      head: [['#', 'Student Name', 'Grade', 'Section', 'Total Days', 'Time In', 'Absent', 'Late', 'Excused', '%']],
+      body: data.students.map((s, i) => [i + 1, s.studentName, s.gradeLevel, s.section, s.totalDays, s.present, s.absent, s.late, s.excused, `${s.percentage}%`]),
+      theme: 'grid',
+      headStyles: { fillColor: [153, 27, 27], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 4: { halign: 'center' }, 5: { halign: 'center' }, 6: { halign: 'center' }, 7: { halign: 'center' }, 8: { halign: 'center' }, 9: { halign: 'center' } },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.save(`attendance-${fromStr}-to-${toStr}.pdf`);
   };
 
   /* ─── Loading skeleton ──────────────────────────────────────── */
@@ -252,13 +289,7 @@ export default function AttendanceReportsPage() {
               Refresh
             </button>
             {data && data.students.length > 0 && (
-              <button
-                onClick={exportToCSV}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-800 hover:bg-red-900 rounded-lg transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Export CSV
-              </button>
+              <ExportDropdown onPDF={exportToPDF} onExcel={exportToExcel} size="sm" />
             )}
           </div>
         </div>
@@ -435,7 +466,7 @@ export default function AttendanceReportsPage() {
         {data && data.students.length > 0 && (
           <>
             {/* ── KPI Cards ─────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Students */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
@@ -451,7 +482,7 @@ export default function AttendanceReportsPage() {
               {/* Present */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Present Rate</span>
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Attendance Rate</span>
                   <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   </div>
@@ -488,17 +519,6 @@ export default function AttendanceReportsPage() {
                 <p className="text-xs text-gray-400 mt-1.5">{data.general.totalAbsent} records</p>
               </div>
 
-              {/* Late */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Tardiness</span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-amber-500" />
-                  </div>
-                </div>
-                <p className="text-4xl font-bold text-amber-600 leading-none">{data.general.totalLate}</p>
-                <p className="text-xs text-gray-400 mt-2">late arrival records</p>
-              </div>
             </div>
 
             {/* ── Top Performers + Student Detail ───────────────── */}
@@ -618,7 +638,7 @@ export default function AttendanceReportsPage() {
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { label: 'Days',    value: selectedStudent.totalDays,  color: 'text-gray-800' },
-                        { label: 'Present', value: selectedStudent.present,    color: 'text-emerald-600' },
+                        { label: 'Time In', value: selectedStudent.present,    color: 'text-emerald-600' },
                         { label: 'Absent',  value: selectedStudent.absent,     color: 'text-red-600' },
                       ].map(({ label, value, color }) => (
                         <div key={label} className="bg-gray-50 rounded-xl p-3 text-center">
@@ -694,6 +714,16 @@ export default function AttendanceReportsPage() {
                     {data.students.length} student{data.students.length !== 1 ? 's' : ''} · {dateColumns.length} days
                   </p>
                 </div>
+                {/* Search */}
+                <div className="relative w-48">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Input
+                    placeholder="Search student…"
+                    value={dailySearch}
+                    onChange={(e) => setDailySearch(e.target.value)}
+                    className="pl-8 h-8 text-xs"
+                  />
+                </div>
                 {/* Legend */}
                 <div className="ml-auto hidden lg:flex items-center gap-3">
                   {(['PR', 'AC', 'LA', 'EX', 'HO'] as const).map((code) => {
@@ -720,8 +750,7 @@ export default function AttendanceReportsPage() {
                         Student
                       </th>
                       <th className="text-center px-4 py-3 font-semibold text-gray-400 whitespace-nowrap">Days</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400 whitespace-nowrap">Present</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400 whitespace-nowrap">Rate</th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-400 whitespace-nowrap">Time In</th>
                       {dateColumns.map((date) => (
                         <th
                           key={date}
@@ -734,7 +763,9 @@ export default function AttendanceReportsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.students.map((student, index) => (
+                    {data.students.filter(s =>
+                      !dailySearch || s.studentName.toLowerCase().includes(dailySearch.toLowerCase())
+                    ).map((student, index) => (
                       <tr
                         key={student.studentId}
                         className={cn(
@@ -772,20 +803,6 @@ export default function AttendanceReportsPage() {
                         </td>
                         <td className="px-4 py-3 text-center text-gray-500">{student.totalDays}</td>
                         <td className="px-4 py-3 text-center text-gray-500">{student.present}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold',
-                              student.percentage >= 90
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : student.percentage >= 75
-                                  ? 'bg-amber-100 text-amber-700'
-                                  : 'bg-red-100 text-red-700'
-                            )}
-                          >
-                            {student.percentage}%
-                          </span>
-                        </td>
                         {dateColumns.map((date) => {
                           const code = student.dailyAttendance[date] || '-';
                           const meta = getCodeMeta(code);

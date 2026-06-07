@@ -186,10 +186,10 @@ export default function LiveAttendancePage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-red-800 flex items-center gap-2">
                   <Radio className="w-4 h-4 text-red-600" />
-                  Today&apos;s Scans
+                  Live Scans
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  {attendanceRecords.length} records today
+                  {attendanceRecords.length} records
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
@@ -256,9 +256,14 @@ export default function LiveAttendancePage() {
                                 >
                                   {record.scanType === 'timeout' ? 'Time Out' : 'Time In'}
                                 </Badge>
-                                <span className="text-xs font-medium text-gray-900">
-                                  {formatTime(record.scanTime)}
-                                </span>
+                                <div className="text-right">
+                                  <span className="text-xs font-medium text-gray-900 block">
+                                    {formatTime(record.scanTime)}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">
+                                    {new Date(record.scanTime).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </PopoverTrigger>
@@ -423,7 +428,7 @@ export default function LiveAttendancePage() {
         {/* Footer info */}
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-500">
-            Real-time updates via Supabase • Today&apos;s attendance on the left • Click any record to view • Info displays for 10 seconds
+            Real-time updates via Supabase • Recent scans on the left • Click any record to view • Info displays for 10 seconds
           </p>
         </div>
       </div>

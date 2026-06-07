@@ -730,7 +730,7 @@ export class EmailService {
     const html = emailShell(`
       ${sectionTitle('Attendance Notification')}
       ${statusBadge(badgeLabel, badgeType)}
-      ${salutation('Parent / Guardian')}
+      ${salutation('Guardian')}
       ${para(`This is an automated notification to inform you that your child has <strong>${actionVerb}</strong>, as recorded by the school's RFID attendance monitoring system.`)}
       ${infoBox(
         'Attendance Record',
@@ -747,7 +747,7 @@ export class EmailService {
       ${closing('Attendance Monitoring System', 'Sto. Niño de Praga Academy')}
     `);
 
-    const text = `Attendance Notification\n\nDear Parent/Guardian,\n\nYour child ${data.studentName} has ${actionVerb}.\n\nGrade & Section: ${data.gradeLevel} — ${data.section}\nActivity: ${actionLabel}\nDate & Time: ${data.scanTime}\n\nThis is an automated notification from the RFID attendance system.\n\nRespectfully yours,\nAttendance Monitoring System\nSto. Niño de Praga Academy`;
+    const text = `Attendance Notification\n\nDear Guardian,\n\nYour child ${data.studentName} has ${actionVerb}.\n\nGrade & Section: ${data.gradeLevel} — ${data.section}\nActivity: ${actionLabel}\nDate & Time: ${data.scanTime}\n\nThis is an automated notification from the RFID attendance system.\n\nRespectfully yours,\nAttendance Monitoring System\nSto. Niño de Praga Academy`;
 
     await this.sendEmail({
       to: data.parentEmail,

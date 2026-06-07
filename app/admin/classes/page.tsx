@@ -23,9 +23,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
+import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
-import { getActiveSchoolYear } from '@/lib/school-year';
-import { BookOpen, Download, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -106,6 +110,7 @@ export default function ClassesManagementPage() {
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const { showDeletePrompt } = useDeletePrompt();
   const { refreshKey } = useRefresh();
 
   useEffect(() => {
@@ -138,7 +143,7 @@ export default function ClassesManagementPage() {
       if (data.success) setClasses(data.classes || []);
     } catch (error) {
       console.error('Error fetching classes:', error);
-      showAlert({ message: 'Failed to load classes', type: 'error' });
+      showAlert({ message: 'Failed to load subjects', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +177,7 @@ export default function ClassesManagementPage() {
         class_name: classItem.class_name,
         grade_level: classItem.grade_level || '',
         section: classItem.section || '',
-        school_year: classItem.school_year,
+        school_year: normalizeSchoolYear(classItem.school_year),
         semester: String((classItem as any).quarter ?? classItem.semester ?? ''),
         teacher_id: classItem.teacher_id || '',
         room: classItem.room || '',
@@ -213,13 +218,13 @@ export default function ClassesManagementPage() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.class_code || !formData.class_name || !formData.school_year || !formData.semester) {
+    if (!formData.class_code || !formData.class_name) {
       showAlert({ message: 'Please fill in all required fields', type: 'error' });
       return;
     }
     try {
       const schedule = scheduleSlots.length > 0 ? JSON.stringify(scheduleSlots) : null;
-      const payload = { ...formData, schedule, student_ids: selectedStudentIds, id: editingClass?.id };
+      const payload = { ...formData, school_year: normalizeSchoolYear(formData.school_year), schedule, student_ids: selectedStudentIds, id: editingClass?.id };
       const response = await fetch('/api/admin/classes', {
         method: editingClass ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -227,15 +232,15 @@ export default function ClassesManagementPage() {
       });
       const data = await response.json();
       if (data.success) {
-        showAlert({ message: editingClass ? 'Class updated successfully' : 'Class created successfully', type: 'success' });
+        showAlert({ message: editingClass ? 'Subject updated successfully' : 'Subject created successfully', type: 'success' });
         setShowDialog(false);
         fetchClasses();
       } else {
         showAlert({ message: data.error || 'Operation failed', type: 'error' });
       }
     } catch (error) {
-      console.error('Error saving class:', error);
-      showAlert({ message: 'Failed to save class', type: 'error' });
+      console.error('Error saving subject:', error);
+      showAlert({ message: 'Failed to save subject', type: 'error' });
     }
   };
 
@@ -255,42 +260,74 @@ export default function ClassesManagementPage() {
     }
   };
 
-  const handleExportCSV = () => {
+  const handleExportExcel = async () => {
     if (!viewingClass || classStudents.length === 0) return;
-    const header = 'Student Number,First Name,Last Name,Grade Level,Section';
-    const rows = classStudents.map(s =>
-      `${s.student_number},${s.first_name},${s.last_name},${s.grade_level || ''},${s.section || ''}`
-    );
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${viewingClass.class_name}_students.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`${viewingClass.class_name}_students`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'SUBJECT STUDENT LIST',
+        `Subject: ${viewingClass.class_name}  |  ${viewingClass.grade_level || ''} ${viewingClass.section ? `— ${viewingClass.section}` : ''}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['#', 'Student Number', 'Last Name', 'First Name', 'Grade Level', 'Section'],
+      colWidths: [8, 20, 30, 30, 18, 18],
+      rows: classStudents.map((s, i) => [i + 1, s.student_number, s.last_name, s.first_name, s.grade_level || '', s.section || '']),
+      headerColor: 'blue',
+    });
+  };
+
+  const handleExportPDF = () => {
+    if (!viewingClass || classStudents.length === 0) return;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 15, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('SUBJECT STUDENT LIST', 105, 30, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Subject: ${viewingClass.class_name}  |  ${viewingClass.grade_level || ''} ${viewingClass.section ? `— ${viewingClass.section}` : ''}`, 105, 37, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 105, 42, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 48,
+      head: [['#', 'Student Number', 'Last Name', 'First Name', 'Grade Level', 'Section']],
+      body: classStudents.map((s, i) => [i + 1, s.student_number, s.last_name, s.first_name, s.grade_level || '—', s.section || '—']),
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 10 } },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.save(`${viewingClass.class_name}_students.pdf`);
   };
 
   const handleDelete = async (classItem: Class) => {
-    const confirmed = await showConfirm({
-      title: 'Delete Class',
-      message: `Are you sure you want to delete "${classItem.class_name}"? This will remove all student enrollments.`,
+    const result = await showDeletePrompt({
+      title: 'Delete Subject',
+      message: `Delete "${classItem.class_name}"? This will remove all student enrollments.`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
+      reasonLabel: 'Reason for deletion (optional)',
     });
-    if (!confirmed) return;
+    if (!result?.confirmed) return;
     try {
       const response = await fetch(`/api/admin/classes?classId=${classItem.id}`, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
-        showAlert({ message: 'Class deleted successfully', type: 'success' });
+        showAlert({ message: 'Subject deleted successfully', type: 'success' });
         fetchClasses();
       } else {
-        showAlert({ message: data.error || 'Failed to delete class', type: 'error' });
+        showAlert({ message: data.error || 'Failed to delete subject', type: 'error' });
       }
     } catch (error) {
-      console.error('Error deleting class:', error);
-      showAlert({ message: 'Failed to delete class', type: 'error' });
+      console.error('Error deleting subject:', error);
+      showAlert({ message: 'Failed to delete subject', type: 'error' });
     }
   };
 
@@ -341,7 +378,7 @@ export default function ClassesManagementPage() {
     pageSize: 25,
   });
 
-  const hasFilters = !!tc.search || !!tc.filters['grade_level'] || !!tc.filters['statusLabel'];
+  const hasFilters = !!tc.search || !!tc.filters['grade_level'];
 
   const conflictedRooms = useMemo(() => {
     if (scheduleSlots.length === 0) return new Set<string>();
@@ -369,10 +406,10 @@ export default function ClassesManagementPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <BookOpen className="w-6 h-6" />
-            Classes Management
+            Subject Management
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Create and manage classes, assign teachers and students
+            Create and manage subjects, assign teachers and students
           </p>
         </div>
         <Button
@@ -380,7 +417,7 @@ export default function ClassesManagementPage() {
           className="bg-gray-900 hover:bg-gray-800 text-white self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Class
+          Add Subject
         </Button>
       </div>
 
@@ -390,7 +427,7 @@ export default function ClassesManagementPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input
             className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            placeholder="Search class name, code, or teacher..."
+            placeholder="Search subject name, code, or teacher..."
             value={tc.search}
             onChange={e => tc.setSearch(e.target.value)}
           />
@@ -405,19 +442,6 @@ export default function ClassesManagementPage() {
           <SelectContent>
             <SelectItem value="all">All Grades</SelectItem>
             {gradeOptions.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select
-          value={tc.filters['statusLabel'] || 'all'}
-          onValueChange={v => tc.setFilter('statusLabel', v === 'all' ? '' : v)}
-        >
-          <SelectTrigger className="w-32 h-8 text-sm">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
         {hasFilters && (
@@ -440,20 +464,18 @@ export default function ClassesManagementPage() {
         ) : tc.rows.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             {hasFilters
-              ? 'No classes match the selected filters.'
-              : 'No classes found. Click "Add Class" to create one.'}
+              ? 'No subjects match the selected filters.'
+              : 'No subjects found. Click "Add Subject" to create one.'}
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <SortHeader label="Class Code"      sortKey="class_code"      currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
-                <SortHeader label="Class Name"      sortKey="class_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
+                <SortHeader label="Subject Code"     sortKey="class_code"      currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
+                <SortHeader label="Subject Name"    sortKey="class_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
                 <SortHeader label="Grade / Section" sortKey="grade_level"     currentSort={tc.sort} onSort={tc.toggleSort} />
                 <SortHeader label="Teacher"         sortKey="teacherName"     currentSort={tc.sort} onSort={tc.toggleSort} />
-                <SortHeader label="Quarter"         sortKey="quarterDisplay"  currentSort={tc.sort} onSort={tc.toggleSort} />
                 <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Room</th>
-                <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-2.5 pr-4 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -475,26 +497,13 @@ export default function ClassesManagementPage() {
                       : <span className="text-gray-400 italic">Unassigned</span>}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {classItem.quarterDisplay
-                      ? `Q${classItem.quarterDisplay}`
-                      : <span className="text-gray-300">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
                     {classItem.room || <span className="text-gray-300">—</span>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-sm">
-                      <span className={`w-1.5 h-1.5 rounded-full ${classItem.is_active ? 'bg-green-500' : 'bg-gray-300'}`} />
-                      <span className={classItem.is_active ? 'text-gray-700' : 'text-gray-400'}>
-                        {classItem.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </span>
                   </td>
                   <td className="px-4 py-3 pr-4">
                     <div className="flex items-center justify-end gap-1 ">
                       <button
                         onClick={() => handleViewStudents(classItem)}
-                        title="View Students"
+                        title="View Enrolled Students"
                         className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
                       >
                         <Users className="w-4 h-4" />
@@ -520,7 +529,7 @@ export default function ClassesManagementPage() {
         )}
         <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between">
           <span className="text-[11px] text-gray-400">
-            {tc.totalCount} class{tc.totalCount !== 1 ? 'es' : ''}
+            {tc.totalCount} subject{tc.totalCount !== 1 ? 's' : ''}
           </span>
           {tc.pageCount > 1 && (
             <Pagination
@@ -540,18 +549,18 @@ export default function ClassesManagementPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingClass ? 'Edit Class' : 'Create New Class'}</DialogTitle>
+            <DialogTitle>{editingClass ? 'Edit Subject' : 'Create New Subject'}</DialogTitle>
             <DialogDescription>
               {editingClass
-                ? 'Update class information and enrollment'
-                : 'Fill in the details to create a new class'}
+                ? 'Update subject information and enrollment'
+                : 'Fill in the details to create a new subject'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="class_code" required>Class Code</Label>
+                <Label htmlFor="class_code" required>Subject Code</Label>
                 <Input
                   id="class_code"
                   value={formData.class_code}
@@ -560,7 +569,7 @@ export default function ClassesManagementPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="class_name" required>Class Name</Label>
+                <Label htmlFor="class_name" required>Subject Name</Label>
                 <Input
                   id="class_name"
                   value={formData.class_name}
@@ -615,31 +624,19 @@ export default function ClassesManagementPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="school_year" required>School Year</Label>
-                <Input
-                  id="school_year"
-                  value={formData.school_year}
-                  onChange={e => setFormData({ ...formData, school_year: e.target.value })}
-                  placeholder="e.g., 2024-2025"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="semester" required>Quarter</Label>
-                <Select
-                  value={formData.semester}
-                  onValueChange={value => setFormData({ ...formData, semester: value })}
-                >
-                  <SelectTrigger id="semester"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Quarter 1</SelectItem>
-                    <SelectItem value="2">Quarter 2</SelectItem>
-                    <SelectItem value="3">Quarter 3</SelectItem>
-                    <SelectItem value="4">Quarter 4</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="school_year">School Year</Label>
+              <Select
+                value={formData.school_year}
+                onValueChange={v => setFormData({ ...formData, school_year: v })}
+              >
+                <SelectTrigger id="school_year"><SelectValue placeholder="Select school year" /></SelectTrigger>
+                <SelectContent>
+                  {getSchoolYearOptions().map(sy => (
+                    <SelectItem key={sy} value={sy}>{sy}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -744,7 +741,7 @@ export default function ClassesManagementPage() {
                 id="description"
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Class description or notes"
+                placeholder="Subject description or notes"
                 rows={3}
               />
             </div>
@@ -807,7 +804,7 @@ export default function ClassesManagementPage() {
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
             <Button onClick={handleSubmit} className="bg-gray-900 hover:bg-gray-800 text-white">
-              {editingClass ? 'Update Class' : 'Create Class'}
+              {editingClass ? 'Update Subject' : 'Create Subject'}
             </Button>
           </div>
         </DialogContent>
@@ -817,9 +814,9 @@ export default function ClassesManagementPage() {
       <Dialog open={showStudentsDialog} onOpenChange={setShowStudentsDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Class List: {viewingClass?.class_name}</DialogTitle>
+            <DialogTitle>Students in: {viewingClass?.class_name}</DialogTitle>
             <DialogDescription>
-              {viewingClass?.grade_level} — {viewingClass?.section} · {classStudents.length} student(s) enrolled
+              {viewingClass?.grade_level}{viewingClass?.section ? ` — ${viewingClass.section}` : ''} · {classStudents.length} student{classStudents.length !== 1 ? 's' : ''} enrolled
             </DialogDescription>
           </DialogHeader>
           {loadingStudents ? (
@@ -827,7 +824,7 @@ export default function ClassesManagementPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-900 border-t-transparent" />
             </div>
           ) : classStudents.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">No students enrolled in this class.</div>
+            <div className="text-center py-8 text-gray-400">No students enrolled in this subject.</div>
           ) : (
             <>
               <div className="rounded-xl border border-gray-200 overflow-hidden">
@@ -865,10 +862,7 @@ export default function ClassesManagementPage() {
                 </table>
               </div>
               <div className="flex justify-end mt-4">
-                <Button variant="outline" onClick={handleExportCSV}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
+                <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} size="sm" />
               </div>
             </>
           )}

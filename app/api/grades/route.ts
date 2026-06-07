@@ -1,3 +1,4 @@
+import { getActivePeriod } from '@/lib/academic-period';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -43,17 +44,18 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Check if grading period is open before accepting any submission
+    const activePeriod = await getActivePeriod();
+    if (activePeriod && !activePeriod.isGradingOpen) {
+      return NextResponse.json(
+        { success: false, error: 'Grading period is currently locked. Contact your administrator.' },
+        { status: 423 }
+      );
+    }
+
     const admin = getSupabaseAdmin();
     const { studentId, subject, grade, teacherId, classId } =
       await request.json();
-
-    console.log('Grades POST received:', {
-      studentId,
-      subject,
-      grade,
-      teacherId,
-      classId,
-    });
 
     if (!studentId || !subject || grade === undefined) {
       return NextResponse.json(

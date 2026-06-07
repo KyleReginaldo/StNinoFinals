@@ -22,12 +22,12 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTableControls } from '@/hooks/use-table-controls';
+import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
-import { useConfirm } from '@/lib/use-confirm';
+import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { Bell, Edit2, Plus, Search, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useRefresh } from '@/lib/refresh-context';
 
 interface Announcement {
   id: string;
@@ -45,9 +45,20 @@ interface Announcement {
 
 type FlatAnnouncement = Announcement & { announcementStatus: string };
 
-const PRIORITY_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
-  urgent: { label: 'Urgent', dot: 'bg-red-500',  badge: 'bg-red-50 text-red-700 ring-1 ring-red-200'  },
-  normal: { label: 'Normal', dot: 'bg-gray-400', badge: 'bg-gray-50 text-gray-600 ring-1 ring-gray-200' },
+const PRIORITY_CONFIG: Record<
+  string,
+  { label: string; dot: string; badge: string }
+> = {
+  urgent: {
+    label: 'Urgent',
+    dot: 'bg-red-500',
+    badge: 'bg-red-50 text-red-700 ring-1 ring-red-200',
+  },
+  normal: {
+    label: 'Normal',
+    dot: 'bg-gray-400',
+    badge: 'bg-gray-50 text-gray-600 ring-1 ring-gray-200',
+  },
 };
 
 const PRIORITY_OPTIONS = [
@@ -59,10 +70,10 @@ const normalizePriority = (p: string | null): 'urgent' | 'normal' =>
   p === 'urgent' || p === 'high' ? 'urgent' : 'normal';
 
 const AUDIENCE_OPTIONS = [
-  { label: 'All Users',        value: 'all'      },
-  { label: 'Students',         value: 'students' },
-  { label: 'Teachers',         value: 'teachers' },
-  { label: 'Parents/Guardians', value: 'parents' },
+  { label: 'All Users', value: 'all' },
+  { label: 'Students', value: 'students' },
+  { label: 'Teachers', value: 'teachers' },
+  { label: 'Guardians', value: 'parents' },
 ];
 
 const defaultForm = {
@@ -79,7 +90,7 @@ export default function AdminAnnouncementsPage() {
   const { admin } = useAuth();
   const { refreshKey } = useRefresh();
   const { showAlert } = useAlert();
-  const { showConfirm } = useConfirm();
+  const { showDeletePrompt } = useDeletePrompt();
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,12 +144,17 @@ export default function AdminAnnouncementsPage() {
   }, [tc.rows]);
 
   const counts = useMemo(() => {
-    const active = flatAnnouncements.filter((a) => a.announcementStatus === 'active').length;
-    const inactive = flatAnnouncements.filter((a) => a.announcementStatus === 'inactive').length;
+    const active = flatAnnouncements.filter(
+      (a) => a.announcementStatus === 'active'
+    ).length;
+    const inactive = flatAnnouncements.filter(
+      (a) => a.announcementStatus === 'inactive'
+    ).length;
     return { all: flatAnnouncements.length, active, inactive };
   }, [flatAnnouncements]);
 
-  const activeTab = (tc.filters['announcementStatus'] as string | undefined) ?? 'all';
+  const activeTab =
+    (tc.filters['announcementStatus'] as string | undefined) ?? 'all';
 
   const handleTabChange = (tab: string) => {
     tc.setFilter('announcementStatus', tab === 'all' ? '' : tab);
@@ -161,7 +177,9 @@ export default function AdminAnnouncementsPage() {
       published_at: a.published_at
         ? new Date(a.published_at).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
-      expires_at: a.expires_at ? new Date(a.expires_at).toISOString().slice(0, 10) : '',
+      expires_at: a.expires_at
+        ? new Date(a.expires_at).toISOString().slice(0, 10)
+        : '',
     });
     setDialogOpen(true);
   };
@@ -171,12 +189,27 @@ export default function AdminAnnouncementsPage() {
       showAlert({ message: 'Title and content are required', type: 'warning' });
       return;
     }
+    if (formData.expires_at && formData.published_at && formData.expires_at < formData.published_at) {
+      showAlert({ message: 'Expiry date cannot be before the publish date', type: 'warning' });
+      return;
+    }
+    if (formData.expires_at && formData.expires_at < new Date().toISOString().slice(0, 10)) {
+      showAlert({ message: 'Expiry date is already in the past — the announcement will be inactive immediately', type: 'warning' });
+    }
     setSubmitting(true);
     try {
       const method = editingId ? 'PATCH' : 'POST';
       const body = editingId
-        ? { id: editingId, ...formData, expires_at: formData.expires_at || null }
-        : { ...formData, expires_at: formData.expires_at || null, author_id: admin?.id };
+        ? {
+            id: editingId,
+            ...formData,
+            expires_at: formData.expires_at || null,
+          }
+        : {
+            ...formData,
+            expires_at: formData.expires_at || null,
+            author_id: admin?.id,
+          };
       const res = await fetch('/api/admin/announcements', {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -184,10 +217,16 @@ export default function AdminAnnouncementsPage() {
       });
       const result = await res.json();
       if (!res.ok || !result.success) {
-        showAlert({ message: result.error || 'Failed to save announcement', type: 'error' });
+        showAlert({
+          message: result.error || 'Failed to save announcement',
+          type: 'error',
+        });
         return;
       }
-      showAlert({ message: editingId ? 'Announcement updated!' : 'Announcement created!', type: 'success' });
+      showAlert({
+        message: editingId ? 'Announcement updated!' : 'Announcement created!',
+        type: 'success',
+      });
       setDialogOpen(false);
       fetchAnnouncements();
     } catch {
@@ -198,23 +237,26 @@ export default function AdminAnnouncementsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const confirmed = await showConfirm({
+    const result = await showDeletePrompt({
       title: 'Delete Announcement',
-      message: 'Are you sure you want to delete this announcement? This cannot be undone.',
+      message: 'Delete this announcement? This cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      reasonLabel: 'Reason for deletion (optional)',
     });
-    if (!confirmed) return;
+    if (!result?.confirmed) return;
     try {
       const res = await fetch('/api/admin/announcements', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       });
-      const result = await res.json();
-      if (result.success) {
+      const data = await res.json();
+      if (data.success) {
         showAlert({ message: 'Announcement deleted', type: 'success' });
         fetchAnnouncements();
       } else {
-        showAlert({ message: result.error || 'Failed to delete', type: 'error' });
+        showAlert({ message: data.error || 'Failed to delete', type: 'error' });
       }
     } catch {
       showAlert({ message: 'Error deleting announcement', type: 'error' });
@@ -234,9 +276,15 @@ export default function AdminAnnouncementsPage() {
         <Bell className="w-8 h-8 text-gray-700" />
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-900">Announcements</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Create and manage announcements visible to all users</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Create and manage announcements visible to all users
+          </p>
         </div>
-        <Button onClick={openCreateDialog} className="bg-gray-900 hover:bg-gray-800 text-white" size="sm">
+        <Button
+          onClick={openCreateDialog}
+          className="bg-gray-900 hover:bg-gray-800 text-white"
+          size="sm"
+        >
           <Plus className="h-4 w-4 mr-1" />
           New Announcement
         </Button>
@@ -245,9 +293,13 @@ export default function AdminAnnouncementsPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total',             count: counts.all,      tab: 'all'      },
-          { label: 'Active',            count: counts.active,   tab: 'active'   },
-          { label: 'Expired / Inactive', count: counts.inactive, tab: 'inactive' },
+          { label: 'Total', count: counts.all, tab: 'all' },
+          { label: 'Active', count: counts.active, tab: 'active' },
+          {
+            label: 'Expired / Inactive',
+            count: counts.inactive,
+            tab: 'inactive',
+          },
         ].map((s) => (
           <button
             key={s.tab}
@@ -258,12 +310,16 @@ export default function AdminAnnouncementsPage() {
                 : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
-            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
-              activeTab === s.tab ? 'text-gray-400' : 'text-gray-400'
-            }`}>
+            <p
+              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
+                activeTab === s.tab ? 'text-gray-400' : 'text-gray-400'
+              }`}
+            >
               {s.label}
             </p>
-            <p className={`text-2xl font-bold ${activeTab === s.tab ? 'text-white' : 'text-gray-900'}`}>
+            <p
+              className={`text-2xl font-bold ${activeTab === s.tab ? 'text-white' : 'text-gray-900'}`}
+            >
               {s.count}
             </p>
           </button>
@@ -299,12 +355,17 @@ export default function AdminAnnouncementsPage() {
           >
             <option value="">All Audiences</option>
             {AUDIENCE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
           {hasFilters && (
             <button
-              onClick={() => { tc.clearFilters(); tc.setSearch(''); }}
+              onClick={() => {
+                tc.clearFilters();
+                tc.setSearch('');
+              }}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
             >
               <X className="w-3 h-3" />
@@ -316,13 +377,37 @@ export default function AdminAnnouncementsPage() {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50">
-              <SortHeader label="Title"     sortKey="title"           currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Priority</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Audience</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</th>
-              <SortHeader label="Published" sortKey="published_at"    currentSort={tc.sort} onSort={tc.toggleSort} />
-              <SortHeader label="Expires"   sortKey="expires_at"      currentSort={tc.sort} onSort={tc.toggleSort} />
-              <th className="px-4 py-2.5 w-20 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+              <SortHeader
+                label="Title"
+                sortKey="title"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+                className="pl-4"
+              />
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Priority
+              </th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Audience
+              </th>
+              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                Status
+              </th>
+              <SortHeader
+                label="Published"
+                sortKey="published_at"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+              />
+              <SortHeader
+                label="Expires"
+                sortKey="expires_at"
+                currentSort={tc.sort}
+                onSort={tc.toggleSort}
+              />
+              <th className="px-4 py-2.5 w-20 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -345,17 +430,27 @@ export default function AdminAnnouncementsPage() {
               </tr>
             ) : (
               displayRows.map((a) => {
-                const priCfg = PRIORITY_CONFIG[a.priority ?? 'normal'] ?? PRIORITY_CONFIG['normal'];
+                const priCfg =
+                  PRIORITY_CONFIG[a.priority ?? 'normal'] ??
+                  PRIORITY_CONFIG['normal'];
                 const isActive = a.announcementStatus === 'active';
                 return (
                   <tr key={a.id} className="hover:bg-gray-50 group">
                     <td className="px-4 py-3 pl-4 max-w-xs">
-                      <p className="text-sm font-medium text-gray-900 truncate">{a.title}</p>
-                      <p className="text-xs text-gray-400 truncate">{a.content}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {a.title}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {a.content}
+                      </p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${priCfg.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${priCfg.dot}`} />
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${priCfg.badge}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${priCfg.dot}`}
+                        />
                         {priCfg.label}
                       </span>
                     </td>
@@ -363,20 +458,35 @@ export default function AdminAnnouncementsPage() {
                       {a.target_audience || 'all'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                        <span className="text-xs text-gray-600">{isActive ? 'Active' : 'Inactive'}</span>
-                      </span>
+                      {a.expires_at && new Date(a.expires_at) < new Date() ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                          <span className="text-xs text-red-600 font-medium">Expired</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                          />
+                          <span className="text-xs text-gray-600">
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
-                      {a.published_at
-                        ? new Date(a.published_at).toLocaleDateString('en-PH')
-                        : <span className="text-gray-300">—</span>}
+                      {a.published_at ? (
+                        new Date(a.published_at).toLocaleDateString('en-PH')
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
-                      {a.expires_at
-                        ? new Date(a.expires_at).toLocaleDateString('en-PH')
-                        : <span className="text-gray-300">—</span>}
+                      {a.expires_at ? (
+                        new Date(a.expires_at).toLocaleDateString('en-PH')
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 pr-4">
                       <div className="flex gap-1 justify-end ">
@@ -422,20 +532,28 @@ export default function AdminAnnouncementsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="title" required>Title</Label>
+              <Label htmlFor="title" required>
+                Title
+              </Label>
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Announcement title"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="content" required>Content</Label>
+              <Label htmlFor="content" required>
+                Content
+              </Label>
               <Textarea
                 id="content"
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
                 placeholder="Write your announcement..."
                 rows={4}
               />
@@ -445,14 +563,18 @@ export default function AdminAnnouncementsPage() {
                 <Label required>Priority</Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(v) => setFormData({ ...formData, priority: v })}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, priority: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {PRIORITY_OPTIONS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -461,14 +583,18 @@ export default function AdminAnnouncementsPage() {
                 <Label>Target Audience</Label>
                 <Select
                   value={formData.target_audience}
-                  onValueChange={(v) => setFormData({ ...formData, target_audience: v })}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, target_audience: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {AUDIENCE_OPTIONS.map((a) => (
-                      <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                      <SelectItem key={a.value} value={a.value}>
+                        {a.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -491,7 +617,9 @@ export default function AdminAnnouncementsPage() {
                     published_at: range?.from
                       ? range.from.toISOString().slice(0, 10)
                       : new Date().toISOString().slice(0, 10),
-                    expires_at: range?.to ? range.to.toISOString().slice(0, 10) : '',
+                    expires_at: range?.to
+                      ? range.to.toISOString().slice(0, 10)
+                      : '',
                   })
                 }
                 placeholder="Select publish and expiry dates"
@@ -503,7 +631,11 @@ export default function AdminAnnouncementsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={submitting}
+            >
               Cancel
             </Button>
             <Button

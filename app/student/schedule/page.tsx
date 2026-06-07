@@ -49,7 +49,7 @@ const calendarActivities: CalendarActivity[] = [
   },
   {
     date: '2025-06-26',
-    title: 'Parents Orientation of Student Manual',
+    title: 'Orientation of Student Manual',
     category: 'event',
   },
   { date: '2025-06-27', title: 'TEAM BUILDING', category: 'event' },

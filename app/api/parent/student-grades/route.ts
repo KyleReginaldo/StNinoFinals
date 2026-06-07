@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
       status: grade.status ?? null,
       lastUpdated: grade.updated_at || grade.created_at,
       quarter: grade.quarter ?? grade.classes?.quarter ?? null,
-      school_year: grade.school_year ?? grade.classes?.school_year ?? null,
+      school_year: normalizeSchoolYear(grade.school_year ?? grade.classes?.school_year ?? '') || null,
     }));
 
     return NextResponse.json({

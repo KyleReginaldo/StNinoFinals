@@ -20,7 +20,13 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-red-800 border-t-transparent" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-800 border-t-transparent" />
+        </div>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );
@@ -77,7 +83,11 @@ function LoginPageContent() {
   }, [password]);
 
   const loginDisabled =
-    isLoggingIn || !email || !password || Boolean(emailError || passwordError) || !agreeTerms;
+    isLoggingIn ||
+    !email ||
+    !password ||
+    Boolean(emailError || passwordError) ||
+    !agreeTerms;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -246,20 +256,26 @@ function LoginPageContent() {
 
         {/* Top logo */}
         <div className="relative z-10 p-10">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="Sto Niño de Praga Academy Logo"
-              width={44}
-              height={44}
-              className="rounded-full ring-2 ring-white/20"
-            />
-            <span className="text-white/90 font-semibold text-sm leading-tight">
-              Sto. Niño de Praga
-              <br />
-              <span className="text-white/60 font-normal">Academy</span>
-            </span>
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3"
+            aria-label="Sto Niño de Praga Academy Home"
+          >
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Sto Niño de Praga Academy Logo"
+                width={44}
+                height={44}
+                className="rounded-full ring-2 ring-white/20"
+              />
+              <span className="text-white/90 font-semibold text-sm leading-tight">
+                Sto. Niño de Praga
+                <br />
+                <span className="text-white/60 font-normal">Academy</span>
+              </span>
+            </div>
+          </Link>
         </div>
 
         {/* Center content */}
@@ -472,8 +488,7 @@ function LoginPageContent() {
                   }}
                 >
                   I agree to the{' '}
-                  <span className="text-red-800">Terms of Service</span>
-                  {' '}and{' '}
+                  <span className="text-red-800">Terms of Service</span> and{' '}
                   <span className="text-red-800">Privacy Policy</span>.
                 </label>
               </div>
@@ -522,24 +537,56 @@ function LoginPageContent() {
       <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Terms of Service &amp; Privacy Policy</DialogTitle>
+            <DialogTitle className="text-gray-900">
+              Terms of Service &amp; Privacy Policy
+            </DialogTitle>
           </DialogHeader>
 
           <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
             <div>
               <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
-              <p>By signing in to the Sto. Niño de Praga Academy portal, you agree to use the system only for lawful, school-related purposes. Your account is personal and non-transferable. Misuse or unauthorized sharing of credentials may result in account suspension.</p>
+              <p>
+                By signing in to the Sto. Niño de Praga Academy portal, you
+                agree to use the system only for lawful, school-related
+                purposes. Your account is personal and non-transferable. Misuse
+                or unauthorized sharing of credentials may result in account
+                suspension.
+              </p>
             </div>
             <div>
               <p className="font-bold text-gray-800 mb-1">Privacy Policy</p>
-              <p>We collect and use personal information (name, contact details, grades, attendance) solely to manage enrollment and school operations, in compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data will not be sold or shared with third parties outside of authorized school personnel and required government agencies.</p>
+              <p>
+                We collect and use personal information (name, contact details,
+                grades, attendance) solely to manage enrollment and school
+                operations, in compliance with the{' '}
+                <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data
+                will not be sold or shared with third parties outside of
+                authorized school personnel and required government agencies.
+              </p>
             </div>
             <div>
               <p className="font-bold text-gray-800 mb-1">Your Rights</p>
-              <p>You may request access, correction, or deletion of your data by contacting us at <span className="text-red-800">info@stnino.ph</span>. For full details, see{' '}
-                <Link href="/terms" target="_blank" className="text-red-800 hover:underline">Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/privacy" target="_blank" className="text-red-800 hover:underline">Privacy Policy</Link>.
+              <p>
+                You may request access, correction, or deletion of your data by
+                contacting us at{' '}
+                <span className="text-red-800">info@stnino.ph</span>. For full
+                details, see{' '}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="text-red-800 hover:underline"
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-red-800 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+                .
               </p>
             </div>
           </div>
@@ -554,7 +601,10 @@ function LoginPageContent() {
             </button>
             <button
               type="button"
-              onClick={() => { setAgreeTerms(true); setTermsModalOpen(false); }}
+              onClick={() => {
+                setAgreeTerms(true);
+                setTermsModalOpen(false);
+              }}
               className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors"
             >
               I Agree

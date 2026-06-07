@@ -31,20 +31,32 @@ export async function GET(request: NextRequest) {
       { name: 'Rejected', value: counts.rejected, fill: '#ef4444' },
     ];
 
-    // Students per class
-    const { data: classes } = await admin
-      .from('classes')
-      .select('id, class_name')
-      .eq('teacher_id', teacherId)
-      .eq('is_active', true);
+    // Resolve classes via user_classes (source of truth for teacher assignment)
+    const { data: teacherMemberships } = await admin
+      .from('user_classes')
+      .select('class_id')
+      .eq('user_id', teacherId)
+      .eq('membership_type', 'teacher');
+
+    const classIds = (teacherMemberships ?? []).map((m) => m.class_id);
+
+    let classes: any[] = [];
+    if (classIds.length > 0) {
+      const { data } = await admin
+        .from('classes')
+        .select('id, class_name')
+        .in('id', classIds)
+        .eq('is_active', true);
+      classes = data ?? [];
+    }
 
     const studentsPerClass = await Promise.all(
-      (classes ?? []).map(async (c: any) => {
+      classes.map(async (c: any) => {
         const { count } = await admin
-          .from('class_enrollments')
+          .from('user_classes')
           .select('*', { count: 'exact', head: true })
           .eq('class_id', c.id)
-          .eq('status', 'active');
+          .eq('membership_type', 'student');
         return { class: c.class_name, students: count ?? 0 };
       })
     );

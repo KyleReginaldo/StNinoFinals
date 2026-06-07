@@ -134,7 +134,7 @@ export async function PATCH(
     if (body.restore === true) {
       const { error } = await supabaseAdmin
         .from('users')
-        .update({ is_archived: false } as any)
+        .update({ is_archived: false, status: 'Active' } as any)
         .eq('id', id)
         .eq('role', 'student')
       if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 })
@@ -153,11 +153,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    const body = await request.json().catch(() => ({}))
+    const reason = typeof body.reason === 'string' && body.reason.trim() ? body.reason.trim() : null
     const supabaseAdmin = getSupabaseAdmin()
 
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ is_archived: true } as any)
+      .update({ is_archived: true, status: reason || 'Archived' } as any)
       .eq('id', id)
       .eq('role', 'student')
 

@@ -3,8 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabaseClient';
-import { Camera, GraduationCap, Hash, Layers, Mail, MapPin, Phone, User } from 'lucide-react';
+import { Camera, CreditCard, GraduationCap, Hash, Layers, Mail, MapPin, Phone, User } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -26,8 +25,10 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (student?.profile_picture) setAvatarUrl(student.profile_picture);
-  }, [student?.profile_picture]);
+    // DB column is photo_url; profile_picture is the legacy client-side key
+    if (student?.photo_url) setAvatarUrl(student.photo_url);
+    else if ((student as any)?.profile_picture) setAvatarUrl((student as any).profile_picture);
+  }, [student?.photo_url, (student as any)?.profile_picture]);
   const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
 
   const [form, setForm] = useState({
@@ -42,8 +43,10 @@ export default function ProfilePage() {
 
   const displayName = useMemo(() => {
     if (!student) return 'Student';
-    if (student.first_name && student.last_name)
-      return `${student.first_name} ${student.last_name}`;
+    if (student.first_name && student.last_name) {
+      return [student.first_name, student.middle_name, student.last_name, (student as any).suffix]
+        .filter(Boolean).join(' ');
+    }
     return student.email?.split('@')[0] || 'Student';
   }, [student]);
 
@@ -57,15 +60,15 @@ export default function ProfilePage() {
     setUploadingAvatar(true);
     setError('');
     try {
-      const ext  = file.name.split('.').pop();
-      const path = `avatars/${student.id}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('userId', String(student.id));
+      fd.append('role', 'student');
 
-      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path);
-      const url = urlData.publicUrl;
+      const uploadRes = await fetch('/api/upload-avatar', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.success) throw new Error(uploadData.error);
+      const url = uploadData.url;
 
       const res = await fetch('/api/student/update-profile', {
         method: 'POST',
@@ -78,7 +81,7 @@ export default function ProfilePage() {
       setAvatarUrl(url);
       const stored = localStorage.getItem('student');
       if (stored) {
-        localStorage.setItem('student', JSON.stringify({ ...JSON.parse(stored), profile_picture: url }));
+        localStorage.setItem('student', JSON.stringify({ ...JSON.parse(stored), photo_url: url }));
       }
     } catch (e: any) {
       setError(e.message || 'Failed to upload photo.');
@@ -122,8 +125,12 @@ export default function ProfilePage() {
       const result = await res.json();
       if (!result.success) throw new Error(result.error || 'Failed to save.');
 
-      // Update state and localStorage without reloading
-      const updated = { ...student, ...form };
+      // Sync photo_url from DB response if returned; otherwise mirror from form
+      const updated = {
+        ...student,
+        ...form,
+        photo_url: result.student?.photo_url ?? student.photo_url,
+      };
       setStudent(updated);
       localStorage.setItem('student', JSON.stringify(updated));
       setEditing(false);
@@ -226,7 +233,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <Label>Middle Name</Label>
+              <Label>M.I. (Middle Name)</Label>
               <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
             </div>
             <div>
@@ -265,13 +272,14 @@ export default function ProfilePage() {
         ) : (
           <div className="px-5 divide-y divide-gray-100">
             {[
-              { icon: User,         label: 'Full Name',      value: displayName },
-              { icon: Hash,         label: 'Student Number', value: student.student_id || student.student_number },
-              { icon: GraduationCap, label: 'Grade Level',   value: student.grade_level },
-              { icon: Layers,       label: 'Section',        value: student.section },
-              { icon: Mail,         label: 'Email',          value: student.email },
-              { icon: Phone,        label: 'Contact Number', value: student.phone_number || student.phone || student.contact_number },
-              { icon: MapPin,       label: 'Address',        value: student.address },
+              { icon: User,          label: 'Full Name',      value: displayName },
+              { icon: Hash,          label: 'Student No.',    value: (student as any).student_number },
+              { icon: CreditCard,    label: 'LRN',            value: (student as any).lrn },
+              { icon: GraduationCap, label: 'Grade Level',    value: student.grade_level },
+              { icon: Layers,        label: 'Section',        value: student.section },
+              { icon: Mail,          label: 'Email',          value: student.email },
+              { icon: Phone,         label: 'Contact Number', value: student.phone_number || (student as any).phone || (student as any).contact_number },
+              { icon: MapPin,        label: 'Address',        value: student.address },
             ].map(({ icon: Icon, label, value }) =>
               value ? (
                 <div key={label} className="flex items-start gap-3 py-3">

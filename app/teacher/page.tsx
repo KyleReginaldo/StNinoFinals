@@ -1,6 +1,7 @@
 'use client';
 
 import { AnnouncementCards } from '@/components/AnnouncementCards';
+import { ActivePeriodBadge } from '@/components/ui/active-period-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -123,13 +124,21 @@ export default function TeacherDashboard() {
         onSelect={setSelectedAnnouncement}
       />
 
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Welcome, {teacher.first_name || 'Teacher'}!
+        </h2>
+        <div className="mt-1.5"><ActivePeriodBadge /></div>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-red-800">
           <CardHeader className="pb-2">
             <CardDescription>Total Students</CardDescription>
             <CardTitle className="text-3xl text-red-800">
-              {teacherStats?.totalStudents || 0}
+              {teacherStats?.totalStudents ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -139,13 +148,13 @@ export default function TeacherDashboard() {
 
         <Card className="border-l-4 border-l-blue-600">
           <CardHeader className="pb-2">
-            <CardDescription>Classes Today</CardDescription>
+            <CardDescription>Total Classes</CardDescription>
             <CardTitle className="text-3xl text-blue-600">
-              {teacherStats?.classesToday || 0}
+              {teacherStats?.totalClasses ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Scheduled for today</p>
+            <p className="text-sm text-gray-600">Active assigned classes</p>
           </CardContent>
         </Card>
 
@@ -153,11 +162,11 @@ export default function TeacherDashboard() {
           <CardHeader className="pb-2">
             <CardDescription>Pending Grades</CardDescription>
             <CardTitle className="text-3xl text-orange-600">
-              {teacherStats?.pendingGrades || 0}
+              {teacherStats?.pendingGrades ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Awaiting submission</p>
+            <p className="text-sm text-gray-600">Awaiting admin approval</p>
           </CardContent>
         </Card>
       </div>
@@ -287,8 +296,6 @@ export default function TeacherDashboard() {
                   <XAxis
                     dataKey="class"
                     tick={{ fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
                     interval={0}
                   />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />

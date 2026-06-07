@@ -42,6 +42,7 @@ export async function PUT(
       first_name,
       last_name,
       middle_name,
+      suffix,
       employee_number,
       department,
       specialization,
@@ -60,6 +61,7 @@ export async function PUT(
     if (first_name !== undefined) updateData.first_name = first_name
     if (last_name !== undefined) updateData.last_name = last_name
     if (middle_name !== undefined) updateData.middle_name = middle_name || null
+    if (suffix !== undefined) updateData.suffix = suffix || null
     if (employee_number !== undefined) updateData.employee_number = employee_number
     if (department !== undefined) updateData.department = department || null
     if (specialization !== undefined) updateData.specialization = specialization || null
@@ -115,7 +117,7 @@ export async function PATCH(
     if (body.restore === true) {
       const { error } = await supabaseAdmin
         .from('users')
-        .update({ is_archived: false } as any)
+        .update({ is_archived: false, status: 'Active' } as any)
         .eq('id', id)
         .eq('role', 'teacher')
       if (error) return NextResponse.json({ success: false, error: error.message }, { status: 400 })
@@ -134,11 +136,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    const body = await request.json().catch(() => ({}))
+    const reason = typeof body.reason === 'string' && body.reason.trim() ? body.reason.trim() : null
     const supabaseAdmin = getSupabaseAdmin()
 
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ is_archived: true } as any)
+      .update({ is_archived: true, status: reason || 'Archived' } as any)
       .eq('id', id)
       .eq('role', 'teacher')
 

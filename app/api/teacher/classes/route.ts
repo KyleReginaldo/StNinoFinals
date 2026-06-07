@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -81,6 +82,7 @@ export async function GET(request: NextRequest) {
 
         return {
           ...classItem,
+          school_year: normalizeSchoolYear(classItem.school_year),
           students,
           student_count: students.length,
         };

@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import {
   BarChart3,
   BookOpen,
-  Calendar,
   CalendarDays,
   GraduationCap,
   LayoutDashboard,
@@ -83,8 +82,7 @@ const SECTIONS: NavSection[] = [
   {
     label: 'Personal',
     items: [
-      { label: 'Calendar',   href: '/teacher/calendar', icon: Calendar },
-      { label: 'My Account', href: '/teacher/account',  icon: User     },
+      { label: 'My Account', href: '/teacher/account', icon: User },
     ],
   },
 ];

@@ -1,9 +1,16 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { CheckCircle2, Download, RefreshCw, UserCheck, XCircle } from 'lucide-react';
+import { endOfWeek, format, startOfWeek, subWeeks } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { CalendarIcon, RefreshCw, UserCheck, XCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { DateRange } from 'react-day-picker';
 
 interface Teacher {
   teacherId: string;
@@ -25,14 +32,14 @@ interface TeacherAttendanceData {
 }
 
 const CODE_META: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  PR: { label: 'Present',  bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-  AC: { label: 'Absent',   bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
-  LA: { label: 'Late',     bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
-  HO: { label: 'Holiday',  bg: 'bg-gray-100',    text: 'text-gray-500',    dot: 'bg-gray-400'    },
-  VA: { label: 'Vacation', bg: 'bg-sky-100',     text: 'text-sky-700',     dot: 'bg-sky-400'     },
-  CR: { label: 'Credit',   bg: 'bg-purple-100',  text: 'text-purple-700',  dot: 'bg-purple-400'  },
-  EA: { label: 'Early Abs',bg: 'bg-orange-100',  text: 'text-orange-700',  dot: 'bg-orange-500'  },
-  SU: { label: 'Suspended',bg: 'bg-rose-100',    text: 'text-rose-700',    dot: 'bg-rose-700'    },
+  PR: { label: 'Present',   bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  AC: { label: 'Absent',    bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
+  LA: { label: 'Late',      bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
+  HO: { label: 'Holiday',   bg: 'bg-gray-100',    text: 'text-gray-500',    dot: 'bg-gray-400'    },
+  VA: { label: 'Vacation',  bg: 'bg-sky-100',     text: 'text-sky-700',     dot: 'bg-sky-400'     },
+  CR: { label: 'Credit',    bg: 'bg-purple-100',  text: 'text-purple-700',  dot: 'bg-purple-400'  },
+  EA: { label: 'Early Abs', bg: 'bg-orange-100',  text: 'text-orange-700',  dot: 'bg-orange-500'  },
+  SU: { label: 'Suspended', bg: 'bg-rose-100',    text: 'text-rose-700',    dot: 'bg-rose-700'    },
 };
 const getMeta = (code: string) => CODE_META[code] ?? { label: code, bg: 'bg-gray-100', text: 'text-gray-500', dot: 'bg-gray-400' };
 const initials = (name: string) => name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
@@ -41,22 +48,22 @@ export function TeacherAttendanceTab() {
   const [data, setData] = useState<TeacherAttendanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(undefined);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   useEffect(() => {
     const end = new Date(); const start = new Date();
     start.setDate(start.getDate() - 30);
-    setStartDate(start.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
+    setDateRange({ from: start, to: end });
   }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const p = new URLSearchParams();
-      if (startDate) p.append('startDate', startDate);
-      if (endDate)   p.append('endDate', endDate);
+      if (dateRange?.from) { const d = dateRange.from; p.append('startDate', `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
+      if (dateRange?.to)   { const d = dateRange.to;   p.append('endDate',   `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
       if (selectedTeacherId) p.append('teacherId', selectedTeacherId);
       const res = await fetch(`/api/admin/teacher-attendance?${p.toString()}`);
       const result = await res.json();
@@ -69,7 +76,7 @@ export function TeacherAttendanceTab() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { if (startDate && endDate) fetchData(); }, [startDate, endDate, selectedTeacherId]);
+  useEffect(() => { if (dateRange?.from && dateRange?.to) fetchData(); }, [dateRange, selectedTeacherId]);
 
   const selectedTeacher = useMemo(() => {
     if (!data || !selectedTeacherId) return null;
@@ -86,17 +93,58 @@ export function TeacherAttendanceTab() {
     return dates;
   }, [data]);
 
-  const exportCSV = () => {
+  const exportExcel = async () => {
     if (!data?.teachers.length) return;
-    const rows = [
-      ['#','Name','Subject','Days','Present','Absent','Late','%',...dateColumns.map((d)=>format(new Date(d),'MM/dd'))],
-      ...data.teachers.map((t,i)=>[String(i+1),t.teacherName,t.subject||'N/A',String(t.totalDays),String(t.present),String(t.absent),String(t.late),`${t.percentage}%`,...dateColumns.map((d)=>t.dailyAttendance[d]||'-')]),
-    ];
-    const csv=rows.map((r)=>r.map((c)=>`"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-    a.download=`teacher-attendance-${startDate}-to-${endDate}.csv`;
-    a.style.visibility='hidden'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const to   = dateRange?.to   ? format(dateRange.to,   'yyyy-MM-dd') : 'end';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`teacher-attendance-${from}-to-${to}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'TEACHER ATTENDANCE REPORT',
+        `Period: ${from} to ${to}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['#', 'Teacher Name', 'Subject', 'Days', 'Present'],
+      colWidths: [8, 40, 30, 10, 12],
+      rows: data.teachers.map((t, i) => [i + 1, t.teacherName, t.subject || 'N/A', t.totalDays, t.present]),
+      totalRow: ['', 'TOTAL', '', '', data.general.totalPresent],
+      headerColor: 'blue',
+    });
+  };
+
+  const exportPDF = () => {
+    if (!data?.teachers.length) return;
+    const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const to   = dateRange?.to   ? format(dateRange.to,   'yyyy-MM-dd') : 'end';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 105, 15, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 105, 21, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('TEACHER ATTENDANCE REPORT', 105, 30, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${from} to ${to}`, 105, 37, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 105, 42, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 48,
+      head: [['#', 'Teacher Name', 'Subject', 'Days', 'Present']],
+      body: data.teachers.map((t, i) => [i + 1, t.teacherName, t.subject || 'N/A', t.totalDays, t.present]),
+      foot: [['', 'TOTAL', '', '', data.general.totalPresent]],
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      footStyles: { fontStyle: 'bold', fillColor: [229, 231, 235], textColor: [17, 24, 39], fontSize: 9 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 12 }, 3: { halign: 'center' }, 4: { halign: 'center' } },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.save(`teacher-attendance-${from}-to-${to}.pdf`);
   };
 
   if (loading && !data) {
@@ -114,29 +162,36 @@ export function TeacherAttendanceTab() {
     <div className="space-y-5">
 
       {/* ── Filters ───────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500 whitespace-nowrap">From</label>
-          <input
-            type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-            className="h-8 text-xs px-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-red-700"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500 whitespace-nowrap">To</label>
-          <input
-            type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-            className="h-8 text-xs px-2 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-red-700"
-          />
-        </div>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 flex items-center gap-2 flex-wrap">
+        {[
+          { label: 'This Week', fn: () => setDateRange({ from: startOfWeek(new Date(),{weekStartsOn:1}), to: endOfWeek(new Date(),{weekStartsOn:1}) }) },
+          { label: 'Last Week', fn: () => { const lw=subWeeks(new Date(),1); setDateRange({from:startOfWeek(lw,{weekStartsOn:1}),to:endOfWeek(lw,{weekStartsOn:1})}); } },
+          { label: 'Last 30 Days', fn: () => { const e=new Date(),s=new Date(); s.setDate(s.getDate()-30); setDateRange({from:s,to:e}); } },
+        ].map(({label,fn})=>(
+          <button key={label} onClick={fn} className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-full hover:border-red-700 hover:text-red-700 hover:bg-red-50 transition-colors">{label}</button>
+        ))}
+        <div className="w-px h-5 bg-gray-200 mx-1" />
+        <Popover open={isPickerOpen} onOpenChange={(o)=>{setIsPickerOpen(o);if(o)setTempDateRange(dateRange);}} modal>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:border-red-700 rounded-lg transition-colors">
+              <CalendarIcon className="w-3.5 h-3.5" />
+              {dateRange?.from ? (dateRange.to ? `${format(dateRange.from,'MMM d')} – ${format(dateRange.to,'MMM d, yyyy')}` : format(dateRange.from,'MMM d, yyyy')) : 'Select range'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="range" defaultMonth={tempDateRange?.from||dateRange?.from} selected={tempDateRange} onSelect={setTempDateRange} numberOfMonths={2} />
+            <div className="p-3 border-t flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={()=>{setTempDateRange(dateRange);setIsPickerOpen(false);}}>Cancel</Button>
+              <Button size="sm" className="flex-1 text-xs bg-red-800 hover:bg-red-900" onClick={()=>{if(tempDateRange?.from&&tempDateRange?.to){setDateRange(tempDateRange);setIsPickerOpen(false);}}} disabled={!tempDateRange?.from||!tempDateRange?.to}>Apply</Button>
+            </div>
+          </PopoverContent>
+        </Popover>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={fetchData} disabled={loading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors disabled:opacity-50">
-            <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />Refresh
+            <RefreshCw className={cn('w-3.5 h-3.5',loading&&'animate-spin')} />Refresh
           </button>
           {data?.teachers.length ? (
-            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-800 hover:bg-red-900 rounded-lg transition-colors">
-              <Download className="w-3.5 h-3.5" />Export CSV
-            </button>
+            <ExportDropdown onPDF={exportPDF} onExcel={exportExcel} size="sm" />
           ) : null}
         </div>
       </div>
@@ -152,72 +207,66 @@ export function TeacherAttendanceTab() {
         </div>
       ) : (
         <>
-          {/* ── KPI + Detail ──────────────────────────────────── */}
+          {/* ── KPI Cards ─────────────────────────────────────── */}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: 'Teachers',      value: data.general.totalTeachers, sub: `${dateColumns.length} days tracked`,      color: 'text-blue-600',    icon: UserCheck },
+              { label: 'Present Count', value: data.general.totalPresent,  sub: 'Total scan-in records in period',         color: 'text-emerald-600', icon: null      },
+            ].map(({ label, value, sub, color, icon: Icon }) => (
+              <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
+                  {Icon && (
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+                      <Icon className={cn('w-4 h-4', color)} />
+                    </div>
+                  )}
+                </div>
+                <p className={cn('text-4xl font-bold leading-none', color)}>{value}</p>
+                <p className="text-xs text-gray-400 mt-1.5">{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Leaderboard + Detail ──────────────────────────── */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
-            {/* Stats + Bar chart */}
-            <div className="xl:col-span-2 space-y-5">
-              {/* KPI */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { label:'Teachers',    value: data.general.totalTeachers,             icon: UserCheck,    color:'text-blue-600',    iconBg:'bg-blue-50',    bar:null },
-                  { label:'Present Rate',value:`${data.general.presentPercentage.toFixed(1)}%`, icon: CheckCircle2, color:'text-emerald-600', iconBg:'bg-emerald-50', bar:data.general.presentPercentage, barColor:'bg-emerald-500' },
-                  { label:'Absent Rate', value:`${data.general.absentPercentage.toFixed(1)}%`,  icon: XCircle,      color:'text-red-600',     iconBg:'bg-red-50',     bar:data.general.absentPercentage,  barColor:'bg-red-500'     },
-                  { label:'Total Days',  value: data.general.totalDays,                 icon: CheckCircle2, color:'text-gray-700',    iconBg:'bg-gray-100',   bar:null },
-                ].map(({ label, value, icon: Icon, color, iconBg, bar, barColor }) => (
-                  <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
-                      <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center', iconBg)}>
-                        <Icon className={cn('w-3.5 h-3.5', color)} />
-                      </div>
-                    </div>
-                    <p className={cn('text-3xl font-bold leading-none', color)}>{value}</p>
-                    {bar !== null && bar !== undefined && (
-                      <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
-                        <div className={cn('h-1.5 rounded-full', barColor)} style={{ width: `${bar}%` }} />
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {/* Present count by teacher */}
+            <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="text-sm font-semibold text-gray-900">Present Count by Teacher</h2>
+                <p className="text-[11px] text-gray-400 mt-0.5">Sorted by most scan-ins</p>
               </div>
-
-              {/* Bar chart */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-900">Attendance Rate by Teacher</h2>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Top {Math.min(data.teachers.length, 10)} teachers</p>
-                </div>
-                <div className="p-5 space-y-3">
-                  {data.teachers.slice().sort((a,b)=>b.percentage-a.percentage).slice(0,10).map((t)=>(
-                    <div key={t.teacherId} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-[10px] font-bold text-red-800 flex-shrink-0">{initials(t.teacherName)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-xs font-medium text-gray-700 truncate">{t.teacherName}</p>
-                          <span className={cn('text-xs font-bold ml-2 flex-shrink-0',t.percentage>=90?'text-emerald-600':t.percentage>=75?'text-amber-600':'text-red-600')}>{t.percentage}%</span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div
-                            className={cn('h-2 rounded-full transition-all duration-700',t.percentage>=90?'bg-emerald-500':t.percentage>=75?'bg-amber-500':'bg-red-500')}
-                            style={{ width: `${t.percentage}%` }}
-                          />
-                        </div>
-                      </div>
+              <div className="p-5 space-y-2">
+                {data.teachers.slice().sort((a,b)=>b.present-a.present).slice(0,10).map((t,i)=>(
+                  <button key={t.teacherId} onClick={()=>setSelectedTeacherId(t.teacherId)}
+                    className={cn('w-full flex items-center gap-3 rounded-xl px-4 py-3 transition-all text-left',
+                      i===0&&'bg-amber-50 hover:bg-amber-100/70', i===1&&'bg-slate-50 hover:bg-slate-100/70', i===2&&'bg-orange-50 hover:bg-orange-100/70',
+                      i>=3&&'hover:bg-gray-50', selectedTeacherId===t.teacherId&&i>=3&&'bg-red-50'
+                    )}>
+                    <div className={cn('w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm',
+                      i===0&&'bg-amber-400 text-white', i===1&&'bg-slate-400 text-white', i===2&&'bg-orange-400 text-white', i>=3&&'bg-gray-200 text-gray-600'
+                    )}>{i+1}</div>
+                    <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0',
+                      i===0&&'bg-amber-200 text-amber-800', i===1&&'bg-slate-200 text-slate-700', i===2&&'bg-orange-200 text-orange-800', i>=3&&'bg-red-100 text-red-800'
+                    )}>{initials(t.teacherName)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-800 truncate">{t.teacherName}</p>
+                      <p className="text-[10px] text-gray-400">{t.subject || 'No subject'}</p>
                     </div>
-                  ))}
-                </div>
+                    <span className="text-xs text-gray-400 flex-shrink-0">{t.present} present</span>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Selected Teacher Detail */}
+            {/* Teacher Detail */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h2 className="text-sm font-semibold text-gray-900">Teacher Detail</h2>
-                <p className="text-[11px] text-gray-400 mt-0.5">Select a teacher to inspect</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">Click a teacher to inspect</p>
               </div>
               <div className="p-5 space-y-4">
-                {/* Teacher select */}
                 <select
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
@@ -230,7 +279,6 @@ export function TeacherAttendanceTab() {
 
                 {selectedTeacher && (
                   <>
-                    {/* Avatar + name */}
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-sm font-bold text-red-800 flex-shrink-0">{initials(selectedTeacher.teacherName)}</div>
                       <div className="min-w-0">
@@ -239,13 +287,10 @@ export function TeacherAttendanceTab() {
                       </div>
                     </div>
 
-                    {/* Mini KPIs */}
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        {l:'Days',    v:selectedTeacher.totalDays,  c:'text-gray-800'},
-                        {l:'Present', v:selectedTeacher.present,    c:'text-emerald-600'},
-                        {l:'Absent',  v:selectedTeacher.absent,     c:'text-red-600'},
-                        {l:'Late',    v:selectedTeacher.late,       c:'text-amber-600'},
+                        { l: 'Days',    v: selectedTeacher.totalDays, c: 'text-gray-800'    },
+                        { l: 'Present', v: selectedTeacher.present,   c: 'text-emerald-600' },
                       ].map(({l,v,c})=>(
                         <div key={l} className="bg-gray-50 rounded-xl p-3 text-center">
                           <p className="text-[10px] text-gray-400 mb-0.5">{l}</p>
@@ -254,16 +299,29 @@ export function TeacherAttendanceTab() {
                       ))}
                     </div>
 
-                    {/* Rate bar */}
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-500 font-medium">Attendance Rate</span>
-                        <span className={cn('text-sm font-bold',selectedTeacher.percentage>=90?'text-emerald-600':selectedTeacher.percentage>=75?'text-amber-600':'text-red-600')}>{selectedTeacher.percentage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className={cn('h-2 rounded-full transition-all duration-700',selectedTeacher.percentage>=90?'bg-emerald-500':selectedTeacher.percentage>=75?'bg-amber-500':'bg-red-500')} style={{width:`${selectedTeacher.percentage}%`}} />
-                      </div>
-                    </div>
+                    {/* Breakdown */}
+                    {(() => {
+                      const b: Record<string,number> = {};
+                      Object.values(selectedTeacher.dailyAttendance).forEach((c) => { b[c]=(b[c]||0)+1; });
+                      const entries = Object.entries(b).sort(([,a],[,b])=>b-a);
+                      return entries.length > 0 ? (
+                        <div>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Breakdown</p>
+                          <div className="space-y-1.5">
+                            {entries.map(([code,count])=>{
+                              const m=getMeta(code);
+                              return (
+                                <div key={code} className="flex items-center gap-2">
+                                  <div className={cn('w-2 h-2 rounded-full flex-shrink-0',m.dot)} />
+                                  <span className="text-xs text-gray-600 flex-1 truncate">{m.label}</span>
+                                  <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-md',m.bg,m.text)}>{count}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
                   </>
                 )}
               </div>
@@ -296,7 +354,6 @@ export function TeacherAttendanceTab() {
                     <th className="text-left px-4 py-3 font-semibold text-gray-500 min-w-[200px] sticky left-10 bg-gray-50/70 z-10 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)]">Teacher</th>
                     <th className="text-center px-4 py-3 font-semibold text-gray-400">Days</th>
                     <th className="text-center px-4 py-3 font-semibold text-gray-400">Present</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Rate</th>
                     {dateColumns.map((d)=>(
                       <th key={d} className="text-center px-1 py-3 font-semibold text-gray-400 min-w-[48px]">
                         <div className="text-[10px] font-bold">{format(new Date(d),'EEE')}</div>
@@ -325,9 +382,6 @@ export function TeacherAttendanceTab() {
                       </td>
                       <td className="px-4 py-3 text-center text-gray-500">{t.totalDays}</td>
                       <td className="px-4 py-3 text-center text-gray-500">{t.present}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold',t.percentage>=90?'bg-emerald-100 text-emerald-700':t.percentage>=75?'bg-amber-100 text-amber-700':'bg-red-100 text-red-700')}>{t.percentage}%</span>
-                      </td>
                       {dateColumns.map((d)=>{
                         const code=t.dailyAttendance[d]||'-';
                         const m=getMeta(code);

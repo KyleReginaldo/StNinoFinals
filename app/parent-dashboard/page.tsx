@@ -1,8 +1,8 @@
 'use client';
 
+import { ActivePeriodBadge } from '@/components/ui/active-period-badge';
 import { PasswordChangeWrapper } from '@/components/PasswordChangeWrapper';
 import { RefreshButton } from '@/components/RefreshButton';
-import { useRefresh } from '@/lib/refresh-context';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,25 +30,30 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useRefresh } from '@/lib/refresh-context';
 import { supabase } from '@/lib/supabaseClient';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import {
   Calendar,
+  Camera,
   Clock,
   Eye,
   GraduationCap,
   Home,
   LayoutDashboard,
   LogOut,
+  Mail,
+  MapPin,
   Menu,
+  Phone,
   User,
   UserPlus,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ParentDashboard } from './components/ParentDashboard';
 
 interface Child {
@@ -80,13 +85,18 @@ export default function ParentDashboardPage() {
   const [enrollingChild, setEnrollingChild] = useState<string>('');
   const [enrollGradeLevel, setEnrollGradeLevel] = useState('');
   const [enrollStrand, setEnrollStrand] = useState('');
-  const [enrollSemester, setEnrollSemester] = useState('1');
+  const [enrollmentType, setEnrollmentType] = useState('new');
+  const [previousSchool, setPreviousSchool] = useState('');
   const [enrollSubmitting, setEnrollSubmitting] = useState(false);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
 
   // Dashboard data states
   const [childStats, setChildStats] = useState<{ [childId: string]: any }>({});
+  const [childClasses, setChildClasses] = useState<{
+    [childId: string]: any[];
+  }>({});
+  const [classesLoading, setClassesLoading] = useState(false);
   const [childGrades, setChildGrades] = useState<{ [childId: string]: any[] }>(
     {}
   );
@@ -337,6 +347,27 @@ export default function ParentDashboardPage() {
     return month >= 5 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
   })();
 
+  const fetchChildClasses = async (childrenList: Child[]) => {
+    setClassesLoading(true);
+    const classMap: { [childId: string]: any[] } = {};
+    await Promise.all(
+      childrenList.map(async (child) => {
+        const childId = String(child.id);
+        try {
+          const res = await fetch(
+            `/api/student/enrollment?studentId=${childId}`
+          );
+          const data = await res.json();
+          classMap[childId] = data.success ? data.data?.classes || [] : [];
+        } catch {
+          classMap[childId] = [];
+        }
+      })
+    );
+    setChildClasses(classMap);
+    setClassesLoading(false);
+  };
+
   const fetchEnrollmentRequests = async () => {
     if (!parent?.id) return;
     setEnrollmentLoading(true);
@@ -354,7 +385,7 @@ export default function ParentDashboardPage() {
   };
 
   const handleEnrollSubmit = async () => {
-    if (!enrollingChild || !enrollGradeLevel || !enrollSemester) {
+    if (!enrollingChild || !enrollGradeLevel) {
       showAlert({
         message: 'Please fill in all required fields.',
         type: 'error',
@@ -383,7 +414,8 @@ export default function ParentDashboardPage() {
           gradeLevel: enrollGradeLevel,
           strand: needsStrand ? enrollStrand : null,
           schoolYear: currentSchoolYear,
-          semester: enrollSemester,
+          enrollmentType,
+          previousSchool: previousSchool || null,
         }),
       });
       const data = await res.json();
@@ -395,7 +427,8 @@ export default function ParentDashboardPage() {
         setEnrollingChild('');
         setEnrollGradeLevel('');
         setEnrollStrand('');
-        setEnrollSemester('1');
+        setEnrollmentType('new');
+        setPreviousSchool('');
         fetchEnrollmentRequests();
       } else {
         showAlert({
@@ -470,6 +503,7 @@ export default function ParentDashboardPage() {
               onClick={() => {
                 setActiveTab(key);
                 if (key === 'enrollment') fetchEnrollmentRequests();
+                if (key === 'schedule') fetchChildClasses(children);
                 onNavigate?.();
               }}
               className={`group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 text-left ${
@@ -847,12 +881,13 @@ export default function ParentDashboardPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Welcome, {parent.name || parent.email || 'Parent/Guardian'}!
+                    Welcome, {parent.name || parent.email || 'Guardian'}!
                   </h2>
                   <p className="text-gray-600">
                     Monitor your children's academic progress and school
                     activities.
                   </p>
+                  <div className="mt-2"><ActivePeriodBadge /></div>
                 </div>
 
                 {/* Data Loading Indicator */}
@@ -1123,7 +1158,7 @@ export default function ParentDashboardPage() {
                                   size="sm"
                                 >
                                   <Eye className="w-4 h-4 mr-2" />
-                                  View Portal
+                                  View Details
                                 </Button>
                               </div>
                             </div>
@@ -1218,22 +1253,35 @@ export default function ParentDashboardPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label required>Quarter</Label>
+                        <Label required>Enrollment Type</Label>
                         <Select
-                          value={enrollSemester}
-                          onValueChange={setEnrollSemester}
+                          value={enrollmentType}
+                          onValueChange={setEnrollmentType}
                         >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">Quarter 1</SelectItem>
-                            <SelectItem value="2">Quarter 2</SelectItem>
-                            <SelectItem value="3">Quarter 3</SelectItem>
-                            <SelectItem value="4">Quarter 4</SelectItem>
+                            <SelectItem value="new">New Student</SelectItem>
+                            <SelectItem value="returning">Returning Student</SelectItem>
+                            <SelectItem value="transferee">Transferee</SelectItem>
+                            <SelectItem value="returnee">Returnee</SelectItem>
+                            <SelectItem value="repeater">Repeater</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {(enrollmentType === 'transferee' ||
+                        enrollmentType === 'returnee') && (
+                        <div className="space-y-2">
+                          <Label>Previous School</Label>
+                          <Input
+                            value={previousSchool}
+                            onChange={(e) => setPreviousSchool(e.target.value)}
+                            placeholder="Enter previous school name"
+                          />
+                        </div>
+                      )}
 
                       {(enrollGradeLevel.includes('11') ||
                         enrollGradeLevel.includes('12')) && (
@@ -1322,7 +1370,7 @@ export default function ParentDashboardPage() {
                                 <p className="text-sm text-gray-500">
                                   {req.grade_level}
                                   {req.strand ? ` - ${req.strand}` : ''} |{' '}
-                                  {req.school_year} | Q{req.quarter}
+                                  {req.school_year}
                                 </p>
                                 <p className="text-xs text-gray-400 mt-1">
                                   Submitted:{' '}
@@ -1356,156 +1404,285 @@ export default function ParentDashboardPage() {
 
             {/* Attendance */}
             {activeTab === 'attendance' && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Attendance Records
-                  </h2>
-                  <p className="text-gray-600">
-                    View detailed attendance information for each child.
-                  </p>
+                  <h2 className="text-2xl font-bold text-gray-900">Attendance</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">Recent scan records for each child.</p>
                 </div>
 
-                <div className="space-y-6">
-                  {children.map((child) => {
-                    const childId = String(child.id);
-                    const attendanceData = childAttendance[childId] || [];
-                    const stats = childStats[childId];
+                {children.map((child) => {
+                  const childId = String(child.id);
+                  const records: any[] = childAttendance[childId] || [];
+                  const stats = childStats[childId];
 
-                    return (
-                      <Card key={child.id}>
-                        <CardHeader>
-                          <CardTitle className="text-red-800">
-                            {child.name}
-                          </CardTitle>
-                          <CardDescription>
-                            {child.grade_level || 'N/A'} -{' '}
-                            {child.section || 'N/A'}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            {stats && (
-                              <div>
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="text-sm font-medium">
-                                    Overall Attendance Rate
-                                  </span>
-                                  <span className="text-sm font-bold text-red-800">
-                                    {stats.attendanceRate.toFixed(1)}%
-                                  </span>
+                  const present = records.filter((a) => a.status === 'present').length;
+                  const late    = records.filter((a) => a.status === 'late').length;
+                  const absent  = records.filter((a) => a.status === 'absent').length;
+
+                  const statusBadge = (s: string) => {
+                    if (s === 'present') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Present</span>;
+                    if (s === 'late')    return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Late</span>;
+                    return                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Absent</span>;
+                  };
+
+                  return (
+                    <div key={child.id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      {/* Child header + stats */}
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{child.name}</p>
+                          <p className="text-xs text-gray-500">{child.grade_level || 'N/A'} – {child.section || 'N/A'}</p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          {stats && stats.attendanceRate > 0 && (
+                            <span className="font-semibold text-gray-700">{stats.attendanceRate.toFixed(0)}%</span>
+                          )}
+                          {records.length > 0 && (
+                            <div className="flex gap-1">
+                              {present > 0 && <span className="bg-green-100 text-green-700 rounded px-1.5 py-0.5 font-medium">{present}P</span>}
+                              {late > 0    && <span className="bg-yellow-100 text-yellow-700 rounded px-1.5 py-0.5 font-medium">{late}L</span>}
+                              {absent > 0  && <span className="bg-red-100 text-red-700 rounded px-1.5 py-0.5 font-medium">{absent}A</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Records list */}
+                      {records.length === 0 ? (
+                        <div className="px-4 py-5 text-center text-xs text-gray-400">No recent attendance records.</div>
+                      ) : (
+                        <div className="divide-y divide-gray-50">
+                          {records.slice(0, 10).map((a: any, i: number) => {
+                            const dt = new Date(a.scan_time || a.date);
+                            const dateStr = dt.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+                            const timeStr = a.scan_time ? dt.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '—';
+                            const scanLabel = a.scan_type === 'timein' ? 'Time In' : a.scan_type === 'timeout' ? 'Time Out' : a.scan_type || '—';
+                            return (
+                              <div key={i} className="flex items-center justify-between px-4 py-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="text-xs text-gray-500 w-16 shrink-0">{dateStr}</div>
+                                  <div className="text-xs text-gray-700">{timeStr}</div>
+                                  <div className="text-xs text-gray-400">{scanLabel}</div>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-3">
-                                  <div
-                                    className="bg-red-600 h-3 rounded-full transition-all"
-                                    style={{
-                                      width: `${stats.attendanceRate}%`,
-                                    }}
-                                  />
-                                </div>
+                                {statusBadge(a.status)}
                               </div>
-                            )}
-                            {attendanceData.length > 0 ? (
-                              <div className="text-sm text-gray-500">
-                                Last 7 days:{' '}
-                                {
-                                  attendanceData.filter(
-                                    (a: any) => a.status === 'present'
-                                  ).length
-                                }{' '}
-                                present,{' '}
-                                {
-                                  attendanceData.filter(
-                                    (a: any) => a.status === 'late'
-                                  ).length
-                                }{' '}
-                                late,{' '}
-                                {
-                                  attendanceData.filter(
-                                    (a: any) => a.status === 'absent'
-                                  ).length
-                                }{' '}
-                                absent
-                              </div>
-                            ) : (
-                              <div className="text-center py-6 text-gray-500">
-                                <Clock className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                                <p>No attendance records available</p>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            );
+                          })}
+                          {records.length > 10 && (
+                            <div className="px-4 py-2 text-center text-xs text-gray-400">+{records.length - 10} more records</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            {/* Schedule / Subjects */}
+            {/* Schedule */}
             {activeTab === 'schedule' && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Subjects
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Weekly Schedule
                   </h2>
-                  <p className="text-gray-600">
-                    View your children's enrolled subjects.
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Class times per day for each student.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {children.map((child) => {
-                    const childId = String(child.id);
-                    const grades = childGrades[childId] || [];
-                    const subjects = [
-                      ...new Set(grades.map((g: any) => g.subject)),
-                    ].sort();
+                {classesLoading ? (
+                  <div className="flex justify-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-900 border-t-transparent" />
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {children.map((child) => {
+                      const childId = String(child.id);
+                      const classes = childClasses[childId] || [];
 
-                    return (
-                      <Card key={child.id}>
-                        <CardHeader>
-                          <CardTitle className="text-red-800">
-                            {child.name}'s Subjects
-                          </CardTitle>
-                          <CardDescription>
-                            {child.grade_level || 'N/A'} -{' '}
-                            {child.section || 'N/A'}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          {subjects.length > 0 ? (
-                            <ul className="space-y-2">
-                              {subjects.map((subject: string) => (
-                                <li
-                                  key={subject}
-                                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                                >
-                                  <GraduationCap className="w-4 h-4 text-red-800 flex-shrink-0" />
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {subject}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
+                      const DAY_ORDER = ['M', 'T', 'W', 'Th', 'F'];
+                      const DAY_LABELS: Record<string, string> = {
+                        M: 'Monday',
+                        T: 'Tuesday',
+                        W: 'Wednesday',
+                        Th: 'Thursday',
+                        F: 'Friday',
+                      };
+
+                      const scheduleByDay: Record<
+                        string,
+                        {
+                          className: string;
+                          start: string;
+                          end: string;
+                          room: string;
+                          teacher: string;
+                        }[]
+                      > = {};
+                      DAY_ORDER.forEach((d) => {
+                        scheduleByDay[d] = [];
+                      });
+
+                      const unscheduled: string[] = [];
+
+                      for (const cls of classes) {
+                        if (!cls.schedule) {
+                          unscheduled.push(cls.className);
+                          continue;
+                        }
+                        try {
+                          const entries: {
+                            day: string;
+                            start: string;
+                            end: string;
+                          }[] =
+                            typeof cls.schedule === 'string'
+                              ? JSON.parse(cls.schedule)
+                              : cls.schedule;
+                          if (!entries.length) {
+                            unscheduled.push(cls.className);
+                            continue;
+                          }
+                          for (const e of entries) {
+                            if (scheduleByDay[e.day]) {
+                              scheduleByDay[e.day].push({
+                                className: cls.className,
+                                start: e.start,
+                                end: e.end,
+                                room: cls.room || '',
+                                teacher:
+                                  cls.teacher !== 'TBD'
+                                    ? cls.teacher || ''
+                                    : '',
+                              });
+                            }
+                          }
+                        } catch {
+                          unscheduled.push(cls.className);
+                        }
+                      }
+
+                      DAY_ORDER.forEach((d) =>
+                        scheduleByDay[d].sort((a, b) =>
+                          a.start.localeCompare(b.start)
+                        )
+                      );
+
+                      const fmt = (t: string) => {
+                        const [h, m] = t.split(':').map(Number);
+                        const suffix = h < 12 ? 'AM' : 'PM';
+                        const hour = h % 12 || 12;
+                        return m === 0
+                          ? `${hour} ${suffix}`
+                          : `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
+                      };
+
+                      const activeDays = DAY_ORDER.filter(
+                        (d) => scheduleByDay[d].length > 0
+                      );
+                      const hasAnySchedule = activeDays.length > 0;
+
+                      return (
+                        <div
+                          key={child.id}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                        >
+                          {/* Child header */}
+                          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-gray-600">
+                                {child.name?.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">
+                                {child.name}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {child.grade_level || 'N/A'} —{' '}
+                                {child.section || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {classes.length === 0 ? (
+                            <div className="text-center py-10 text-gray-400">
+                              <GraduationCap className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                              <p className="text-sm">
+                                No classes enrolled yet.
+                              </p>
+                            </div>
+                          ) : !hasAnySchedule ? (
+                            <div className="px-5 py-8 text-center text-gray-400">
+                              <Clock className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                              <p className="text-sm">
+                                No schedule set for these classes yet.
+                              </p>
+                              {unscheduled.length > 0 && (
+                                <p className="text-xs text-gray-300 mt-1">
+                                  {unscheduled.join(', ')}
+                                </p>
+                              )}
+                            </div>
                           ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <GraduationCap className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                              <p>No subjects found.</p>
+                            <div className="divide-y divide-gray-100">
+                              {activeDays.map((day) => (
+                                <div key={day} className="px-5 py-4">
+                                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+                                    {DAY_LABELS[day]}
+                                  </p>
+                                  <div className="space-y-2">
+                                    {scheduleByDay[day].map((entry, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5"
+                                      >
+                                        <div className="text-xs font-mono text-gray-500 w-28 shrink-0">
+                                          {fmt(entry.start)} – {fmt(entry.end)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium text-gray-900">
+                                            {entry.className}
+                                          </p>
+                                          <div className="flex gap-3 text-xs text-gray-400 mt-0.5">
+                                            {entry.room && (
+                                              <span>Room {entry.room}</span>
+                                            )}
+                                            {entry.teacher && (
+                                              <span>{entry.teacher}</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                              {unscheduled.length > 0 && (
+                                <div className="px-5 py-3 bg-gray-50">
+                                  <p className="text-[11px] text-gray-400">
+                                    No time set: {unscheduled.join(', ')}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
             {activeTab === 'profile' && (
-              <ProfileTab parent={parent} onSaved={(updated: any) => {
-                setParent(updated);
-                localStorage.setItem('parent', JSON.stringify(updated));
-              }} />
+              <ProfileTab
+                parent={parent}
+                onSaved={(updated: any) => {
+                  setParent(updated);
+                  localStorage.setItem('parent', JSON.stringify(updated));
+                }}
+              />
             )}
           </main>
         </div>
@@ -1514,26 +1691,96 @@ export default function ParentDashboardPage() {
   );
 }
 
-function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) => void }) {
+function ProfileTab({
+  parent,
+  onSaved,
+}: {
+  parent: any;
+  onSaved: (updated: any) => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ first_name: '', last_name: '', middle_name: '', phone_number: '', address: '' });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    parent?.photo_url ?? null
+  );
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
+
+  const [form, setForm] = useState({
+    first_name: '',
+    last_name: '',
+    middle_name: '',
+    suffix: '',
+    phone_number: '',
+    address: '',
+  });
 
   const displayName = parent
-    ? `${parent.first_name || ''} ${parent.last_name || ''}`.trim() || parent.email?.split('@')[0] || 'Parent'
-    : 'Parent';
+    ? [parent.first_name, parent.middle_name, parent.last_name, parent.suffix]
+        .filter(Boolean)
+        .join(' ') ||
+      parent.email?.split('@')[0] ||
+      'Guardian'
+    : 'Guardian';
+
+  const avatarLetters = displayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !parent) return;
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('userId', String(parent.id));
+      fd.append('role', 'parent');
+
+      const uploadRes = await fetch('/api/upload-avatar', { method: 'POST', body: fd });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.success) throw new Error(uploadData.error);
+      const url = uploadData.url;
+
+      const res = await fetch('/api/parent/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId: parent.id, photo_url: url }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+      setAvatarUrl(url);
+      onSaved({ ...parent, photo_url: url });
+    } catch (e: any) {
+      setError(e.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const handleEdit = () => {
     setForm({
-      first_name:   parent.first_name   || '',
-      last_name:    parent.last_name    || '',
-      middle_name:  parent.middle_name  || '',
+      first_name: parent.first_name || '',
+      last_name: parent.last_name || '',
+      middle_name: parent.middle_name || '',
+      suffix: parent.suffix || '',
       phone_number: parent.phone_number || parent.phone || '',
-      address:      parent.address      || '',
+      address: parent.address || '',
     });
     setError('');
     setEditing(true);
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    setError('');
   };
 
   const handleSave = async () => {
@@ -1561,23 +1808,69 @@ function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) 
   };
 
   return (
-    <div className="space-y-5 max-w-2xl">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
-        <p className="text-sm text-gray-500 mt-0.5">Update your personal contact information</p>
+    <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-5">
+      {/* Avatar + Name */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-between gap-5">
+        <div className="flex items-center gap-5">
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 rounded-full bg-purple-700/20 flex items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-xl font-bold text-purple-700">
+                  {avatarLetters}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 w-5 h-5 bg-gray-900 hover:bg-gray-700 rounded-full flex items-center justify-center transition"
+              title="Change photo"
+            >
+              {uploadingAvatar ? (
+                <span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera className="w-3 h-3 text-white" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{displayName}</h2>
+            <p className="text-sm text-gray-400 mt-0.5">{parent?.email}</p>
+            <span className="inline-flex items-center mt-1.5 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
+              Guardian
+            </span>
+          </div>
+        </div>
+        {!editing && (
+          <Button variant="outline" size="sm" onClick={handleEdit}>
+            Edit Profile
+          </Button>
+        )}
       </div>
 
+      {/* Personal Information */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-900">Personal Information</p>
-          {!editing && (
-            <button
-              onClick={handleEdit}
-              className="text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Edit
-            </button>
-          )}
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">
+            Personal Information
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Your contact details and address
+          </p>
         </div>
 
         {editing ? (
@@ -1585,24 +1878,65 @@ function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label required>First Name</Label>
-                <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+                <Input
+                  value={form.first_name}
+                  onChange={(e) =>
+                    setForm({ ...form, first_name: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label required>Last Name</Label>
-                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+                <div className="flex gap-2">
+                  <Input
+                    className="flex-1"
+                    value={form.last_name}
+                    onChange={(e) =>
+                      setForm({ ...form, last_name: e.target.value })
+                    }
+                  />
+                  <Select
+                    value={form.suffix || 'none'}
+                    onValueChange={(v) =>
+                      setForm({ ...form, suffix: v === 'none' ? '' : v })
+                    }
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue placeholder="Sfx" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {SUFFIX_OPTIONS.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div>
-              <Label>Middle Name</Label>
-              <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
+              <Label>M.I. (Middle Name)</Label>
+              <Input
+                value={form.middle_name}
+                onChange={(e) =>
+                  setForm({ ...form, middle_name: e.target.value })
+                }
+                placeholder="Optional"
+              />
             </div>
             <div>
               <Label>Phone Number</Label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
+                  +63
+                </span>
                 <Input
                   className="rounded-l-none"
-                  value={form.phone_number.replace(/^\+63/, '').replace(/^0/, '')}
+                  value={form.phone_number
+                    .replace(/^\+63/, '')
+                    .replace(/^0/, '')}
                   placeholder="9XXXXXXXXX"
                   inputMode="numeric"
                   maxLength={10}
@@ -1615,38 +1949,59 @@ function ProfileTab({ parent, onSaved }: { parent: any; onSaved: (updated: any) 
             </div>
             <div>
               <Label>Address</Label>
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street, Barangay, City" />
+              <Input
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Street, Barangay, City"
+              />
             </div>
-            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                {error}
+              </p>
+            )}
             <div className="flex justify-end gap-2 pt-1">
-              <button
-                onClick={() => { setEditing(false); setError(''); }}
+              <Button
+                variant="outline"
+                onClick={handleCancel}
                 disabled={saving}
-                className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="text-sm px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="bg-gray-900 hover:bg-gray-800 text-white"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
-          <div className="px-5 py-2 divide-y divide-gray-100">
+          <div className="px-5 divide-y divide-gray-100">
             {[
-              { label: 'Full Name',     value: displayName },
-              { label: 'Email',         value: parent?.email },
-              { label: 'Phone Number',  value: parent?.phone_number || parent?.phone },
-              { label: 'Address',       value: parent?.address },
-            ].map(({ label, value }) =>
+              { icon: User, label: 'Full Name', value: displayName },
+              { icon: Mail, label: 'Email', value: parent?.email },
+              {
+                icon: Phone,
+                label: 'Contact Number',
+                value: parent?.phone_number || parent?.phone,
+              },
+              { icon: MapPin, label: 'Address', value: parent?.address },
+            ].map(({ icon: Icon, label, value }) =>
               value ? (
-                <div key={label} className="py-3">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">{value}</p>
+                <div key={label} className="flex items-start gap-3 py-3">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      {label}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 mt-0.5">
+                      {value}
+                    </p>
+                  </div>
                 </div>
               ) : null
             )}

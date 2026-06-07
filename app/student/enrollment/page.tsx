@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import {
   Card,
   CardContent,
@@ -26,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { parseScheduleSlots } from '@/lib/rooms';
 import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { supabase } from '@/lib/supabaseClient';
 import { useRefresh } from '@/lib/refresh-context';
@@ -169,7 +171,6 @@ export default function EnrollmentPage() {
 
   const [gradeLevel, setGradeLevel] = useState('');
   const [strand, setStrand] = useState('');
-  const [semester, setSemester] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [previousGradesFile, setPreviousGradesFile] = useState<File | null>(
     null
@@ -191,36 +192,28 @@ export default function EnrollmentPage() {
 
   const isSHS = gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12';
 
-  // Derive the suggested next grade + quarter from the last approved enrollment
-  const suggestedEnrollment = useMemo(() => {
+  // Derive the suggested next grade from the last approved enrollment.
+  // Quarter is no longer chosen by the student — it is set automatically.
+  const suggestedGrade = useMemo(() => {
     const lastApproved = enrollmentHistory.find((r) => r.status === 'approved');
     if (!lastApproved) return null;
 
     const lastGradeNum = parseInt(String(lastApproved.grade_level).replace(/\D/g, ''));
-    const lastSemester = lastApproved.semester ?? (lastApproved as any).quarter;
-    if (!lastGradeNum || !lastSemester) return null;
+    if (!lastGradeNum) return null;
 
-    let nextGradeNum = lastGradeNum;
-    let nextQuarter = Number(lastSemester) + 1;
-    if (nextQuarter > 4) {
-      nextQuarter = 1;
-      nextGradeNum = Math.min(lastGradeNum + 1, 12);
-    }
-
+    const nextGradeNum = Math.min(lastGradeNum + 1, 12);
     return {
       lastGrade: `Grade ${lastGradeNum}`,
-      lastQuarter: Number(lastSemester),
       nextGrade: `Grade ${nextGradeNum}`,
-      nextQuarter,
+      isReturning: true,
     };
   }, [enrollmentHistory]);
 
-  // Auto-fill grade + quarter once after data loads (history takes priority over profile)
+  // Auto-fill grade once after data loads (enrollment history takes priority)
   useEffect(() => {
     if (autoFilledRef.current) return;
-    if (suggestedEnrollment) {
-      setGradeLevel(suggestedEnrollment.nextGrade);
-      setSemester(String(suggestedEnrollment.nextQuarter));
+    if (suggestedGrade) {
+      setGradeLevel(suggestedGrade.nextGrade);
       autoFilledRef.current = true;
     } else if (student?.grade_level) {
       const gl = String(student.grade_level).trim();
@@ -230,7 +223,7 @@ export default function EnrollmentPage() {
         autoFilledRef.current = true;
       }
     }
-  }, [suggestedEnrollment, student?.grade_level]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [suggestedGrade, student?.grade_level]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(async () => {
     if (!student) return;
@@ -296,9 +289,9 @@ export default function EnrollmentPage() {
 
   const handleSubmitRequest = useCallback(async () => {
     if (!student) return;
-    if (!gradeLevel || !semester) {
+    if (!gradeLevel) {
       showAlert({
-        message: 'Please fill in all required fields.',
+        message: 'Please select a grade level.',
         type: 'warning',
       });
       return;
@@ -349,7 +342,7 @@ export default function EnrollmentPage() {
           gradeLevel,
           strand: isSHS ? strand : null,
           schoolYear: CURRENT_SCHOOL_YEAR,
-          semester: Number(semester),
+          enrollmentType: suggestedGrade?.isReturning ? 'returning' : 'new',
           previousGradesUrl,
         }),
       });
@@ -367,7 +360,6 @@ export default function EnrollmentPage() {
       });
       setGradeLevel('');
       setStrand('');
-      setSemester('');
       setAdditionalNotes('');
       setPreviousGradesFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -384,7 +376,7 @@ export default function EnrollmentPage() {
     student,
     gradeLevel,
     strand,
-    semester,
+    suggestedGrade,
     isSHS,
     previousGradesFile,
     showAlert,
@@ -677,6 +669,33 @@ export default function EnrollmentPage() {
     }
   }, [student, enrollment, info, displayName, enrollmentRequest, showAlert]);
 
+  const generateHistoryExcel = useCallback(async () => {
+    if (!enrollmentHistory || enrollmentHistory.length === 0) {
+      showAlert({ message: 'No enrollment history available.', type: 'warning' });
+      return;
+    }
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const studentName = info?.name || displayName;
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`Enrollment_History_${studentName.replace(/\s+/g, '_')}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'ENROLLMENT HISTORY',
+        `Student: ${studentName.toUpperCase()}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['Date Applied', 'Grade Level', 'School Year', 'Status'],
+      colWidths: [22, 18, 22, 16],
+      rows: enrollmentHistory.map((req) => [
+        new Date(req.created_at).toLocaleDateString('en-PH'),
+        req.grade_level,
+        req.school_year,
+        req.status.toUpperCase(),
+      ]),
+      headerColor: 'red',
+    });
+  }, [enrollmentHistory, displayName, info, showAlert]);
+
   const generateHistoryPDF = useCallback(() => {
     if (!enrollmentHistory || enrollmentHistory.length === 0) {
       showAlert({
@@ -720,7 +739,7 @@ export default function EnrollmentPage() {
         const dateStr = new Date(req.created_at).toLocaleDateString();
         doc.text(dateStr, 20, yPos);
         doc.text(req.grade_level, 60, yPos);
-        doc.text(`${req.school_year} (Q${req.semester})`, 100, yPos);
+        doc.text(req.school_year, 100, yPos);
         doc.text(req.status.toUpperCase(), 150, yPos);
         yPos += 8;
       });
@@ -757,14 +776,11 @@ export default function EnrollmentPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={generateHistoryPDF}
+            <ExportDropdown
+              onPDF={generateHistoryPDF}
+              onExcel={generateHistoryExcel}
               disabled={dataLoading}
-              variant="outline"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Download History
-            </Button>
+            />
             <Button
               onClick={() => setCoeDialogOpen(true)}
               disabled={dataLoading}
@@ -782,8 +798,6 @@ export default function EnrollmentPage() {
             <div>
               <p className="font-semibold text-green-800">Currently Enrolled</p>
               <p className="text-sm text-green-600">
-                {enrollment?.semester ?? ''}
-                {enrollment?.semester && enrollment?.schoolYear ? ' · ' : ''}
                 A.Y. {enrollment?.schoolYear ?? ''}
               </p>
             </div>
@@ -832,11 +846,6 @@ export default function EnrollmentPage() {
                 label="Academic Year"
                 value={enrollment?.schoolYear}
               />
-              <InfoCard
-                icon={CalendarDays}
-                label="Quarter"
-                value={enrollment?.semester ? `Quarter ${enrollment.semester}` : undefined}
-              />
             </div>
           </CardContent>
         </Card>
@@ -875,39 +884,74 @@ export default function EnrollmentPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2.5">
                 {classes.map((cls) => (
                   <div
                     key={cls.id}
-                    className={`p-4 rounded-xl border transition-colors hover:bg-gray-50 ${cls.isActive ? 'border-gray-200' : 'border-gray-100 opacity-70'}`}
+                    className={`flex items-start gap-3 p-4 rounded-xl border bg-white transition-all hover:shadow-sm ${cls.isActive ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h5 className="font-semibold text-gray-900 text-sm leading-snug">
-                        {cls.className}
-                      </h5>
-                      {cls.classCode && (
-                        <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md flex-shrink-0">
-                          {cls.classCode}
-                        </span>
-                      )}
+                    {/* Subject icon */}
+                    <div className="shrink-0 w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center mt-0.5">
+                      <BookOpen className="w-4 h-4 text-red-700" />
                     </div>
-                    <div className="space-y-1 text-xs text-gray-600">
-                      <div className="flex items-center gap-1.5">
-                        <User2 className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{cls.teacher}</span>
+
+                    <div className="flex-1 min-w-0">
+                      {/* Subject name + code */}
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <p className="text-sm font-semibold text-gray-900 leading-snug">
+                          {cls.className}
+                        </p>
+                        {cls.classCode && (
+                          <span className="text-[11px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded shrink-0">
+                            {cls.classCode}
+                          </span>
+                        )}
                       </div>
-                      {cls.room && (
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                          <span>Room {cls.room}</span>
-                        </div>
-                      )}
-                      {cls.schedule && (
-                        <div className="flex items-center gap-1.5">
-                          <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
-                          <span>{cls.schedule}</span>
-                        </div>
-                      )}
+
+                      {/* Teacher · Room */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <User2 className="w-3 h-3 text-gray-400" />
+                          {cls.teacher}
+                        </span>
+                        {cls.room && (
+                          <>
+                            <span className="text-gray-300">·</span>
+                            <span className="flex items-center gap-1">
+                              <Building2 className="w-3 h-3 text-gray-400" />
+                              {cls.room}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Schedule chips */}
+                      {cls.schedule && (() => {
+                        const slots = parseScheduleSlots(cls.schedule);
+                        if (slots.length === 0) return null;
+                        const groups: Record<string, string[]> = {};
+                        slots.forEach(s => {
+                          const key = `${s.start}–${s.end}`;
+                          (groups[key] ??= []).push(s.day);
+                        });
+                        return (
+                          <div className="flex flex-wrap gap-1.5">
+                            {Object.entries(groups).map(([time, days]) => (
+                              <div key={time} className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-lg px-2 py-1">
+                                <CalendarDays className="w-3 h-3 text-gray-400 shrink-0" />
+                                <div className="flex gap-0.5">
+                                  {days.map(d => (
+                                    <span key={d} className="inline-flex items-center justify-center w-5 h-[18px] rounded text-[9px] font-bold bg-red-100 text-red-700">
+                                      {d}
+                                    </span>
+                                  ))}
+                                </div>
+                                <span className="text-[11px] text-gray-500 font-medium">{time}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}
@@ -1009,15 +1053,11 @@ export default function EnrollmentPage() {
               Track your enrollment status
             </p>
           </div>
-          <Button
-            onClick={generateHistoryPDF}
+          <ExportDropdown
+            onPDF={generateHistoryPDF}
+            onExcel={generateHistoryExcel}
             disabled={dataLoading}
-            variant="outline"
-            className="shrink-0"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Download History
-          </Button>
+          />
         </div>
         <div className="flex items-start gap-4 p-5 rounded-xl bg-amber-50 border border-amber-200">
           <Clock className="w-7 h-7 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -1046,24 +1086,18 @@ export default function EnrollmentPage() {
                 label="Grade Level"
                 value={enrollmentRequest?.grade_level}
               />
-              <InfoCard
-                icon={Layers}
-                label="Strand"
-                value={enrollmentRequest?.strand || 'N/A'}
-              />
+              {(enrollmentRequest?.grade_level === 'Grade 11' ||
+                enrollmentRequest?.grade_level === 'Grade 12') && (
+                <InfoCard
+                  icon={Layers}
+                  label="Strand"
+                  value={enrollmentRequest?.strand || 'N/A'}
+                />
+              )}
               <InfoCard
                 icon={Calendar}
                 label="School Year"
                 value={enrollmentRequest?.school_year}
-              />
-              <InfoCard
-                icon={CalendarDays}
-                label="Quarter"
-                value={
-                  (enrollmentRequest?.quarter ?? enrollmentRequest?.semester)
-                    ? `Quarter ${enrollmentRequest?.quarter ?? enrollmentRequest?.semester}`
-                    : undefined
-                }
               />
               <InfoCard
                 icon={Hash}
@@ -1101,6 +1135,93 @@ export default function EnrollmentPage() {
     );
   }
 
+  // ─── APPROVED (but user_classes not yet created / classes not linked) ──────
+  if (reqStatus === 'approved' && !isEnrolled) {
+    return (
+      <div className="p-6 space-y-6 max-w-3xl mx-auto">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Enrollment</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Your enrollment status</p>
+          </div>
+          <ExportDropdown
+            onPDF={generateHistoryPDF}
+            onExcel={generateHistoryExcel}
+            disabled={dataLoading}
+          />
+        </div>
+        <div className="flex items-start gap-4 p-5 rounded-xl bg-green-50 border border-green-200">
+          <CheckCircle2 className="w-7 h-7 text-green-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-green-800 text-lg">
+              Enrollment Approved
+            </p>
+            <p className="text-sm text-green-700 mt-1">
+              Your enrollment request has been approved. Your section and class
+              schedule will be assigned shortly. Please check back later or
+              contact the school for details.
+            </p>
+          </div>
+        </div>
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-red-700" />
+              Request Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <InfoCard
+                icon={GraduationCap}
+                label="Grade Level"
+                value={enrollmentRequest?.grade_level}
+              />
+              {(enrollmentRequest?.grade_level === 'Grade 11' ||
+                enrollmentRequest?.grade_level === 'Grade 12') && (
+                <InfoCard
+                  icon={Layers}
+                  label="Strand"
+                  value={enrollmentRequest?.strand || 'N/A'}
+                />
+              )}
+              <InfoCard
+                icon={Calendar}
+                label="School Year"
+                value={enrollmentRequest?.school_year}
+              />
+              <InfoCard
+                icon={Hash}
+                label="Submitted On"
+                value={
+                  enrollmentRequest?.created_at
+                    ? new Date(enrollmentRequest.created_at).toLocaleDateString(
+                        'en-US',
+                        { year: 'numeric', month: 'long', day: 'numeric' }
+                      )
+                    : null
+                }
+              />
+              <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-green-700" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-green-600 uppercase tracking-wide">
+                    Status
+                  </p>
+                  <p className="text-sm font-semibold text-green-800 mt-0.5">
+                    Approved
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // ─── REJECTED ─────────────────────────────────────────────────────────────
   if (reqStatus === 'rejected') {
     return (
@@ -1112,15 +1233,11 @@ export default function EnrollmentPage() {
               Submit a new enrollment application
             </p>
           </div>
-          <Button
-            onClick={generateHistoryPDF}
+          <ExportDropdown
+            onPDF={generateHistoryPDF}
+            onExcel={generateHistoryExcel}
             disabled={dataLoading}
-            variant="outline"
-            className="shrink-0"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Download History
-          </Button>
+          />
         </div>
         <div className="flex items-start gap-4 p-5 rounded-xl bg-red-50 border border-red-200">
           <XCircle className="w-7 h-7 text-red-600 flex-shrink-0 mt-0.5" />
@@ -1149,8 +1266,6 @@ export default function EnrollmentPage() {
           setGradeLevel={setGradeLevel}
           strand={strand}
           setStrand={setStrand}
-          semester={semester}
-          setSemester={setSemester}
           additionalNotes={additionalNotes}
           setAdditionalNotes={setAdditionalNotes}
           isSHS={isSHS}
@@ -1160,7 +1275,7 @@ export default function EnrollmentPage() {
           description="Fill in the details for your new enrollment request."
           fileInputRef={fileInputRef}
           setPreviousGradesFile={setPreviousGradesFile}
-          suggestedEnrollment={suggestedEnrollment}
+          suggestedGrade={suggestedGrade}
         />
       </div>
     );
@@ -1176,15 +1291,11 @@ export default function EnrollmentPage() {
             Submit an enrollment application for the upcoming school year
           </p>
         </div>
-        <Button
-          onClick={generateHistoryPDF}
+        <ExportDropdown
+          onPDF={generateHistoryPDF}
+          onExcel={generateHistoryExcel}
           disabled={dataLoading}
-          variant="outline"
-          className="shrink-0"
-        >
-          <BookOpen className="w-4 h-4 mr-2" />
-          Download History
-        </Button>
+        />
       </div>
       <div className="flex items-start gap-4 p-5 rounded-xl bg-blue-50 border border-blue-200">
         <AlertCircle className="w-7 h-7 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -1204,8 +1315,6 @@ export default function EnrollmentPage() {
         setGradeLevel={setGradeLevel}
         strand={strand}
         setStrand={setStrand}
-        semester={semester}
-        setSemester={setSemester}
         additionalNotes={additionalNotes}
         setAdditionalNotes={setAdditionalNotes}
         isSHS={isSHS}
@@ -1215,7 +1324,7 @@ export default function EnrollmentPage() {
         description={`Apply for enrollment in A.Y. ${CURRENT_SCHOOL_YEAR}.`}
         fileInputRef={fileInputRef}
         setPreviousGradesFile={setPreviousGradesFile}
-        suggestedEnrollment={suggestedEnrollment}
+        suggestedGrade={suggestedGrade}
       />
     </div>
   );
@@ -1227,8 +1336,6 @@ function EnrollmentForm({
   setGradeLevel,
   strand,
   setStrand,
-  semester,
-  setSemester,
   additionalNotes,
   setAdditionalNotes,
   isSHS,
@@ -1238,14 +1345,12 @@ function EnrollmentForm({
   description,
   fileInputRef,
   setPreviousGradesFile,
-  suggestedEnrollment,
+  suggestedGrade,
 }: {
   gradeLevel: string;
   setGradeLevel: (v: string) => void;
   strand: string;
   setStrand: (v: string) => void;
-  semester: string;
-  setSemester: (v: string) => void;
   additionalNotes: string;
   setAdditionalNotes: (v: string) => void;
   isSHS: boolean;
@@ -1255,7 +1360,7 @@ function EnrollmentForm({
   description: string;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setPreviousGradesFile: (file: File | null) => void;
-  suggestedEnrollment?: { lastGrade: string; lastQuarter: number; nextGrade: string; nextQuarter: number } | null;
+  suggestedGrade?: { lastGrade: string; nextGrade: string; isReturning: boolean } | null;
 }) {
   return (
     <Card className="bg-white border border-gray-200 shadow-sm">
@@ -1267,45 +1372,30 @@ function EnrollmentForm({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {suggestedEnrollment && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
-            <span className="font-medium shrink-0">Previous:</span>
-            <span>{suggestedEnrollment.lastGrade} · Quarter {suggestedEnrollment.lastQuarter}</span>
-            <span className="text-amber-500 font-bold">→</span>
-            <span className="font-medium shrink-0">Suggested:</span>
-            <span className="font-semibold">{suggestedEnrollment.nextGrade} · Quarter {suggestedEnrollment.nextQuarter}</span>
+        {suggestedGrade && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800">
+            <GraduationCap className="w-4 h-4 shrink-0" />
+            <span className="font-medium">Returning student</span>
+            <span className="text-green-600">·</span>
+            <span>{suggestedGrade.lastGrade}</span>
+            <span className="text-green-500 font-bold">→</span>
+            <span className="font-semibold">{suggestedGrade.nextGrade}</span>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="gradeLevel" required>Grade Level</Label>
-            <Select value={gradeLevel} onValueChange={setGradeLevel}>
-              <SelectTrigger id="gradeLevel">
-                <SelectValue placeholder="Select grade level" />
-              </SelectTrigger>
-              <SelectContent>
-                {GRADE_LEVELS.map((g) => (
-                  <SelectItem key={g} value={g}>
-                    {g}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="semester" required>Quarter</Label>
-            <Select value={semester} onValueChange={setSemester}>
-              <SelectTrigger id="semester">
-                <SelectValue placeholder="Select quarter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Quarter 1</SelectItem>
-                <SelectItem value="2">Quarter 2</SelectItem>
-                <SelectItem value="3">Quarter 3</SelectItem>
-                <SelectItem value="4">Quarter 4</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="gradeLevel" required>Grade Level</Label>
+          <Select value={gradeLevel} onValueChange={setGradeLevel}>
+            <SelectTrigger id="gradeLevel">
+              <SelectValue placeholder="Select grade level" />
+            </SelectTrigger>
+            <SelectContent>
+              {GRADE_LEVELS.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {isSHS && (
@@ -1372,9 +1462,7 @@ function EnrollmentForm({
           </p>
           <Button
             onClick={onSubmit}
-            disabled={
-              submitting || !gradeLevel || !semester || (isSHS && !strand)
-            }
+            disabled={submitting || !gradeLevel || (isSHS && !strand)}
             className="w-full bg-red-800 hover:bg-red-700 text-white"
           >
             {submitting ? (

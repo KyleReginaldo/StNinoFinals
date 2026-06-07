@@ -26,6 +26,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/admin/hooks/useAuth';
 import { supabase } from '@/lib/supabaseClient';
+import { useRefresh } from '@/lib/refresh-context';
 
 /* ── Types ─────────────────────────────────────────────────── */
 interface NavItem {
@@ -111,6 +112,7 @@ function SectionLabel({ label }: { label: string }) {
 export const AdminSidebarContent = () => {
   const pathname = usePathname();
   const { admin } = useAuth();
+  const { refreshKey } = useRefresh();
   const [pendingCounts, setPendingCounts] = useState({ admissions: 0, enrollments: 0, grades: 0 });
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -142,7 +144,7 @@ export const AdminSidebarContent = () => {
     fetch_();
     const iv = setInterval(fetch_, 30000);
     return () => clearInterval(iv);
-  }, []);
+  }, [refreshKey]);
 
   return (
     <div className="flex flex-col h-full bg-[#111827] overflow-hidden">
@@ -173,7 +175,7 @@ export const AdminSidebarContent = () => {
             children: [
               { label: 'Students', href: '/admin/students', icon: User },
               { label: 'Teachers', href: '/admin/teachers', icon: UserRound },
-              { label: 'Parents',  href: '/admin/parents',  icon: UserRound },
+              { label: 'Guardians', href: '/admin/parents', icon: UserRound },
             ],
           }}
           pathname={pathname}
@@ -183,11 +185,12 @@ export const AdminSidebarContent = () => {
         {/* Academics */}
         <SectionLabel label="Academics" />
         <SidebarItem item={{ label: 'Class List',       href: '/admin/class-list',  icon: Layers        }} pathname={pathname} />
-        <SidebarItem item={{ label: 'Classes',          href: '/admin/classes',     icon: BookOpen      }} pathname={pathname} />
+        <SidebarItem item={{ label: 'Subject Management', href: '/admin/classes',     icon: BookOpen      }} pathname={pathname} />
         <SidebarItem item={{ label: 'Sections',         href: '/admin/sections',    icon: Layers        }} pathname={pathname} />
         <SidebarItem item={{ label: 'Rooms',             href: '/admin/rooms',       icon: DoorOpen      }} pathname={pathname} />
         <SidebarItem item={{ label: 'Grade Approvals',  href: '/admin/grades',      icon: GraduationCap, badge: pendingCounts.grades }} pathname={pathname} />
         <SidebarItem item={{ label: 'Enrollment',       href: '/admin/enrollment',  icon: ClipboardList, badge: pendingCounts.enrollments }} pathname={pathname} />
+        <SidebarItem item={{ label: 'Academic Period',  href: '/admin/academic-period', icon: Calendar }} pathname={pathname} />
 
         {/* Monitoring */}
         <SectionLabel label="Monitoring" />
@@ -198,7 +201,7 @@ export const AdminSidebarContent = () => {
             icon: BarChart3,
             children: [
               { label: 'Overview',           href: '/admin/reports',            icon: BarChart3 },
-              { label: 'Population Report',  href: '/admin/reports/population', icon: Users     },
+              { label: 'Enrollment Report',  href: '/admin/reports/population', icon: Users     },
             ],
           }}
           pathname={pathname}

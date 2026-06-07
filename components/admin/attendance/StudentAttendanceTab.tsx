@@ -2,12 +2,15 @@
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { endOfWeek, format, startOfWeek, subWeeks } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
-  CalendarIcon, CheckCircle2, Clock, Download,
+  CalendarIcon,
   RefreshCw, Trophy, Users, XCircle,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -36,7 +39,7 @@ interface AttendanceReportsData {
 }
 
 const CODE_META: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  PR: { label: 'Present',      bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  PR: { label: 'Time In / Time Out', bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
   AC: { label: 'Absent',       bg: 'bg-red-100',     text: 'text-red-700',     dot: 'bg-red-500'     },
   LA: { label: 'Late',         bg: 'bg-amber-100',   text: 'text-amber-700',   dot: 'bg-amber-500'   },
   EX: { label: 'Excused',      bg: 'bg-blue-100',    text: 'text-blue-700',    dot: 'bg-blue-500'    },
@@ -112,17 +115,57 @@ export function StudentAttendanceTab() {
     return b;
   }, [selectedStudent]);
 
-  const exportCSV = () => {
+  const exportExcel = async () => {
     if (!data?.students.length) return;
-    const rows = [
-      ['#','Name','Grade','Section','Days','Present','Absent','Late','Excused','%',...dateColumns.map((d)=>format(new Date(d),'MM/dd'))],
-      ...data.students.map((s,i)=>[String(i+1),s.studentName,s.gradeLevel,s.section,String(s.totalDays),String(s.present),String(s.absent),String(s.late),String(s.excused),`${s.percentage}%`,...dateColumns.map((d)=>s.dailyAttendance[d]||'-')]),
-    ];
-    const csv = rows.map((r)=>r.map((c)=>`"${c.replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-    a.download = `student-attendance-${dateRange?.from?format(dateRange.from,'yyyy-MM-dd'):'start'}-to-${dateRange?.to?format(dateRange.to,'yyyy-MM-dd'):'end'}.csv`;
-    a.style.visibility='hidden'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    const { downloadExcel } = await import('@/lib/export-excel');
+    const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const to   = dateRange?.to   ? format(dateRange.to,   'yyyy-MM-dd') : 'end';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    await downloadExcel(`student-attendance-${from}-to-${to}`, {
+      title: [
+        'STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.',
+        'STUDENT ATTENDANCE REPORT',
+        `Period: ${from} to ${to}`,
+        `Generated: ${generated}`,
+      ],
+      columns: ['#', 'Name', 'Grade', 'Section', 'Days', 'Present', 'Absent', 'Late', 'Excused'],
+      colWidths: [8, 36, 16, 16, 10, 12, 12, 10, 12],
+      rows: data.students.map((s, i) => [i + 1, s.studentName, s.gradeLevel, s.section, s.totalDays, s.present, s.absent, s.late, s.excused]),
+      headerColor: 'red',
+    });
+  };
+
+  const exportPDF = () => {
+    if (!data?.students.length) return;
+    const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : 'start';
+    const to   = dateRange?.to   ? format(dateRange.to,   'yyyy-MM-dd') : 'end';
+    const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 148, 12, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 148, 18, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text('STUDENT ATTENDANCE REPORT', 148, 26, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${from} to ${to}`, 148, 32, { align: 'center' });
+    doc.text(`Generated: ${generated}`, 148, 37, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 42,
+      head: [['#', 'Student Name', 'Grade', 'Section', 'Days', 'Present', 'Absent', 'Late', 'Excused']],
+      body: data.students.map((s, i) => [i + 1, s.studentName, s.gradeLevel, s.section, s.totalDays, s.present, s.absent, s.late, s.excused]),
+      foot: [['', 'TOTAL', '', '', '', data.general.totalPresent, data.general.totalAbsent, '', '']],
+      theme: 'grid',
+      headStyles: { fillColor: [153, 27, 27], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      footStyles: { fontStyle: 'bold', fillColor: [229, 231, 235], textColor: [17, 24, 39], fontSize: 8 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 4: { halign: 'center' }, 5: { halign: 'center' }, 6: { halign: 'center' }, 7: { halign: 'center' }, 8: { halign: 'center' } },
+      margin: { left: 10, right: 10 },
+    });
+
+    doc.save(`student-attendance-${from}-to-${to}.pdf`);
   };
 
   if (loading && !data) {
@@ -183,9 +226,7 @@ export function StudentAttendanceTab() {
             <RefreshCw className={cn('w-3.5 h-3.5',loading&&'animate-spin')} />Refresh
           </button>
           {data?.students.length ? (
-            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-800 hover:bg-red-900 rounded-lg transition-colors">
-              <Download className="w-3.5 h-3.5" />Export
-            </button>
+            <ExportDropdown onPDF={exportPDF} onExcel={exportExcel} size="sm" />
           ) : null}
         </div>
       </div>
@@ -216,26 +257,21 @@ export function StudentAttendanceTab() {
       {data && data.students.length > 0 && (
         <>
           {/* ── KPI Cards ───────────────────────────────────────── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {[
-              { label:'Students',    value: data.general.totalStudents,             sub: `${dateColumns.length} days tracked`,           icon: Users,        color: 'text-blue-600',    iconBg: 'bg-blue-50',    bar: null },
-              { label:'Present Rate',value: `${data.general.presentPercentage.toFixed(1)}%`, sub:`${data.general.totalPresent} records`, icon: CheckCircle2, color: 'text-emerald-600', iconBg: 'bg-emerald-50', bar: data.general.presentPercentage, barColor:'bg-emerald-500' },
-              { label:'Absent Rate', value: `${data.general.absentPercentage.toFixed(1)}%`,  sub:`${data.general.totalAbsent} records`,  icon: XCircle,      color: 'text-red-600',     iconBg: 'bg-red-50',     bar: data.general.absentPercentage,  barColor:'bg-red-500'     },
-              { label:'Tardiness',   value: data.general.totalLate,                sub: 'late arrival records',                          icon: Clock,        color: 'text-amber-600',   iconBg: 'bg-amber-50',   bar: null },
-            ].map(({ label, value, sub, icon: Icon, color, iconBg, bar, barColor }) => (
+              { label: 'Students',      value: data.general.totalStudents, sub: `${dateColumns.length} days tracked`,      color: 'text-blue-600',    iconBg: 'bg-blue-50', icon: Users },
+              { label: 'Present Count', value: data.general.totalPresent,  sub: 'Total scan-in records in period',         color: 'text-emerald-600', iconBg: 'bg-emerald-50', icon: null },
+            ].map(({ label, value, sub, color, iconBg, icon: Icon }) => (
               <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
-                  <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', iconBg)}>
-                    <Icon className={cn('w-4 h-4', color)} />
-                  </div>
+                  {Icon && (
+                    <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', iconBg)}>
+                      <Icon className={cn('w-4 h-4', color)} />
+                    </div>
+                  )}
                 </div>
                 <p className={cn('text-4xl font-bold leading-none', color)}>{value}</p>
-                {bar !== null && bar !== undefined && (
-                  <div className="mt-2.5 w-full bg-gray-100 rounded-full h-1.5">
-                    <div className={cn('h-1.5 rounded-full transition-all duration-700', barColor)} style={{width:`${bar}%`}} />
-                  </div>
-                )}
                 <p className="text-xs text-gray-400 mt-1.5">{sub}</p>
               </div>
             ))}
@@ -251,7 +287,7 @@ export function StudentAttendanceTab() {
                 <span className="ml-auto text-xs text-gray-400">By attendance rate</span>
               </div>
               <div className="p-5 space-y-2">
-                {data.students.slice().sort((a,b)=>b.percentage-a.percentage).slice(0,8).map((s,i)=>(
+                {data.students.slice().sort((a,b)=>b.present-a.present).slice(0,8).map((s,i)=>(
                   <button key={s.studentId} onClick={()=>setSelectedStudentId(s.studentId)}
                     className={cn('w-full flex items-center gap-3 rounded-xl px-4 py-3 transition-all text-left',
                       i===0&&'bg-amber-50 hover:bg-amber-100/70', i===1&&'bg-slate-50 hover:bg-slate-100/70', i===2&&'bg-orange-50 hover:bg-orange-100/70',
@@ -267,12 +303,7 @@ export function StudentAttendanceTab() {
                       <p className="text-xs font-semibold text-gray-800 truncate">{s.studentName}</p>
                       <p className="text-[10px] text-gray-400">{s.gradeLevel} · {s.section}</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-2 w-28 flex-shrink-0">
-                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div className={cn('h-1.5 rounded-full',s.percentage>=90?'bg-emerald-500':s.percentage>=75?'bg-amber-500':'bg-red-500')} style={{width:`${s.percentage}%`}} />
-                      </div>
-                    </div>
-                    <span className={cn('text-sm font-bold flex-shrink-0 w-12 text-right',s.percentage>=90?'text-emerald-600':s.percentage>=75?'text-amber-600':'text-red-600')}>{s.percentage}%</span>
+                    <span className="text-xs text-gray-400 flex-shrink-0">{s.present} present</span>
                   </button>
                 ))}
               </div>
@@ -293,23 +324,14 @@ export function StudentAttendanceTab() {
                       <p className="text-xs text-gray-400">{selectedStudent.gradeLevel} · {selectedStudent.section}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[{l:'Days',v:selectedStudent.totalDays,c:'text-gray-800'},{l:'Present',v:selectedStudent.present,c:'text-emerald-600'},{l:'Absent',v:selectedStudent.absent,c:'text-red-600'}]
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{l:'Days',v:selectedStudent.totalDays,c:'text-gray-800'},{l:'Present',v:selectedStudent.present,c:'text-emerald-600'}]
                       .map(({l,v,c})=>(
                         <div key={l} className="bg-gray-50 rounded-xl p-3 text-center">
                           <p className="text-[10px] text-gray-400 mb-0.5">{l}</p>
                           <p className={cn('text-lg font-bold leading-none',c)}>{v}</p>
                         </div>
                     ))}
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500 font-medium">Attendance Rate</span>
-                      <span className={cn('text-sm font-bold',selectedStudent.percentage>=90?'text-emerald-600':selectedStudent.percentage>=75?'text-amber-600':'text-red-600')}>{selectedStudent.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className={cn('h-2 rounded-full transition-all duration-700',selectedStudent.percentage>=90?'bg-emerald-500':selectedStudent.percentage>=75?'bg-amber-500':'bg-red-500')} style={{width:`${selectedStudent.percentage}%`}} />
-                    </div>
                   </div>
                   {breakdown && Object.keys(breakdown).length > 0 && (
                     <div>
@@ -363,7 +385,6 @@ export function StudentAttendanceTab() {
                     <th className="text-left px-4 py-3 font-semibold text-gray-500 min-w-[180px] sticky left-10 bg-gray-50/70 z-10 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)]">Student</th>
                     <th className="text-center px-4 py-3 font-semibold text-gray-400">Days</th>
                     <th className="text-center px-4 py-3 font-semibold text-gray-400">Present</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Rate</th>
                     {dateColumns.map((d)=>(
                       <th key={d} className="text-center px-1 py-3 font-semibold text-gray-400 min-w-[48px]">
                         <div className="text-[10px] font-bold">{format(new Date(d),'EEE')}</div>
@@ -392,9 +413,6 @@ export function StudentAttendanceTab() {
                       </td>
                       <td className="px-4 py-3 text-center text-gray-500">{s.totalDays}</td>
                       <td className="px-4 py-3 text-center text-gray-500">{s.present}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold',s.percentage>=90?'bg-emerald-100 text-emerald-700':s.percentage>=75?'bg-amber-100 text-amber-700':'bg-red-100 text-red-700')}>{s.percentage}%</span>
-                      </td>
                       {dateColumns.map((d)=>{
                         const code=s.dailyAttendance[d]||'-';
                         const m=getMeta(code);
