@@ -22,6 +22,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
+import { sortGradeLevels } from '@/lib/utils';
 import {
   CheckCircle2,
   ClipboardList,
@@ -302,7 +303,7 @@ export default function AdminEnrollmentPage() {
     studentName: getStudentName(r),
   }));
 
-  const gradeOptions = [...new Set(requests.map((r) => r.grade_level))].sort();
+  const gradeOptions = sortGradeLevels([...new Set(requests.map((r) => r.grade_level))] as string[]);
 
   const tc = useTableControls(flatRequests, {
     searchFields: ['studentName', 'grade_level'],

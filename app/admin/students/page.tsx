@@ -38,6 +38,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useRefresh } from '@/lib/refresh-context';
+import { sortGradeLevels } from '@/lib/utils';
 
 interface Student {
   id: string;
@@ -232,7 +233,7 @@ export default function StudentManagementPage() {
     defaultSort: { key: 'last_name', dir: 'asc' },
     pageSize: 25,
   });
-  const gradeOptions = [...new Set(students.map((s) => s.grade_level).filter(Boolean))].sort();
+  const gradeOptions = sortGradeLevels([...new Set(students.map((s) => s.grade_level).filter(Boolean))] as string[]);
   const statusOptions = [...new Set(students.map((s) => s.status).filter(Boolean))].sort();
 
   const handleAddStudent = async (e: React.FormEvent) => {

@@ -31,6 +31,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
+import { sortGradeLevels } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
 
 const DAY_OPTIONS = ['M', 'T', 'W', 'Th', 'F'];
@@ -344,6 +345,12 @@ export default function ClassesManagementPage() {
         s.grade_level && s.grade_level.trim().toLowerCase() === formData.grade_level.trim().toLowerCase()
       );
     }
+    // When a section is selected, show only students in that section OR with no section
+    if (formData.section) {
+      list = list.filter(s =>
+        !s.section || s.section.trim().toLowerCase() === formData.section.trim().toLowerCase()
+      );
+    }
     if (studentSearch.trim()) {
       const q = studentSearch.toLowerCase();
       list = list.filter(s =>
@@ -353,7 +360,7 @@ export default function ClassesManagementPage() {
       );
     }
     return list;
-  }, [students, formData.grade_level, studentSearch]);
+  }, [students, formData.grade_level, formData.section, studentSearch]);
 
   const flatClasses = useMemo<FlatClass[]>(() =>
     classes.map(c => ({
@@ -367,9 +374,10 @@ export default function ClassesManagementPage() {
 
   const gradeOptions = useMemo(() => {
     const seen = new Set<string>();
-    return classes
+    const unique = classes
       .flatMap(c => c.grade_level ? [c.grade_level] : [])
       .filter(g => { if (seen.has(g)) return false; seen.add(g); return true; });
+    return sortGradeLevels(unique);
   }, [classes]);
 
   const tc = useTableControls(flatClasses, {
@@ -738,7 +746,8 @@ export default function ClassesManagementPage() {
                 Enroll Students
                 {formData.grade_level && (
                   <span className="text-xs font-normal text-gray-500">
-                    — showing {formData.grade_level} students
+                    — showing {formData.grade_level}
+                    {formData.section ? ` · ${formData.section} + unassigned` : ' students'}
                   </span>
                 )}
               </Label>
@@ -761,6 +770,25 @@ export default function ClassesManagementPage() {
                   </p>
                 ) : (
                   <div className="space-y-2">
+                    {/* Select all row */}
+                    <label className="flex items-center gap-2 p-2 bg-gray-50 rounded cursor-pointer border-b border-gray-100 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={filteredStudents.every(s => selectedStudentIds.includes(s.id))}
+                        onChange={() => {
+                          const allSelected = filteredStudents.every(s => selectedStudentIds.includes(s.id));
+                          if (allSelected) {
+                            setSelectedStudentIds(prev => prev.filter(id => !filteredStudents.some(s => s.id === id)));
+                          } else {
+                            setSelectedStudentIds(prev => [...new Set([...prev, ...filteredStudents.map(s => s.id)])]);
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Select all ({filteredStudents.length})
+                      </span>
+                    </label>
                     {filteredStudents.map(student => (
                       <label
                         key={student.id}
@@ -798,7 +826,7 @@ export default function ClassesManagementPage() {
 
       {/* View Students Dialog */}
       <Dialog open={showStudentsDialog} onOpenChange={setShowStudentsDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Students in: {viewingClass?.class_name}</DialogTitle>
             <DialogDescription>
@@ -813,7 +841,7 @@ export default function ClassesManagementPage() {
             <div className="text-center py-8 text-gray-400">No students enrolled in this subject.</div>
           ) : (
             <>
-              <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <div className="rounded-xl border border-gray-200 overflow-hidden flex-1 min-h-0 overflow-y-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50">
