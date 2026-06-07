@@ -7,11 +7,6 @@ import { useEffect, useState } from 'react';
 interface SystemSettings {
   schoolName: string;
   academicYear: string;
-  automaticBackup: boolean;
-  rfidIntegration: boolean;
-  emailNotifications: boolean;
-  studentPortal: boolean;
-  teacherPortal: boolean;
   phone: string;
   contactEmail: string;
   address: string;
@@ -19,39 +14,6 @@ interface SystemSettings {
 }
 
 type StringSettingKey = 'schoolName' | 'phone' | 'contactEmail' | 'address' | 'officeHours';
-type BoolSettingKey =
-  | 'automaticBackup'
-  | 'rfidIntegration'
-  | 'emailNotifications'
-  | 'studentPortal'
-  | 'teacherPortal';
-
-const TOGGLES: { label: string; field: BoolSettingKey; description: string }[] = [
-  { label: 'Automatic Backup',    field: 'automaticBackup',    description: 'Daily off-site backups and retention'    },
-  { label: 'RFID Integration',    field: 'rfidIntegration',    description: 'Use RFID readers for attendance'         },
-  { label: 'Email Notifications', field: 'emailNotifications', description: 'Send alerts to guardians and staff'      },
-  { label: 'Student Portal',      field: 'studentPortal',      description: 'Allow students to view their records'    },
-  { label: 'Teacher Portal',      field: 'teacherPortal',      description: 'Enable teacher dashboard and tools'      },
-];
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      role="switch"
-      aria-checked={checked}
-      onClick={onChange}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:ring-offset-2 ${
-        checked ? 'bg-gray-900' : 'bg-gray-200'
-      }`}
-    >
-      <span
-        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform ${
-          checked ? 'translate-x-4' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-}
 
 function FeedbackLine({ ok, msg }: { ok: boolean; msg: string }) {
   return (
@@ -68,11 +30,6 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>({
     schoolName: 'Sto Niño de Praga Academy',
     academicYear: '2024-2025',
-    automaticBackup: true,
-    rfidIntegration: true,
-    emailNotifications: true,
-    studentPortal: true,
-    teacherPortal: true,
     phone: '',
     contactEmail: '',
     address: '',
@@ -108,8 +65,6 @@ export default function SettingsPage() {
   const handleInputChange = (field: StringSettingKey, value: string) =>
     setSettings(prev => ({ ...prev, [field]: value }));
 
-  const handleToggle = (field: BoolSettingKey) =>
-    setSettings(prev => ({ ...prev, [field]: !prev[field] }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -208,56 +163,32 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* School Information */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">School Information</p>
-            <p className="text-xs text-gray-400 mt-0.5">Basic school configuration settings</p>
-          </div>
-          <div className="px-5 py-4 space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="schoolName" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                School Name
-              </label>
-              <input
-                id="schoolName"
-                value={settings.schoolName}
-                onChange={e => handleInputChange('schoolName', e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Academic Year
-              </label>
-              <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
-                {settings.academicYear}
-                <span className="ml-auto text-[10px] text-gray-400 font-medium uppercase tracking-wide">Auto-calculated</span>
-              </div>
-            </div>
-          </div>
+      {/* School Information */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">School Information</p>
+          <p className="text-xs text-gray-400 mt-0.5">Basic school configuration settings</p>
         </div>
-
-        {/* System Configuration */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">System Configuration</p>
-            <p className="text-xs text-gray-400 mt-0.5">Enable or disable system features</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-5 py-4">
+          <div className="space-y-1.5">
+            <label htmlFor="schoolName" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              School Name
+            </label>
+            <input
+              id="schoolName"
+              value={settings.schoolName}
+              onChange={e => handleInputChange('schoolName', e.target.value)}
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
           </div>
-          <div className="divide-y divide-gray-100">
-            {TOGGLES.map(item => (
-              <div key={item.field} className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-gray-50 transition-colors">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{item.description}</p>
-                </div>
-                <Toggle
-                  checked={settings[item.field] as boolean}
-                  onChange={() => handleToggle(item.field)}
-                />
-              </div>
-            ))}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Academic Year
+            </label>
+            <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+              {settings.academicYear}
+              <span className="ml-auto text-[10px] text-gray-400 font-medium uppercase tracking-wide">Auto-calculated</span>
+            </div>
           </div>
         </div>
       </div>

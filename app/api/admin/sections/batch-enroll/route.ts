@@ -26,12 +26,34 @@ export async function POST(request: NextRequest) {
     // 1. Resolve section
     const { data: section, error: secErr } = await supabase
       .from('sections')
-      .select('id, name, grade_level, school_year')
+      .select('id, name, grade_level, school_year, max_capacity')
       .eq('id', sectionId)
       .single();
 
     if (secErr || !section) {
       return NextResponse.json({ success: false, error: 'Section not found' }, { status: 404 });
+    }
+
+    // Capacity check: count currently enrolled students
+    const { count: currentCount } = await supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'student')
+      .eq('section', section.name)
+      .eq('grade_level', section.grade_level);
+
+    const available = (section.max_capacity ?? 0) - (currentCount ?? 0);
+    if (available <= 0) {
+      return NextResponse.json(
+        { success: false, error: `Section "${section.name}" is already at full capacity (${section.max_capacity}).` },
+        { status: 409 }
+      );
+    }
+    if (studentIds.length > available) {
+      return NextResponse.json(
+        { success: false, error: `Only ${available} slot${available !== 1 ? 's' : ''} remaining in "${section.name}". You selected ${studentIds.length} students.` },
+        { status: 409 }
+      );
     }
 
     // 2. Find all classes belonging to this section

@@ -399,10 +399,15 @@ function BatchEnrollModal({
           <p className="text-sm text-gray-500 -mt-2">
             Assigning to{' '}
             <span className="font-semibold text-gray-800">{section.name}</span>
+            {' · '}{section.grade_level}{' · '}{section.school_year}
             {' · '}
-            {section.grade_level}
-            {' · '}
-            {section.school_year}
+            <span className={
+              section.student_count >= section.max_capacity
+                ? 'text-red-500 font-medium'
+                : 'text-gray-500'
+            }>
+              {section.student_count}/{section.max_capacity} slots
+            </span>
           </p>
         )}
 
@@ -827,6 +832,7 @@ function FormalSectionsPanel() {
                         >
                           <UserPlus className="w-3.5 h-3.5" />
                         </button>
+
                         <button
                           onClick={() => handleDelete(sec.id, sec.name)}
                           disabled={
