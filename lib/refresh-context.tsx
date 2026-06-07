@@ -23,6 +23,10 @@ const WATCHED_TABLES = [
   'announcements',
   'classes',
   'class_enrollments',
+  'user_classes',
+  'admissions',
+  'class_subjects',
+  'rooms',
 ];
 
 export function RefreshProvider({ children }: { children: React.ReactNode }) {

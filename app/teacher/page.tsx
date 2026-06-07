@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Bell, Calendar, Clock, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 import {
   Bar,
@@ -53,6 +54,7 @@ export default function TeacherDashboard() {
   const [teacherStats, setTeacherStats] = useState<any>(null);
   const [chartData, setChartData] = useState<TeacherChartData | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
+  const { refreshKey } = useRefresh();
 
   // Check if teacher is logged in
   useEffect(() => {
@@ -77,7 +79,7 @@ export default function TeacherDashboard() {
     if (teacher && teacher.id) {
       fetchTeacherStats();
     }
-  }, [teacher]);
+  }, [teacher, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTeacherStats = async () => {
     if (!teacher || !teacher.id) return;

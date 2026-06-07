@@ -9,6 +9,7 @@ import {
   Search,
   Users,
 } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Student {
@@ -75,6 +76,7 @@ function SkeletonBlock() {
 export default function ClassListPage() {
   const [data, setData] = useState<GradeData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { refreshKey } = useRefresh();
   const [search, setSearch] = useState('');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
   const [collapsedGrades, setCollapsedGrades] = useState<Set<string>>(new Set());
@@ -92,7 +94,7 @@ export default function ClassListPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [refreshKey]);
 
   const toggleGrade = (grade: string) => {
     setCollapsedGrades((prev) => {

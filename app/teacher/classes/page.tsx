@@ -46,6 +46,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTableControls } from '@/hooks/use-table-controls';
 import { BookOpen, Download, Search, Users } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 
 interface Student {
@@ -75,6 +76,7 @@ export default function TeacherClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewingClass, setViewingClass] = useState<ClassItem | null>(null);
+  const { refreshKey } = useRefresh();
 
   const studentTc = useTableControls(viewingClass?.students ?? [], {
     searchFields: ['last_name', 'first_name', 'student_number'],
@@ -104,7 +106,7 @@ export default function TeacherClassesPage() {
       }
     };
     fetchClasses();
-  }, []);
+  }, [refreshKey]);
 
   const handleExportCSV = (classItem: ClassItem) => {
     if (!classItem.students.length) return;

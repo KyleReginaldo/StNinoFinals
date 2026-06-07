@@ -27,6 +27,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/lib/supabaseClient';
+import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import autoTable from 'jspdf-autotable';
@@ -881,19 +882,19 @@ export default function StudentDashboard() {
     }
   }, []);
 
+  const { refreshKey, triggerRefresh } = useRefresh();
+
   useEffect(() => {
     if (student) {
       fetchDashboardData(student);
     } else {
       setDashboardData(null);
     }
-  }, [student, fetchDashboardData]);
+  }, [student, fetchDashboardData, refreshKey]);
 
   const handleRefreshDashboard = useCallback(() => {
-    if (student) {
-      fetchDashboardData(student);
-    }
-  }, [student, fetchDashboardData]);
+    triggerRefresh();
+  }, [triggerRefresh]);
 
   const handleFirstLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

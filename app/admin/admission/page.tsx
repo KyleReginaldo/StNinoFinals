@@ -27,6 +27,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 
 type Admission = Database['public']['Tables']['admissions']['Row'];
@@ -72,6 +73,7 @@ const AdmissionPage = () => {
   const [emailBody, setEmailBody] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const { showAlert } = useAlert();
+  const { refreshKey } = useRefresh();
 
   const openEmailDialog = (admission: Admission) => {
     const name = `${admission.first_name} ${admission.last_name}`;
@@ -134,7 +136,7 @@ const AdmissionPage = () => {
 
   useEffect(() => {
     fetchAdmissions();
-  }, []);
+  }, [refreshKey]);
 
   const flatAdmissions: FlatAdmission[] = admissions.map((a) => ({
     ...a,

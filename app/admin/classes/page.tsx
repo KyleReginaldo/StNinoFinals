@@ -26,6 +26,7 @@ import { useConfirm } from '@/lib/use-confirm';
 import { parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear } from '@/lib/school-year';
 import { BookOpen, Download, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useMemo, useState } from 'react';
 
 const DAY_OPTIONS = ['M', 'T', 'W', 'Th', 'F'];
@@ -105,6 +106,7 @@ export default function ClassesManagementPage() {
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -127,7 +129,7 @@ export default function ClassesManagementPage() {
       .then((r) => r.json())
       .then((d) => { if (d.success) setRooms(d.rooms.filter((r: any) => r.is_active).map((r: any) => ({ id: r.id, name: r.name, capacity: r.capacity }))); })
       .catch(() => {});
-  }, []);
+  }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchClasses = async () => {
     try {

@@ -114,11 +114,11 @@ export async function PATCH(request: Request) {
       try {
         const student = Array.isArray(data.student) ? data.student[0] : data.student;
         if (student?.email) {
-          await EmailService.sendEmail({
+          await EmailService.sendGradeRejection({
             to: student.email,
-            subject: 'Grade Submission Update - Sto Niño de Praga Academy',
-            text: `Dear ${student.first_name} ${student.last_name},\n\nThe grade submission for ${data.subject} (Quarter ${data.quarter || 'N/A'}) has been rejected by the administrator.\n\nPlease contact your teacher or the school administration for more details.\n\nBest regards,\nSto Niño de Praga Academy`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;"><h2 style="color:#7A0C0C;margin-top:0;">Grade Submission Update</h2><p>Dear ${student.first_name} ${student.last_name},</p><p>The grade submission for <strong>${data.subject}</strong> (Quarter ${data.quarter || 'N/A'}) has been rejected by the administrator.</p><p>Please contact your teacher or the school administration for more details.</p><p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p></div>`,
+            studentName: `${student.first_name} ${student.last_name}`,
+            subject: data.subject,
+            quarter: data.quarter ?? null,
           });
         }
       } catch (emailError) {

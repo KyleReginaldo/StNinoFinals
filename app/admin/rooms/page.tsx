@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, DoorOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 
 interface Room {
@@ -36,6 +37,7 @@ export default function RoomsPage() {
   const [saving, setSaving] = useState(false);
 
   const { showAlert } = useAlert();
+  const { refreshKey } = useRefresh();
   const { showConfirm } = useConfirm();
 
   const fetchRooms = async () => {
@@ -51,7 +53,7 @@ export default function RoomsPage() {
     }
   };
 
-  useEffect(() => { fetchRooms(); }, []);
+  useEffect(() => { fetchRooms(); }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openAdd = () => {
     setEditing(null);

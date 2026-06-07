@@ -3,6 +3,13 @@
 import type React from 'react';
 
 import { getActiveSchoolYear } from '@/lib/school-year';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -85,6 +92,8 @@ export default function HomePage() {
   const [isSubmittingAdmission, setIsSubmittingAdmission] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [agreeAdmissionTerms, setAgreeAdmissionTerms] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [admissionTab, setAdmissionTab] = useState('requirements');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -625,7 +634,7 @@ export default function HomePage() {
                       with next steps.
                     </p>
                     <button
-                      onClick={() => setSubmissionSuccess(false)}
+                      onClick={() => { setSubmissionSuccess(false); setAgreeAdmissionTerms(false); }}
                       className="inline-flex items-center gap-2 bg-red-900 hover:bg-red-800 text-white font-semibold text-sm px-7 py-3 rounded-xl transition-colors"
                     >
                       Submit Another Inquiry
@@ -880,9 +889,51 @@ export default function HomePage() {
                         />
                       </div>
 
+                      <div className="flex items-start gap-3 pt-1">
+                        <input
+                          id="agreeAdmissionTerms"
+                          type="checkbox"
+                          checked={agreeAdmissionTerms}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              e.preventDefault();
+                              setTermsModalOpen(true);
+                            } else {
+                              setAgreeAdmissionTerms(false);
+                            }
+                          }}
+                          onClick={(e) => {
+                            if (!agreeAdmissionTerms) {
+                              e.preventDefault();
+                              setTermsModalOpen(true);
+                            }
+                          }}
+                          disabled={isSubmittingAdmission}
+                          className="mt-0.5 w-4 h-4 accent-red-800 cursor-pointer shrink-0"
+                        />
+                        <label
+                          htmlFor="agreeAdmissionTerms"
+                          className="text-sm text-gray-600 cursor-pointer leading-relaxed select-none"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (!agreeAdmissionTerms) {
+                              setTermsModalOpen(true);
+                            } else {
+                              setAgreeAdmissionTerms(false);
+                            }
+                          }}
+                        >
+                          I have read and agree to the{' '}
+                          <span className="text-red-700 font-medium">Terms of Service</span>
+                          {' '}and{' '}
+                          <span className="text-red-700 font-medium">Privacy Policy</span>
+                          {' '}of Sto. Niño de Praga Academy.
+                        </label>
+                      </div>
+
                       <button
                         type="submit"
-                        disabled={isSubmittingAdmission}
+                        disabled={isSubmittingAdmission || !agreeAdmissionTerms}
                         className="w-full h-12 rounded-xl bg-red-900 hover:bg-red-800 text-white font-semibold text-sm transition-all active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                       >
                         {isSubmittingAdmission
@@ -1052,6 +1103,59 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* ── Terms & Privacy Modal ── */}
+      <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Terms of Service &amp; Privacy Policy</DialogTitle>
+          </DialogHeader>
+
+          <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
+            <div>
+              <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
+              <p>By using the Sto. Niño de Praga Academy portal, you agree to use the system only for lawful, school-related purposes. Accounts are personal and non-transferable. Misuse, unauthorized access, or sharing of credentials may result in account suspension.</p>
+            </div>
+            <div>
+              <p className="font-bold text-gray-800 mb-1">Privacy Policy</p>
+              <p>We collect personal information (name, contact details, grades, attendance) solely to manage enrollment and school operations, in compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data will not be sold or shared with third parties outside of authorized school personnel and required government agencies.</p>
+            </div>
+            <div>
+              <p className="font-bold text-gray-800 mb-1">Data You Provide</p>
+              <ul className="list-disc pl-4 space-y-1 text-gray-500">
+                <li>Student name, grade level, and contact information</li>
+                <li>Parent / Guardian name and email address</li>
+                <li>Previous school details submitted in this inquiry</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-bold text-gray-800 mb-1">Your Rights</p>
+              <p>You may request access, correction, or deletion of your data by contacting us at <span className="text-red-700">info@stnino.ph</span>. For the full policies, see{' '}
+                <Link href="/terms" target="_blank" className="text-red-700 hover:underline">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" target="_blank" className="text-red-700 hover:underline">Privacy Policy</Link>.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setTermsModalOpen(false)}
+              className="flex-1 h-10 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAgreeAdmissionTerms(true); setTermsModalOpen(false); }}
+              className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors"
+            >
+              I Agree
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

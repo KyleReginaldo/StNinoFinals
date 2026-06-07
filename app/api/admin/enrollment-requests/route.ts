@@ -96,14 +96,38 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // On approval, add student to the class (upsert to avoid duplicate)
+    // On approval, add student to the class and all sibling classes in same section
     if (status === 'approved' && classId) {
+      // Get the assigned class details to find sibling classes in the same section
+      const { data: assignedClass } = await supabase
+        .from('classes')
+        .select('section, grade_level, school_year, semester')
+        .eq('id', classId)
+        .single();
+
+      // Collect all class IDs to enroll: start with the assigned class
+      let classIdsToEnroll: string[] = [classId];
+
+      // If the class has a section, find all classes in the same section/grade/year
+      if (assignedClass?.section && assignedClass?.grade_level && assignedClass?.school_year) {
+        const { data: siblingClasses } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('section', assignedClass.section)
+          .eq('grade_level', assignedClass.grade_level)
+          .eq('school_year', assignedClass.school_year);
+
+        if (siblingClasses && siblingClasses.length > 0) {
+          classIdsToEnroll = [...new Set([classId, ...siblingClasses.map((c) => c.id)])];
+        }
+      }
+
       const { error: classError } = await supabase.from('user_classes').upsert(
-        {
+        classIdsToEnroll.map((cid) => ({
           user_id: enrollmentRequest.student_id,
-          class_id: classId,
+          class_id: cid,
           membership_type: 'student',
-        },
+        })),
         { onConflict: 'user_id,class_id', ignoreDuplicates: true }
       );
 
@@ -115,6 +139,17 @@ export async function PATCH(request: NextRequest) {
           },
           { status: 500 }
         );
+      }
+
+      // Update student's grade_level and section to match the assigned class
+      if (assignedClass) {
+        await supabase
+          .from('users')
+          .update({
+            grade_level: assignedClass.grade_level,
+            section: assignedClass.section,
+          })
+          .eq('id', enrollmentRequest.student_id);
       }
     } else if (status === 'rejected') {
       // Un-enroll if they were previously assigned to a class
@@ -135,11 +170,12 @@ export async function PATCH(request: NextRequest) {
           ? enrollmentRequest.student[0]
           : enrollmentRequest.student;
         if (student?.email) {
-          await EmailService.sendEmail({
+          await EmailService.sendEnrollmentRejection({
             to: student.email,
-            subject: 'Enrollment Request Update - Sto Niño de Praga Academy',
-            text: `Dear ${student.first_name} ${student.last_name},\n\nWe regret to inform you that your enrollment request for ${enrollmentRequest.grade_level} (S.Y. ${enrollmentRequest.school_year}) was not approved at this time.\n\n${adminNotes ? `Reason: ${adminNotes}\n\n` : ''}If you have questions, please contact the school administration.\n\nBest regards,\nSto Niño de Praga Academy`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;"><h2 style="color:#7A0C0C;margin-top:0;">Enrollment Request Update</h2><p>Dear ${student.first_name} ${student.last_name},</p><p>We regret to inform you that your enrollment request for <strong>${enrollmentRequest.grade_level}</strong> (S.Y. ${enrollmentRequest.school_year}) was not approved at this time.</p>${adminNotes ? `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px;border-radius:4px;margin:16px 0;"><strong>Reason:</strong> ${adminNotes}</div>` : ''}<p>If you have questions, please contact the school administration.</p><p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p></div>`,
+            studentName: `${student.first_name} ${student.last_name}`,
+            gradeLevel: enrollmentRequest.grade_level,
+            schoolYear: enrollmentRequest.school_year,
+            adminNotes: adminNotes ?? null,
           });
         }
       } catch (emailError) {

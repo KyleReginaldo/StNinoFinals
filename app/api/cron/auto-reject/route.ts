@@ -60,19 +60,12 @@ export async function GET(request: NextRequest) {
 
       const student = Array.isArray(req.student) ? req.student[0] : req.student;
       if (student?.email) {
-        await EmailService.sendEmail({
+        await EmailService.sendEnrollmentAutoReject({
           to: student.email,
-          subject: 'Enrollment Request Auto-Rejected — Sto Niño de Praga Academy',
-          text: `Dear ${student.first_name} ${student.last_name},\n\nYour enrollment request for ${req.grade_level} (S.Y. ${req.school_year}) has been automatically rejected because no action was taken within ${HOURS_THRESHOLD} hours.\n\nPlease contact the school administration for assistance.\n\nBest regards,\nSto Niño de Praga Academy`,
-          html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:10px;">
-<h2 style="color:#7A0C0C;margin-top:0;">Enrollment Request Auto-Rejected</h2>
-<p>Dear ${student.first_name} ${student.last_name},</p>
-<p>Your enrollment request for <strong>${req.grade_level}</strong> (S.Y. ${req.school_year}) has been automatically rejected because no action was taken within <strong>${HOURS_THRESHOLD} hours</strong>.</p>
-<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px;border-radius:4px;margin:16px 0;">
-  Please contact the school administration if you wish to submit a new request.
-</div>
-<p style="color:#666;font-size:13px;margin-top:20px;">Best regards,<br>Sto Niño de Praga Academy</p>
-</div>`,
+          studentName: `${student.first_name} ${student.last_name}`,
+          gradeLevel: req.grade_level,
+          schoolYear: req.school_year,
+          hoursThreshold: HOURS_THRESHOLD,
         }).catch((e: any) => console.error('Email error:', e));
       }
     })

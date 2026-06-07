@@ -28,6 +28,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { supabase } from '@/lib/supabaseClient';
+import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import jsPDF from 'jspdf';
 import {
@@ -117,7 +118,8 @@ interface EnrollmentRequest {
   grade_level: string;
   strand: string | null;
   school_year: string;
-  semester: number;
+  semester: number | null;
+  quarter: number | null;
   status: 'pending' | 'approved' | 'rejected';
   admin_notes: string | null;
   assigned_class_id: string | null;
@@ -153,6 +155,7 @@ function InfoCard({
 export default function EnrollmentPage() {
   const { student, isLoading } = useStudentAuth();
   const { showAlert } = useAlert();
+  const { refreshKey } = useRefresh();
 
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentData | null>(
     null
@@ -172,6 +175,7 @@ export default function EnrollmentPage() {
     null
   );
   const [submitting, setSubmitting] = useState(false);
+  const autoFilledRef = useRef(false);
   const [coeDialogOpen, setCoeDialogOpen]     = useState(false);
   const [coePurposeType, setCoePurposeType]   = useState('general');
   const [coeDetails, setCoeDetails]           = useState('');
@@ -186,6 +190,47 @@ export default function EnrollmentPage() {
   }, [student]);
 
   const isSHS = gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12';
+
+  // Derive the suggested next grade + quarter from the last approved enrollment
+  const suggestedEnrollment = useMemo(() => {
+    const lastApproved = enrollmentHistory.find((r) => r.status === 'approved');
+    if (!lastApproved) return null;
+
+    const lastGradeNum = parseInt(String(lastApproved.grade_level).replace(/\D/g, ''));
+    const lastSemester = lastApproved.semester ?? (lastApproved as any).quarter;
+    if (!lastGradeNum || !lastSemester) return null;
+
+    let nextGradeNum = lastGradeNum;
+    let nextQuarter = Number(lastSemester) + 1;
+    if (nextQuarter > 4) {
+      nextQuarter = 1;
+      nextGradeNum = Math.min(lastGradeNum + 1, 12);
+    }
+
+    return {
+      lastGrade: `Grade ${lastGradeNum}`,
+      lastQuarter: Number(lastSemester),
+      nextGrade: `Grade ${nextGradeNum}`,
+      nextQuarter,
+    };
+  }, [enrollmentHistory]);
+
+  // Auto-fill grade + quarter once after data loads (history takes priority over profile)
+  useEffect(() => {
+    if (autoFilledRef.current) return;
+    if (suggestedEnrollment) {
+      setGradeLevel(suggestedEnrollment.nextGrade);
+      setSemester(String(suggestedEnrollment.nextQuarter));
+      autoFilledRef.current = true;
+    } else if (student?.grade_level) {
+      const gl = String(student.grade_level).trim();
+      const normalized = gl.startsWith('Grade ') ? gl : `Grade ${gl}`;
+      if (GRADE_LEVELS.includes(normalized)) {
+        setGradeLevel(normalized);
+        autoFilledRef.current = true;
+      }
+    }
+  }, [suggestedEnrollment, student?.grade_level]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(async () => {
     if (!student) return;
@@ -224,6 +269,29 @@ export default function EnrollmentPage() {
 
   useEffect(() => {
     if (student) fetchData();
+  }, [student, fetchData, refreshKey]);
+
+  // Real-time: re-fetch when admin updates this student's enrollment request
+  useEffect(() => {
+    if (!student) return;
+    const channel = supabase
+      .channel(`enrollment-requests-${student.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'enrollment_requests',
+          filter: `student_id=eq.${student.id}`,
+        },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [student, fetchData]);
 
   const handleSubmitRequest = useCallback(async () => {
@@ -992,8 +1060,8 @@ export default function EnrollmentPage() {
                 icon={CalendarDays}
                 label="Quarter"
                 value={
-                  enrollmentRequest?.semester
-                    ? `Quarter ${enrollmentRequest.semester}`
+                  (enrollmentRequest?.quarter ?? enrollmentRequest?.semester)
+                    ? `Quarter ${enrollmentRequest?.quarter ?? enrollmentRequest?.semester}`
                     : undefined
                 }
               />
@@ -1092,6 +1160,7 @@ export default function EnrollmentPage() {
           description="Fill in the details for your new enrollment request."
           fileInputRef={fileInputRef}
           setPreviousGradesFile={setPreviousGradesFile}
+          suggestedEnrollment={suggestedEnrollment}
         />
       </div>
     );
@@ -1146,6 +1215,7 @@ export default function EnrollmentPage() {
         description={`Apply for enrollment in A.Y. ${CURRENT_SCHOOL_YEAR}.`}
         fileInputRef={fileInputRef}
         setPreviousGradesFile={setPreviousGradesFile}
+        suggestedEnrollment={suggestedEnrollment}
       />
     </div>
   );
@@ -1168,6 +1238,7 @@ function EnrollmentForm({
   description,
   fileInputRef,
   setPreviousGradesFile,
+  suggestedEnrollment,
 }: {
   gradeLevel: string;
   setGradeLevel: (v: string) => void;
@@ -1184,6 +1255,7 @@ function EnrollmentForm({
   description: string;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setPreviousGradesFile: (file: File | null) => void;
+  suggestedEnrollment?: { lastGrade: string; lastQuarter: number; nextGrade: string; nextQuarter: number } | null;
 }) {
   return (
     <Card className="bg-white border border-gray-200 shadow-sm">
@@ -1195,6 +1267,15 @@ function EnrollmentForm({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {suggestedEnrollment && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+            <span className="font-medium shrink-0">Previous:</span>
+            <span>{suggestedEnrollment.lastGrade} · Quarter {suggestedEnrollment.lastQuarter}</span>
+            <span className="text-amber-500 font-bold">→</span>
+            <span className="font-medium shrink-0">Suggested:</span>
+            <span className="font-semibold">{suggestedEnrollment.nextGrade} · Quarter {suggestedEnrollment.nextQuarter}</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="gradeLevel" required>Grade Level</Label>

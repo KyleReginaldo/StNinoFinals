@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { useAlert } from '@/lib/use-alert';
 import { Plus, Save, X } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 
 const GRADE_LEVELS = [
@@ -25,6 +26,7 @@ export default function SectionsPage() {
   const [saving, setSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const { showAlert } = useAlert();
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     const loadSections = async () => {
@@ -39,7 +41,7 @@ export default function SectionsPage() {
       }
     };
     loadSections();
-  }, []);
+  }, [refreshKey]);
 
   const handleAddSection = () => {
     if (!selectedGrade || !newSectionName.trim()) return;

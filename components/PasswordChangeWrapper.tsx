@@ -20,56 +20,54 @@ export function PasswordChangeWrapper({
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    const checkPasswordChangeRequired = async () => {
+    const check = async () => {
       if (!userId) {
         setIsChecking(false);
         return;
       }
 
-      // Skip if already changed or dismissed this session
-      const localCleared = localStorage.getItem(`pwd_changed_${userId}`);
-      const snoozed = sessionStorage.getItem(`pwd_snoozed_${userId}`);
-      if (localCleared === 'true' || snoozed === 'true') {
+      // Fast-path: if the stored user object already says false, no API call needed
+      for (const key of ['teacher', 'student', 'parent', 'admin']) {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        try {
+          const data = JSON.parse(raw);
+          if (String(data.id) === userId && data.password_change_required === false) {
+            setIsChecking(false);
+            return;
+          }
+        } catch {}
+      }
+
+      // Snoozed for this session (user dismissed without changing)
+      if (sessionStorage.getItem(`pwd_snoozed_${userId}`) === 'true') {
         setIsChecking(false);
         return;
       }
 
+      // Check the DB
       try {
-        const response = await fetch(
-          `/api/auth/change-password?userId=${userId}`
-        );
-        const result = await response.json();
-
+        const res = await fetch(`/api/auth/change-password?userId=${userId}`);
+        const result = await res.json();
         if (result.success) {
           setPasswordChangeRequired(result.passwordChangeRequired);
-          if (result.passwordChangeRequired) {
-            setShowModal(true);
-          }
-        } else {
-          console.error('[PasswordChangeWrapper] Error:', result.error);
+          if (result.passwordChangeRequired) setShowModal(true);
         }
-      } catch (error) {
-        console.error(
-          '[PasswordChangeWrapper] Error checking password change requirement:',
-          error
-        );
+      } catch (e) {
+        console.error('[PasswordChangeWrapper] Error:', e);
       } finally {
         setIsChecking(false);
       }
     };
 
-    checkPasswordChangeRequired();
+    check();
   }, [userId]);
 
   const handlePasswordChanged = () => {
     setPasswordChangeRequired(false);
     setShowModal(false);
     setShowBanner(false);
-    // Persist locally so a page refresh doesn't re-show the modal
-    if (userId) {
-      localStorage.setItem(`pwd_changed_${userId}`, 'true');
-    }
-    // Also clear flag in any stored user objects in localStorage
+    // Update the stored user object so the fast-path skips the check on next mount
     for (const key of ['teacher', 'student', 'parent', 'admin']) {
       const raw = localStorage.getItem(key);
       if (!raw) continue;
@@ -85,25 +83,12 @@ export function PasswordChangeWrapper({
   const handleCloseModal = () => {
     setShowModal(false);
     if (passwordChangeRequired) {
-      // Snooze for this session so it doesn't re-appear on every page load
       sessionStorage.setItem(`pwd_snoozed_${userId}`, 'true');
       setShowBanner(true);
     }
   };
 
-  const handleReopenModal = () => {
-    setShowBanner(false);
-    setShowModal(true);
-  };
-
-  const handleDismissBanner = () => {
-    setShowBanner(false);
-  };
-
-  // While checking, show children normally
-  if (isChecking) {
-    return <>{children}</>;
-  }
+  if (isChecking) return <>{children}</>;
 
   return (
     <>
@@ -125,14 +110,14 @@ export function PasswordChangeWrapper({
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={handleReopenModal}
+                  onClick={() => { setShowBanner(false); setShowModal(true); }}
                   size="sm"
                   className="bg-white text-amber-600 hover:bg-gray-100 font-semibold"
                 >
                   Change Password
                 </Button>
                 <button
-                  onClick={handleDismissBanner}
+                  onClick={() => setShowBanner(false)}
                   className="text-white hover:bg-amber-700 rounded p-1"
                   aria-label="Dismiss"
                 >

@@ -26,6 +26,7 @@ import {
   TrendingUp,
   XCircle,
 } from 'lucide-react';
+import { useRefresh } from '@/lib/refresh-context';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 
@@ -116,9 +117,11 @@ export default function StudentDashboardPage() {
     }
   }, [student]);
 
+  const { refreshKey } = useRefresh();
+
   useEffect(() => {
     if (student) fetchData();
-  }, [student, fetchData]);
+  }, [student, fetchData, refreshKey]);
 
   useEffect(() => {
     fetch('/api/announcements?role=students')
@@ -127,7 +130,7 @@ export default function StudentDashboardPage() {
         if (res.success) setAnnouncements(res.data || []);
       })
       .catch(console.error);
-  }, []);
+  }, [refreshKey]);
 
   if (isLoading) {
     return (

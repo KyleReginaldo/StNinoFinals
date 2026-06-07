@@ -1,5 +1,6 @@
 'use client';
 
+import { useRefresh } from '@/lib/refresh-context';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
@@ -27,6 +28,7 @@ import {
   Clock,
   GraduationCap,
   Layers,
+  Loader2,
   Search,
   User2,
   X,
@@ -88,7 +90,9 @@ export default function AdminEnrollmentPage() {
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [assignedClassId, setAssignedClassId] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<'approved' | 'rejected' | null>(null);
+  const [classAutoSelected, setClassAutoSelected] = useState(false);
+  const { refreshKey } = useRefresh();
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -116,13 +120,49 @@ export default function AdminEnrollmentPage() {
   useEffect(() => {
     fetchRequests();
     fetchClasses();
-  }, [fetchRequests, fetchClasses]);
+  }, [fetchRequests, fetchClasses, refreshKey]);
 
-  const openModal = (req: EnrollmentRequest) => {
+  const openModal = async (req: EnrollmentRequest) => {
     setSelectedRequest(req);
-    setAssignedClassId(req.assigned_class_id ?? '');
     setAdminNotes(req.admin_notes ?? '');
     setModalOpen(true);
+
+    if (req.assigned_class_id) {
+      setAssignedClassId(req.assigned_class_id);
+      setClassAutoSelected(false);
+      return;
+    }
+
+    // Fetch student's current classes from user_classes table
+    try {
+      const res = await fetch(`/api/admin/student-class?studentId=${req.student_id}`);
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok && payload?.success && payload.classIds?.length > 0) {
+        // Find a class that matches the requested grade level
+        const matchingClass = classes.find(
+          (c) =>
+            payload.classIds.includes(c.id) &&
+            c.grade_level?.trim().toLowerCase() === req.grade_level.trim().toLowerCase()
+        );
+        if (matchingClass) {
+          setAssignedClassId(matchingClass.id);
+          setClassAutoSelected(true);
+          return;
+        }
+        // Fallback: use any of their enrolled classes (different grade — still helpful as a hint)
+        const anyClass = classes.find((c) => payload.classIds.includes(c.id));
+        if (anyClass) {
+          setAssignedClassId(anyClass.id);
+          setClassAutoSelected(true);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch student current class', e);
+    }
+
+    setAssignedClassId('');
+    setClassAutoSelected(false);
   };
 
   const closeModal = () => {
@@ -130,6 +170,7 @@ export default function AdminEnrollmentPage() {
     setSelectedRequest(null);
     setAssignedClassId('');
     setAdminNotes('');
+    setClassAutoSelected(false);
   };
 
   const handleDecision = async (decision: 'approved' | 'rejected') => {
@@ -138,7 +179,7 @@ export default function AdminEnrollmentPage() {
       showAlert({ message: 'Please select a class to assign before approving.', type: 'warning' });
       return;
     }
-    setSubmitting(true);
+    setSubmitting(decision);
     try {
       const res = await fetch('/api/admin/enrollment-requests', {
         method: 'PATCH',
@@ -164,7 +205,7 @@ export default function AdminEnrollmentPage() {
     } catch {
       showAlert({ message: 'Something went wrong.', type: 'error' });
     } finally {
-      setSubmitting(false);
+      setSubmitting(null);
     }
   };
 
@@ -426,25 +467,32 @@ export default function AdminEnrollmentPage() {
                 </span>
               </div>
 
-              {selectedRequest.status !== 'approved' && (
+              {selectedRequest.status === 'pending' && (
                 <div className="space-y-1.5">
                   <Label htmlFor="classAssign">
                     Assign to Class{' '}
                     <span className="text-red-600 text-xs">(required for approval)</span>
                   </Label>
                   {relevantClasses.length > 0 ? (
-                    <Select value={assignedClassId} onValueChange={setAssignedClassId}>
-                      <SelectTrigger id="classAssign">
-                        <SelectValue placeholder="Select a class..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {relevantClasses.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.class_name}{c.section ? ` — ${c.section}` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <>
+                      <Select value={assignedClassId} onValueChange={(v) => { setAssignedClassId(v); setClassAutoSelected(false); }}>
+                        <SelectTrigger id="classAssign">
+                          <SelectValue placeholder="Select a class..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {relevantClasses.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.class_name}{c.section ? ` — ${c.section}` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {classAutoSelected && (
+                        <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1 mt-1">
+                          Auto-selected based on previous enrollment
+                        </p>
+                      )}
+                    </>
                   ) : (
                     <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
                       No classes found for {selectedRequest.grade_level}.{' '}
@@ -457,32 +505,43 @@ export default function AdminEnrollmentPage() {
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="adminNotes">Admin Notes (optional)</Label>
-                <Textarea
-                  id="adminNotes"
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Add notes or reason for decision..."
-                  className="min-h-[70px] resize-none"
-                />
-              </div>
+              {selectedRequest.status === 'pending' && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="adminNotes">Admin Notes (optional)</Label>
+                  <Textarea
+                    id="adminNotes"
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Add notes or reason for decision..."
+                    className="min-h-[70px] resize-none"
+                  />
+                </div>
+              )}
+
+              {selectedRequest.status !== 'pending' && selectedRequest.admin_notes && (
+                <div className="space-y-1.5">
+                  <span className="text-sm font-medium text-gray-700">Admin Notes</span>
+                  <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 leading-relaxed">
+                    {selectedRequest.admin_notes}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           <DialogFooter className="gap-2 flex-row justify-end">
-            <Button variant="outline" onClick={closeModal} disabled={submitting}>
+            <Button variant="outline" onClick={closeModal} disabled={!!submitting}>
               {selectedRequest?.status === 'rejected' ? 'Close' : 'Cancel'}
             </Button>
             {selectedRequest?.status === 'approved' && (
               <Button
                 variant="outline"
                 onClick={() => handleDecision('rejected')}
-                disabled={submitting}
+                disabled={!!submitting}
                 className="bg-red-600 text-white hover:bg-red-700"
               >
-                <XCircle className="w-4 h-4 mr-1.5" />
-                Reject
+                {submitting === 'rejected' ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <XCircle className="w-4 h-4 mr-1.5" />}
+                {submitting === 'rejected' ? 'Rejecting...' : 'Reject'}
               </Button>
             )}
             {selectedRequest?.status === 'pending' && (
@@ -490,19 +549,21 @@ export default function AdminEnrollmentPage() {
                 <Button
                   variant="outline"
                   onClick={() => handleDecision('rejected')}
-                  disabled={submitting}
-                  className="bg-red-600 text-white hover:bg-red-700"
+                  disabled={!!submitting}
+                  className="bg-red-600 text-white hover:bg-red-700 min-w-[120px]"
                 >
-                  <XCircle className="w-4 h-4 mr-1.5" />
-                  Reject Form
+                  {submitting === 'rejected'
+                    ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Rejecting...</>
+                    : <><XCircle className="w-4 h-4 mr-1.5" />Reject Form</>}
                 </Button>
                 <Button
                   onClick={() => handleDecision('approved')}
-                  disabled={submitting || !assignedClassId}
-                  className="bg-green-700 hover:bg-green-600 text-white"
+                  disabled={!!submitting || !assignedClassId}
+                  className="bg-green-700 hover:bg-green-600 text-white min-w-[140px]"
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                  Approve & Enroll
+                  {submitting === 'approved'
+                    ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Enrolling...</>
+                    : <><CheckCircle2 className="w-4 h-4 mr-1.5" />Approve & Enroll</>}
                 </Button>
               </>
             )}

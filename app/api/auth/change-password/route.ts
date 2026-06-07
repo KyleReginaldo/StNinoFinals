@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Clear the password_change_required flag
+    // Clear the password_change_required flag — non-fatal if it fails
     const { error: flagError } = await supabaseAdmin
       .from('users')
       .update({ password_change_required: false })
@@ -75,10 +75,6 @@ export async function POST(request: Request) {
 
     if (flagError) {
       console.error('Failed to clear password change flag:', flagError);
-      return NextResponse.json(
-        { success: false, error: 'Password changed but failed to update flag. Please try again or contact support.' },
-        { status: 500 }
-      );
     }
 
     return NextResponse.json({

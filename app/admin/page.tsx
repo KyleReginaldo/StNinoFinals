@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRefresh } from '@/lib/refresh-context';
 import { useEffect, useState } from 'react';
 import {
   Bar,
@@ -36,6 +37,7 @@ import { useAuth } from './hooks/useAuth';
 export default function AdminPage() {
   const { admin } = useAuth();
   const { stats: baseStats, loadingStats } = useAdminData(admin);
+  const { refreshKey } = useRefresh();
   const [chartData, setChartData] = useState<any>(null);
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>({
     from: new Date(),
@@ -63,7 +65,7 @@ export default function AdminPage() {
     if (!admin) return;
     fetchAllData(dateRange);
     fetch('/api/announcements?role=admin').then(r => r.json()).then(res => { if (res.success) setAnnouncements(res.data || []); }).catch(console.error);
-  }, [admin]);
+  }, [admin, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
     setDateRange(range);
