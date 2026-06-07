@@ -1,3 +1,4 @@
+import { getActivePeriod } from '@/lib/academic-period';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,10 +14,22 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabaseAdmin();
+
+  // Only return a request that belongs to the current active school year.
+  // Requests from past years are stale and must not influence the current UI.
+  const activePeriod = await getActivePeriod();
+  const activeSchoolYear = activePeriod?.schoolYear ?? null;
+
+  if (!activeSchoolYear) {
+    // No active school year — no enrollment request is relevant
+    return NextResponse.json({ success: true, data: null });
+  }
+
   const { data, error } = await supabase
     .from('enrollment_requests')
     .select('*')
     .eq('student_id', studentId)
+    .eq('school_year', activeSchoolYear)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();

@@ -1,6 +1,7 @@
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     >
       <Providers>
         <body suppressHydrationWarning className={GeistSans.className}>
+          <NextTopLoader color="#991b1b" height={3} showSpinner={false} />
           {children}
         </body>
       </Providers>

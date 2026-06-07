@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,16 @@ export default function ProfilePage() {
     if (student?.photo_url) setAvatarUrl(student.photo_url);
     else if ((student as any)?.profile_picture) setAvatarUrl((student as any).profile_picture);
   }, [student?.photo_url, (student as any)?.profile_picture]);
+
+  useEffect(() => {
+    if (!student?.id) return;
+    fetch(`/api/student/enrollment?studentId=${student.id}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) setIsEnrolled(res.data?.enrollment?.isEnrolled ?? false);
+      })
+      .catch(() => {});
+  }, [student?.id]);
   const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
 
   const [form, setForm] = useState({
@@ -151,7 +162,19 @@ export default function ProfilePage() {
 
   if (!student) return null;
 
-  const gradeSection = [student.grade_level, student.section].filter(Boolean).join(' — ');
+  const normalizeGradeLevel = (gl: string | null | undefined): string => {
+    if (!gl) return '';
+    const s = gl.trim();
+    // "grade6" → "Grade 6", "grade11" → "Grade 11"
+    if (/^grade\d+$/i.test(s)) return `Grade ${s.replace(/^grade/i, '')}`;
+    // "kinder" / "kindergarten" → "Kinder"
+    if (/^kinder/i.test(s)) return 'Kinder';
+    return s;
+  };
+
+  const gradeSection = isEnrolled
+    ? [normalizeGradeLevel(student.grade_level), student.section].filter(Boolean).join(' — ')
+    : '';
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-5">
@@ -275,8 +298,8 @@ export default function ProfilePage() {
               { icon: User,          label: 'Full Name',      value: displayName },
               { icon: Hash,          label: 'Student No.',    value: (student as any).student_number },
               { icon: CreditCard,    label: 'LRN',            value: (student as any).lrn },
-              { icon: GraduationCap, label: 'Grade Level',    value: student.grade_level },
-              { icon: Layers,        label: 'Section',        value: student.section },
+              { icon: GraduationCap, label: 'Grade Level',    value: isEnrolled ? normalizeGradeLevel(student.grade_level) : null },
+              { icon: Layers,        label: 'Section',        value: isEnrolled ? student.section : null },
               { icon: Mail,          label: 'Email',          value: student.email },
               { icon: Phone,         label: 'Contact Number', value: student.phone_number || (student as any).phone || (student as any).contact_number },
               { icon: MapPin,        label: 'Address',        value: student.address },

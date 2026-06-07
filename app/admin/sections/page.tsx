@@ -2,6 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -10,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
-import { Loader2, Plus, Save, Trash2, X } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const GRADE_LEVELS = [
@@ -272,6 +278,224 @@ function TemplateSectionsPanel() {
   );
 }
 
+// ─── Batch Enroll Modal ───────────────────────────────────────────────────────
+
+interface EligibleStudent {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  gradeLevel: string | null;
+}
+
+function BatchEnrollModal({
+  section,
+  open,
+  onClose,
+  onEnrolled,
+}: {
+  section: SectionRow | null;
+  open: boolean;
+  onClose: () => void;
+  onEnrolled: () => void;
+}) {
+  const { showAlert } = useAlert();
+  const [students, setStudents] = useState<EligibleStudent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (!open || !section) return;
+    setSelected(new Set());
+    setSearch('');
+    setLoading(true);
+    fetch(`/api/admin/sections/eligible-students?sectionId=${section.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setStudents(d.students ?? []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [open, section]);
+
+  const filtered = students.filter((s) => {
+    const q = search.toLowerCase();
+    return (
+      s.firstName.toLowerCase().includes(q) ||
+      s.lastName.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q)
+    );
+  });
+
+  const allSelected =
+    filtered.length > 0 && filtered.every((s) => selected.has(s.studentId));
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((s) => next.delete(s.studentId));
+        return next;
+      });
+    } else {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filtered.forEach((s) => next.add(s.studentId));
+        return next;
+      });
+    }
+  };
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleEnroll = async () => {
+    if (!section || selected.size === 0) return;
+    setEnrolling(true);
+    try {
+      const res = await fetch('/api/admin/sections/batch-enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sectionId: section.id,
+          studentIds: Array.from(selected),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert({ message: data.message, type: 'success' });
+        onEnrolled();
+        onClose();
+      } else {
+        showAlert({
+          message: data.error ?? 'Failed to enroll students.',
+          type: 'error',
+        });
+      }
+    } catch {
+      showAlert({ message: 'Network error.', type: 'error' });
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-gray-700" />
+            Batch Enroll Students
+          </DialogTitle>
+        </DialogHeader>
+
+        {section && (
+          <p className="text-sm text-gray-500 -mt-2">
+            Assigning to{' '}
+            <span className="font-semibold text-gray-800">{section.name}</span>
+            {' · '}
+            {section.grade_level}
+            {' · '}
+            {section.school_year}
+          </p>
+        )}
+
+        <input
+          className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+          placeholder="Search by name or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          {loading ? (
+            <div className="py-10 flex justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-gray-400">
+              {students.length === 0
+                ? 'No eligible students for this section.'
+                : 'No students match your search.'}
+            </p>
+          ) : (
+            <div className="max-h-64 overflow-y-auto">
+              {/* Select all row */}
+              <label className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleAll}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Select all ({filtered.length})
+                </span>
+              </label>
+              {filtered.map((s) => (
+                <label
+                  key={s.studentId}
+                  className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-50 cursor-pointer hover:bg-gray-50 last:border-0"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(s.studentId)}
+                    onChange={() => toggle(s.studentId)}
+                    className="rounded border-gray-300"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {s.firstName} {s.lastName}
+                      </p>
+                      {s.gradeLevel && (
+                        <span className="shrink-0 text-[10px] font-medium bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                          {s.gradeLevel}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">{s.email}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="outline" onClick={onClose} disabled={enrolling}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleEnroll}
+            disabled={enrolling || selected.size === 0}
+            className="bg-gray-900 hover:bg-gray-800 text-white"
+          >
+            {enrolling ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                Enrolling…
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                Enroll {selected.size > 0 ? `${selected.size} ` : ''}Student
+                {selected.size !== 1 ? 's' : ''}
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Formal sections per school year (sections table) ────────────────────────
 
 interface SectionRow {
@@ -291,6 +515,7 @@ function FormalSectionsPanel() {
   const [templates, setTemplates] = useState<Record<string, string[]>>({});
   const [importing, setImporting] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [batchSection, setBatchSection] = useState<SectionRow | null>(null);
 
   // Add section form
   const [addGrade, setAddGrade] = useState('');
@@ -480,24 +705,6 @@ function FormalSectionsPanel() {
               ))}
             </SelectContent>
           </Select>
-          {hasTemplates && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleImportFromTemplate}
-              disabled={importing}
-              className="text-xs h-8"
-            >
-              {importing ? (
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              ) : (
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
-              )}
-              {importing
-                ? 'Importing…'
-                : `Import from templates for ${schoolYear}`}
-            </Button>
-          )}
         </div>
 
         {/* Quick add row */}
@@ -581,7 +788,7 @@ function FormalSectionsPanel() {
                 <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-20">
                   Classes
                 </th>
-                <th className="px-4 py-2.5 w-12" />
+                <th className="px-4 py-2.5 w-24" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -612,22 +819,33 @@ function FormalSectionsPanel() {
                       {sec.class_count}
                     </td>
                     <td className="px-4 py-2.5 text-right pr-4">
-                      <button
-                        onClick={() => handleDelete(sec.id, sec.name)}
-                        disabled={deleting === sec.id || sec.student_count > 0}
-                        title={
-                          sec.student_count > 0
-                            ? 'Cannot delete — students are enrolled'
-                            : `Delete ${sec.name}`
-                        }
-                        className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {deleting === sec.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setBatchSection(sec)}
+                          title={`Batch enroll students into ${sec.name}`}
+                          className="p-1 rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(sec.id, sec.name)}
+                          disabled={
+                            deleting === sec.id || sec.student_count > 0
+                          }
+                          title={
+                            sec.student_count > 0
+                              ? 'Cannot delete — students are enrolled'
+                              : `Delete ${sec.name}`
+                          }
+                          className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {deleting === sec.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -642,6 +860,13 @@ function FormalSectionsPanel() {
           </span>
         </div>
       </div>
+
+      <BatchEnrollModal
+        section={batchSection}
+        open={!!batchSection}
+        onClose={() => setBatchSection(null)}
+        onEnrolled={() => loadSections(schoolYear)}
+      />
     </div>
   );
 }

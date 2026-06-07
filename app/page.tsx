@@ -776,6 +776,63 @@ export default function HomePage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
                           <Label
+                            htmlFor="intendedGradeLevel"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Intended Grade Level
+                          </Label>
+                          <Select
+                            value={admissionForm.intendedGradeLevel}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                intendedGradeLevel: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="Select grade level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="kindergarten">
+                                Kindergarten
+                              </SelectItem>
+                              {Array.from({ length: 12 }, (_, i) => (
+                                <SelectItem key={i + 1} value={`grade${i + 1}`}>
+                                  Grade {i + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="previousSchool"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Previous School
+                          </Label>
+                          <Input
+                            id="previousSchool"
+                            value={admissionForm.previousSchool}
+                            placeholder="Previous school name (if any)"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                previousSchool: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
                             htmlFor="parentName"
                             className="text-sm font-medium text-gray-700"
                             required
@@ -879,63 +936,6 @@ export default function HomePage() {
                               });
                             }}
                             required
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="intendedGradeLevel"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Intended Grade Level
-                          </Label>
-                          <Select
-                            value={admissionForm.intendedGradeLevel}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                intendedGradeLevel: v,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue placeholder="Select grade level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="kindergarten">
-                                Kindergarten
-                              </SelectItem>
-                              {Array.from({ length: 12 }, (_, i) => (
-                                <SelectItem key={i + 1} value={`grade${i + 1}`}>
-                                  Grade {i + 1}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="previousSchool"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Previous School
-                          </Label>
-                          <Input
-                            id="previousSchool"
-                            value={admissionForm.previousSchool}
-                            placeholder="Previous school name (if any)"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                previousSchool: e.target.value,
-                              })
-                            }
                             disabled={isSubmittingAdmission}
                             className="h-11 bg-white border-gray-200"
                           />

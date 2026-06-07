@@ -624,20 +624,6 @@ export default function ClassesManagementPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="school_year">School Year</Label>
-              <Select
-                value={formData.school_year}
-                onValueChange={v => setFormData({ ...formData, school_year: v })}
-              >
-                <SelectTrigger id="school_year"><SelectValue placeholder="Select school year" /></SelectTrigger>
-                <SelectContent>
-                  {getSchoolYearOptions().map(sy => (
-                    <SelectItem key={sy} value={sy}>{sy}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

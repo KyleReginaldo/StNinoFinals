@@ -5,7 +5,6 @@ import {
   ChevronDown,
   GraduationCap,
   Layers,
-  Printer,
   Search,
   Users,
 } from 'lucide-react';
@@ -157,10 +156,6 @@ export default function ClassListPage() {
             View all students organized by grade level and section.
           </p>
         </div>
-        <Button variant="outline" size="sm" className="self-start sm:self-auto" onClick={() => window.print()}>
-          <Printer className="w-4 h-4 mr-2" />
-          Print
-        </Button>
       </div>
 
       {loading ? (

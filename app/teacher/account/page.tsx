@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { DatePicker } from '@/components/ui/date-picker';
+import { useAlert } from '@/lib/use-alert';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Teacher {
@@ -37,6 +38,7 @@ interface Teacher {
 
 export default function TeacherAccount() {
   const router = useRouter();
+  const { showAlert } = useAlert();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,33 +88,34 @@ export default function TeacherAccount() {
     const file = e.target.files?.[0];
     if (!file || !teacher) return;
     setUploadingAvatar(true);
-    setError('');
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('userId', teacher.id);
+      fd.append('userId', String(teacher.id));
       fd.append('role', 'teacher');
 
       const uploadRes = await fetch('/api/upload-avatar', { method: 'POST', body: fd });
       const uploadData = await uploadRes.json();
-      if (!uploadData.success) throw new Error(uploadData.error);
+      if (!uploadData.success) throw new Error(uploadData.error || 'Upload failed');
       const url = uploadData.url;
 
       const res = await fetch('/api/teacher/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teacherId: teacher.id, photo_url: url }),
+        body: JSON.stringify({ teacherId: String(teacher.id), photo_url: url }),
       });
       const result = await res.json();
-      if (!result.success) throw new Error(result.error);
+      if (!result.success) throw new Error(result.error || 'Failed to save photo');
 
+      // Only update UI state after both upload AND profile save succeed
       setAvatarUrl(url);
       const stored = localStorage.getItem('teacher');
       if (stored) {
         localStorage.setItem('teacher', JSON.stringify({ ...JSON.parse(stored), photo_url: url }));
       }
+      showAlert({ message: 'Profile photo updated.', type: 'success' });
     } catch (e: any) {
-      setError(e.message || 'Failed to upload photo.');
+      showAlert({ message: e.message || 'Failed to upload photo.', type: 'error' });
     } finally {
       setUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

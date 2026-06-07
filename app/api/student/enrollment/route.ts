@@ -1,4 +1,4 @@
-import { getSemesterLabel } from '@/lib/academic-period';
+import { getActivePeriod, getSemesterLabel } from '@/lib/academic-period';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
@@ -48,16 +48,53 @@ export async function GET(request: NextRequest) {
     }
 
     if (!userClasses || userClasses.length === 0) {
-      // Check if there's an approved enrollment request (classes may not be
-      // linked yet but the student is administratively approved).
-      const { data: approvedReq } = await supabase
-        .from('enrollment_requests')
-        .select('school_year, grade_level')
-        .eq('student_id', studentId)
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // If the student already has a section assigned (set during enrollment
+      // approval), treat them as enrolled even without a user_classes row.
+      // This covers the case where approval set grade_level+section but the
+      // specific class link wasn't created yet.
+      if (student.section) {
+        const activePeriod = await getActivePeriod();
+        return NextResponse.json({
+          success: true,
+          data: {
+            student: {
+              name: `${student.first_name} ${student.last_name}`.trim(),
+              studentNumber: student.student_number,
+              gradeLevel: student.grade_level,
+              section: student.section,
+              enrollmentDate: student.enrollment_date,
+              status: student.status,
+            },
+            enrollment: {
+              schoolYear: activePeriod?.schoolYear ?? null,
+              semester: null,
+              isEnrolled: true,
+              isPendingClass: false,
+            },
+            classes: [],
+          },
+        });
+      }
+
+      // No user_classes = not enrolled. Only show "pending class" state if
+      // there is an active school year AND an approved request for that year.
+      // If no active school year exists, the previous year has ended and the
+      // student must re-enroll — never carry over stale approved requests.
+      const activePeriod = await getActivePeriod();
+      const activeSchoolYear = activePeriod?.schoolYear ?? null;
+
+      let isPendingClass = false;
+      if (activeSchoolYear) {
+        const { data: approvedReq } = await supabase
+          .from('enrollment_requests')
+          .select('id')
+          .eq('student_id', studentId)
+          .eq('status', 'approved')
+          .eq('school_year', activeSchoolYear)
+          .limit(1)
+          .maybeSingle();
+        isPendingClass = !!approvedReq;
+      }
 
       return NextResponse.json({
         success: true,
@@ -71,9 +108,10 @@ export async function GET(request: NextRequest) {
             status: student.status,
           },
           enrollment: {
-            schoolYear: approvedReq ? normalizeSchoolYear(approvedReq.school_year) : null,
+            schoolYear: activeSchoolYear,
             semester: null,
-            isEnrolled: !!approvedReq,
+            isEnrolled: false,
+            isPendingClass,
           },
           classes: [],
         },

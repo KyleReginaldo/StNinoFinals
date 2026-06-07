@@ -134,32 +134,6 @@ export function ParentDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Quick Access -  Use Cases */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <CardHeader>
-          <CardTitle>Guardian Portal</CardTitle>
-          <CardDescription>
-            Monitor your child's academic journey
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <button className="p-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all">
-              <BookOpen className="h-6 w-6 mx-auto mb-1 text-blue-600" />
-              <p className="text-xs font-medium">Check Grades</p>
-            </button>
-            <button className="p-3 bg-white border border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-all">
-              <TrendingUp className="h-6 w-6 mx-auto mb-1 text-purple-600" />
-              <p className="text-xs font-medium">View Progress</p>
-            </button>
-            <button className="p-3 bg-white border border-green-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-all">
-              <Calendar className="h-6 w-6 mx-auto mb-1 text-green-600" />
-              <p className="text-xs font-medium">Enrollment Status</p>
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Child Selector */}
       <Card>
         <CardHeader>

@@ -200,6 +200,15 @@ export async function PATCH(request: NextRequest) {
           .from('users')
           .update({ grade_level: gradeForUpdate, section: sectionName })
           .eq('id', enrollmentRequest.student_id);
+
+        // Grade 7+ → sever parent-student relationship (student is JHS/SHS age)
+        const gradeNum = parseInt(String(gradeForUpdate).replace(/\D/g, ''), 10);
+        if (!isNaN(gradeNum) && gradeNum >= 7) {
+          await supabase
+            .from('user_relationships')
+            .delete()
+            .eq('related_user_id', enrollmentRequest.student_id);
+        }
       }
     } else if (status === 'rejected') {
       // Remove student from ALL classes they were enrolled in through this request.

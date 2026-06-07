@@ -28,6 +28,85 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/admin/academic-periods
+// Creates all 4 quarters for a new school year with Q1 active.
+// Body: { schoolYear: "2026-2027" }
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { schoolYear } = body;
+
+    if (!schoolYear || !/^\d{4}-\d{4}$/.test(schoolYear)) {
+      return NextResponse.json(
+        { success: false, error: 'schoolYear must be in YYYY-YYYY format (e.g. 2026-2027)' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    // Prevent duplicates
+    const { data: existing } = await supabase
+      .from('academic_periods')
+      .select('id')
+      .eq('school_year', schoolYear)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { success: false, error: `School year ${schoolYear} already exists.` },
+        { status: 409 }
+      );
+    }
+
+    // Clean up any lingering enrollments from a prior year that wasn't properly closed
+    await supabase.from('user_classes').delete().eq('membership_type', 'student');
+    await supabase.from('users').update({ section: null }).eq('role', 'student');
+
+    const quarters = [1, 2, 3, 4].map((q) => ({
+      school_year:     schoolYear,
+      quarter:         q,
+      label:           `Quarter ${q}`,
+      is_active:       q === 1,
+      is_grading_open: q === 1,
+      start_date:      null,
+      end_date:        null,
+    }));
+
+    const { error: insertErr } = await supabase.from('academic_periods').insert(quarters);
+    if (insertErr) {
+      return NextResponse.json({ success: false, error: insertErr.message }, { status: 500 });
+    }
+
+    // Mirror active_quarter = 1 in system_settings
+    const { data: existing2 } = await supabase
+      .from('system_settings')
+      .select('id')
+      .eq('setting_key', 'active_quarter')
+      .limit(1);
+
+    if (existing2 && existing2.length > 0) {
+      await supabase
+        .from('system_settings')
+        .update({ setting_value: '1', updated_at: new Date().toISOString() })
+        .eq('id', existing2[0].id);
+    } else {
+      await supabase
+        .from('system_settings')
+        .insert({ setting_key: 'active_quarter', setting_value: '1' });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `School year ${schoolYear} created. Quarter 1 is now active.`,
+      schoolYear,
+    });
+  } catch (error: any) {
+    console.error('POST /api/admin/academic-periods:', error);
+    return NextResponse.json({ success: false, error: error?.message ?? 'Internal server error' }, { status: 500 });
+  }
+}
+
 // PATCH /api/admin/academic-periods
 // Updates a single period's dates or grading-open flag.
 // Body: { schoolYear, quarter, startDate?, endDate?, isGradingOpen? }

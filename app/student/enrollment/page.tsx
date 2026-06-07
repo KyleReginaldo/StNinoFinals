@@ -92,6 +92,7 @@ interface EnrollmentInfo {
   schoolYear: string | null;
   semester: string | null;
   isEnrolled: boolean;
+  isPendingClass?: boolean;
 }
 
 interface ClassInfo {
@@ -164,10 +165,14 @@ export default function EnrollmentPage() {
   );
   const [enrollmentRequest, setEnrollmentRequest] =
     useState<EnrollmentRequest | null>(null);
-  const [dataLoading, setDataLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [enrollmentHistory, setEnrollmentHistory] = useState<
     EnrollmentRequest[]
   >([]);
+  const [admissionData, setAdmissionData] = useState<{
+    intendedGradeLevel: string | null;
+  } | null>(null);
 
   const [gradeLevel, setGradeLevel] = useState('');
   const [strand, setStrand] = useState('');
@@ -209,42 +214,56 @@ export default function EnrollmentPage() {
     };
   }, [enrollmentHistory]);
 
-  // Auto-fill grade once after data loads (enrollment history takes priority)
+  // Auto-fill grade + strand once after data loads.
+  // Priority: admission.intended_grade_level > enrollment history > student.grade_level
+  // NOTE: admission always overrides — no ref guard — because student loads from
+  // localStorage before the admission API fetch completes, and the ref would
+  // block the admission fill if the weaker fallback ran first.
   useEffect(() => {
-    if (autoFilledRef.current) return;
-    if (suggestedGrade) {
-      setGradeLevel(suggestedGrade.nextGrade);
-      autoFilledRef.current = true;
-    } else if (student?.grade_level) {
-      const gl = String(student.grade_level).trim();
-      const normalized = gl.startsWith('Grade ') ? gl : `Grade ${gl}`;
-      if (GRADE_LEVELS.includes(normalized)) {
-        setGradeLevel(normalized);
+    if (admissionData?.intendedGradeLevel) {
+      // Normalize admission format: "grade6" → "Grade 6", "Grade 6" → "Grade 6"
+      let gl = String(admissionData.intendedGradeLevel).trim();
+      if (/^grade\d+$/i.test(gl)) {
+        gl = `Grade ${gl.replace(/^grade/i, '')}`;
+      }
+      if (GRADE_LEVELS.includes(gl)) {
+        setGradeLevel(gl);
         autoFilledRef.current = true;
       }
+    } else if (!autoFilledRef.current) {
+      // Fallbacks run only once (weaker sources shouldn't keep overriding user edits)
+      if (suggestedGrade) {
+        setGradeLevel(suggestedGrade.nextGrade);
+        autoFilledRef.current = true;
+      } else if (student?.grade_level) {
+        const gl = String(student.grade_level).trim();
+        const normalized = gl.startsWith('Grade ') ? gl : `Grade ${gl}`;
+        if (GRADE_LEVELS.includes(normalized)) {
+          setGradeLevel(normalized);
+          autoFilledRef.current = true;
+        }
+      }
     }
-  }, [suggestedGrade, student?.grade_level]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [admissionData, suggestedGrade, student?.grade_level]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(async () => {
     if (!student) return;
     setDataLoading(true);
     try {
-      const [enrollmentRes, requestRes, historyRes] = await Promise.all([
+      const [enrollmentRes, requestRes, historyRes, admissionRes] = await Promise.all([
         fetch(`/api/student/enrollment?studentId=${student.id}`),
         fetch(`/api/student/enrollment-request?studentId=${student.id}`),
         fetch(`/api/student/enrollment-history?studentId=${student.id}`),
+        fetch(`/api/student/admission?studentId=${student.id}`),
       ]);
-      const [enrollmentPayload, requestPayload, historyPayload] =
+      const [enrollmentPayload, requestPayload, historyPayload, admissionPayload] =
         await Promise.all([
           enrollmentRes.json().catch(() => ({})),
           requestRes.json().catch(() => ({})),
           historyRes.json().catch(() => ({})),
+          admissionRes.json().catch(() => ({})),
         ]);
-      if (
-        enrollmentRes.ok &&
-        enrollmentPayload?.success &&
-        enrollmentPayload?.data
-      ) {
+      if (enrollmentRes.ok && enrollmentPayload?.success && enrollmentPayload?.data) {
         setEnrollmentData(enrollmentPayload.data);
       }
       if (requestRes.ok && requestPayload?.success) {
@@ -253,10 +272,14 @@ export default function EnrollmentPage() {
       if (historyRes.ok && historyPayload?.success) {
         setEnrollmentHistory(historyPayload.data ?? []);
       }
+      if (admissionRes.ok && admissionPayload?.success && admissionPayload?.data) {
+        setAdmissionData(admissionPayload.data);
+      }
     } catch (e) {
       console.error('Fetch error:', e);
     } finally {
       setDataLoading(false);
+      setInitialLoad(false);
     }
   }, [student]);
 
@@ -341,7 +364,7 @@ export default function EnrollmentPage() {
           studentId: student.id,
           gradeLevel,
           strand: isSHS ? strand : null,
-          schoolYear: CURRENT_SCHOOL_YEAR,
+          schoolYear: activeSchoolYear ?? CURRENT_SCHOOL_YEAR,
           enrollmentType: suggestedGrade?.isReturning ? 'returning' : 'new',
           previousGradesUrl,
         }),
@@ -751,10 +774,16 @@ export default function EnrollmentPage() {
     }
   }, [enrollmentHistory, displayName, info, showAlert]);
 
-  if (isLoading) {
+  if (isLoading || initialLoad) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl font-bold text-red-800">Loading...</div>
+      <div className="p-6 space-y-5 max-w-3xl mx-auto">
+        <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -762,10 +791,13 @@ export default function EnrollmentPage() {
   if (!student) return null;
 
   const isEnrolled = enrollment?.isEnrolled ?? false;
+  const isPendingClass = enrollment?.isPendingClass ?? false;
   const reqStatus = enrollmentRequest?.status;
+  // Use the active school year from the DB — never the date-based fallback.
+  const activeSchoolYear = enrollment?.schoolYear ?? null;
 
   // ─── ENROLLED ─────────────────────────────────────────────────────────────
-  if (isEnrolled) {
+  if (isEnrolled || isPendingClass) {
     return (
       <div className="p-6 space-y-6 max-w-5xl mx-auto">
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -792,20 +824,29 @@ export default function EnrollmentPage() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-green-700" />
-            <div>
-              <p className="font-semibold text-green-800">Currently Enrolled</p>
-              <p className="text-sm text-green-600">
-                A.Y. {enrollment?.schoolYear ?? ''}
-              </p>
+        {isEnrolled ? (
+          <div className="flex items-center justify-between p-4 rounded-xl bg-green-50 border border-green-200">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-6 h-6 text-green-700" />
+              <div>
+                <p className="font-semibold text-green-800">Currently Enrolled</p>
+                <p className="text-sm text-green-600">A.Y. {enrollment?.schoolYear ?? ''}</p>
+              </div>
             </div>
+            <Badge className="bg-green-100 text-green-800 border-green-300">Active</Badge>
           </div>
-          <Badge className="bg-green-100 text-green-800 border-green-300">
-            Active
-          </Badge>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <div className="flex items-center gap-3">
+              <Clock className="w-6 h-6 text-amber-600" />
+              <div>
+                <p className="font-semibold text-amber-800">Enrollment Approved</p>
+                <p className="text-sm text-amber-600">A.Y. {enrollment?.schoolYear ?? ''} — Awaiting class assignment</p>
+              </div>
+            </div>
+            <Badge className="bg-amber-100 text-amber-800 border-amber-300">Pending</Badge>
+          </div>
+        )}
 
         <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
@@ -833,11 +874,7 @@ export default function EnrollmentPage() {
                 icon={GraduationCap}
                 label="Grade Level"
                 value={
-                  info?.gradeLevel
-                    ? `Grade ${info.gradeLevel}`
-                    : student.grade_level
-                      ? `Grade ${student.grade_level}`
-                      : null
+                  info?.gradeLevel || student.grade_level || null
                 }
               />
               <InfoCard icon={Layers} label="Section" value={info?.section} />
@@ -1276,6 +1313,7 @@ export default function EnrollmentPage() {
           fileInputRef={fileInputRef}
           setPreviousGradesFile={setPreviousGradesFile}
           suggestedGrade={suggestedGrade}
+          fromAdmission={!!admissionData?.intendedGradeLevel}
         />
       </div>
     );
@@ -1297,35 +1335,48 @@ export default function EnrollmentPage() {
           disabled={dataLoading}
         />
       </div>
-      <div className="flex items-start gap-4 p-5 rounded-xl bg-blue-50 border border-blue-200">
-        <AlertCircle className="w-7 h-7 text-blue-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="font-semibold text-blue-800 text-lg">
-            Not Yet Enrolled
-          </p>
-          <p className="text-sm text-blue-700 mt-1">
-            You are not currently enrolled. Fill out the form below to submit an
-            enrollment request for A.Y. {CURRENT_SCHOOL_YEAR}. The
-            administration will review and assign you to a class.
-          </p>
+      {!activeSchoolYear ? (
+        <div className="flex items-start gap-4 p-5 rounded-xl bg-amber-50 border border-amber-200">
+          <AlertCircle className="w-7 h-7 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-800 text-lg">Enrollment Not Yet Open</p>
+            <p className="text-sm text-amber-700 mt-1">
+              There is no active school year at the moment. Please wait for the administration to open enrollment for the new school year.
+            </p>
+          </div>
         </div>
-      </div>
-      <EnrollmentForm
-        gradeLevel={gradeLevel}
-        setGradeLevel={setGradeLevel}
-        strand={strand}
-        setStrand={setStrand}
-        additionalNotes={additionalNotes}
-        setAdditionalNotes={setAdditionalNotes}
-        isSHS={isSHS}
-        submitting={submitting}
-        onSubmit={handleSubmitRequest}
-        title="Enrollment Application"
-        description={`Apply for enrollment in A.Y. ${CURRENT_SCHOOL_YEAR}.`}
-        fileInputRef={fileInputRef}
-        setPreviousGradesFile={setPreviousGradesFile}
-        suggestedGrade={suggestedGrade}
-      />
+      ) : (
+        <>
+          <div className="flex items-start gap-4 p-5 rounded-xl bg-blue-50 border border-blue-200">
+            <AlertCircle className="w-7 h-7 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-blue-800 text-lg">Not Yet Enrolled</p>
+              <p className="text-sm text-blue-700 mt-1">
+                You are not currently enrolled. Fill out the form below to submit an
+                enrollment request for A.Y. {activeSchoolYear}. The
+                administration will review and assign you to a class.
+              </p>
+            </div>
+          </div>
+          <EnrollmentForm
+            gradeLevel={gradeLevel}
+            setGradeLevel={setGradeLevel}
+            strand={strand}
+            setStrand={setStrand}
+            additionalNotes={additionalNotes}
+            setAdditionalNotes={setAdditionalNotes}
+            isSHS={isSHS}
+            submitting={submitting}
+            onSubmit={handleSubmitRequest}
+            title="Enrollment Application"
+            description={`Apply for enrollment in A.Y. ${activeSchoolYear}.`}
+            fileInputRef={fileInputRef}
+            setPreviousGradesFile={setPreviousGradesFile}
+            suggestedGrade={suggestedGrade}
+            fromAdmission={!!admissionData?.intendedGradeLevel}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -1346,6 +1397,7 @@ function EnrollmentForm({
   fileInputRef,
   setPreviousGradesFile,
   suggestedGrade,
+  fromAdmission,
 }: {
   gradeLevel: string;
   setGradeLevel: (v: string) => void;
@@ -1361,6 +1413,7 @@ function EnrollmentForm({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setPreviousGradesFile: (file: File | null) => void;
   suggestedGrade?: { lastGrade: string; nextGrade: string; isReturning: boolean } | null;
+  fromAdmission?: boolean;
 }) {
   return (
     <Card className="bg-white border border-gray-200 shadow-sm">
@@ -1372,7 +1425,13 @@ function EnrollmentForm({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {suggestedGrade && (
+        {fromAdmission && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+            <GraduationCap className="w-4 h-4 shrink-0" />
+            <span>Grade level pre-filled from your approved admission application.</span>
+          </div>
+        )}
+        {!fromAdmission && suggestedGrade && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800">
             <GraduationCap className="w-4 h-4 shrink-0" />
             <span className="font-medium">Returning student</span>

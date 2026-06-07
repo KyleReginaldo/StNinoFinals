@@ -31,22 +31,29 @@ export async function GET(request: NextRequest) {
 
   const sectionIds = sections.map((s) => s.id);
 
-  // Batch count classes and enrolled students for all sections in 2 queries
-  const [{ data: classCounts }, { data: studentCounts }] = await Promise.all([
+  // Batch count classes and enrolled students for all sections in 2 queries.
+  // Student count comes from users.section — this captures both request-based
+  // and manual (batch) enrollments accurately.
+  const sectionNames = sections.map((s) => s.name);
+
+  const [{ data: classCounts }, { data: enrolledUsers }] = await Promise.all([
     supabase.from('classes').select('section_id').in('section_id', sectionIds),
     supabase
-      .from('enrollment_requests')
-      .select('assigned_section_id')
-      .in('assigned_section_id', sectionIds)
-      .eq('status', 'approved'),
+      .from('users')
+      .select('section, grade_level')
+      .eq('role', 'student')
+      .in('section', sectionNames),
   ]);
 
   const classCountMap: Record<string, number> = {};
   const studentCountMap: Record<string, number> = {};
 
-  for (const id of sectionIds) {
-    classCountMap[id] = (classCounts || []).filter((c) => c.section_id === id).length;
-    studentCountMap[id] = (studentCounts || []).filter((s) => s.assigned_section_id === id).length;
+  for (const sec of sections) {
+    classCountMap[sec.id] = (classCounts || []).filter((c) => c.section_id === sec.id).length;
+    // Match by both name + grade_level in case two grades share a section name
+    studentCountMap[sec.id] = (enrolledUsers || []).filter(
+      (u) => u.section === sec.name && u.grade_level === sec.grade_level
+    ).length;
   }
 
   const enriched = sections.map((s) => ({

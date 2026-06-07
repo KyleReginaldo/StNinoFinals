@@ -44,6 +44,11 @@ export default function AcademicPeriodPage() {
   const [feedback, setFeedback]       = useState<{ ok: boolean; msg: string } | null>(null);
   const [editDates, setEditDates]     = useState<Record<number, { start: string; end: string }>>({});
   const [confirmAdvance, setConfirmAdvance] = useState(false);
+  const [confirmEndYear, setConfirmEndYear] = useState(false);
+  const [endingYear, setEndingYear]         = useState(false);
+  const [noActiveSY, setNoActiveSY]         = useState(false);
+  const [newSY, setNewSY]                   = useState('');
+  const [startingYear, setStartingYear]     = useState(false);
 
   const activePeriod = periods.find(p => p.isActive);
 
@@ -53,8 +58,9 @@ export default function AcademicPeriodPage() {
     try {
       const url = sy ? `/api/admin/academic-periods?schoolYear=${encodeURIComponent(sy)}` : '/api/admin/academic-periods';
       const res  = await fetch(url);
-      const data = await res.json();
+      const data = await res.json() as { success: boolean; data?: Period[]; schoolYear?: string; error?: string };
       if (data.success) {
+        setNoActiveSY(false);
         setPeriods(data.data ?? []);
         setSchoolYear(data.schoolYear ?? '');
         const initial: Record<number, { start: string; end: string }> = {};
@@ -62,6 +68,11 @@ export default function AcademicPeriodPage() {
           initial[p.quarter] = { start: p.startDate ?? '', end: p.endDate ?? '' };
         }
         setEditDates(initial);
+      } else if (!data.success && (res.status === 404 || data.error?.includes('No active school year'))) {
+        // No active school year — expected state after end-of-year
+        setNoActiveSY(true);
+        setPeriods([]);
+        setSchoolYear('');
       } else {
         setFeedback({ ok: false, msg: data.error ?? 'Failed to load periods' });
       }
@@ -150,6 +161,52 @@ export default function AcademicPeriodPage() {
     }
   };
 
+  const handleStartNewYear = async () => {
+    if (!newSY.trim()) return;
+    setStartingYear(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/academic-periods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schoolYear: newSY.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNoActiveSY(false);
+        setNewSY('');
+        load(data.schoolYear);
+      } else {
+        setFeedback({ ok: false, msg: data.error ?? 'Failed to start school year' });
+      }
+    } catch (e: any) {
+      setFeedback({ ok: false, msg: e?.message ?? 'Network error' });
+    } finally {
+      setStartingYear(false);
+    }
+  };
+
+  const handleEndSchoolYear = async () => {
+    if (!confirmEndYear) { setConfirmEndYear(true); return; }
+    setEndingYear(true);
+    setConfirmEndYear(false);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/academic-periods/end-school-year', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setFeedback({ ok: true, msg: data.message });
+        load(schoolYear);
+      } else {
+        setFeedback({ ok: false, msg: data.error ?? 'Failed to end school year' });
+      }
+    } catch (e: any) {
+      setFeedback({ ok: false, msg: e?.message ?? 'Network error' });
+    } finally {
+      setEndingYear(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -198,9 +255,21 @@ export default function AcademicPeriodPage() {
           </div>
         )}
         {activePeriod?.quarter === 4 && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-            <GraduationCap className="w-4 h-4 text-gray-400" />
-            End of school year — open enrollment for next SY to continue.
+          <div className="flex flex-col items-end gap-1">
+            {confirmEndYear && (
+              <p className="text-xs text-red-600 font-medium text-right max-w-xs">
+                This will unenroll ALL students and lock Q4. This cannot be undone. Click again to confirm.
+              </p>
+            )}
+            <Button
+              onClick={handleEndSchoolYear}
+              disabled={endingYear}
+              className={`shrink-0 ${confirmEndYear ? 'bg-red-600 hover:bg-red-700' : 'bg-red-800 hover:bg-red-700'} text-white`}
+            >
+              {endingYear
+                ? <><RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />Ending Year…</>
+                : <><GraduationCap className="w-3.5 h-3.5 mr-2" />End School Year</>}
+            </Button>
           </div>
         )}
       </div>
@@ -219,14 +288,34 @@ export default function AcademicPeriodPage() {
         </div>
       )}
 
-      {/* No periods (pre-migration) */}
-      {periods.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-6 text-center">
-          <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-          <p className="text-sm font-semibold text-amber-800">Migration required</p>
-          <p className="text-xs text-amber-600 mt-1 max-w-sm mx-auto">
-            Run <code className="font-mono bg-amber-100 px-1 rounded">migrations/add-academic-periods.sql</code> in the Supabase SQL editor to create the academic periods table and seed initial data.
-          </p>
+      {/* No active school year — start a new one */}
+      {noActiveSY && (
+        <div className="bg-white border border-gray-200 rounded-xl px-6 py-8 text-center space-y-4 shadow-sm">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+            <Calendar className="w-6 h-6 text-gray-400" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-gray-900">No active school year</p>
+            <p className="text-sm text-gray-500 mt-1">The previous school year has ended. Start a new one to re-open enrollment and grade entry.</p>
+          </div>
+          <div className="flex items-center justify-center gap-2 max-w-xs mx-auto">
+            <input
+              type="text"
+              value={newSY}
+              onChange={(e) => setNewSY(e.target.value)}
+              placeholder="e.g. 2026-2027"
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+            />
+            <Button
+              onClick={handleStartNewYear}
+              disabled={startingYear || !newSY.trim()}
+              className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+            >
+              {startingYear
+                ? <><RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />Starting…</>
+                : 'Start Year'}
+            </Button>
+          </div>
         </div>
       )}
 

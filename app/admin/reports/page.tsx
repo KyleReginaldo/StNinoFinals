@@ -243,7 +243,6 @@ export default function ReportsPage() {
 
     const tableHeader = (labels: string[], rowNum: number, fill: string) => {
       const row = ws.getRow(rowNum)
-      row.values = ["", ...labels]
       row.height = 20
       ;[1, 2].forEach((col, i) => {
         const cell = row.getCell(col)
@@ -256,7 +255,6 @@ export default function ReportsPage() {
 
     const dataRow = (cols: (string | number)[], rowNum: number, bold = false, fillArgb?: string) => {
       const row = ws.getRow(rowNum)
-      row.values = ["", ...cols]
       row.height = 17
       ;[1, 2].forEach((col, i) => {
         const cell = row.getCell(col)

@@ -409,7 +409,6 @@ export default function AdminEnrollmentPage() {
               <SortHeader label="Grade"     sortKey="grade_level"  currentSort={tc.sort} onSort={tc.toggleSort} />
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Strand</th>
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">School Year</th>
-              <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Type</th>
               <SortHeader label="Submitted" sortKey="created_at"   currentSort={tc.sort} onSort={tc.toggleSort} />
               <SortHeader label="Status"    sortKey="status"       currentSort={tc.sort} onSort={tc.toggleSort} />
               <th className="px-4 py-2.5 w-16" />
@@ -453,9 +452,6 @@ export default function AdminEnrollmentPage() {
                       {req.strand ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">{req.school_year}</td>
-                    <td className="px-4 py-3">
-                      <EnrollmentTypeBadge type={req.enrollment_type} />
-                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {new Date(req.created_at).toLocaleDateString('en-US', {
                         month: 'short',
@@ -530,10 +526,6 @@ export default function AdminEnrollmentPage() {
                 <div className="text-gray-600">
                   School Year:{' '}
                   <span className="font-medium text-gray-900">{selectedRequest.school_year}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Type:</span>
-                  <EnrollmentTypeBadge type={selectedRequest.enrollment_type} />
                 </div>
               </div>
 
@@ -721,15 +713,38 @@ export default function AdminEnrollmentPage() {
               {selectedRequest?.status === 'rejected' ? 'Close' : 'Cancel'}
             </Button>
             {selectedRequest?.status === 'approved' && (
-              <Button
-                variant="outline"
-                onClick={() => handleDecision('rejected')}
-                disabled={!!submitting || !rejectReason}
-                className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {submitting === 'rejected' ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <XCircle className="w-4 h-4 mr-1.5" />}
-                {submitting === 'rejected' ? 'Rejecting...' : 'Reject'}
-              </Button>
+              <>
+                {showRejectSection ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => { setShowRejectSection(false); setRejectReason(''); setRejectOtherText(''); }}
+                      disabled={!!submitting}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => handleDecision('rejected')}
+                      disabled={!!submitting || !rejectReason}
+                      className="bg-red-600 text-white hover:bg-red-700 min-w-[120px]"
+                    >
+                      {submitting === 'rejected'
+                        ? <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Rejecting...</>
+                        : <><XCircle className="w-4 h-4 mr-1.5" />Confirm Reject</>}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRejectSection(true)}
+                    disabled={!!submitting}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <XCircle className="w-4 h-4 mr-1.5" />
+                    Reject Enrollment
+                  </Button>
+                )}
+              </>
             )}
             {selectedRequest?.status === 'pending' && (
               <>
