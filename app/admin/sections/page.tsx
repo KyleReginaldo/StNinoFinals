@@ -685,7 +685,7 @@ function FormalSectionsPanel() {
       <div>
         <h3 className="text-sm font-semibold text-gray-800">Sections</h3>
         <p className="text-xs text-gray-400 mt-0.5">
-          These are the actual sections that students get enrolled into. Each
+          These are the actual Sections that students get enrolled into. Each
           section spans all quarters and tracks enrollment capacity.
         </p>
       </div>
