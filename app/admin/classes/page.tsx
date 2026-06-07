@@ -771,7 +771,7 @@ export default function ClassesManagementPage() {
                 ) : (
                   <div className="space-y-2">
                     {/* Select all row */}
-                    <label className="flex items-center gap-2 p-2 bg-gray-50 rounded cursor-pointer border-b border-gray-100 mb-1">
+                    <label className="flex items-center gap-2 p-2 bg-gray-50 rounded cursor-pointer border-b border-gray-100 mb-1 sticky top-0 z-10">
                       <input
                         type="checkbox"
                         checked={filteredStudents.every(s => selectedStudentIds.includes(s.id))}
