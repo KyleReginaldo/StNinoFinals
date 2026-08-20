@@ -46,7 +46,13 @@ export async function POST(request: Request) {
   try {
     // Check if grading period is open before accepting any submission
     const activePeriod = await getActivePeriod();
-    if (activePeriod && !activePeriod.isGradingOpen) {
+    if (!activePeriod || activePeriod.status !== 'active') {
+      return NextResponse.json(
+        { success: false, error: 'No quarter is currently active. Grade submission is paused until the next quarter begins.' },
+        { status: 423 }
+      );
+    }
+    if (!activePeriod.isGradingOpen) {
       return NextResponse.json(
         { success: false, error: 'Grading period is currently locked. Contact your administrator.' },
         { status: 423 }

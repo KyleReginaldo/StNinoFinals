@@ -198,7 +198,7 @@ export default function ClassListPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedGrade('all')}
-              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-sm font-medium active:scale-95 transition-[color,background-color,transform] duration-150 ease-out ${
                 selectedGrade === 'all'
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -210,7 +210,7 @@ export default function ClassListPage() {
               <button
                 key={g.grade}
                 onClick={() => setSelectedGrade(g.grade)}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium active:scale-95 transition-[color,background-color,transform] duration-150 ease-out ${
                   selectedGrade === g.grade
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -258,7 +258,7 @@ export default function ClassListPage() {
                     {/* Grade Header */}
                     <button
                       onClick={() => toggleGrade(gradeGroup.grade)}
-                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 active:scale-95 transition-[background-color,transform] duration-150 ease-out"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center">
@@ -282,7 +282,7 @@ export default function ClassListPage() {
                     </button>
 
                     {/* Sections */}
-                    <div className={`transition-all duration-200 ease-in-out ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-[10000px]'}`}>
+                    <div className={`transition-[max-height] duration-200 ease-in-out ${isCollapsed ? 'max-h-0 overflow-hidden' : 'max-h-[10000px]'}`}>
                       <div className="px-5 pb-5 space-y-5">
                         {gradeGroup.sections.map((sectionGroup) => (
                           <div key={`${gradeGroup.grade}-${sectionGroup.section}`} className="rounded-lg border border-gray-200 overflow-hidden">

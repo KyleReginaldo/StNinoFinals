@@ -256,7 +256,7 @@ export default function TeacherAttendancePage() {
                 { label: 'Last 30 Days', fn: () => { const e = new Date(); const s = new Date(); s.setDate(s.getDate() - 30); setDateRange({ from: s, to: e }); } },
               ].map(({ label, fn }) => (
                 <button key={label} onClick={fn}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:border-red-700 hover:text-red-700 hover:bg-red-50 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:border-red-700 hover:text-red-700 hover:bg-red-50 active:scale-95 transition-[color,background-color,border-color,transform] duration-150 ease-out"
                 >
                   {label}
                 </button>
@@ -266,7 +266,7 @@ export default function TeacherAttendancePage() {
               <Popover open={isDatePickerOpen} onOpenChange={(open) => { setIsDatePickerOpen(open); if (open) setTempDateRange(dateRange); }} modal={true}>
                 <PopoverTrigger asChild>
                   <button className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors',
+                    'flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-lg active:scale-95 transition-[color,background-color,border-color,transform] duration-150 ease-out',
                     dateRange?.from ? 'text-gray-700 bg-white border-gray-300 hover:border-red-700' : 'text-gray-400 bg-gray-50 border-gray-200'
                   )}>
                     <CalendarIcon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -480,7 +480,7 @@ export default function TeacherAttendancePage() {
                               : teacher.percentage >= 70
                               ? 'bg-yellow-500'
                               : 'bg-red-500'
-                          } transition-all duration-500`}
+                          } transition-[width] duration-500 ease-out`}
                           style={{ width: `${teacher.percentage}%` }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center">

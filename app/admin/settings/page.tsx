@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Clock, Mail, MapPin, MessageSquare, Phone, RefreshCw, Save, Settings as SettingsIcon, XCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle, Clock, FileText, Mail, MapPin, MessageSquare, Phone, RefreshCw, Save, Settings as SettingsIcon, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SystemSettings {
@@ -11,9 +12,21 @@ interface SystemSettings {
   contactEmail: string;
   address: string;
   officeHours: string;
+  passingThreshold: number;
+  footerTagline: string;
+  termsContent: string;
+  privacyContent: string;
 }
 
-type StringSettingKey = 'schoolName' | 'phone' | 'contactEmail' | 'address' | 'officeHours';
+type StringSettingKey =
+  | 'schoolName'
+  | 'phone'
+  | 'contactEmail'
+  | 'address'
+  | 'officeHours'
+  | 'footerTagline'
+  | 'termsContent'
+  | 'privacyContent';
 
 function FeedbackLine({ ok, msg }: { ok: boolean; msg: string }) {
   return (
@@ -34,6 +47,10 @@ export default function SettingsPage() {
     contactEmail: '',
     address: '',
     officeHours: '',
+    passingThreshold: 75,
+    footerTagline: '',
+    termsContent: '',
+    privacyContent: '',
   });
   const [saving, setSaving] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
@@ -154,7 +171,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+            className="bg-primary hover:bg-primary/90 text-white shrink-0"
           >
             {saving
               ? <><RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />Saving…</>
@@ -253,6 +270,69 @@ export default function SettingsPage() {
               className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
             />
           </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Passing Grade Threshold
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={settings.passingThreshold}
+              onChange={e => setSettings(prev => ({ ...prev, passingThreshold: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))}
+              placeholder="e.g. 75"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
+            <p className="text-[11px] text-gray-400">Minimum grade (0–100) to mark a submission as Passed.</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Footer Tagline
+            </label>
+            <input
+              value={settings.footerTagline}
+              onChange={e => handleInputChange('footerTagline', e.target.value)}
+              placeholder="e.g. Excellence in Education Since 1998"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Legal Content */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-gray-400" />
+            Legal Content
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Shown on the public Terms of Service and Privacy Policy pages. Plain text only — start a line with "## " for a section heading, or "- " for a bullet point.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 px-5 py-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Terms of Service
+            </label>
+            <Textarea
+              value={settings.termsContent}
+              onChange={e => handleInputChange('termsContent', e.target.value)}
+              rows={10}
+              className="font-mono text-xs resize-y"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Privacy Policy
+            </label>
+            <Textarea
+              value={settings.privacyContent}
+              onChange={e => handleInputChange('privacyContent', e.target.value)}
+              rows={10}
+              className="font-mono text-xs resize-y"
+            />
+          </div>
         </div>
       </div>
 
@@ -286,7 +366,7 @@ export default function SettingsPage() {
                 onClick={handleTestSms}
                 disabled={sendingSms || !testSmsPhone.trim()}
                 size="sm"
-                className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+                className="bg-primary hover:bg-primary/90 text-white shrink-0"
               >
                 {sendingSms
                   ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -318,7 +398,7 @@ export default function SettingsPage() {
                 onClick={handleTestEmail}
                 disabled={sendingEmail || !testEmailAddress.trim()}
                 size="sm"
-                className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+                className="bg-primary hover:bg-primary/90 text-white shrink-0"
               >
                 {sendingEmail
                   ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />

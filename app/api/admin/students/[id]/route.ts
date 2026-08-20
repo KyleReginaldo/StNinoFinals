@@ -1,3 +1,4 @@
+import { findRfidOwner } from '@/lib/rfid';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -49,8 +50,14 @@ export async function PUT(
       section,
       email,
       phone_number,
+      guardian_phone,
       date_of_birth,
+      gender,
       address,
+      current_address,
+      barangay,
+      barangay_name,
+      street_details,
       rfid,
     } = body
 
@@ -73,6 +80,17 @@ export async function PUT(
       }
     }
 
+    // Check RFID uniqueness if it's being changed
+    if (rfid) {
+      const owner = await findRfidOwner(supabaseAdmin, rfid, id)
+      if (owner) {
+        return NextResponse.json(
+          { success: false, error: `This RFID card is already assigned to ${owner.name} (${owner.role}). Clear that assignment first before reassigning.` },
+          { status: 409 }
+        )
+      }
+    }
+
     // Build update object with only defined values
     const updateData: any = {}
     if (first_name !== undefined) updateData.first_name = first_name
@@ -85,8 +103,14 @@ export async function PUT(
     if (section !== undefined) updateData.section = section || null
     if (email !== undefined) updateData.email = email
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
+    if (guardian_phone !== undefined) updateData.guardian_phone = guardian_phone || null
     if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth || null
+    if (gender !== undefined) updateData.gender = gender || null
     if (address !== undefined) updateData.address = address || null
+    if (current_address !== undefined) updateData.current_address = current_address || null
+    if (barangay !== undefined) updateData.barangay = barangay || null
+    if (barangay_name !== undefined) updateData.barangay_name = barangay_name || null
+    if (street_details !== undefined) updateData.street_details = street_details || null
     if (rfid !== undefined) updateData.rfid = rfid || null
 
     // Update user record

@@ -241,7 +241,7 @@ export default function TeacherAttendancePage() {
               <Calendar mode="range" defaultMonth={tempDateRange?.from || dateRange?.from} selected={tempDateRange} onSelect={setTempDateRange} numberOfMonths={2} />
               <div className="p-3 border-t flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => { setTempDateRange(dateRange); setIsDatePickerOpen(false); }}>Cancel</Button>
-                <Button size="sm" className="flex-1 text-xs bg-gray-900 hover:bg-gray-800"
+                <Button size="sm" className="flex-1 text-xs bg-primary hover:bg-primary/90"
                   onClick={() => { if (tempDateRange?.from && tempDateRange?.to) { setDateRange(tempDateRange); setIsDatePickerOpen(false); } }}
                   disabled={!tempDateRange?.from || !tempDateRange?.to}
                 >Apply</Button>
@@ -249,7 +249,7 @@ export default function TeacherAttendancePage() {
             </PopoverContent>
           </Popover>
 
-          <Button onClick={() => fetchAttendance()} disabled={loading} className="h-9 bg-gray-900 hover:bg-gray-800 text-white text-sm">
+          <Button onClick={() => fetchAttendance()} disabled={loading} className="h-9 bg-primary hover:bg-primary/90 text-white text-sm">
             {loading ? 'Loading...' : 'Apply'}
           </Button>
         </div>

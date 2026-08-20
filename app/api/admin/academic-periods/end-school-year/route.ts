@@ -1,13 +1,17 @@
 import { getActivePeriod } from '@/lib/academic-period';
+import { snapshotAndUnenrollStudents } from '@/lib/enrollment-history';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
 // POST /api/admin/academic-periods/end-school-year
 // Closes out the current school year:
 //   1. Locks Q4 grade entry and marks it inactive
-//   2. Unenrolls all students — removes them from user_classes
+//   2. Archives all students' current enrollment into enrollment_history,
+//      then unenrolls them — removes them from user_classes
 //   3. Clears section assignment on all student records
-//   4. Mirrors active_quarter = 0 in system_settings
+//   4. Archives (is_active = false) all classes from the closed school year,
+//      so they no longer show up in the default class list
+//   5. Mirrors active_quarter = 0 in system_settings
 export async function POST() {
   try {
     const supabase = getSupabaseAdmin();
@@ -37,23 +41,23 @@ export async function POST() {
       return NextResponse.json({ success: false, error: lockErr.message }, { status: 500 });
     }
 
-    // 2. Remove all students from classes (unenroll)
-    const { error: classErr } = await supabase
-      .from('user_classes')
-      .delete()
-      .eq('membership_type', 'student');
-
-    if (classErr) {
-      return NextResponse.json({ success: false, error: `Failed to unenroll students: ${classErr.message}` }, { status: 500 });
+    // 2 & 3. Archive current enrollments, then unenroll and clear section
+    const { error: unenrollErr } = await snapshotAndUnenrollStudents(supabase);
+    if (unenrollErr) {
+      return NextResponse.json({ success: false, error: unenrollErr }, { status: 500 });
     }
 
-    // 3. Clear section on all student records
-    await supabase
-      .from('users')
-      .update({ section: null })
-      .eq('role', 'student');
+    // 4. Archive all classes from the closed school year
+    const { error: archiveErr } = await supabase
+      .from('classes')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('school_year', schoolYear);
 
-    // 4. Mirror updated state in system_settings (no active quarter now)
+    if (archiveErr) {
+      return NextResponse.json({ success: false, error: archiveErr.message }, { status: 500 });
+    }
+
+    // 5. Mirror updated state in system_settings (no active quarter now)
     await upsertSetting(supabase, 'active_quarter', '0');
 
     return NextResponse.json({

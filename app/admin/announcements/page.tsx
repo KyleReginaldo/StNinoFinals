@@ -282,7 +282,7 @@ export default function AdminAnnouncementsPage() {
         </div>
         <Button
           onClick={openCreateDialog}
-          className="bg-gray-900 hover:bg-gray-800 text-white"
+          className="bg-primary hover:bg-primary/90 text-white"
           size="sm"
         >
           <Plus className="h-4 w-4 mr-1" />
@@ -304,7 +304,7 @@ export default function AdminAnnouncementsPage() {
           <button
             key={s.tab}
             onClick={() => handleTabChange(s.tab)}
-            className={`p-4 rounded-xl border text-left transition-colors ${
+            className={`p-4 rounded-xl border text-left active:scale-[0.97] transition-[background-color,border-color,transform] duration-150 ease-out ${
               activeTab === s.tab
                 ? 'bg-gray-900 border-gray-900'
                 : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -366,7 +366,7 @@ export default function AdminAnnouncementsPage() {
                 tc.clearFilters();
                 tc.setSearch('');
               }}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out"
             >
               <X className="w-3 h-3" />
               Clear
@@ -492,13 +492,13 @@ export default function AdminAnnouncementsPage() {
                       <div className="flex gap-1 justify-end ">
                         <button
                           onClick={() => openEditDialog(a)}
-                          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+                          className="p-1.5 rounded-md hover:bg-blue-50 text-blue-500 hover:text-blue-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(a.id)}
-                          className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600"
+                          className="p-1.5 rounded-md hover:bg-red-50 text-red-500 hover:text-red-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -641,7 +641,7 @@ export default function AdminAnnouncementsPage() {
             <Button
               onClick={handleSave}
               disabled={submitting}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
             </Button>

@@ -131,6 +131,8 @@ export default function ReportsPage() {
 
   const summaryCards = [
     { label: "Total Students", value: stats?.totalStudents ?? 0 },
+    { label: "Male Students", value: stats?.genderBreakdown?.male ?? 0 },
+    { label: "Female Students", value: stats?.genderBreakdown?.female ?? 0 },
     { label: "Total Teachers", value: stats?.totalTeachers ?? 0 },
   ]
 
@@ -370,7 +372,7 @@ export default function ReportsPage() {
         {isFiltered && (
           <button
             onClick={handleClear}
-            className="ml-auto flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+            className="ml-auto flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out"
           >
             <X className="w-3 h-3" />
             Clear

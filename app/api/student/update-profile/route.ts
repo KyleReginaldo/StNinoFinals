@@ -23,6 +23,8 @@ export async function POST(request: Request) {
     if (fields.suffix      !== undefined) updateData.suffix       = fields.suffix || null;
     if (fields.phone_number !== undefined) updateData.phone_number = fields.phone_number || null;
     if (fields.address     !== undefined) updateData.address      = fields.address || null;
+    if (fields.current_address !== undefined) updateData.current_address = fields.current_address || null;
+    if (fields.guardian_phone !== undefined) updateData.guardian_phone = fields.guardian_phone || null;
     if (fields.date_of_birth !== undefined) updateData.date_of_birth = fields.date_of_birth || null;
     // profile_picture is the client-side key; the DB column is photo_url
     if (fields.profile_picture !== undefined) updateData.photo_url = fields.profile_picture || null;

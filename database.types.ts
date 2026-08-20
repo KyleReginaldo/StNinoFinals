@@ -92,54 +92,78 @@ export type Database = {
       admissions: {
         Row: {
           additional_message: string | null
+          address: string | null
+          address_type: string | null
           created_at: string
+          date_of_birth: string | null
           email_address: string
+          enrollment_type: string | null
           first_name: string
+          guardian_phone: string | null
           id: number
           intended_grade_level: string
           last_name: string
+          lrn: string | null
           middle_initial: string | null
+          middle_name: string | null
           parent_email: string | null
           parent_name: string
           phone_number: string
-          previous_school: string
+          previous_school: string | null
           rejection_reason: string | null
+          school_year: string | null
           status: Database["public"]["Enums"]["admission_status"] | null
           suffix: string | null
           updated_at: string | null
         }
         Insert: {
           additional_message?: string | null
+          address?: string | null
+          address_type?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email_address: string
+          enrollment_type?: string | null
           first_name: string
+          guardian_phone?: string | null
           id?: number
           intended_grade_level: string
           last_name: string
+          lrn?: string | null
           middle_initial?: string | null
+          middle_name?: string | null
           parent_email?: string | null
           parent_name: string
           phone_number: string
-          previous_school: string
+          previous_school?: string | null
           rejection_reason?: string | null
+          school_year?: string | null
           status?: Database["public"]["Enums"]["admission_status"] | null
           suffix?: string | null
           updated_at?: string | null
         }
         Update: {
           additional_message?: string | null
+          address?: string | null
+          address_type?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email_address?: string
+          enrollment_type?: string | null
           first_name?: string
+          guardian_phone?: string | null
           id?: number
           intended_grade_level?: string
           last_name?: string
+          lrn?: string | null
           middle_initial?: string | null
+          middle_name?: string | null
           parent_email?: string | null
           parent_name?: string
           phone_number?: string
-          previous_school?: string
+          previous_school?: string | null
           rejection_reason?: string | null
+          school_year?: string | null
           status?: Database["public"]["Enums"]["admission_status"] | null
           suffix?: string | null
           updated_at?: string | null
@@ -506,6 +530,48 @@ export type Database = {
         }
         Relationships: []
       }
+      enrollment_history: {
+        Row: {
+          archived_at: string
+          class_id: string | null
+          id: string
+          membership_type: string
+          school_year: string
+          user_id: string | null
+        }
+        Insert: {
+          archived_at?: string
+          class_id?: string | null
+          id?: string
+          membership_type: string
+          school_year: string
+          user_id?: string | null
+        }
+        Update: {
+          archived_at?: string
+          class_id?: string | null
+          id?: string
+          membership_type?: string
+          school_year?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_history_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sections: {
         Row: {
           adviser_id: string | null
@@ -549,6 +615,7 @@ export type Database = {
           grade: number
           id: string
           quarter: number | null
+          rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -563,6 +630,7 @@ export type Database = {
           grade: number
           id?: string
           quarter?: number | null
+          rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -577,6 +645,7 @@ export type Database = {
           grade?: number
           id?: string
           quarter?: number | null
+          rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -610,6 +679,67 @@ export type Database = {
           {
             foreignKeyName: "grades_teacher_id_fkey"
             columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grade_history: {
+        Row: {
+          created_at: string
+          grade_id: string | null
+          grade_value: number
+          id: string
+          quarter: number | null
+          rejection_reason: string | null
+          reviewed_by: string | null
+          status: string
+          student_id: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          grade_id?: string | null
+          grade_value: number
+          id?: string
+          quarter?: number | null
+          rejection_reason?: string | null
+          reviewed_by?: string | null
+          status: string
+          student_id?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          grade_id?: string | null
+          grade_value?: number
+          id?: string
+          quarter?: number | null
+          rejection_reason?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_history_grade_id_fkey"
+            columns: ["grade_id"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grade_history_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grade_history_student_id_fkey"
+            columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -896,9 +1026,12 @@ export type Database = {
         Row: {
           address: string | null
           admin_title: string | null
+          barangay: string | null
+          barangay_name: string | null
           blood_type: string | null
           city: string | null
           created_at: string | null
+          current_address: string | null
           date_hired: string | null
           date_of_birth: string | null
           department: string | null
@@ -909,6 +1042,9 @@ export type Database = {
           first_name: string
           gender: string | null
           grade_level: string | null
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_phone: string | null
           id: string
           last_name: string
           lrn: string | null
@@ -923,6 +1059,7 @@ export type Database = {
           section: string | null
           specialization: string | null
           status: string | null
+          street_details: string | null
           student_number: string | null
           suffix: string | null
           updated_at: string | null
@@ -931,9 +1068,12 @@ export type Database = {
         Insert: {
           address?: string | null
           admin_title?: string | null
+          barangay?: string | null
+          barangay_name?: string | null
           blood_type?: string | null
           city?: string | null
           created_at?: string | null
+          current_address?: string | null
           date_hired?: string | null
           date_of_birth?: string | null
           department?: string | null
@@ -944,6 +1084,9 @@ export type Database = {
           first_name: string
           gender?: string | null
           grade_level?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
           id: string
           last_name: string
           lrn?: string | null
@@ -958,6 +1101,7 @@ export type Database = {
           section?: string | null
           specialization?: string | null
           status?: string | null
+          street_details?: string | null
           student_number?: string | null
           suffix?: string | null
           updated_at?: string | null
@@ -966,9 +1110,12 @@ export type Database = {
         Update: {
           address?: string | null
           admin_title?: string | null
+          barangay?: string | null
+          barangay_name?: string | null
           blood_type?: string | null
           city?: string | null
           created_at?: string | null
+          current_address?: string | null
           date_hired?: string | null
           date_of_birth?: string | null
           department?: string | null
@@ -979,6 +1126,9 @@ export type Database = {
           first_name?: string
           gender?: string | null
           grade_level?: string | null
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_phone?: string | null
           id?: string
           last_name?: string
           lrn?: string | null
@@ -993,6 +1143,7 @@ export type Database = {
           section?: string | null
           specialization?: string | null
           status?: string | null
+          street_details?: string | null
           student_number?: string | null
           suffix?: string | null
           updated_at?: string | null

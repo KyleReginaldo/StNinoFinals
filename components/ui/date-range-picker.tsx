@@ -126,7 +126,7 @@ export function DateRangePicker({
                 onClick={() => handlePreset(preset)}
                 className={`text-left text-xs px-3 py-1.5 rounded-md transition-colors whitespace-nowrap ${
                   activePreset === preset.label
-                    ? 'bg-gray-900 text-white font-medium'
+                    ? 'bg-primary text-primary-foreground font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >

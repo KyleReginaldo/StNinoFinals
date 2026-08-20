@@ -10,6 +10,7 @@ import { useConfirm } from '@/lib/use-confirm';
 import {
   FileText,
   GraduationCap,
+  HelpCircle,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -45,6 +46,7 @@ const NAV_ITEMS = [
     href: '/student/grades',
   },
   { id: 'profile', label: 'Profile', icon: User, href: '/student/profile' },
+  { id: 'help', label: 'Help & Support', icon: HelpCircle, href: '/student/help' },
 ] as const;
 
 interface Student {

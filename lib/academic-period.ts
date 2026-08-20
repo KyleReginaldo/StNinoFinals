@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from './supabaseAdmin';
 
+export type PeriodStatus = 'active' | 'ended' | 'upcoming';
+
 export interface AcademicPeriod {
   id: string;
   schoolYear: string;
@@ -9,14 +11,62 @@ export interface AcademicPeriod {
   endDate: string | null;
   isActive: boolean;
   isGradingOpen: boolean;
+  /** Computed from start/end dates vs. today — not a stored column. */
+  status: PeriodStatus;
+}
+
+const TIMEZONE = 'Asia/Manila';
+
+/**
+ * Today's date as YYYY-MM-DD in the app's configured timezone. Plain ISO date
+ * strings compare correctly with lexicographic `<`/`>`, so no Date-object
+ * timezone arithmetic is needed anywhere else in this file.
+ */
+export function getTodayISO(now: Date = new Date()): string {
+  return now.toLocaleDateString('en-CA', { timeZone: TIMEZONE });
 }
 
 /**
- * Returns the single currently active academic period.
- * Reads from the academic_periods table first; falls back to system_settings
- * so the system works before the migration has been run.
+ * Pure date-range status for one period. Returns null when the period has no
+ * dates configured (admin hasn't filled them in yet) — callers fall back to
+ * the manually-toggled `is_active` flag in that case.
  */
-export async function getActivePeriod(): Promise<AcademicPeriod | null> {
+export function computeStatus(
+  period: { startDate: string | null; endDate: string | null },
+  todayISO: string
+): PeriodStatus | null {
+  if (!period.startDate || !period.endDate) return null;
+  if (todayISO < period.startDate) return 'upcoming';
+  if (todayISO > period.endDate) return 'ended';
+  return 'active';
+}
+
+/**
+ * Given every quarter of a school year (each already carrying a computed
+ * `status`), picks the one the whole system should treat as "current":
+ *  - whichever quarter's date range contains today, or otherwise
+ *  - the most recently ended quarter, kept as "current" but marked Ended —
+ *    this is the gap between quarters (previous one closed, next hasn't
+ *    started yet).
+ * Returns null when nothing has started yet or no period has dates.
+ */
+export function pickCurrentPeriod(periods: AcademicPeriod[]): AcademicPeriod | null {
+  const active = periods.find((p) => p.status === 'active');
+  if (active) return active;
+
+  const ended = periods.filter((p) => p.status === 'ended');
+  if (ended.length === 0) return null;
+  return ended.reduce((latest, p) => (p.quarter > latest.quarter ? p : latest));
+}
+
+/**
+ * Returns the academic period the whole system should currently show.
+ * Computed fresh from `start_date`/`end_date` on every call — the same
+ * answer for every user/session, no admin action or cache involved. Falls
+ * back to the manually-toggled `is_active` flag only when dates aren't
+ * configured yet (pre-migration / not-yet-set-up schools).
+ */
+export async function getActivePeriod(now: Date = new Date()): Promise<AcademicPeriod | null> {
   const supabase = getSupabaseAdmin();
 
   const { data } = await supabase
@@ -26,7 +76,12 @@ export async function getActivePeriod(): Promise<AcademicPeriod | null> {
     .maybeSingle();
 
   if (data) {
-    return rowToAcademicPeriod(data);
+    const flagged = rowToAcademicPeriod(data, now);
+    const allQuarters = await getPeriodsForYear(flagged.schoolYear, now);
+    const computed = pickCurrentPeriod(allQuarters);
+    // Fall back to the raw flag when no quarter has dates yet, or when today
+    // is before the school year's first configured start date.
+    return computed ?? flagged;
   }
 
   // Fallback: derive from system_settings
@@ -53,13 +108,15 @@ export async function getActivePeriod(): Promise<AcademicPeriod | null> {
     endDate: null,
     isActive: true,
     isGradingOpen: true,
+    status: 'active',
   };
 }
 
 /**
- * Returns all four periods for the given school year, ordered by quarter.
+ * Returns all four periods for the given school year, ordered by quarter,
+ * each carrying a computed `status`.
  */
-export async function getPeriodsForYear(schoolYear: string): Promise<AcademicPeriod[]> {
+export async function getPeriodsForYear(schoolYear: string, now: Date = new Date()): Promise<AcademicPeriod[]> {
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
     .from('academic_periods')
@@ -67,7 +124,7 @@ export async function getPeriodsForYear(schoolYear: string): Promise<AcademicPer
     .eq('school_year', schoolYear)
     .order('quarter', { ascending: true });
 
-  return (data || []).map(rowToAcademicPeriod);
+  return (data || []).map((row) => rowToAcademicPeriod(row, now));
 }
 
 /**
@@ -92,15 +149,18 @@ export function getQuartersForSemester(semester: 1 | 2): [number, number] {
 
 // ─── internal ────────────────────────────────────────────────────────────────
 
-function rowToAcademicPeriod(row: any): AcademicPeriod {
+function rowToAcademicPeriod(row: any, now: Date = new Date()): AcademicPeriod {
+  const startDate = row.start_date ?? null;
+  const endDate = row.end_date ?? null;
   return {
     id: row.id,
     schoolYear: row.school_year,
     quarter: row.quarter,
     label: row.label,
-    startDate: row.start_date ?? null,
-    endDate: row.end_date ?? null,
+    startDate,
+    endDate,
     isActive: row.is_active,
     isGradingOpen: row.is_grading_open,
+    status: computeStatus({ startDate, endDate }, getTodayISO(now)) ?? 'active',
   };
 }

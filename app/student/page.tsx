@@ -279,12 +279,12 @@ const calendarActivities: CalendarActivity[] = [
   },
   {
     date: '2025-08-12',
-    title: 'Elimination for Tagisan ng Talino',
+    title: 'Elimination Round for Quiz Bee',
     category: 'event',
   },
   {
     date: '2025-08-13',
-    title: 'Elimination for Tagisan ng Talino',
+    title: 'Elimination Round for Quiz Bee',
     category: 'event',
   },
   {
@@ -302,7 +302,7 @@ const calendarActivities: CalendarActivity[] = [
   },
   {
     date: '2025-08-23',
-    title: 'Final Round for Tagisan ng Talino',
+    title: 'Final Round for Quiz Bee',
     category: 'event',
   },
   { date: '2025-08-25', title: 'PEAC INSET (JHS)', category: 'workshop' },
@@ -313,12 +313,12 @@ const calendarActivities: CalendarActivity[] = [
   },
   {
     date: '2025-08-28',
-    title: 'Buwan ng Wika Celebration for Junior and Senior High',
+    title: 'Language Month Celebration for Junior and Senior High',
     category: 'celebration',
   },
   {
     date: '2025-08-29',
-    title: 'Buwan ng Wika Celebration for Kinder and Elementary',
+    title: 'Language Month Celebration for Kinder and Elementary',
     category: 'celebration',
   },
 

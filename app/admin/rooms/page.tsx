@@ -133,7 +133,7 @@ export default function RoomsPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-6 py-4 flex items-center gap-4">
           <Link href="/admin">
-            <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100">
+            <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out">
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
@@ -145,7 +145,7 @@ export default function RoomsPage() {
             </h1>
             <p className="text-sm text-gray-500">{rooms.length} total rooms · {activeCount} active</p>
           </div>
-          <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white" onClick={openAdd}>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={openAdd}>
             <Plus className="w-3.5 h-3.5 mr-1" />
             Add Room
           </Button>
@@ -183,7 +183,7 @@ export default function RoomsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white">
+            <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white">
               {saving ? 'Saving…' : editing ? 'Save Changes' : 'Add Room'}
             </Button>
           </DialogFooter>
@@ -235,10 +235,10 @@ function RoomTable({
                       onCheckedChange={() => onToggle(room)}
                       title={room.is_active ? 'Deactivate' : 'Activate'}
                     />
-                    <button onClick={() => onEdit(room)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100">
+                    <button onClick={() => onEdit(room)} className="p-1.5 rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => onDelete(room)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50">
+                    <button onClick={() => onDelete(room)} className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>

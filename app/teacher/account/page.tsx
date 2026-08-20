@@ -193,7 +193,7 @@ export default function TeacherAccount() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute bottom-0 right-0 w-5 h-5 bg-gray-900 hover:bg-gray-700 rounded-full flex items-center justify-center transition"
+              className="absolute bottom-0 right-0 w-5 h-5 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center transition"
               title="Change photo"
             >
               {uploadingAvatar
@@ -285,7 +285,7 @@ export default function TeacherAccount() {
             {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={handleCancel} disabled={saving}>Cancel</Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white">
+              <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white">
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

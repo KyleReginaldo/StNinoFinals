@@ -3,13 +3,7 @@
 import type React from 'react';
 
 import { SchoolMap } from '@/components/SchoolMap';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { TermsPrivacyModal } from '@/components/TermsPrivacyModal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,7 +15,11 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { getActiveSchoolYear } from '@/lib/school-year';
+import {
+  getActiveSchoolYear,
+  getEnrollmentSchoolYear,
+  getSchoolYearOptions,
+} from '@/lib/school-year';
 import { useAlert } from '@/lib/use-alert';
 import {
   Award,
@@ -45,10 +43,12 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
   const [schoolContact, setSchoolContact] = useState({
+    schoolName: 'Sto. Niño de Praga Academy',
     phone: '(02) 123-4567',
     contactEmail: 'info@stonino-praga.edu.ph',
     address: '123 Education Street, Manila, Philippines',
-    officeHours: 'Monday – Friday, 7:00 AM – 5:00 PM',
+    officeHours: 'Monday - Friday, 7:00 AM - 5:00 PM',
+    footerTagline: 'Excellence in Education Since 1998',
   });
   const [liveStats, setLiveStats] = useState<{
     students: number;
@@ -63,10 +63,12 @@ export default function HomePage() {
       .then((d) => {
         if (d.success && d.settings) {
           setSchoolContact({
+            schoolName: d.settings.schoolName || schoolContact.schoolName,
             phone: d.settings.phone || schoolContact.phone,
             contactEmail: d.settings.contactEmail || schoolContact.contactEmail,
             address: d.settings.address || schoolContact.address,
             officeHours: d.settings.officeHours || schoolContact.officeHours,
+            footerTagline: d.settings.footerTagline || schoolContact.footerTagline,
           });
         }
       })
@@ -83,16 +85,33 @@ export default function HomePage() {
   const [admissionForm, setAdmissionForm] = useState({
     firstName: '',
     lastName: '',
-    middleInitial: '',
+    middleName: '',
+    dateOfBirth: '',
     suffix: '',
+    address: '',
+    addressType: 'current',
+    lrn: '',
     parentName: '',
     parentEmail: '',
     emailAddress: '',
-    phoneNumber: '+63',
+    guardianPhone: '+63',
     intendedGradeLevel: '',
     previousSchool: '',
+    enrollmentType: 'new',
+    schoolYear: getEnrollmentSchoolYear(),
     additionalMessage: '',
   });
+
+  const ENROLLMENT_TYPE_OPTIONS = [
+    { value: 'new', label: 'New Student' },
+    { value: 'returning', label: 'Returning Student' },
+    { value: 'transferee', label: 'Transferee' },
+    { value: 'returnee', label: 'Returnee' },
+    { value: 'repeater', label: 'Repeater' },
+  ];
+  const needsPreviousSchool =
+    admissionForm.enrollmentType === 'transferee' ||
+    admissionForm.enrollmentType === 'returnee';
 
   const GRADE_6_AND_BELOW = ['kindergarten', 'grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'];
   const needsParentEmail = GRADE_6_AND_BELOW.includes(admissionForm.intendedGradeLevel);
@@ -107,32 +126,32 @@ export default function HomePage() {
 
   const FAQS = [
     {
-      q: 'Magkano ang tuition fee?',
-      a: 'Ang tuition fee ay nag-iiba depende sa grade level. Para sa pinaka-updated na listahan ng bayarin, makipag-ugnayan sa aming opisina o mag-inquire sa pamamagitan ng aming enrollment form.',
+      q: 'How much is the tuition fee?',
+      a: 'Tuition fees vary by grade level. For the most up-to-date fee schedule, contact our office or send an inquiry through our enrollment form.',
     },
     {
-      q: 'Paano mag-enroll ng bagong estudyante?',
-      a: 'Pumunta sa aming Admissions section at punan ang inquiry form. Makikipag-ugnayan ang aming admission team sa inyo upang gabayan kayo sa proseso ng enrollment at ipaaalam ang mga susunod na hakbang.',
+      q: 'How do I enroll a new student?',
+      a: 'Go to our Admissions section and fill out the inquiry form. Our admissions team will reach out to guide you through the enrollment process and the next steps.',
     },
     {
-      q: 'Ano ang mga requirements para sa bagong estudyante?',
-      a: 'Karaniwan na kailangan: PSA Birth Certificate (orihinal + photocopy), Report Card / Form 138, Certificate of Good Moral Character, at 2x2 ID photos. Maaaring may dagdag na requirements depende sa grade level.',
+      q: 'What are the requirements for a new student?',
+      a: 'You will typically need: PSA Birth Certificate (original + photocopy), Report Card / Form 138, Certificate of Good Moral Character, and 2x2 ID photos. Additional requirements may apply depending on grade level.',
     },
     {
-      q: 'Anong grade levels ang inaalok ng paaralan?',
-      a: "Nag-aalok kami ng kompletong K-12 program — mula Kinder hanggang Grade 12, kasama ang Junior at Senior High School (JHS at SHS) na may iba't ibang strand.",
+      q: 'What grade levels does the school offer?',
+      a: "We offer a complete K-12 program, from Kindergarten through Grade 12, including Junior and Senior High School (JHS and SHS) with a range of strands.",
     },
     {
-      q: 'Ano ang oras ng klase?',
-      a: 'Ang regular na klase ay nagsisimula ng 7:30 AM hanggang 4:00 PM, Lunes hanggang Biyernes. Ang eksaktong pasukan ay naka-anunsyo bago mag-school year.',
+      q: 'What are the class hours?',
+      a: 'Regular classes run from 7:30 AM to 4:00 PM, Monday through Friday. The exact start date is announced before each school year.',
     },
     {
-      q: 'May school bus o service ba?',
-      a: 'Para sa pinaka-updated na impormasyon tungkol sa school service at iba pang arrangements, makipag-ugnayan sa aming opisina. Maaaring mag-inquire din kayo sa ibang magulang o guardian ng estudyante.',
+      q: 'Is there a school bus or service?',
+      a: 'For the most up-to-date information on school service and other arrangements, contact our office. You may also ask other parents or guardians about their arrangements.',
     },
     {
-      q: 'May scholarship o financial assistance ba?',
-      a: 'Nagbibigay kami ng merit scholarships para sa mga nangunguna sa klase. Makipag-ugnayan sa aming Student Affairs Office para sa detalye ng aming financial assistance programs.',
+      q: 'Is there a scholarship or financial assistance program?',
+      a: 'We offer merit scholarships for top-performing students. Contact our Student Affairs Office for details on our financial assistance programs.',
     },
   ];
 
@@ -156,14 +175,21 @@ export default function HomePage() {
         body: JSON.stringify({
           first_name: admissionForm.firstName,
           last_name: admissionForm.lastName,
-          middle_initial: admissionForm.middleInitial,
+          middle_name: admissionForm.middleName || null,
+          date_of_birth: admissionForm.dateOfBirth,
           suffix: admissionForm.suffix || null,
+          address: admissionForm.address || null,
+          address_type: admissionForm.address ? admissionForm.addressType : null,
+          lrn: admissionForm.lrn || null,
           parent_name: admissionForm.parentName,
           parent_email: admissionForm.parentEmail || null,
           email_address: admissionForm.emailAddress,
-          phone_number: admissionForm.phoneNumber,
+          phone_number: admissionForm.guardianPhone,
+          guardian_phone: admissionForm.guardianPhone,
           intended_grade_level: admissionForm.intendedGradeLevel,
-          previous_school: admissionForm.previousSchool,
+          previous_school: admissionForm.previousSchool || null,
+          enrollment_type: admissionForm.enrollmentType,
+          school_year: admissionForm.schoolYear,
           additional_message: admissionForm.additionalMessage,
         }),
       });
@@ -177,14 +203,20 @@ export default function HomePage() {
         setAdmissionForm({
           firstName: '',
           lastName: '',
-          middleInitial: '',
+          middleName: '',
+          dateOfBirth: '',
           suffix: '',
+          address: '',
+          addressType: 'current',
+          lrn: '',
           parentName: '',
           parentEmail: '',
           emailAddress: '',
-          phoneNumber: '+63',
+          guardianPhone: '+63',
           intendedGradeLevel: '',
           previousSchool: '',
+          enrollmentType: 'new',
+          schoolYear: getEnrollmentSchoolYear(),
           additionalMessage: '',
         });
       } else {
@@ -225,9 +257,9 @@ export default function HomePage() {
         { value: liveStats.classes.toLocaleString(), label: 'Active Classes' },
       ]
     : [
-        { value: '—', label: 'Enrolled Students' },
-        { value: '—', label: 'Dedicated Educators' },
-        { value: '—', label: 'Active Classes' },
+        { value: null, label: 'Enrolled Students' },
+        { value: null, label: 'Dedicated Educators' },
+        { value: null, label: 'Active Classes' },
       ];
 
   const FEATURES = [
@@ -270,10 +302,10 @@ export default function HomePage() {
               />
               <div className="hidden sm:block">
                 <p className="text-md font-bold text-red-900 leading-tight">
-                  Sto. Niño de Praga Academy
+                  {schoolContact.schoolName}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Excellence in Education Since 1998
+                  {schoolContact.footerTagline}
                 </p>
               </div>
             </div>
@@ -389,8 +421,8 @@ export default function HomePage() {
 
             <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-10 max-w-xl">
               Nurturing students with quality education, strong Christian
-              values, and a community that celebrates every achievement — since
-              1998.
+              values, and a community that celebrates every milestone.
+              Serving families since 1998.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -437,9 +469,15 @@ export default function HomePage() {
           <div className="grid grid-cols-3 gap-8">
             {STATS.map((s) => (
               <div key={s.label} className="text-center">
-                <p className="text-3xl sm:text-4xl font-extrabold text-red-900 mb-1">
-                  {s.value}
-                </p>
+                {s.value ? (
+                  <p className="text-3xl sm:text-4xl font-extrabold text-red-900 mb-1">
+                    {s.value}
+                  </p>
+                ) : (
+                  <div className="h-9 sm:h-10 mb-1 flex items-center justify-center">
+                    <span className="inline-block w-14 h-6 sm:h-7 rounded-md bg-red-100 animate-pulse" />
+                  </div>
+                )}
                 <p className="text-xs sm:text-sm text-gray-500 font-medium">
                   {s.label}
                 </p>
@@ -462,14 +500,36 @@ export default function HomePage() {
               <br className="hidden sm:block" /> the whole child.
             </h2>
             <p className="text-gray-500 text-base leading-relaxed">
-              We believe education is more than academics — it's about shaping
+              We believe education is more than academics. It's about shaping
               confident, compassionate, and capable individuals ready for the
               world.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map(({ icon: Icon, title, desc }) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 gap-6">
+            {/* Featured tile: spans 2x2, carries a real photo */}
+            <div className="relative overflow-hidden rounded-2xl min-h-[300px] sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-end p-7">
+              <img
+                src="/stnino1.jpg"
+                alt="Students in a Sto. Niño de Praga Academy classroom"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-red-950/90 via-red-950/50 to-red-950/10" />
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-5">
+                  <GraduationCap className="w-6 h-6 text-amber-300" />
+                </div>
+                <h3 className="font-bold text-white text-lg mb-2">
+                  {FEATURES[0].title}
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed max-w-xs">
+                  {FEATURES[0].desc}
+                </p>
+              </div>
+            </div>
+
+            {/* Two smaller tiles */}
+            {[FEATURES[1], FEATURES[2]].map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
                 className="group bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200"
@@ -481,6 +541,21 @@ export default function HomePage() {
                 <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
+
+            {/* Wide closing tile */}
+            <div className="group bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-2 flex items-center gap-6">
+              <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 group-hover:bg-red-800 transition-colors">
+                <Award className="w-6 h-6 text-red-800 group-hover:text-white transition-colors" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">
+                  {FEATURES[3].title}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {FEATURES[3].desc}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -514,6 +589,18 @@ export default function HomePage() {
                   className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   Requirements
+                </TabsTrigger>
+                <TabsTrigger
+                  value="process"
+                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
+                  Enrollment Process
+                </TabsTrigger>
+                <TabsTrigger
+                  value="terms"
+                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                >
+                  Definition of Terms
                 </TabsTrigger>
                 <TabsTrigger
                   value="inquiry"
@@ -589,11 +676,11 @@ export default function HomePage() {
                       <div className="space-y-5">
                         {[
                           {
-                            period: 'March – May',
+                            period: 'March - May',
                             label: 'Application Period',
                           },
                           {
-                            period: 'April – May',
+                            period: 'April - May',
                             label: 'Entrance Examination',
                           },
                           { period: 'June', label: 'Enrollment Period' },
@@ -619,6 +706,77 @@ export default function HomePage() {
                       Apply Now
                     </button>
                   </div>
+                </div>
+              </TabsContent>
+
+              {/* Enrollment Process tab */}
+              <TabsContent value="process">
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
+                  <ol className="space-y-6">
+                    {[
+                      {
+                        title: 'Submit an Inquiry',
+                        desc: 'Fill out the Admission Inquiry Form under the "Submit Inquiry" tab with the applicant\'s and guardian\'s information.',
+                      },
+                      {
+                        title: 'Document Submission',
+                        desc: 'Once contacted by our admissions team, bring the required documents (see the Requirements tab) to the registrar\'s office.',
+                      },
+                      {
+                        title: 'Entrance Examination',
+                        desc: 'New and transferee applicants take a scheduled entrance examination and, when applicable, a brief interview.',
+                      },
+                      {
+                        title: 'Admission Decision',
+                        desc: 'The admissions committee reviews the application and examination results, then notifies the guardian by email of the decision.',
+                      },
+                      {
+                        title: 'Enrollment & Payment',
+                        desc: 'Approved applicants settle enrollment fees and finalize their class schedule with the registrar.',
+                      },
+                      {
+                        title: 'Start of Classes',
+                        desc: 'The student attends orientation and begins classes on the school year\'s official start date.',
+                      },
+                    ].map((step, i) => (
+                      <li key={step.title} className="flex items-start gap-4">
+                        <span className="w-7 h-7 rounded-full bg-red-800 text-white text-xs flex items-center justify-center font-bold shrink-0">
+                          {i + 1}
+                        </span>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm mb-1">
+                            {step.title}
+                          </p>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.desc}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </TabsContent>
+
+              {/* Definition of Terms tab */}
+              <TabsContent value="terms">
+                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
+                  <dl className="divide-y divide-gray-200">
+                    {[
+                      { term: 'LRN (Learner Reference Number)', def: 'The unique 12-digit number assigned by DepEd to every learner in the Philippine basic education system.' },
+                      { term: 'Guardian', def: 'The parent or legal guardian responsible for the applicant, and the school\'s primary point of contact.' },
+                      { term: 'New Student', def: 'An applicant enrolling in a Philippine school for the very first time.' },
+                      { term: 'Transferee', def: 'A student moving in from another school, currently enrolled in the same grade level they are applying for.' },
+                      { term: 'Returnee', def: 'A former student of this school who is re-enrolling after an absence.' },
+                      { term: 'Repeater', def: 'A student retaking the same grade level they were previously enrolled in.' },
+                      { term: 'School Year (S.Y.)', def: 'The academic year the applicant intends to enroll in, e.g. S.Y. 2026-2027.' },
+                      { term: 'Intended Grade Level', def: 'The grade level (Kindergarten to Grade 12) the applicant is applying to enter.' },
+                    ].map((row) => (
+                      <div key={row.term} className="py-3 first:pt-0 last:pb-0">
+                        <dt className="font-bold text-gray-900 text-sm">{row.term}</dt>
+                        <dd className="text-sm text-gray-600 mt-1 leading-relaxed">{row.def}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               </TabsContent>
 
@@ -677,14 +835,14 @@ export default function HomePage() {
                       onSubmit={handleAdmissionSubmit}
                       className="space-y-5"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_70px_110px] gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_110px] gap-5">
                         <div className="space-y-1.5">
                           <Label
                             htmlFor="firstName"
                             className="text-sm font-medium text-gray-700"
                             required
                           >
-                            Student's First Name
+                            First Name
                           </Label>
                           <Input
                             id="firstName"
@@ -703,11 +861,32 @@ export default function HomePage() {
                         </div>
                         <div className="space-y-1.5">
                           <Label
+                            htmlFor="middleName"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Middle Name
+                          </Label>
+                          <Input
+                            id="middleName"
+                            value={admissionForm.middleName}
+                            placeholder="Middle name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                middleName: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
                             htmlFor="lastName"
                             className="text-sm font-medium text-gray-700"
                             required
                           >
-                            Student's Last Name
+                            Last Name
                           </Label>
                           <Input
                             id="lastName"
@@ -720,28 +899,6 @@ export default function HomePage() {
                               })
                             }
                             required
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="middleInitial"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            M.I.
-                          </Label>
-                          <Input
-                            id="middleInitial"
-                            value={admissionForm.middleInitial}
-                            placeholder="M.I."
-                            maxLength={2}
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                middleInitial: e.target.value,
-                              })
-                            }
                             disabled={isSubmittingAdmission}
                             className="h-11 bg-white border-gray-200"
                           />
@@ -768,6 +925,104 @@ export default function HomePage() {
                               {ADMISSION_SUFFIX_OPTIONS.map((s) => (
                                 <SelectItem key={s} value={s}>{s}</SelectItem>
                               ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="dateOfBirth"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Date of Birth
+                          </Label>
+                          <Input
+                            id="dateOfBirth"
+                            type="date"
+                            value={admissionForm.dateOfBirth}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                dateOfBirth: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="lrn"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            LRN{' '}
+                            <span className="text-xs text-gray-400 font-normal">
+                              (if already assigned one)
+                            </span>
+                          </Label>
+                          <Input
+                            id="lrn"
+                            value={admissionForm.lrn}
+                            placeholder="12-digit Learner Reference Number"
+                            maxLength={11}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                lrn: e.target.value.replace(/\D/g, ''),
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="address"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Address
+                          </Label>
+                          <Input
+                            id="address"
+                            value={admissionForm.address}
+                            placeholder="House no., street, barangay, city"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                address: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-medium text-gray-700">
+                            Address Type
+                          </Label>
+                          <Select
+                            value={admissionForm.addressType}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                addressType: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="current">Current</SelectItem>
+                              <SelectItem value="permanent">Permanent</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -809,78 +1064,90 @@ export default function HomePage() {
                         </div>
                         <div className="space-y-1.5">
                           <Label
-                            htmlFor="previousSchool"
+                            htmlFor="enrollmentType"
                             className="text-sm font-medium text-gray-700"
+                            required
                           >
-                            Previous School
+                            Enrollment Type
                           </Label>
-                          <Input
-                            id="previousSchool"
-                            value={admissionForm.previousSchool}
-                            placeholder="Previous school name (if any)"
-                            onChange={(e) =>
+                          <Select
+                            value={admissionForm.enrollmentType}
+                            onValueChange={(v) =>
                               setAdmissionForm({
                                 ...admissionForm,
-                                previousSchool: e.target.value,
+                                enrollmentType: v,
                               })
                             }
                             disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ENROLLMENT_TYPE_OPTIONS.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
                           <Label
-                            htmlFor="parentName"
+                            htmlFor="schoolYear"
                             className="text-sm font-medium text-gray-700"
                             required
                           >
-                            Guardian Name
+                            School Year to Enroll
                           </Label>
-                          <Input
-                            id="parentName"
-                            value={admissionForm.parentName}
-                            placeholder="Full name of parent or guardian"
-                            onChange={(e) =>
+                          <Select
+                            value={admissionForm.schoolYear}
+                            onValueChange={(v) =>
                               setAdmissionForm({
                                 ...admissionForm,
-                                parentName: e.target.value,
+                                schoolYear: v,
                               })
                             }
-                            required
                             disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="parentEmail"
-                            className="text-sm font-medium text-gray-700"
-                            required={needsParentEmail}
                           >
-                            Guardian Email
-                            {needsParentEmail && (
-                              <span className="ml-1 text-xs text-gray-400 font-normal">(required for Grade 6 &amp; below)</span>
-                            )}
-                          </Label>
-                          <Input
-                            id="parentEmail"
-                            type="email"
-                            value={admissionForm.parentEmail}
-                            placeholder="guardian@example.com"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                parentEmail: e.target.value,
-                              })
-                            }
-                            required={needsParentEmail}
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getSchoolYearOptions().map((sy) => (
+                                <SelectItem key={sy} value={sy}>
+                                  S.Y. {sy}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
+                        {needsPreviousSchool && (
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor="previousSchool"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Previous School
+                            </Label>
+                            <Input
+                              id="previousSchool"
+                              value={admissionForm.previousSchool}
+                              placeholder="Previous school name"
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  previousSchool: e.target.value,
+                                })
+                              }
+                              disabled={isSubmittingAdmission}
+                              className="h-11 bg-white border-gray-200"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -908,37 +1175,105 @@ export default function HomePage() {
                             className="h-11 bg-white border-gray-200"
                           />
                         </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="phoneNumber"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Phone Number
-                          </Label>
-                          <Input
-                            id="phoneNumber"
-                            type="tel"
-                            maxLength={13}
-                            value={admissionForm.phoneNumber}
-                            placeholder="+63XXXXXXXXXX"
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              // Always keep +63 prefix; allow only digits after it
-                              if (!val.startsWith('+63')) val = '+63';
-                              const digits = val
-                                .slice(3)
-                                .replace(/\D/g, '')
-                                .slice(0, 10);
-                              setAdmissionForm({
-                                ...admissionForm,
-                                phoneNumber: '+63' + digits,
-                              });
-                            }}
-                            required
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-6 mt-2 space-y-5">
+                        <h4 className="font-bold text-gray-900 text-sm">
+                          Guardian Information
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor="parentName"
+                              className="text-sm font-medium text-gray-700"
+                              required
+                            >
+                              Guardian Name
+                            </Label>
+                            <Input
+                              id="parentName"
+                              value={admissionForm.parentName}
+                              placeholder="Full name of parent or guardian"
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  parentName: e.target.value,
+                                })
+                              }
+                              required
+                              disabled={isSubmittingAdmission}
+                              className="h-11 bg-white border-gray-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor="parentEmail"
+                              className="text-sm font-medium text-gray-700"
+                              required={needsParentEmail}
+                            >
+                              Guardian Email
+                              {needsParentEmail && (
+                                <span className="ml-1 text-xs text-gray-400 font-normal">(required for Grade 6 &amp; below)</span>
+                              )}
+                            </Label>
+                            <Input
+                              id="parentEmail"
+                              type="email"
+                              value={admissionForm.parentEmail}
+                              placeholder="guardian@example.com"
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  parentEmail: e.target.value,
+                                })
+                              }
+                              required={needsParentEmail}
+                              disabled={isSubmittingAdmission}
+                              className="h-11 bg-white border-gray-200"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor="guardianPhone"
+                              className="text-sm font-medium text-gray-700"
+                              required
+                            >
+                              Guardian's Phone Number
+                            </Label>
+                            <Input
+                              id="guardianPhone"
+                              type="tel"
+                              maxLength={13}
+                              value={admissionForm.guardianPhone}
+                              placeholder="+63XXXXXXXXXX"
+                              onChange={(e) => {
+                                let val = e.target.value;
+                                // Always keep +63 prefix; allow only digits after it
+                                if (!val.startsWith('+63')) val = '+63';
+                                const digits = val
+                                  .slice(3)
+                                  .replace(/\D/g, '')
+                                  .slice(0, 10);
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  guardianPhone: '+63' + digits,
+                                });
+                              }}
+                              required
+                              disabled={isSubmittingAdmission}
+                              className="h-11 bg-white border-gray-200"
+                            />
+                            {admissionForm.guardianPhone.length > 0 &&
+                              admissionForm.guardianPhone.length < 13 && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  Invalid number format. Enter 10 digits after
+                                  +63.
+                                </p>
+                              )}
+                          </div>
                         </div>
                       </div>
 
@@ -1033,15 +1368,12 @@ export default function HomePage() {
       <section className="py-20 sm:py-28 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="mb-12 text-center">
-            <span className="text-xs font-bold tracking-widest uppercase text-red-700 mb-3 block">
-              FAQ
-            </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-              Mga Karaniwang Tanong
+              Frequently Asked Questions
             </h2>
             <p className="mt-4 text-gray-500 text-base">
-              Narito ang mga sagot sa mga madalas na itinatanong ng mga magulang
-              at guardian.
+              Answers to the questions parents and guardians ask us most
+              often.
             </p>
           </div>
 
@@ -1090,9 +1422,6 @@ export default function HomePage() {
       <section id="contact" className="py-20 sm:py-28 bg-gray-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-xl mb-14">
-            <span className="text-xs font-bold tracking-widest uppercase text-red-400 mb-3 block">
-              Contact
-            </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
               We'd love to hear from you.
             </h2>
@@ -1171,10 +1500,10 @@ export default function HomePage() {
               />
               <div>
                 <p className="text-sm font-semibold text-white">
-                  Sto. Niño de Praga Academy
+                  {schoolContact.schoolName}
                 </p>
                 <p className="text-xs text-gray-600">
-                  Excellence in Education Since 1998
+                  {schoolContact.footerTagline}
                 </p>
               </div>
             </div>
@@ -1194,7 +1523,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-xs text-gray-600 text-center sm:text-right">
-                © {new Date().getFullYear()} Sto. Niño de Praga Academy. All
+                © {new Date().getFullYear()} {schoolContact.schoolName}. All
                 rights reserved.
               </p>
             </div>
@@ -1202,92 +1531,14 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* ── Terms & Privacy Modal ── */}
-      <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">
-              Terms of Service &amp; Privacy Policy
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
-            <div>
-              <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
-              <p>
-                By using the Sto. Niño de Praga Academy portal, you agree to use
-                the system only for lawful, school-related purposes. Accounts
-                are personal and non-transferable. Misuse, unauthorized access,
-                or sharing of credentials may result in account suspension.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-gray-800 mb-1">Privacy Policy</p>
-              <p>
-                We collect personal information (name, contact details, grades,
-                attendance) solely to manage enrollment and school operations,
-                in compliance with the{' '}
-                <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data
-                will not be sold or shared with third parties outside of
-                authorized school personnel and required government agencies.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-gray-800 mb-1">Data You Provide</p>
-              <ul className="list-disc pl-4 space-y-1 text-gray-500">
-                <li>Student name, grade level, and contact information</li>
-                <li>Guardian name and email address</li>
-                <li>Previous school details submitted in this inquiry</li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-bold text-gray-800 mb-1">Your Rights</p>
-              <p>
-                You may request access, correction, or deletion of your data by
-                contacting us at{' '}
-                <span className="text-red-700">info@stnino.ph</span>. For the
-                full policies, see{' '}
-                <Link
-                  href="/terms"
-                  target="_blank"
-                  className="text-red-700 hover:underline"
-                >
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link
-                  href="/privacy"
-                  target="_blank"
-                  className="text-red-700 hover:underline"
-                >
-                  Privacy Policy
-                </Link>
-                .
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={() => setTermsModalOpen(false)}
-              className="flex-1 h-10 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAgreeAdmissionTerms(true);
-                setTermsModalOpen(false);
-              }}
-              className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors"
-            >
-              I Agree
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TermsPrivacyModal
+        open={termsModalOpen}
+        onOpenChange={setTermsModalOpen}
+        onAgree={() => {
+          setAgreeAdmissionTerms(true);
+          setTermsModalOpen(false);
+        }}
+      />
     </div>
   );
 }

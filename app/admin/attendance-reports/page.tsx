@@ -262,7 +262,7 @@ export default function AttendanceReportsPage() {
         <div className="max-w-screen-2xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link href="/admin">
-              <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
+              <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out">
                 <ArrowLeft className="w-4 h-4" />
               </button>
             </Link>
@@ -283,7 +283,7 @@ export default function AttendanceReportsPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg active:scale-95 transition-[background-color,transform] duration-150 ease-out disabled:opacity-50"
             >
               <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
               Refresh
@@ -331,7 +331,7 @@ export default function AttendanceReportsPage() {
             <button
               key={label}
               onClick={fn}
-              className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-full hover:border-red-700 hover:text-red-700 hover:bg-red-50 transition-colors"
+              className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-full hover:border-red-700 hover:text-red-700 hover:bg-red-50 active:scale-95 transition-[color,background-color,border-color,transform] duration-150 ease-out"
             >
               {label}
             </button>
@@ -351,7 +351,7 @@ export default function AttendanceReportsPage() {
             <PopoverTrigger asChild>
               <button
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors',
+                  'flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-lg active:scale-95 transition-[color,background-color,border-color,transform] duration-150 ease-out',
                   dateRange?.from
                     ? 'text-gray-700 bg-white border-gray-300 hover:border-red-700'
                     : 'text-gray-400 bg-gray-50 border-gray-200'
@@ -442,7 +442,7 @@ export default function AttendanceReportsPage() {
               <p className="text-xs text-red-600 mt-0.5">{error}</p>
               <button
                 onClick={fetchData}
-                className="mt-2 px-3 py-1 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+                className="mt-2 px-3 py-1 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 active:scale-95 transition-[background-color,transform] duration-150 ease-out"
               >
                 Try again
               </button>
@@ -492,7 +492,7 @@ export default function AttendanceReportsPage() {
                 </p>
                 <div className="mt-2.5 w-full bg-gray-100 rounded-full h-1.5">
                   <div
-                    className="bg-emerald-500 h-1.5 rounded-full transition-all duration-700"
+                    className="bg-emerald-500 h-1.5 rounded-full transition-[width] duration-700 ease-out"
                     style={{ width: `${data.general.presentPercentage}%` }}
                   />
                 </div>
@@ -512,7 +512,7 @@ export default function AttendanceReportsPage() {
                 </p>
                 <div className="mt-2.5 w-full bg-gray-100 rounded-full h-1.5">
                   <div
-                    className="bg-red-500 h-1.5 rounded-full transition-all duration-700"
+                    className="bg-red-500 h-1.5 rounded-full transition-[width] duration-700 ease-out"
                     style={{ width: `${data.general.absentPercentage}%` }}
                   />
                 </div>
@@ -540,7 +540,7 @@ export default function AttendanceReportsPage() {
                       <div
                         key={student.studentId}
                         className={cn(
-                          'flex items-center gap-3 rounded-xl px-4 py-3 transition-all cursor-pointer group',
+                          'flex items-center gap-3 rounded-xl px-4 py-3 transition-[background-color] duration-150 ease-out cursor-pointer group',
                           index === 0 && 'bg-amber-50 hover:bg-amber-100/70',
                           index === 1 && 'bg-slate-50 hover:bg-slate-100/70',
                           index === 2 && 'bg-orange-50 hover:bg-orange-100/70',
@@ -586,7 +586,7 @@ export default function AttendanceReportsPage() {
                           <div className="flex-1 bg-gray-200 rounded-full h-1.5">
                             <div
                               className={cn(
-                                'h-1.5 rounded-full transition-all duration-500',
+                                'h-1.5 rounded-full transition-[width] duration-500 ease-out',
                                 student.percentage >= 90 ? 'bg-emerald-500' :
                                 student.percentage >= 75 ? 'bg-amber-500' : 'bg-red-500'
                               )}
@@ -663,7 +663,7 @@ export default function AttendanceReportsPage() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className={cn(
-                            'h-2 rounded-full transition-all duration-700',
+                            'h-2 rounded-full transition-[width] duration-700 ease-out',
                             selectedStudent.percentage >= 90 ? 'bg-emerald-500' :
                             selectedStudent.percentage >= 75 ? 'bg-amber-500' : 'bg-red-500'
                           )}

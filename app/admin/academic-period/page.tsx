@@ -25,6 +25,7 @@ interface Period {
   endDate: string | null;
   isActive: boolean;
   isGradingOpen: boolean;
+  status: 'active' | 'ended' | 'upcoming';
 }
 
 const QUARTER_NAMES = ['', 'Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'];
@@ -51,6 +52,13 @@ export default function AcademicPeriodPage() {
   const [startingYear, setStartingYear]     = useState(false);
 
   const activePeriod = periods.find(p => p.isActive);
+
+  // The quarter the system is actually showing everyone right now, computed
+  // from dates — may differ from `activePeriod` (the manually-toggled flag)
+  // during the gap between two quarters.
+  const effectivePeriod =
+    periods.find(p => p.status === 'active') ??
+    [...periods].reverse().find(p => p.status === 'ended');
 
   const load = async (sy?: string) => {
     setLoading(true);
@@ -243,7 +251,7 @@ export default function AcademicPeriodPage() {
             <Button
               onClick={handleAdvance}
               disabled={advancing}
-              className={`shrink-0 ${confirmAdvance ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
+              className={`shrink-0 ${confirmAdvance ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'} text-white`}
             >
               {advancing
                 ? <><RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />Advancing…</>
@@ -309,7 +317,7 @@ export default function AcademicPeriodPage() {
             <Button
               onClick={handleStartNewYear}
               disabled={startingYear || !newSY.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+              className="bg-primary hover:bg-primary/90 text-white shrink-0"
             >
               {startingYear
                 ? <><RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />Starting…</>
@@ -323,44 +331,58 @@ export default function AcademicPeriodPage() {
       {periods.length > 0 && (
         <div className="space-y-3">
           {periods.map(period => {
-            const isActive = period.isActive;
-            const isPast   = !isActive && (activePeriod ? period.quarter < activePeriod.quarter : false);
-            const isFuture = !isActive && !isPast;
-            const dates    = editDates[period.quarter] ?? { start: '', end: '' };
+            const isEffective   = effectivePeriod?.quarter === period.quarter;
+            const isLive        = isEffective && period.status === 'active';
+            const isEndedGap    = isEffective && period.status === 'ended';
+            const isPast        = !isEffective && period.status === 'ended';
+            const isFuture      = period.status === 'upcoming';
+            const isReadOnly    = period.status === 'ended';
+            const dates         = editDates[period.quarter] ?? { start: '', end: '' };
 
             return (
               <div
                 key={period.quarter}
                 className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-                  isActive ? 'border-gray-900 ring-1 ring-gray-900/10' : 'border-gray-200'
+                  isLive ? 'border-gray-900 ring-1 ring-gray-900/10'
+                    : isEndedGap ? 'border-amber-400 ring-1 ring-amber-400/20'
+                    : 'border-gray-200'
                 }`}
               >
                 {/* Quarter header */}
-                <div className={`flex items-center justify-between px-5 py-3.5 ${isActive ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                <div className={`flex items-center justify-between px-5 py-3.5 ${isLive ? 'bg-gray-900' : isEndedGap ? 'bg-amber-50' : 'bg-gray-50'}`}>
                   <div className="flex items-center gap-3">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                      isActive ? 'bg-white text-gray-900' : isPast ? 'bg-gray-300 text-gray-600' : 'bg-white text-gray-400 border border-gray-200'
+                      isLive ? 'bg-white text-gray-900'
+                        : isEndedGap ? 'bg-amber-400 text-white'
+                        : isPast ? 'bg-gray-300 text-gray-600'
+                        : 'bg-white text-gray-400 border border-gray-200'
                     }`}>
                       Q{period.quarter}
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-700'}`}>
+                      <p className={`text-sm font-semibold ${isLive ? 'text-white' : isEndedGap ? 'text-amber-900' : 'text-gray-700'}`}>
                         {QUARTER_NAMES[period.quarter]}
-                        <span className={`ml-2 text-[10px] font-medium uppercase tracking-wide ${isActive ? 'text-gray-300' : 'text-gray-400'}`}>
+                        <span className={`ml-2 text-[10px] font-medium uppercase tracking-wide ${isLive ? 'text-gray-300' : isEndedGap ? 'text-amber-600' : 'text-gray-400'}`}>
                           {SEM_LABELS[period.quarter]}
                         </span>
                       </p>
-                      <p className={`text-xs ${isActive ? 'text-gray-400' : 'text-gray-400'}`}>
+                      <p className={`text-xs ${isLive ? 'text-gray-400' : isEndedGap ? 'text-amber-700' : 'text-gray-400'}`}>
                         {fmt(period.startDate)} – {fmt(period.endDate)}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {isActive && (
+                    {isLive && (
                       <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                         Active
+                      </span>
+                    )}
+                    {isEndedGap && (
+                      <span className="inline-flex items-center gap-1.5 bg-amber-400 text-white text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                        <Clock className="w-3 h-3" />
+                        Ended
                       </span>
                     )}
                     {isPast && (
@@ -384,7 +406,8 @@ export default function AcademicPeriodPage() {
                         type="date"
                         value={dates.start}
                         onChange={e => setEditDates(prev => ({ ...prev, [period.quarter]: { ...prev[period.quarter], start: e.target.value } }))}
-                        className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700"
+                        disabled={isReadOnly}
+                        className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700 disabled:bg-gray-50 disabled:text-gray-400"
                       />
                     </div>
                     <span className="text-gray-300 text-xs">–</span>
@@ -394,20 +417,23 @@ export default function AcademicPeriodPage() {
                         type="date"
                         value={dates.end}
                         onChange={e => setEditDates(prev => ({ ...prev, [period.quarter]: { ...prev[period.quarter], end: e.target.value } }))}
-                        className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700"
+                        disabled={isReadOnly}
+                        className="px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white text-gray-700 disabled:bg-gray-50 disabled:text-gray-400"
                       />
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSaveDates(period.quarter)}
-                      disabled={savingId === period.quarter}
-                      className="h-7 text-xs px-2.5"
-                    >
-                      {savingId === period.quarter
-                        ? <RefreshCw className="w-3 h-3 animate-spin" />
-                        : 'Save'}
-                    </Button>
+                    {!isReadOnly && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSaveDates(period.quarter)}
+                        disabled={savingId === period.quarter}
+                        className="h-7 text-xs px-2.5"
+                      >
+                        {savingId === period.quarter
+                          ? <RefreshCw className="w-3 h-3 animate-spin" />
+                          : 'Save'}
+                      </Button>
+                    )}
                   </div>
 
                   {/* Grade entry toggle */}
@@ -415,27 +441,43 @@ export default function AcademicPeriodPage() {
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                       <BookOpen className="w-3.5 h-3.5" /> Grade entry
                     </span>
-                    <button
-                      onClick={() => handleToggleGrading(period)}
-                      className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-                        period.isGradingOpen
-                          ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                          : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'
-                      }`}
-                    >
-                      {period.isGradingOpen
-                        ? <><LockOpen className="w-3 h-3" /> Open</>
-                        : <><Lock     className="w-3 h-3" /> Locked</>}
-                    </button>
+                    {isReadOnly ? (
+                      <span className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-400">
+                        {period.isGradingOpen
+                          ? <><LockOpen className="w-3 h-3" /> Open</>
+                          : <><Lock className="w-3 h-3" /> Locked</>}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleToggleGrading(period)}
+                        className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ease-out ${
+                          period.isGradingOpen
+                            ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                            : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'
+                        }`}
+                      >
+                        {period.isGradingOpen
+                          ? <><LockOpen className="w-3 h-3" /> Open</>
+                          : <><Lock     className="w-3 h-3" /> Locked</>}
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Active period hint */}
-                {isActive && (
+                {/* Current-quarter hint */}
+                {isLive && (
                   <div className="px-5 pb-4">
                     <div className="flex items-center gap-1.5 text-xs text-gray-400">
                       <Clock className="w-3.5 h-3.5" />
                       All modules (grades, attendance, dashboard) are currently showing <strong className="text-gray-600">{QUARTER_NAMES[period.quarter]}</strong> data.
+                    </div>
+                  </div>
+                )}
+                {isEndedGap && (
+                  <div className="px-5 pb-4">
+                    <div className="flex items-center gap-1.5 text-xs text-amber-700">
+                      <Clock className="w-3.5 h-3.5" />
+                      {QUARTER_NAMES[period.quarter]} ended on {fmt(period.endDate)}. No quarter is active yet — grade entry and enrollment are paused until the next quarter starts.
                     </div>
                   </div>
                 )}
@@ -448,9 +490,10 @@ export default function AcademicPeriodPage() {
       {/* Info box */}
       <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 text-xs text-gray-500 space-y-1.5">
         <p className="font-semibold text-gray-700 text-sm">How this works</p>
-        <p>• <strong>Advance quarter</strong> — moves the entire school to the next academic period. All modules automatically switch to the new quarter.</p>
+        <p>• <strong>Dates drive everything automatically.</strong> The quarter whose Start–End range includes today becomes active for the whole school the moment that date arrives — no button click needed.</p>
+        <p>• <strong>Gap between quarters</strong> — if one quarter's dates have passed and the next one's haven't started yet, that quarter is shown as <strong className="text-amber-700">Ended</strong> everywhere (dashboards, grade entry, enrollment) until the next quarter's start date arrives.</p>
+        <p>• <strong>Advance quarter</strong> is a manual override — only needed if a quarter has no dates set, or to correct a mistake. It has no effect on a quarter whose dates say otherwise.</p>
         <p>• <strong>Grade entry lock</strong> — when locked, teachers cannot submit or edit grades for that quarter. Approved grades remain visible.</p>
-        <p>• <strong>Dates</strong> are informational (used in reports and COE documents). They do not trigger automatic advances.</p>
         <p>• <strong>Grade 11 and 12</strong> see Q1+Q2 as "1st Semester" and Q3+Q4 as "2nd Semester" in their dashboard.</p>
       </div>
 

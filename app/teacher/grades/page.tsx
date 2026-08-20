@@ -14,13 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
+import { parseCsv } from '@/lib/csv';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { CheckCircle2, Clock, GraduationCap, Lock, Save, Search, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, GraduationCap, Lock, Save, Search, Upload, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
 
 interface Teacher {
@@ -55,6 +56,12 @@ const STATUS_CONFIG = {
   pending:  { label: 'Pending',  dot: 'bg-amber-400', rowClass: 'bg-amber-50' },
 };
 
+interface CsvImportSummary {
+  matched: number;
+  unmatched: string[];
+  outOfRange: string[];
+}
+
 export default function TeacherGrades() {
   const router = useRouter();
   const { refreshKey } = useRefresh();
@@ -65,8 +72,22 @@ export default function TeacherGrades() {
   const [isSavingGrades, setIsSavingGrades] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [gradingLocked, setGradingLocked] = useState(false);
+  const [passingThreshold, setPassingThreshold] = useState(75);
+  const [csvSummary, setCsvSummary] = useState<CsvImportSummary | null>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && typeof d.settings?.passingThreshold === 'number') {
+          setPassingThreshold(d.settings.passingThreshold);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const statusSummary = useMemo(() => {
     return gradesData.reduce(
@@ -82,10 +103,17 @@ export default function TeacherGrades() {
   }, [gradesData]);
 
   const updateGrade = (studentId: number, value: string) => {
+    let clamped = value;
+    const num = parseFloat(value);
+    if (value !== '' && !isNaN(num)) {
+      const bounded = Math.min(100, Math.max(0, num));
+      // Only rewrite when out of range — keeps in-progress typing like "1" untouched
+      if (bounded !== num) clamped = String(bounded);
+    }
     setGradesData(prev =>
       prev.map(student =>
         student.id === studentId && student.status !== 'approved'
-          ? { ...student, grade: value }
+          ? { ...student, grade: clamped }
           : student
       )
     );
@@ -202,6 +230,55 @@ export default function TeacherGrades() {
     } finally {
       setIsSavingGrades(false);
     }
+  };
+
+  const handleImportCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      const rows = parseCsv(text);
+      if (rows.length === 0) {
+        showAlert({ message: 'The CSV file appears to be empty.', type: 'warning' });
+        return;
+      }
+      // Skip a header row if the first cell isn't a plausible student number
+      const startIndex = /^\d+$/.test((rows[0][0] || '').trim()) ? 0 : 1;
+
+      const byStudentNumber = new Map(gradesData.map((s) => [s.studentId, s]));
+      const unmatched: string[] = [];
+      const outOfRange: string[] = [];
+      const updates = new Map<number, string>();
+
+      for (let i = startIndex; i < rows.length; i++) {
+        const [rawNumber, rawGrade] = rows[i];
+        const studentNumber = (rawNumber || '').trim();
+        const gradeStr = (rawGrade || '').trim();
+        if (!studentNumber) continue;
+        const student = byStudentNumber.get(studentNumber);
+        if (!student) {
+          unmatched.push(studentNumber);
+          continue;
+        }
+        if (student.status === 'approved') continue;
+        const numeric = parseFloat(gradeStr);
+        if (isNaN(numeric) || numeric < 0 || numeric > 100) {
+          outOfRange.push(`${studentNumber} (${gradeStr || '—'})`);
+          continue;
+        }
+        updates.set(student.id, numeric.toString());
+      }
+
+      if (updates.size > 0) {
+        setGradesData((prev) =>
+          prev.map((s) => (updates.has(s.id) ? { ...s, grade: updates.get(s.id)! } : s))
+        );
+      }
+      setCsvSummary({ matched: updates.size, unmatched, outOfRange });
+    };
+    reader.readAsText(file);
   };
 
   const handleExportExcel = async () => {
@@ -428,31 +505,42 @@ export default function TeacherGrades() {
                             <td className="px-4 py-2.5">
                               <span className="font-mono text-[12px] text-gray-500">{student.studentId}</span>
                             </td>
-                            <td className="px-4 py-2.5 w-36">
+                            <td className="px-4 py-2.5 w-44">
                               {isApproved ? (
-                                <span className={`font-semibold text-sm ${parseFloat(student.grade) >= 75 ? 'text-yellow-700' : 'text-red-700'}`}>
+                                <span className={`font-semibold text-sm ${parseFloat(student.grade) >= passingThreshold ? 'text-yellow-700' : 'text-red-700'}`}>
                                   {student.grade}
                                 </span>
                               ) : (
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  step="0.01"
-                                  value={student.grade}
-                                  onChange={e => updateGrade(student.id, e.target.value)}
-                                  disabled={gradingLocked}
-                                  className={`text-center h-8 text-sm ${
-                                    gradingLocked
-                                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                      : student.status === 'rejected'
-                                        ? 'bg-red-50 text-red-900'
-                                        : student.status === 'pending'
-                                          ? 'bg-amber-50 text-amber-900'
-                                          : ''
-                                  }`}
-                                  placeholder="—"
-                                />
+                                <div className="flex items-center gap-1.5">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value={student.grade}
+                                    onChange={e => updateGrade(student.id, e.target.value)}
+                                    disabled={gradingLocked}
+                                    className={`text-center h-8 text-sm ${
+                                      gradingLocked
+                                        ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                        : student.status === 'rejected'
+                                          ? 'bg-red-50 text-red-900'
+                                          : student.status === 'pending'
+                                            ? 'bg-amber-50 text-amber-900'
+                                            : ''
+                                    }`}
+                                    placeholder="—"
+                                  />
+                                  {student.grade !== '' && !isNaN(parseFloat(student.grade)) && (
+                                    <span
+                                      className={`text-[10px] font-semibold shrink-0 ${
+                                        parseFloat(student.grade) >= passingThreshold ? 'text-green-600' : 'text-red-500'
+                                      }`}
+                                    >
+                                      {parseFloat(student.grade) >= passingThreshold ? 'PASS' : 'FAIL'}
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </td>
                             <td className="px-4 py-2.5">
@@ -507,14 +595,59 @@ export default function TeacherGrades() {
                 </span>
               </div>
 
+              {csvSummary && (
+                <div className="flex items-start gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+                  <Upload className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 text-blue-800">
+                    <p>
+                      Imported <strong>{csvSummary.matched}</strong> grade{csvSummary.matched !== 1 ? 's' : ''} into the table below.
+                      Review the values, then click Submit Grades to save.
+                    </p>
+                    {csvSummary.unmatched.length > 0 && (
+                      <p className="text-amber-700 mt-1">
+                        Not found in this class: {csvSummary.unmatched.join(', ')}
+                      </p>
+                    )}
+                    {csvSummary.outOfRange.length > 0 && (
+                      <p className="text-red-700 mt-1">
+                        Skipped (grade must be 0-100): {csvSummary.outOfRange.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCsvSummary(null)}
+                    className="text-blue-400 hover:text-blue-700 active:scale-90 transition-[color,transform] duration-150 ease-out text-xs"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex justify-end gap-3">
+                <input
+                  ref={csvInputRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={handleImportCsv}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={gradingLocked}
+                  onClick={() => csvInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import CSV
+                </Button>
                 <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} />
                 <Button
                   onClick={handleSaveGrades}
                   disabled={isSavingGrades || gradingLocked}
                   title={gradingLocked ? 'Grading period is locked' : undefined}
-                  className="bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50"
+                  className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
                 >
                   {isSavingGrades ? (
                     <>

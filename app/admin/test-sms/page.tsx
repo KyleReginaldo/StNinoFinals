@@ -133,7 +133,7 @@ export default function TestSmsPage() {
             <Button
               onClick={handleSend}
               disabled={sending || !phone.trim() || !message.trim() || charsLeft < 0}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               {sending ? (
                 <><RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />Sending…</>
@@ -163,7 +163,7 @@ export default function TestSmsPage() {
           {log.length > 0 && (
             <button
               onClick={() => setLog([])}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Clear

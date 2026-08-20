@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
-import { Loader2, Plus, Save, Trash2, UserPlus, X } from 'lucide-react';
+import { Archive, ArchiveRestore, Loader2, Plus, Save, Trash2, UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const GRADE_LEVELS = [
@@ -190,7 +190,7 @@ function TemplateSectionsPanel() {
             size="sm"
             onClick={handleAdd}
             disabled={!selectedGrade || !newSectionName.trim()}
-            className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+            className="bg-primary hover:bg-primary/90 text-white shrink-0"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Add
@@ -244,7 +244,7 @@ function TemplateSectionsPanel() {
                             {section}
                             <button
                               onClick={() => handleRemove(grade, section)}
-                              className="rounded-full p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-300 transition-colors"
+                              className="rounded-full p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-300 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -480,7 +480,7 @@ function BatchEnrollModal({
           <Button
             onClick={handleEnroll}
             disabled={enrolling || selected.size === 0}
-            className="bg-gray-900 hover:bg-gray-800 text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             {enrolling ? (
               <>
@@ -521,6 +521,8 @@ function FormalSectionsPanel() {
   const [importing, setImporting] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [batchSection, setBatchSection] = useState<SectionRow | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archiving, setArchiving] = useState<string | null>(null);
 
   // Add section form
   const [addGrade, setAddGrade] = useState('');
@@ -550,12 +552,12 @@ function FormalSectionsPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadSections = async (sy: string) => {
+  const loadSections = async (sy: string, archived: boolean) => {
     if (!sy) return;
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/admin/sections?schoolYear=${encodeURIComponent(sy)}`
+        `/api/admin/sections?schoolYear=${encodeURIComponent(sy)}${archived ? '&archived=true' : ''}`
       );
       const data = await res.json();
       if (data.success) setSections(data.sections ?? []);
@@ -567,8 +569,52 @@ function FormalSectionsPanel() {
   };
 
   useEffect(() => {
-    if (schoolYear) loadSections(schoolYear);
-  }, [schoolYear]);
+    if (schoolYear) loadSections(schoolYear, showArchived);
+  }, [schoolYear, showArchived]);
+
+  const handleArchive = async (id: string, name: string) => {
+    setArchiving(id);
+    try {
+      const res = await fetch('/api/admin/sections', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_active: false }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSections((prev) => prev.filter((s) => s.id !== id));
+        showAlert({ message: `Archived section "${name}".`, type: 'success' });
+      } else {
+        showAlert({ message: data.error || 'Failed to archive.', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Network error.', type: 'error' });
+    } finally {
+      setArchiving(null);
+    }
+  };
+
+  const handleRestoreSection = async (id: string, name: string) => {
+    setArchiving(id);
+    try {
+      const res = await fetch('/api/admin/sections', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_active: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSections((prev) => prev.filter((s) => s.id !== id));
+        showAlert({ message: `Restored section "${name}".`, type: 'success' });
+      } else {
+        showAlert({ message: data.error || 'Failed to restore.', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Network error.', type: 'error' });
+    } finally {
+      setArchiving(null);
+    }
+  };
 
   const handleDelete = async (id: string, name: string) => {
     setDeleting(id);
@@ -671,7 +717,7 @@ function FormalSectionsPanel() {
       message: `Imported ${created} section${created !== 1 ? 's' : ''} from templates.`,
       type: 'success',
     });
-    loadSections(schoolYear);
+    loadSections(schoolYear, showArchived);
   };
 
   const grouped = GRADE_LEVELS.reduce<Record<string, SectionRow[]>>(
@@ -687,12 +733,22 @@ function FormalSectionsPanel() {
 
   return (
     <div className="space-y-3">
-      <div>
-        <h3 className="text-sm font-semibold text-gray-800">Sections</h3>
-        <p className="text-xs text-gray-400 mt-0.5">
-          These are the actual Sections that students get enrolled into. Each
-          section spans all quarters and tracks enrollment capacity.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-800">
+            Sections {showArchived && <span className="text-xs font-normal text-amber-600 ml-1">(Archived)</span>}
+          </h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            These are the actual Sections that students get enrolled into. Each
+            section spans all quarters and tracks enrollment capacity.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowArchived((v) => !v)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border shrink-0 active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ease-out ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+        >
+          {showArchived ? 'View Active' : 'View Archived'}
+        </button>
       </div>
 
       {/* Controls row */}
@@ -713,6 +769,7 @@ function FormalSectionsPanel() {
         </div>
 
         {/* Quick add row */}
+        {!showArchived && (
         <div className="flex flex-col sm:flex-row gap-2 border-t border-gray-100 pt-3">
           <Select value={addGrade} onValueChange={setAddGrade}>
             <SelectTrigger className="w-full sm:w-40 h-8 text-sm">
@@ -745,7 +802,7 @@ function FormalSectionsPanel() {
             size="sm"
             onClick={handleAdd}
             disabled={adding || !addGrade || !addName.trim()}
-            className="bg-gray-900 hover:bg-gray-800 text-white shrink-0"
+            className="bg-primary hover:bg-primary/90 text-white shrink-0"
           >
             {adding ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -755,6 +812,7 @@ function FormalSectionsPanel() {
             Add
           </Button>
         </div>
+        )}
       </div>
 
       {/* Sections table */}
@@ -765,8 +823,10 @@ function FormalSectionsPanel() {
           </div>
         ) : gradesWithSections.length === 0 ? (
           <div className="py-12 text-center text-sm text-gray-400">
-            No sections for {schoolYear} yet.
-            {hasTemplates && (
+            {showArchived
+              ? `No archived sections for ${schoolYear}.`
+              : `No sections for ${schoolYear} yet.`}
+            {!showArchived && hasTemplates && (
               <span>
                 {' '}
                 Use &ldquo;Import from templates&rdquo; to create them
@@ -825,32 +885,66 @@ function FormalSectionsPanel() {
                     </td>
                     <td className="px-4 py-2.5 text-right pr-4">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setBatchSection(sec)}
-                          title={`Batch enroll students into ${sec.name}`}
-                          className="p-1 rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                        >
-                          <UserPlus className="w-3.5 h-3.5" />
-                        </button>
+                        {showArchived ? (
+                          <button
+                            onClick={() => handleRestoreSection(sec.id, sec.name)}
+                            disabled={archiving === sec.id}
+                            title={`Restore ${sec.name}`}
+                            className="p-1 rounded text-green-600 hover:text-green-700 hover:bg-green-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out disabled:opacity-30"
+                          >
+                            {archiving === sec.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <ArchiveRestore className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => setBatchSection(sec)}
+                              title={`Batch enroll students into ${sec.name}`}
+                              className="p-1 rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                            >
+                              <UserPlus className="w-3.5 h-3.5" />
+                            </button>
 
-                        <button
-                          onClick={() => handleDelete(sec.id, sec.name)}
-                          disabled={
-                            deleting === sec.id || sec.student_count > 0
-                          }
-                          title={
-                            sec.student_count > 0
-                              ? 'Cannot delete — students are enrolled'
-                              : `Delete ${sec.name}`
-                          }
-                          className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {deleting === sec.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                            <button
+                              onClick={() => handleArchive(sec.id, sec.name)}
+                              disabled={archiving === sec.id || sec.student_count > 0}
+                              title={
+                                sec.student_count > 0
+                                  ? 'Cannot archive — students are enrolled'
+                                  : `Archive ${sec.name}`
+                              }
+                              className="p-1 rounded text-gray-300 hover:text-amber-600 hover:bg-amber-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              {archiving === sec.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Archive className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+
+                            <button
+                              onClick={() => handleDelete(sec.id, sec.name)}
+                              disabled={
+                                deleting === sec.id || sec.student_count > 0
+                              }
+                              title={
+                                sec.student_count > 0
+                                  ? 'Cannot delete — students are enrolled'
+                                  : `Delete ${sec.name}`
+                              }
+                              className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              {deleting === sec.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -871,7 +965,7 @@ function FormalSectionsPanel() {
         section={batchSection}
         open={!!batchSection}
         onClose={() => setBatchSection(null)}
-        onEnrolled={() => loadSections(schoolYear)}
+        onEnrolled={() => loadSections(schoolYear, showArchived)}
       />
     </div>
   );

@@ -395,7 +395,7 @@ export default function AdminEnrollmentPage() {
           {hasFilters && (
             <button
               onClick={() => { tc.clearFilters(); tc.setSearch(''); }}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out"
             >
               <X className="w-3 h-3" />
               Clear

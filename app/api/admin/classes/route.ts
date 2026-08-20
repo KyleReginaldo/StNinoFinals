@@ -67,10 +67,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fetch all classes
-    const { data: classes, error } = await admin
-      .from('classes')
-      .select('*')
+    // Fetch all classes.
+    // is_active predates this feature and may be NULL on older rows — treat
+    // NULL as active (matches the pre-existing unfiltered behavior) so no
+    // previously-visible class silently disappears from either view.
+    const archived = searchParams.get('archived') === 'true';
+    let classesQuery = admin.from('classes').select('*');
+    classesQuery = archived
+      ? classesQuery.eq('is_active', false)
+      : classesQuery.or('is_active.is.null,is_active.eq.true');
+    const { data: classes, error } = await classesQuery
       .order('school_year', { ascending: false })
       .order('quarter', { ascending: false })
       .order('class_name', { ascending: true });
@@ -173,6 +179,59 @@ async function checkRoomConflict(
   return null;
 }
 
+async function checkStudentScheduleConflicts(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  studentIds: string[],
+  schedule: string,
+  school_year: string,
+  excludeClassId?: string
+): Promise<string | null> {
+  if (!schedule || studentIds.length === 0) return null;
+  const newSlots = getSlotsFromSchedule(schedule);
+  if (newSlots.length === 0) return null;
+
+  const { data: memberships } = await admin
+    .from('user_classes')
+    .select('user_id, class_id')
+    .in('user_id', studentIds);
+  if (!memberships || memberships.length === 0) return null;
+
+  const otherClassIds = [...new Set(memberships.map((m) => m.class_id))].filter(
+    (cid) => cid !== excludeClassId
+  );
+  if (otherClassIds.length === 0) return null;
+
+  const { data: otherClasses } = await admin
+    .from('classes')
+    .select('id, class_name, schedule')
+    .in('id', otherClassIds)
+    .eq('school_year', school_year);
+  if (!otherClasses || otherClasses.length === 0) return null;
+
+  const classById = new Map(otherClasses.map((c) => [c.id, c]));
+
+  for (const m of memberships) {
+    const cls = classById.get(m.class_id);
+    if (!cls?.schedule) continue;
+    const existingSlots = getSlotsFromSchedule(cls.schedule);
+    for (const n of newSlots) {
+      for (const e of existingSlots) {
+        if (n.day !== e.day) continue;
+        if (timesOverlap({ start: n.start, end: n.end }, { start: e.start, end: e.end })) {
+          const { data: student } = await admin
+            .from('users')
+            .select('first_name, last_name')
+            .eq('id', m.user_id)
+            .single();
+          const studentName = student ? `${student.first_name} ${student.last_name}` : 'A student';
+          return `${studentName} already has "${cls.class_name}" on ${n.day} at an overlapping time.`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // POST - Create new class
 export async function POST(request: NextRequest) {
   try {
@@ -207,6 +266,14 @@ export async function POST(request: NextRequest) {
     // Check for room/time conflict
     if (room && schedule) {
       const conflict = await checkRoomConflict(admin, room, schedule, school_year);
+      if (conflict) {
+        return NextResponse.json({ success: false, error: conflict }, { status: 409 });
+      }
+    }
+
+    // Check for duplicate/overlapping schedule on any student being added
+    if (schedule && student_ids && student_ids.length > 0) {
+      const conflict = await checkStudentScheduleConflicts(admin, student_ids, schedule, school_year);
       if (conflict) {
         return NextResponse.json({ success: false, error: conflict }, { status: 409 });
       }
@@ -309,6 +376,14 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Check for duplicate/overlapping schedule on any student being (re)added
+    if (schedule && school_year && student_ids && student_ids.length > 0) {
+      const conflict = await checkStudentScheduleConflicts(admin, student_ids, schedule, school_year, id);
+      if (conflict) {
+        return NextResponse.json({ success: false, error: conflict }, { status: 409 });
+      }
+    }
+
     // Update the class
     const { data: updatedClass, error: updateError } = await admin
       .from('classes')
@@ -368,6 +443,41 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Classes API PUT error:', error);
+    return NextResponse.json(
+      { success: false, error: error?.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH - Archive or restore a class (does not touch the roster, unlike PUT)
+export async function PATCH(request: NextRequest) {
+  try {
+    const admin = getSupabaseAdmin();
+    const body = await request.json();
+    const { id, is_active } = body;
+
+    if (!id || typeof is_active !== 'boolean') {
+      return NextResponse.json(
+        { success: false, error: 'id and is_active (boolean) are required' },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await admin
+      .from('classes')
+      .update({ is_active, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, class: data });
+  } catch (error: any) {
+    console.error('Classes API PATCH error:', error);
     return NextResponse.json(
       { success: false, error: error?.message || 'Internal server error' },
       { status: 500 }

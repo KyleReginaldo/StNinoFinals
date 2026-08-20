@@ -5,13 +5,14 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const gradeLevel = searchParams.get('gradeLevel');
   const schoolYear = searchParams.get('schoolYear');
+  const archived = searchParams.get('archived') === 'true';
 
   const supabase = getSupabaseAdmin();
 
   let query = supabase
     .from('sections')
     .select('*')
-    .eq('is_active', true)
+    .eq('is_active', !archived)
     .order('grade_level')
     .order('name');
 
@@ -102,6 +103,37 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, section: { ...data, class_count: 0, student_count: 0 } });
+  } catch {
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// PATCH - Archive or restore a section (does not touch enrollment/classes)
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, is_active } = body;
+
+    if (!id || typeof is_active !== 'boolean') {
+      return NextResponse.json(
+        { success: false, error: 'id and is_active (boolean) are required' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from('sections')
+      .update({ is_active })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, section: data });
   } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }

@@ -380,8 +380,7 @@ export async function GET(request: Request) {
 
       return {
         id: record.id,
-        studentId:
-          person?.student_number || person?.employee_number || 'N/A',
+        studentId: person?.student_number || person?.employee_number || 'N/A',
         studentName: person
           ? `${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim() ||
             'Unknown'
@@ -729,13 +728,22 @@ export async function POST(request: Request) {
                   scanType: 'assignment',
                 },
               },
-              { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
+              {
+                status: 200,
+                headers: {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                  'Access-Control-Allow-Headers': 'Content-Type',
+                },
+              }
             );
           }
 
           // Three-strike security tracking for unregistered cards
           try {
-            const strikeWindow = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            const strikeWindow = new Date(
+              Date.now() - 5 * 60 * 1000
+            ).toISOString();
             const now = new Date().toISOString();
 
             await supabaseClient.from('security_events' as any).insert({
@@ -776,7 +784,14 @@ export async function POST(request: Request) {
                   },
                   strikes,
                 },
-                { status: 403, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
+                {
+                  status: 403,
+                  headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                  },
+                }
               );
             }
           } catch (strikeErr) {
@@ -1121,10 +1136,18 @@ export async function POST(request: Request) {
         console.log('🔔 isTeacher:', isTeacher);
         console.log('🔔 scanType:', scanType);
 
-        let parentPhone: string | null = null;
+        let parentPhone: string | null = personInfo?.guardian_phone || null;
         const parentRecords: any[] = [];
 
+        if (parentPhone) {
+          console.log(
+            '✅ Found guardian phone on student record:',
+            parentPhone
+          );
+        }
+
         console.log('🔍 Student info for parent lookup:', {
+          guardian_phone: personInfo?.guardian_phone,
           parent_id: personInfo?.parent_id,
           parentId: personInfo?.parentId,
           parent_email: personInfo?.parent_email,
@@ -1135,76 +1158,89 @@ export async function POST(request: Request) {
         });
 
         try {
+          if (!parentPhone) {
+            const parentId =
+              personInfo?.parent_id || personInfo?.parentId || null;
+            if (parentId) {
+              const { data: parentRecord, error: pErr } = await supabaseClient
+                .from('users')
+                .select(
+                  'id, phone, mobile, phone_number, guardian_phone, email'
+                )
+                .eq('id', parentId)
+                .eq('role', 'parent')
+                .limit(1)
+                .single();
+              if (!pErr && parentRecord) parentRecords.push(parentRecord);
+            }
 
-          const parentId =
-            personInfo?.parent_id || personInfo?.parentId || null;
-          if (parentId) {
-            const { data: parentRecord, error: pErr } = await supabaseClient
-              .from('users')
-              .select('id, phone, mobile, phone_number, email')
-              .eq('id', parentId)
-              .eq('role', 'parent')
-              .limit(1)
-              .single();
-            if (!pErr && parentRecord) parentRecords.push(parentRecord);
-          }
+            const parentEmail =
+              personInfo?.parent_email || personInfo?.parentEmail || null;
+            if (!parentRecords.length && parentEmail) {
+              const { data: parentRecord2, error: pErr2 } = await supabaseClient
+                .from('users')
+                .select(
+                  'id, phone, mobile, phone_number, guardian_phone, email'
+                )
+                .ilike('email', parentEmail)
+                .limit(1)
+                .single();
+              if (!pErr2 && parentRecord2) parentRecords.push(parentRecord2);
+            }
 
-          const parentEmail =
-            personInfo?.parent_email || personInfo?.parentEmail || null;
-          if (!parentRecords.length && parentEmail) {
-            const { data: parentRecord2, error: pErr2 } = await supabaseClient
-              .from('users')
-              .select('id, phone, mobile, phone_number, email')
-              .ilike('email', parentEmail)
-              .limit(1)
-              .single();
-            if (!pErr2 && parentRecord2) parentRecords.push(parentRecord2);
-          }
-
-          if (
-            !parentRecords.length &&
-            (personInfo?.student_id ||
-              personInfo?.student_number ||
-              personInfo?.id)
-          ) {
-            const sId =
-              personInfo?.student_id ||
-              personInfo?.student_number ||
-              personInfo?.id;
-            try {
-              const { data: linkedParentIds } = await supabaseClient
-                .from('user_relationships')
-                .select('user_id')
-                .eq('related_user_id', sId)
-                .limit(10);
-              if (linkedParentIds && linkedParentIds.length > 0) {
-                const parentIds = linkedParentIds
-                  .map((r: any) => r.user_id)
-                  .filter(Boolean);
-                if (parentIds.length > 0) {
-                  const { data: parentsFromLink } = await supabaseClient
-                    .from('users')
-                    .select('id, phone, mobile, phone_number, email')
-                    .eq('role', 'parent')
-                    .in('id', parentIds);
-                  if (parentsFromLink) parentRecords.push(...parentsFromLink);
+            if (
+              !parentRecords.length &&
+              (personInfo?.student_id ||
+                personInfo?.student_number ||
+                personInfo?.id)
+            ) {
+              const sId =
+                personInfo?.student_id ||
+                personInfo?.student_number ||
+                personInfo?.id;
+              try {
+                const { data: linkedParentIds } = await supabaseClient
+                  .from('user_relationships')
+                  .select('user_id')
+                  .eq('related_user_id', sId)
+                  .limit(10);
+                if (linkedParentIds && linkedParentIds.length > 0) {
+                  const parentIds = linkedParentIds
+                    .map((r: any) => r.user_id)
+                    .filter(Boolean);
+                  if (parentIds.length > 0) {
+                    const { data: parentsFromLink } = await supabaseClient
+                      .from('users')
+                      .select(
+                        'id, phone, mobile, phone_number, guardian_phone, email'
+                      )
+                      .eq('role', 'parent')
+                      .in('id', parentIds);
+                    if (parentsFromLink) parentRecords.push(...parentsFromLink);
+                  }
                 }
-              }
-            } catch (linkError) {}
-          }
+              } catch (linkError) {}
+            }
 
-          if (parentRecords && parentRecords.length > 0) {
-            const p = parentRecords[0];
-            parentPhone = p?.phone || p?.mobile || p?.phone_number || null;
-            console.log('✅ Found parent from database:', {
-              id: p?.id,
-              phone: p?.phone,
-              mobile: p?.mobile,
-              phone_number: p?.phone_number,
-              finalPhone: parentPhone,
-            });
-          } else {
-            console.log('⚠️ No parent records found from database queries');
+            if (parentRecords && parentRecords.length > 0) {
+              const p = parentRecords[0];
+              parentPhone =
+                p?.guardian_phone ||
+                p?.phone ||
+                p?.mobile ||
+                p?.phone_number ||
+                null;
+              console.log('✅ Found parent from database:', {
+                id: p?.id,
+                guardian_phone: p?.guardian_phone,
+                phone: p?.phone,
+                mobile: p?.mobile,
+                phone_number: p?.phone_number,
+                finalPhone: parentPhone,
+              });
+            } else {
+              console.log('⚠️ No parent records found from database queries');
+            }
           }
         } catch (parentQueryError) {
           console.warn(
@@ -1341,7 +1377,9 @@ export async function POST(request: Request) {
           const parentEmail = parentRecords[0]?.email;
           if (parentEmail) {
             try {
-              const readableTime = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+              const readableTime = new Date().toLocaleString('en-PH', {
+                timeZone: 'Asia/Manila',
+              });
               await EmailService.sendAttendanceNotification({
                 parentEmail,
                 studentName: formattedRecord.studentName,

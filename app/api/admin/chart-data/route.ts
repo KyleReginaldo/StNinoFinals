@@ -4,45 +4,24 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
 
-    // --- Attendance data for range (or last 7 days) ---
-    const days: { label: string; date: string }[] = [];
-
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const current = new Date(start);
-      while (current <= end) {
-        days.push({
-          label: current.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          }),
-          date: current.toISOString().split('T')[0],
-        });
-        current.setDate(current.getDate() + 1);
-      }
-    } else {
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        days.push({
-          label: d.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          }),
-          date: d.toISOString().split('T')[0],
-        });
-      }
+    // --- Weekly attendance trend: always the trailing 7 calendar days. ---
+    // Not driven by the dashboard's date-range picker (that picker scopes the
+    // "Attendance Rate" stat card instead) so this widget stays a real weekly
+    // trend instead of collapsing to a single bar when a 1-day range is picked.
+    const chartDays: { label: string; date: string }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      chartDays.push({
+        label: d.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        }),
+        date: d.toISOString().split('T')[0],
+      });
     }
-
-    // Limit to 31 days max for performance
-    const chartDays = days.slice(-31);
 
     const { count: totalStudents } = await supabaseAdmin
       .from('users')
@@ -66,12 +45,10 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // --- Grade Approvals breakdown (filtered by date if provided) ---
-    let gradesQuery = supabaseAdmin.from('grades').select('status, created_at');
-    if (startDate) gradesQuery = gradesQuery.gte('created_at', `${startDate}T00:00:00`);
-    if (endDate) gradesQuery = gradesQuery.lte('created_at', `${endDate}T23:59:59`);
-
-    const { data: gradeRows } = await gradesQuery;
+    // --- Grade Approvals breakdown ---
+    // Not date-filtered: this reflects the current approval queue (matches the
+    // sidebar's pending-count badge), not grades submitted in the selected range.
+    const { data: gradeRows } = await supabaseAdmin.from('grades').select('status');
 
     const gradeCounts = { pending: 0, approved: 0, rejected: 0 };
     for (const row of gradeRows ?? []) {

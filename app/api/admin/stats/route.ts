@@ -90,6 +90,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Gender breakdown — across all students, independent of grade_level/date filters
+    const { data: genderRows } = await supabaseAdmin
+      .from('users')
+      .select('gender')
+      .eq('role', 'student');
+
+    const genderBreakdown = { male: 0, female: 0, unspecified: 0 };
+    for (const row of genderRows || []) {
+      const g = (row.gender || '').trim().toLowerCase();
+      if (g === 'male') genderBreakdown.male++;
+      else if (g === 'female') genderBreakdown.female++;
+      else genderBreakdown.unspecified++;
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -100,6 +114,7 @@ export async function GET(request: NextRequest) {
         attendanceCount,
         gradeDistribution,
         sectionDistribution,
+        genderBreakdown,
         filteredStudents: studentsList?.length || 0,
         dateRange: startDate || endDate ? { startDate: attendanceStart, endDate: attendanceEnd } : null,
       },

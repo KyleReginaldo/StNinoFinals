@@ -54,13 +54,14 @@ export async function POST(request: Request) {
       !body.first_name ||
       !body.last_name ||
       !body.email_address ||
-      !body.phone_number
+      !body.phone_number ||
+      !body.date_of_birth
     ) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Missing required fields: first_name, last_name, email_address, phone_number',
+            'Missing required fields: first_name, last_name, email_address, phone_number, date_of_birth',
         },
         { status: 400 }
       );
@@ -71,7 +72,26 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Phone number must be in +63XXXXXXXXXX or 09XXXXXXXXX format.',
+          error: 'Please enter a valid phone number, e.g. 09XXXXXXXXX or +63XXXXXXXXXX.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const ENROLLMENT_TYPES = ['new', 'returning', 'transferee', 'returnee', 'repeater'];
+    const enrollmentType = ENROLLMENT_TYPES.includes(body.enrollment_type)
+      ? body.enrollment_type
+      : 'new';
+
+    // Previous school is only meaningful for transferees/returnees
+    if (
+      (enrollmentType === 'transferee' || enrollmentType === 'returnee') &&
+      !body.previous_school
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Please provide the previous school name for a transferee or returnee applicant.',
         },
         { status: 400 }
       );
@@ -111,14 +131,21 @@ export async function POST(request: Request) {
     const admissionData: AdmissionInsert = {
       first_name: body.first_name,
       last_name: body.last_name,
-      middle_initial: body.middle_initial || null,
+      middle_name: body.middle_name || null,
+      date_of_birth: body.date_of_birth,
       suffix: body.suffix || null,
+      address: body.address || null,
+      address_type: body.address ? body.address_type || null : null,
+      lrn: body.lrn || null,
       parent_name: body.parent_name,
       parent_email: body.parent_email || null,
       email_address: body.email_address,
       phone_number: body.phone_number,
+      guardian_phone: body.guardian_phone || body.phone_number,
       intended_grade_level: body.intended_grade_level,
-      previous_school: body.previous_school,
+      previous_school: body.previous_school || null,
+      enrollment_type: enrollmentType,
+      school_year: body.school_year || null,
       additional_message: body.additional_message || null,
       status: 'pending',
     };

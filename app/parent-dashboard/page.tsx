@@ -719,7 +719,7 @@ export default function ParentDashboardPage() {
                 <DialogTrigger asChild>
                   <Button
                     size="sm"
-                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                    className="bg-primary hover:bg-primary/90 text-white"
                   >
                     <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                     Add Student
@@ -771,7 +771,7 @@ export default function ParentDashboardPage() {
                       <Button
                         onClick={handleAddChild}
                         disabled={isAddingChild}
-                        className="flex-1 bg-gray-900 hover:bg-gray-800"
+                        className="flex-1 bg-primary hover:bg-primary/90"
                       >
                         {isAddingChild ? 'Adding...' : 'Add Student'}
                       </Button>
@@ -803,7 +803,7 @@ export default function ParentDashboardPage() {
               <DialogTrigger asChild>
                 <Button
                   size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white"
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                   Add Student
@@ -853,7 +853,7 @@ export default function ParentDashboardPage() {
                     <Button
                       onClick={handleAddChild}
                       disabled={isAddingChild}
-                      className="flex-1 bg-gray-900 hover:bg-gray-800"
+                      className="flex-1 bg-primary hover:bg-primary/90"
                     >
                       {isAddingChild ? 'Adding...' : 'Add Student'}
                     </Button>
@@ -1830,7 +1830,7 @@ function ProfileTab({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute bottom-0 right-0 w-5 h-5 bg-gray-900 hover:bg-gray-700 rounded-full flex items-center justify-center transition"
+              className="absolute bottom-0 right-0 w-5 h-5 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center transition"
               title="Change photo"
             >
               {uploadingAvatar ? (
@@ -1971,7 +1971,7 @@ function ProfileTab({
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-gray-900 hover:bg-gray-800 text-white"
+                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>

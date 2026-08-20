@@ -1,3 +1,4 @@
+import { findRfidOwner } from '@/lib/rfid';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabase } from '@/lib/supabaseClient'; // Keep for fallback
@@ -115,8 +116,14 @@ export async function POST(request: Request) {
       section,
       email,
       phone_number,
+      guardian_phone,
       date_of_birth,
+      gender,
       address,
+      current_address,
+      barangay,
+      barangay_name,
+      street_details,
       rfid,
       password,
     } = body;
@@ -152,6 +159,19 @@ export async function POST(request: Request) {
         },
         { status: 500 }
       );
+    }
+
+    if (rfid) {
+      const owner = await findRfidOwner(supabaseAdmin, rfid);
+      if (owner) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `This RFID card is already assigned to ${owner.name} (${owner.role}). Clear that assignment first before reassigning.`,
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // Create auth user using admin client
@@ -197,12 +217,18 @@ export async function POST(request: Request) {
       suffix: suffix || null,
       email: email,
       phone_number: phone_number || null,
+      guardian_phone: guardian_phone || null,
       student_number: student_number,
       lrn: lrn || null,
       grade_level: grade_level,
       section: section || null,
       date_of_birth: date_of_birth || null,
+      gender: gender || null,
       address: address || null,
+      current_address: current_address || null,
+      barangay: barangay || null,
+      barangay_name: barangay_name || null,
+      street_details: street_details || null,
       rfid: rfid || null,
       role: 'student',
       status: 'Active',

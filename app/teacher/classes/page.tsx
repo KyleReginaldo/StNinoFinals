@@ -350,7 +350,7 @@ export default function TeacherClassesPage() {
                   </div>
                 )}
                 <div className="pt-2">
-                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors">
+                  <button className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                     <Users className="w-4 h-4" />
                     View Students
                   </button>

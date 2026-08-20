@@ -1,4 +1,5 @@
 import { getActivePeriod, getPeriodsForYear } from '@/lib/academic-period';
+import { snapshotAndUnenrollStudents } from '@/lib/enrollment-history';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -60,8 +61,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean up any lingering enrollments from a prior year that wasn't properly closed
-    await supabase.from('user_classes').delete().eq('membership_type', 'student');
-    await supabase.from('users').update({ section: null }).eq('role', 'student');
+    // (archived into enrollment_history rather than just dropped)
+    await snapshotAndUnenrollStudents(supabase);
 
     const quarters = [1, 2, 3, 4].map((q) => ({
       school_year:     schoolYear,

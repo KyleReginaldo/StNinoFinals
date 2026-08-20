@@ -39,6 +39,14 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string }> = {
   rejected: { label: 'Rejected', dot: 'bg-red-500' },
 };
 
+const ENROLLMENT_TYPE_LABELS: Record<string, string> = {
+  new: 'New Student',
+  returning: 'Returning Student',
+  transferee: 'Transferee',
+  returnee: 'Returnee',
+  repeater: 'Repeater',
+};
+
 const QUICK_TEMPLATES = [
   {
     label: 'Interview Invitation',
@@ -297,7 +305,7 @@ const AdmissionPage = () => {
                 tc.clearFilters();
                 tc.setSearch('');
               }}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100"
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg hover:bg-gray-100 active:scale-95 transition-[color,background-color,transform] duration-150 ease-out"
             >
               <X className="w-3 h-3" />
               Clear
@@ -377,9 +385,11 @@ const AdmissionPage = () => {
                     <td className="px-4 py-3 pl-4">
                       <p className="text-sm font-medium text-gray-900">
                         {admission.first_name}{' '}
-                        {admission.middle_initial
-                          ? `${admission.middle_initial}. `
-                          : ''}
+                        {admission.middle_name
+                          ? `${admission.middle_name} `
+                          : admission.middle_initial
+                            ? `${admission.middle_initial}. `
+                            : ''}
                         {admission.last_name}
                         {(admission as any).suffix ? ` ${(admission as any).suffix}` : ''}
                       </p>
@@ -394,7 +404,7 @@ const AdmissionPage = () => {
                           e.stopPropagation();
                           openEmailDialog(admission);
                         }}
-                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-left"
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline text-left active:scale-95 transition-transform duration-150 ease-out"
                       >
                         <Mail className="w-3 h-3 shrink-0" />
                         {admission.email_address}
@@ -402,12 +412,12 @@ const AdmissionPage = () => {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <a
-                        href={`tel:${admission.phone_number}`}
+                        href={`tel:${admission.guardian_phone || admission.phone_number}`}
                         onClick={(e) => e.stopPropagation()}
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
                       >
                         <Phone className="w-3 h-3 shrink-0" />
-                        {admission.phone_number}
+                        {admission.guardian_phone || admission.phone_number}
                       </a>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">
@@ -469,9 +479,10 @@ const AdmissionPage = () => {
             const cfg = STATUS_CONFIG[selectedAdmission.status ?? 'pending'] ?? STATUS_CONFIG['pending'];
             const fullName = [
               selectedAdmission.first_name,
-              selectedAdmission.middle_initial ? `${selectedAdmission.middle_initial}.` : '',
+              selectedAdmission.middle_name ||
+                (selectedAdmission.middle_initial ? `${selectedAdmission.middle_initial}.` : ''),
               selectedAdmission.last_name,
-              (selectedAdmission as any).suffix || '',
+              selectedAdmission.suffix || '',
             ].filter(Boolean).join(' ');
             const gradeLabel = (selectedAdmission.intended_grade_level || '')
               .replace(/^grade(\d+)$/i, 'Grade $1')
@@ -487,7 +498,11 @@ const AdmissionPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-lg font-bold text-gray-900 leading-tight">{fullName}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">{gradeLabel}{selectedAdmission.previous_school ? ` · ${selectedAdmission.previous_school}` : ''}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {gradeLabel}
+                      {(selectedAdmission as any).enrollment_type ? ` · ${ENROLLMENT_TYPE_LABELS[(selectedAdmission as any).enrollment_type] || (selectedAdmission as any).enrollment_type}` : ''}
+                      {selectedAdmission.previous_school ? ` · ${selectedAdmission.previous_school}` : ''}
+                    </p>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${statusBadge[selectedAdmission.status ?? 'pending']}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -499,9 +514,13 @@ const AdmissionPage = () => {
                 <div className="divide-y divide-gray-100 rounded-xl border border-gray-100 overflow-hidden">
                   {[
                     { label: 'Guardian', value: selectedAdmission.parent_name },
-                    (selectedAdmission as any).parent_email ? { label: 'Guardian Email', value: (selectedAdmission as any).parent_email, href: `mailto:${(selectedAdmission as any).parent_email}`, compose: (selectedAdmission as any).parent_email } : null,
+                    selectedAdmission.parent_email ? { label: 'Guardian Email', value: selectedAdmission.parent_email, href: `mailto:${selectedAdmission.parent_email}`, compose: selectedAdmission.parent_email } : null,
                     { label: 'Applicant Email', value: selectedAdmission.email_address, href: `mailto:${selectedAdmission.email_address}` },
-                    { label: 'Phone', value: selectedAdmission.phone_number, href: `tel:${selectedAdmission.phone_number}` },
+                    { label: "Guardian's Phone", value: selectedAdmission.guardian_phone || selectedAdmission.phone_number, href: `tel:${selectedAdmission.guardian_phone || selectedAdmission.phone_number}` },
+                    selectedAdmission.date_of_birth ? { label: 'Date of Birth', value: selectedAdmission.date_of_birth } : null,
+                    (selectedAdmission as any).lrn ? { label: 'LRN', value: (selectedAdmission as any).lrn } : null,
+                    (selectedAdmission as any).address ? { label: `${(selectedAdmission as any).address_type === 'permanent' ? 'Permanent' : 'Current'} Address`, value: (selectedAdmission as any).address } : null,
+                    (selectedAdmission as any).school_year ? { label: 'School Year', value: `S.Y. ${(selectedAdmission as any).school_year}` } : null,
                   ].filter(Boolean).map((row: any) => (
                     <div key={row.label} className="flex items-center justify-between px-4 py-2.5 bg-white">
                       <span className="text-xs text-gray-400 w-32 shrink-0">{row.label}</span>
@@ -516,7 +535,7 @@ const AdmissionPage = () => {
                             type="button"
                             title="Compose email to guardian"
                             onClick={() => openEmailDialog(selectedAdmission, row.compose)}
-                            className="shrink-0 p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="shrink-0 p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                           >
                             <Mail className="w-3.5 h-3.5" />
                           </button>
@@ -590,7 +609,7 @@ const AdmissionPage = () => {
                     key={tpl.label}
                     type="button"
                     onClick={() => applyTemplate(tpl)}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 active:scale-95 transition-[background-color,transform] duration-150 ease-out"
                   >
                     <ChevronDown className="w-3 h-3" />
                     {tpl.label}

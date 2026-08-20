@@ -434,14 +434,14 @@ export default function ParentManagementPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowArchived((v) => !v)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ease-out ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
           >
             {showArchived ? 'View Active' : 'View Archived'}
           </button>
           {!showArchived && (
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-900 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg active:scale-[0.97] transition-[background-color,transform] duration-150 ease-out">
                   <UserPlus className="w-3.5 h-3.5" />
                   Add Guardian
                 </button>
@@ -806,7 +806,7 @@ export default function ParentManagementPage() {
                 <button
                   type="button"
                   onClick={() => setStudentDropdownOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-sm border border-input rounded-md bg-background hover:bg-accent transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm border border-input rounded-md bg-background hover:bg-accent active:scale-[0.97] transition-[background-color,transform] duration-150 ease-out"
                 >
                   <span className={linkData.student_id ? 'text-foreground' : 'text-muted-foreground'}>
                     {linkData.student_id
@@ -848,7 +848,7 @@ export default function ParentManagementPage() {
                                 setStudentDropdownOpen(false);
                                 setStudentSearch('');
                               }}
-                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${linkData.student_id === student.id ? 'bg-red-50 text-red-800 font-medium' : 'text-gray-900'}`}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 active:scale-[0.97] transition-[background-color,transform] duration-150 ease-out ${linkData.student_id === student.id ? 'bg-red-50 text-red-800 font-medium' : 'text-gray-900'}`}
                             >
                               {student.first_name} {student.last_name} -{' '}
                               {student.student_number}
@@ -943,7 +943,7 @@ export default function ParentManagementPage() {
           {tc.search && (
             <button
               onClick={tc.clearFilters}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 active:scale-95 transition-[color,transform] duration-150 ease-out"
             >
               <X className="w-3 h-3" /> Clear
             </button>
@@ -1032,7 +1032,7 @@ export default function ParentManagementPage() {
                                     `${parent.first_name} ${parent.last_name}`
                                   )
                                 }
-                                className="p-1.5 rounded-md text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                                className="p-1.5 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                                 title="Restore"
                               >
                                 <ArchiveRestore className="w-3.5 h-3.5" />
@@ -1041,14 +1041,14 @@ export default function ParentManagementPage() {
                               <>
                                 <button
                                   onClick={() => openLinkDialog(parent)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                                   title="Link children"
                                 >
                                   <Users className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => openEditDialog(parent)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                                  className="p-1.5 rounded-md text-blue-500 hover:text-blue-700 hover:bg-blue-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
                                 </button>
@@ -1060,7 +1060,7 @@ export default function ParentManagementPage() {
                                     )
                                   }
                                   disabled={deletingParent}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                  className="p-1.5 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out disabled:opacity-50"
                                   title="Archive"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

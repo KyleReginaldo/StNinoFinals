@@ -481,6 +481,15 @@ interface GradeRejectionData {
   adminNotes?: string | null;
 }
 
+interface GradeRejectionToTeacherData {
+  to: string;
+  teacherName: string;
+  studentName: string;
+  subject: string;
+  quarter: string | number | null;
+  reason: string;
+}
+
 interface AutoRejectData {
   to: string;
   studentName: string;
@@ -708,6 +717,37 @@ export class EmailService {
     await this.sendEmail({
       to: data.to,
       subject: 'Sto. Niño de Praga Academy — Grade Submission Update',
+      text,
+      html,
+    });
+  }
+
+  // ── Grade Submission Rejected (notify the submitting teacher) ────────────────
+
+  static async sendGradeRejectionToTeacher(
+    data: GradeRejectionToTeacherData
+  ): Promise<void> {
+    const quarterLabel = data.quarter ? `Quarter ${data.quarter}` : 'N/A';
+
+    const html = emailShell(`
+      ${sectionTitle('Grade Submission — Returned for Revision')}
+      ${statusBadge('Submission Rejected', 'danger')}
+      ${salutation(data.teacherName)}
+      ${para(`The grade you submitted for <strong>${data.studentName}</strong> in <strong>${data.subject}</strong> (${quarterLabel}) has been reviewed and rejected by the school administrator.`)}
+      ${infoBox(
+        'Reason for Rejection',
+        `<tr><td colspan="2" style="padding:4px 0;color:#4a4a5e;font-family:Arial,sans-serif;font-size:13px;line-height:1.75;">${data.reason}</td></tr>`,
+        '#b91c1c'
+      )}
+      ${noteBox('Please review and resubmit the corrected grade at your earliest convenience.')}
+      ${closing('The Academic Office')}
+    `);
+
+    const text = `Grade Submission Returned\n\nDear ${data.teacherName},\n\nThe grade you submitted for ${data.studentName} in ${data.subject} (${quarterLabel}) has been rejected.\n\nReason: ${data.reason}\n\nPlease review and resubmit the corrected grade.\n\nRespectfully yours,\nThe Academic Office\nSto. Niño de Praga Academy`;
+
+    await this.sendEmail({
+      to: data.to,
+      subject: 'Sto. Niño de Praga Academy — Grade Submission Rejected',
       text,
       html,
     });

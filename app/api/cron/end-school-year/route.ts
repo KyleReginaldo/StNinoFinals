@@ -1,3 +1,4 @@
+import { snapshotAndUnenrollStudents } from '@/lib/enrollment-history';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -48,21 +49,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: lockErr.message }, { status: 500 });
   }
 
-  // 2. Remove all students from classes (unenroll)
-  const { error: classErr } = await supabase
-    .from('user_classes')
-    .delete()
-    .eq('membership_type', 'student');
-
-  if (classErr) {
-    return NextResponse.json({ success: false, error: `Failed to unenroll students: ${classErr.message}` }, { status: 500 });
+  // 2 & 3. Archive current enrollments, then unenroll and clear section
+  const { error: unenrollErr } = await snapshotAndUnenrollStudents(supabase);
+  if (unenrollErr) {
+    return NextResponse.json({ success: false, error: unenrollErr }, { status: 500 });
   }
-
-  // 3. Clear section on all student records
-  await supabase
-    .from('users')
-    .update({ section: null })
-    .eq('role', 'student');
 
   // 4. Mark active_quarter = 0 in system_settings
   await upsertSetting(supabase, 'active_quarter', '0');

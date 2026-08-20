@@ -29,7 +29,7 @@ import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { Archive, ArchiveRestore, BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
 import { sortGradeLevels } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
@@ -108,6 +108,7 @@ export default function ClassesManagementPage() {
 
   const [sectionsByGrade, setSectionsByGrade] = useState<Record<string, string[]>>({});
   const [rooms, setRooms] = useState<{ id: string; name: string; capacity: number | null }[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
 
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirm();
@@ -135,11 +136,12 @@ export default function ClassesManagementPage() {
       .then((r) => r.json())
       .then((d) => { if (d.success) setRooms(d.rooms.filter((r: any) => r.is_active).map((r: any) => ({ id: r.id, name: r.name, capacity: r.capacity }))); })
       .catch(() => {});
-  }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refreshKey, showArchived]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchClasses = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/admin/classes');
+      const response = await fetch(`/api/admin/classes${showArchived ? '?archived=true' : ''}`);
       const data = await response.json();
       if (data.success) setClasses(data.classes || []);
     } catch (error) {
@@ -147,6 +149,49 @@ export default function ClassesManagementPage() {
       showAlert({ message: 'Failed to load subjects', type: 'error' });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleArchive = async (classItem: Class) => {
+    const confirmed = await showConfirm({
+      title: 'Archive Subject',
+      message: `Archive "${classItem.class_name}"? It will be hidden from the active list but its history and roster stay intact.`,
+    });
+    if (!confirmed) return;
+    try {
+      const res = await fetch('/api/admin/classes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: classItem.id, is_active: false }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert({ message: 'Subject archived', type: 'success' });
+        fetchClasses();
+      } else {
+        showAlert({ message: data.error || 'Failed to archive subject', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Failed to archive subject', type: 'error' });
+    }
+  };
+
+  const handleRestore = async (classItem: Class) => {
+    try {
+      const res = await fetch('/api/admin/classes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: classItem.id, is_active: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert({ message: 'Subject restored', type: 'success' });
+        fetchClasses();
+      } else {
+        showAlert({ message: data.error || 'Failed to restore subject', type: 'error' });
+      }
+    } catch {
+      showAlert({ message: 'Failed to restore subject', type: 'error' });
     }
   };
 
@@ -415,18 +460,29 @@ export default function ClassesManagementPage() {
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <BookOpen className="w-6 h-6" />
             Subject Management
+            {showArchived && <span className="text-sm font-normal text-amber-600 ml-1">(Archived)</span>}
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">
             Create and manage subjects, assign teachers and students
           </p>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          className="bg-gray-900 hover:bg-gray-800 text-white self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Subject
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg border active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ease-out ${showArchived ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          >
+            {showArchived ? 'View Active' : 'View Archived'}
+          </button>
+          {!showArchived && (
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Subject
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -455,7 +511,7 @@ export default function ClassesManagementPage() {
         {hasFilters && (
           <button
             onClick={() => tc.clearFilters()}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded active:scale-[0.97] hover:bg-gray-100 transition-[color,background-color,transform] duration-150 ease-out"
           >
             <X className="w-3.5 h-3.5" />
             Clear
@@ -509,25 +565,45 @@ export default function ClassesManagementPage() {
                   </td>
                   <td className="px-4 py-3 pr-4">
                     <div className="flex items-center justify-end gap-1 ">
-                      <button
-                        onClick={() => handleViewStudents(classItem)}
-                        title="View Enrolled Students"
-                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
-                      >
-                        <Users className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDialog(classItem)}
-                        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(classItem)}
-                        className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {showArchived ? (
+                        <button
+                          onClick={() => handleRestore(classItem)}
+                          title="Restore"
+                          className="p-1.5 rounded hover:bg-green-50 text-green-600 hover:text-green-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                        >
+                          <ArchiveRestore className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleViewStudents(classItem)}
+                            title="View Enrolled Students"
+                            className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                          >
+                            <Users className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenDialog(classItem)}
+                            className="p-1.5 rounded hover:bg-blue-50 text-blue-500 hover:text-blue-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleArchive(classItem)}
+                            title="Archive"
+                            className="p-1.5 rounded hover:bg-amber-50 text-gray-400 hover:text-amber-600 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                          >
+                            <Archive className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(classItem)}
+                            title="Delete permanently"
+                            className="p-1.5 rounded hover:bg-red-50 text-red-500 hover:text-red-700 active:scale-90 transition-[color,background-color,transform] duration-150 ease-out"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -695,7 +771,7 @@ export default function ClassesManagementPage() {
                           });
                         }
                       }}
-                      className={`px-2.5 py-1 text-sm rounded border font-medium transition-colors ${
+                      className={`px-2.5 py-1 text-sm rounded border font-medium active:scale-[0.97] transition-[background-color,border-color,color,transform] duration-150 ease-out ${
                         isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
                       }`}
                     >
@@ -817,7 +893,7 @@ export default function ClassesManagementPage() {
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} className="bg-gray-900 hover:bg-gray-800 text-white">
+            <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90 text-white">
               {editingClass ? 'Update Subject' : 'Create Subject'}
             </Button>
           </div>
