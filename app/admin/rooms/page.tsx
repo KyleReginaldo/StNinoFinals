@@ -206,7 +206,8 @@ function RoomTable({
       {rooms.length === 0 ? (
         <p className="text-center text-sm text-gray-400 py-8">No rooms added yet.</p>
       ) : (
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[660px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Name</th>
@@ -247,6 +248,7 @@ function RoomTable({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

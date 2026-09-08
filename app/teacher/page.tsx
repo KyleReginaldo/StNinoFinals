@@ -290,13 +290,21 @@ export default function TeacherDashboard() {
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart
                   data={chartData.studentsPerClass}
-                  margin={{ top: 4, right: 8, left: -16, bottom: 24 }}
+                  margin={{ top: 4, right: 8, left: -16, bottom: 48 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  {/* interval={0} keeps every class label; angle them so they
+                      don't overlap once a teacher has more than a few classes. */}
                   <XAxis
                     dataKey="class"
                     tick={{ fontSize: 11 }}
                     interval={0}
+                    angle={-35}
+                    textAnchor="end"
+                    height={60}
+                    tickFormatter={(v: string) =>
+                      v.length > 16 ? `${v.slice(0, 15)}…` : v
+                    }
                   />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip />

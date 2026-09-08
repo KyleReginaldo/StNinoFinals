@@ -403,7 +403,8 @@ export default function AdminEnrollmentPage() {
           )}
         </div>
 
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[880px]">
           <thead>
             <tr className="bg-gray-50">
               <SortHeader label="Student"   sortKey="studentName"  currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
@@ -477,6 +478,7 @@ export default function AdminEnrollmentPage() {
             )}
           </tbody>
         </table>
+        </div>
 
         <Pagination
           page={tc.page}

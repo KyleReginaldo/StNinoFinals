@@ -833,7 +833,8 @@ export default function AdminGradesPage() {
                   </div>
                 )}
 
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[880px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="pl-4 pr-2 py-2.5 w-8">
@@ -989,6 +990,7 @@ export default function AdminGradesPage() {
                     })}
                   </tbody>
                 </table>
+                </div>
 
                 <div className="px-5 py-2.5 border-t border-gray-100">
                   <span className="text-[11px] text-gray-400">

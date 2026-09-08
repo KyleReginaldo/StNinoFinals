@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
@@ -46,7 +46,7 @@ export default function HomePage() {
     schoolName: 'Sto. Niño de Praga Academy',
     phone: '(02) 123-4567',
     contactEmail: 'info@stonino-praga.edu.ph',
-    address: '123 Education Street, Manila, Philippines',
+    address: 'La Paz Homes II, Trece Martires City, Cavite',
     officeHours: 'Monday - Friday, 7:00 AM - 5:00 PM',
     footerTagline: 'Excellence in Education Since 1998',
   });
@@ -68,7 +68,8 @@ export default function HomePage() {
             contactEmail: d.settings.contactEmail || schoolContact.contactEmail,
             address: d.settings.address || schoolContact.address,
             officeHours: d.settings.officeHours || schoolContact.officeHours,
-            footerTagline: d.settings.footerTagline || schoolContact.footerTagline,
+            footerTagline:
+              d.settings.footerTagline || schoolContact.footerTagline,
           });
         }
       })
@@ -113,8 +114,18 @@ export default function HomePage() {
     admissionForm.enrollmentType === 'transferee' ||
     admissionForm.enrollmentType === 'returnee';
 
-  const GRADE_6_AND_BELOW = ['kindergarten', 'grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'];
-  const needsParentEmail = GRADE_6_AND_BELOW.includes(admissionForm.intendedGradeLevel);
+  const GRADE_6_AND_BELOW = [
+    'kindergarten',
+    'grade1',
+    'grade2',
+    'grade3',
+    'grade4',
+    'grade5',
+    'grade6',
+  ];
+  const needsParentEmail = GRADE_6_AND_BELOW.includes(
+    admissionForm.intendedGradeLevel
+  );
   const ADMISSION_SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
   const [isSubmittingAdmission, setIsSubmittingAdmission] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -139,7 +150,7 @@ export default function HomePage() {
     },
     {
       q: 'What grade levels does the school offer?',
-      a: "We offer a complete K-12 program, from Kindergarten through Grade 12, including Junior and Senior High School (JHS and SHS) with a range of strands.",
+      a: 'We offer a complete K-12 program, from Kindergarten through Grade 12, including Junior and Senior High School (JHS and SHS) with a range of strands.',
     },
     {
       q: 'What are the class hours?',
@@ -162,6 +173,19 @@ export default function HomePage() {
       ?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // On mobile the tab row scrolls, so the active pill can sit off-screen —
+  // scrollToInquiry jumps straight to the last tab. Nudge it into view.
+  // Setting scrollLeft (not scrollIntoView) keeps this from touching the
+  // page scroll that scrollToInquiry is already animating.
+  const tabsListRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const list = tabsListRef.current;
+    const active = list?.querySelector<HTMLElement>('[data-state="active"]');
+    if (!list || !active) return;
+    list.scrollLeft =
+      active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+  }, [admissionTab]);
+
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingAdmission(true);
@@ -179,7 +203,9 @@ export default function HomePage() {
           date_of_birth: admissionForm.dateOfBirth,
           suffix: admissionForm.suffix || null,
           address: admissionForm.address || null,
-          address_type: admissionForm.address ? admissionForm.addressType : null,
+          address_type: admissionForm.address
+            ? admissionForm.addressType
+            : null,
           lrn: admissionForm.lrn || null,
           parent_name: admissionForm.parentName,
           parent_email: admissionForm.parentEmail || null,
@@ -421,8 +447,8 @@ export default function HomePage() {
 
             <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-10 max-w-xl">
               Nurturing students with quality education, strong Christian
-              values, and a community that celebrates every milestone.
-              Serving families since 1998.
+              values, and a community that celebrates every milestone. Serving
+              families since 1998.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -568,7 +594,7 @@ export default function HomePage() {
               Enrollment
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-              Start your child's journey
+              Start your journey
               <br className="hidden sm:block" /> to excellence.
             </h2>
             <p className="text-gray-500 text-base leading-relaxed">
@@ -583,28 +609,35 @@ export default function HomePage() {
               onValueChange={setAdmissionTab}
               className="w-full"
             >
-              <TabsList className="inline-flex bg-gray-100 rounded-full p-1 mb-10 gap-1">
+              {/* The four triggers are whitespace-nowrap and total ~635px, so
+                  they overflowed the page on a phone. One scrolling row below
+                  sm — the pill cut off at the right edge is the affordance —
+                  and the plain shrink-to-fit pill row from sm up. */}
+              <TabsList
+                ref={tabsListRef}
+                className="flex w-full h-auto justify-start overflow-x-auto scroll-smooth gap-1 bg-gray-100 rounded-full p-1 mb-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inline-flex sm:w-auto sm:justify-center sm:overflow-visible"
+              >
                 <TabsTrigger
                   value="requirements"
-                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className="rounded-full shrink-0 text-sm px-5 py-2.5 sm:py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   Requirements
                 </TabsTrigger>
                 <TabsTrigger
                   value="process"
-                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className="rounded-full shrink-0 text-sm px-5 py-2.5 sm:py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   Enrollment Process
                 </TabsTrigger>
                 <TabsTrigger
                   value="terms"
-                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className="rounded-full shrink-0 text-sm px-5 py-2.5 sm:py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   Definition of Terms
                 </TabsTrigger>
                 <TabsTrigger
                   value="inquiry"
-                  className="rounded-full text-sm px-5 py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                  className="rounded-full shrink-0 text-sm px-5 py-2.5 sm:py-2 data-[state=active]:bg-red-800 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
                 >
                   Submit Inquiry
                 </TabsTrigger>
@@ -720,7 +753,7 @@ export default function HomePage() {
                       },
                       {
                         title: 'Document Submission',
-                        desc: 'Once contacted by our admissions team, bring the required documents (see the Requirements tab) to the registrar\'s office.',
+                        desc: "Once contacted by our admissions team, bring the required documents (see the Requirements tab) to the registrar's office.",
                       },
                       {
                         title: 'Entrance Examination',
@@ -736,7 +769,7 @@ export default function HomePage() {
                       },
                       {
                         title: 'Start of Classes',
-                        desc: 'The student attends orientation and begins classes on the school year\'s official start date.',
+                        desc: "The student attends orientation and begins classes on the school year's official start date.",
                       },
                     ].map((step, i) => (
                       <li key={step.title} className="flex items-start gap-4">
@@ -762,18 +795,46 @@ export default function HomePage() {
                 <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
                   <dl className="divide-y divide-gray-200">
                     {[
-                      { term: 'LRN (Learner Reference Number)', def: 'The unique 12-digit number assigned by DepEd to every learner in the Philippine basic education system.' },
-                      { term: 'Guardian', def: 'The parent or legal guardian responsible for the applicant, and the school\'s primary point of contact.' },
-                      { term: 'New Student', def: 'An applicant enrolling in a Philippine school for the very first time.' },
-                      { term: 'Transferee', def: 'A student moving in from another school, currently enrolled in the same grade level they are applying for.' },
-                      { term: 'Returnee', def: 'A former student of this school who is re-enrolling after an absence.' },
-                      { term: 'Repeater', def: 'A student retaking the same grade level they were previously enrolled in.' },
-                      { term: 'School Year (S.Y.)', def: 'The academic year the applicant intends to enroll in, e.g. S.Y. 2026-2027.' },
-                      { term: 'Intended Grade Level', def: 'The grade level (Kindergarten to Grade 12) the applicant is applying to enter.' },
+                      {
+                        term: 'LRN (Learner Reference Number)',
+                        def: 'The unique 12-digit number assigned by DepEd to every learner in the Philippine basic education system.',
+                      },
+                      {
+                        term: 'Guardian',
+                        def: "The parent or legal guardian responsible for the applicant, and the school's primary point of contact.",
+                      },
+                      {
+                        term: 'New Student',
+                        def: 'An applicant enrolling in a Philippine school for the very first time.',
+                      },
+                      {
+                        term: 'Transferee',
+                        def: 'A student moving in from another school, currently enrolled in the same grade level they are applying for.',
+                      },
+                      {
+                        term: 'Returnee',
+                        def: 'A former student of this school who is re-enrolling after an absence.',
+                      },
+                      {
+                        term: 'Repeater',
+                        def: 'A student retaking the same grade level they were previously enrolled in.',
+                      },
+                      {
+                        term: 'School Year (S.Y.)',
+                        def: 'The academic year the applicant intends to enroll in, e.g. S.Y. 2026-2027.',
+                      },
+                      {
+                        term: 'Intended Grade Level',
+                        def: 'The grade level (Kindergarten to Grade 12) the applicant is applying to enter.',
+                      },
                     ].map((row) => (
                       <div key={row.term} className="py-3 first:pt-0 last:pb-0">
-                        <dt className="font-bold text-gray-900 text-sm">{row.term}</dt>
-                        <dd className="text-sm text-gray-600 mt-1 leading-relaxed">{row.def}</dd>
+                        <dt className="font-bold text-gray-900 text-sm">
+                          {row.term}
+                        </dt>
+                        <dd className="text-sm text-gray-600 mt-1 leading-relaxed">
+                          {row.def}
+                        </dd>
                       </div>
                     ))}
                   </dl>
@@ -923,7 +984,9 @@ export default function HomePage() {
                             <SelectContent>
                               <SelectItem value="none">None</SelectItem>
                               {ADMISSION_SUFFIX_OPTIONS.map((s) => (
-                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                                <SelectItem key={s} value={s}>
+                                  {s}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -968,7 +1031,7 @@ export default function HomePage() {
                             id="lrn"
                             value={admissionForm.lrn}
                             placeholder="12-digit Learner Reference Number"
-                            maxLength={11}
+                            maxLength={12}
                             onChange={(e) =>
                               setAdmissionForm({
                                 ...admissionForm,
@@ -1022,7 +1085,9 @@ export default function HomePage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="current">Current</SelectItem>
-                              <SelectItem value="permanent">Permanent</SelectItem>
+                              <SelectItem value="permanent">
+                                Permanent
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1213,7 +1278,9 @@ export default function HomePage() {
                             >
                               Guardian Email
                               {needsParentEmail && (
-                                <span className="ml-1 text-xs text-gray-400 font-normal">(required for Grade 6 &amp; below)</span>
+                                <span className="ml-1 text-xs text-gray-400 font-normal">
+                                  (required for Grade 6 &amp; below)
+                                </span>
                               )}
                             </Label>
                             <Input
@@ -1372,8 +1439,7 @@ export default function HomePage() {
               Frequently Asked Questions
             </h2>
             <p className="mt-4 text-gray-500 text-base">
-              Answers to the questions parents and guardians ask us most
-              often.
+              Answers to the questions parents and guardians ask us most often.
             </p>
           </div>
 

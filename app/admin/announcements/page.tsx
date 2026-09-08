@@ -374,7 +374,8 @@ export default function AdminAnnouncementsPage() {
           )}
         </div>
 
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[880px]">
           <thead>
             <tr className="bg-gray-50">
               <SortHeader
@@ -510,6 +511,7 @@ export default function AdminAnnouncementsPage() {
             )}
           </tbody>
         </table>
+        </div>
 
         <Pagination
           page={tc.page}

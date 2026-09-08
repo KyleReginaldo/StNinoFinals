@@ -391,7 +391,8 @@ export default function TeacherClassesPage() {
 
               {/* Table */}
               <div className="rounded-xl border border-gray-200 overflow-hidden overflow-y-auto flex-1">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[660px]">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gray-50">
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-10">#</th>
@@ -431,6 +432,7 @@ export default function TeacherClassesPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* Footer */}

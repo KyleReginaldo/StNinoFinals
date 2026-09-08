@@ -313,7 +313,8 @@ const AdmissionPage = () => {
           )}
         </div>
 
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[990px]">
           <thead>
             <tr className="bg-gray-50">
               <SortHeader
@@ -456,6 +457,7 @@ const AdmissionPage = () => {
             )}
           </tbody>
         </table>
+        </div>
 
         <Pagination
           page={tc.page}

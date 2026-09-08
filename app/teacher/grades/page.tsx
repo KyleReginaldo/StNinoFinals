@@ -481,7 +481,8 @@ export default function TeacherGrades() {
 
               {/* Grades Table */}
               <div className="rounded-xl border border-gray-200 overflow-hidden">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[550px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <SortHeader label="Student Name" sortKey="name"        currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
@@ -564,6 +565,7 @@ export default function TeacherGrades() {
                     )}
                   </tbody>
                 </table>
+                </div>
                 {tc.pageCount > 1 && (
                   <div className="px-4 py-2.5 border-t border-gray-100">
                     <Pagination

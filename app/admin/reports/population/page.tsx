@@ -231,6 +231,7 @@ export default function PopulationReportPage() {
               No enrollment data found for the selected filters.
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50">
@@ -251,6 +252,7 @@ export default function PopulationReportPage() {
                 </tr>
               </tbody>
             </table>
+            </div>
           )}
 
           <div className="px-4 py-2.5 border-t border-gray-100">

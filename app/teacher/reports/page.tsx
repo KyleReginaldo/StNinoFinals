@@ -256,7 +256,18 @@ export default function TeacherReportsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 20, bottom: 60, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+                  {/* interval={0} forces every tick to render, and these labels
+                      are long ("Math 7 (Grade 7-Rizal)") — angle them and clip
+                      the text so they stop colliding. Tooltip has the full name. */}
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10 }}
+                    interval={0}
+                    angle={-35}
+                    textAnchor="end"
+                    height={70}
+                    tickFormatter={(v: string) => v.length > 20 ? `${v.slice(0, 19)}…` : v}
+                  />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip formatter={(v: number) => [`${v} students`, 'Count']} />
                   <Bar dataKey="students" radius={[4, 4, 0, 0]}>
@@ -283,7 +294,8 @@ export default function TeacherReportsPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-gray-400">No classes found.</div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[770px]">
             <thead>
               <tr className="bg-gray-50">
                 <SortHeader label="Class Name"   sortKey="class_name"    currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
@@ -311,6 +323,7 @@ export default function TeacherReportsPage() {
               </tr>
             </tbody>
           </table>
+          </div>
         )}
         <div className="px-4 py-2.5 border-t border-gray-100">
           <span className="text-[11px] text-gray-400">

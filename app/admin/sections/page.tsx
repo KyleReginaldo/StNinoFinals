@@ -209,7 +209,8 @@ function TemplateSectionsPanel() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[440px]">
           <thead>
             <tr className="bg-gray-50">
               <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-44">
@@ -267,6 +268,7 @@ function TemplateSectionsPanel() {
             })}
           </tbody>
         </table>
+        </div>
         <div className="px-5 py-2.5 border-t border-gray-100">
           <span className="text-[11px] text-gray-400">
             {total} section{total !== 1 ? 's' : ''} across {gradeCount} grade
@@ -835,7 +837,8 @@ function FormalSectionsPanel() {
             )}
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[770px]">
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-40">
@@ -952,6 +955,7 @@ function FormalSectionsPanel() {
               )}
             </tbody>
           </table>
+          </div>
         )}
         <div className="px-5 py-2.5 border-t border-gray-100">
           <span className="text-[11px] text-gray-400">

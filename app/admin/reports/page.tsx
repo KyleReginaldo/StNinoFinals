@@ -43,6 +43,12 @@ function normalizeGrade(raw: string): string {
   return raw.trim()
 }
 
+// "Grade 7 — Rizal" → "G7 — Rizal", so the vertical bar chart's Y axis fits in
+// 92px on a phone. Display only — exports still use the full name.
+function shortenSectionLabel(name: string): string {
+  return String(name).replace(/^Grade\s+/, "G").replace(/^Kinder\b/, "K")
+}
+
 
 export default function ReportsPage() {
   const { admin, loading } = useAuth()
@@ -456,10 +462,13 @@ export default function ReportsPage() {
               </div>
               <div className="p-5">
                 <ResponsiveContainer width="100%" height={Math.max(280, sectionData.length * 36)}>
-                  <BarChart data={sectionData} layout="vertical" margin={{ top: 5, right: 30, bottom: 5, left: 120 }}>
+                  {/* recharts adds margin.left AND the YAxis width to the left
+                      offset — 120 + 120 left barely any room for bars on a phone.
+                      Keep margin.left at 0 and abbreviate the tick instead. */}
+                  <BarChart data={sectionData} layout="vertical" margin={{ top: 5, right: 30, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} width={120} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} width={92} axisLine={false} tickLine={false} tickFormatter={shortenSectionLabel} />
                     <Tooltip
                       contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}
                       formatter={(v: number) => [`${v} students`, "Count"]}

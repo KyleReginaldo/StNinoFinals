@@ -532,7 +532,8 @@ export default function ClassesManagementPage() {
               : 'No subjects found. Click "Add Subject" to create one.'}
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[770px]">
             <thead>
               <tr className="bg-gray-50">
                 <SortHeader label="Subject Code"     sortKey="class_code"      currentSort={tc.sort} onSort={tc.toggleSort} className="pl-4" />
@@ -610,6 +611,7 @@ export default function ClassesManagementPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
         <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-between">
           <span className="text-[11px] text-gray-400">
@@ -918,7 +920,8 @@ export default function ClassesManagementPage() {
           ) : (
             <>
               <div className="rounded-xl border border-gray-200 overflow-hidden flex-1 min-h-0 overflow-y-auto">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[660px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-10">#</th>
@@ -950,6 +953,7 @@ export default function ClassesManagementPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
               <div className="flex justify-end mt-4">
                 <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} size="sm" />

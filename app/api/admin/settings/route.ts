@@ -128,7 +128,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   teacherPortal: "true",
   phone: "(02) 123-4567",
   contactEmail: "info@stonino-praga.edu.ph",
-  address: "123 Education Street, Manila, Philippines",
+  address: "La Paz Homes II, Trece Martires City, Cavite",
   officeHours: "Monday – Friday, 7:00 AM – 5:00 PM",
   passingThreshold: "75",
   footerTagline: "Excellence in Education Since 1998",
