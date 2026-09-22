@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (studentError || !student) {
       return NextResponse.json(
-        { success: false, error: 'Student not found' },
+        { success: false, error: 'We could not find your student record. Please contact the school administrator.' },
         { status: 404 }
       );
     }
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     if (userClassesError) {
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch enrollment data' },
+        { success: false, error: 'We could not load your enrollment details right now. Please try again in a moment.' },
         { status: 500 }
       );
     }
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
 
     if (classesError) {
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch class details' },
+        { success: false, error: 'We could not load your subjects right now. Please try again in a moment.' },
         { status: 500 }
       );
     }
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Enrollment API error:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'We could not load your enrollment details right now. Please try again in a moment.' },
       { status: 500 }
     );
   }

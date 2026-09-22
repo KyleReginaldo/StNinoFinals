@@ -1,5 +1,6 @@
 'use client';
 
+import { friendlyError } from '@/lib/error-message';
 import { useRefresh } from '@/lib/refresh-context';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
@@ -281,7 +282,12 @@ export default function AdminEnrollmentPage() {
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        showAlert({ message: payload?.error || 'Action failed.', type: 'error' });
+        showAlert({
+          message:
+            payload?.error ||
+            `We could not ${decision === 'approved' ? 'approve' : 'reject'} this request. Please try again in a moment.`,
+          type: 'error',
+        });
         return;
       }
       showAlert({
@@ -291,8 +297,15 @@ export default function AdminEnrollmentPage() {
       closeModal();
       fetchRequests();
       triggerRefresh();
-    } catch {
-      showAlert({ message: 'Something went wrong.', type: 'error' });
+    } catch (e) {
+      console.error('Enrollment decision error:', e);
+      showAlert({
+        message: friendlyError(
+          e,
+          `We could not ${decision === 'approved' ? 'approve' : 'reject'} this request. Please try again in a moment.`
+        ),
+        type: 'error',
+      });
     } finally {
       setSubmitting(null);
     }

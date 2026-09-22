@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { friendlyError } from '@/lib/error-message';
 import { parseScheduleSlots } from '@/lib/rooms';
 import { getEnrollmentSchoolYear } from '@/lib/school-year';
 import { supabase } from '@/lib/supabaseClient';
@@ -167,6 +168,7 @@ export default function EnrollmentPage() {
     useState<EnrollmentRequest | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [enrollmentHistory, setEnrollmentHistory] = useState<
     EnrollmentRequest[]
   >([]);
@@ -249,6 +251,7 @@ export default function EnrollmentPage() {
   const fetchData = useCallback(async () => {
     if (!student) return;
     setDataLoading(true);
+    setLoadError(null);
     try {
       const [enrollmentRes, requestRes, historyRes, admissionRes] = await Promise.all([
         fetch(`/api/student/enrollment?studentId=${student.id}`),
@@ -265,6 +268,12 @@ export default function EnrollmentPage() {
         ]);
       if (enrollmentRes.ok && enrollmentPayload?.success && enrollmentPayload?.data) {
         setEnrollmentData(enrollmentPayload.data);
+      } else if (!enrollmentRes.ok) {
+        // The enrollment record drives this whole page — a failure here is not silent.
+        setLoadError(
+          enrollmentPayload?.error ||
+            'We could not load your enrollment details right now. Please try again in a moment.'
+        );
       }
       if (requestRes.ok && requestPayload?.success) {
         setEnrollmentRequest(requestPayload.data ?? null);
@@ -277,6 +286,12 @@ export default function EnrollmentPage() {
       }
     } catch (e) {
       console.error('Fetch error:', e);
+      setLoadError(
+        friendlyError(
+          e,
+          'We could not load your enrollment details right now. Please try again in a moment.'
+        )
+      );
     } finally {
       setDataLoading(false);
       setInitialLoad(false);
@@ -309,6 +324,11 @@ export default function EnrollmentPage() {
       supabase.removeChannel(channel);
     };
   }, [student, fetchData]);
+
+  // Declared above handleSubmitRequest on purpose: the callback reads it, and a
+  // `const` declared after an early `return` stays in the temporal dead zone for
+  // every closure built by that render — a memoized one then throws on click.
+  const activeSchoolYear = enrollmentData?.enrollment?.schoolYear ?? null;
 
   const handleSubmitRequest = useCallback(async () => {
     if (!student) return;
@@ -343,7 +363,10 @@ export default function EnrollmentPage() {
         if (uploadError) {
           console.error('Upload error:', uploadError);
           showAlert({
-            message: 'Failed to upload document.',
+            message: friendlyError(
+              uploadError,
+              'We could not upload your report card. Please check the file and try again.'
+            ),
             type: 'error',
           });
           setSubmitting(false);
@@ -372,7 +395,9 @@ export default function EnrollmentPage() {
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
         showAlert({
-          message: payload?.error || 'Failed to submit request.',
+          message:
+            payload?.error ||
+            'We could not submit your enrollment request. Please try again in a moment.',
           type: 'error',
         });
         return;
@@ -387,9 +412,13 @@ export default function EnrollmentPage() {
       setPreviousGradesFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       fetchData();
-    } catch {
+    } catch (e) {
+      console.error('Enrollment submit error:', e);
       showAlert({
-        message: 'Something went wrong. Please try again.',
+        message: friendlyError(
+          e,
+          'We could not submit your enrollment request. Please try again in a moment.'
+        ),
         type: 'error',
       });
     } finally {
@@ -402,6 +431,7 @@ export default function EnrollmentPage() {
     suggestedGrade,
     isSHS,
     previousGradesFile,
+    activeSchoolYear,
     showAlert,
     fetchData,
   ]);
@@ -790,11 +820,32 @@ export default function EnrollmentPage() {
 
   if (!student) return null;
 
+  if (loadError && !enrollmentData) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 sm:p-8 text-center">
+          <AlertCircle className="w-10 h-10 text-red-700 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-gray-900">
+            We couldn&apos;t load your enrollment details
+          </h2>
+          <p className="text-sm text-gray-600 mt-1.5 max-w-md mx-auto">{loadError}</p>
+          <Button
+            onClick={fetchData}
+            disabled={dataLoading}
+            className="mt-5 bg-red-800 hover:bg-red-700 text-white"
+          >
+            {dataLoading ? 'Retrying…' : 'Try again'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const isEnrolled = enrollment?.isEnrolled ?? false;
   const isPendingClass = enrollment?.isPendingClass ?? false;
   const reqStatus = enrollmentRequest?.status;
-  // Use the active school year from the DB — never the date-based fallback.
-  const activeSchoolYear = enrollment?.schoolYear ?? null;
+  // activeSchoolYear is declared above handleSubmitRequest — always from the DB,
+  // never the date-based fallback.
 
   // ─── ENROLLED ─────────────────────────────────────────────────────────────
   if (isEnrolled || isPendingClass) {
@@ -1313,6 +1364,7 @@ export default function EnrollmentPage() {
           fileInputRef={fileInputRef}
           setPreviousGradesFile={setPreviousGradesFile}
           suggestedGrade={suggestedGrade}
+          schoolYear={activeSchoolYear ?? CURRENT_SCHOOL_YEAR}
           fromAdmission={!!admissionData?.intendedGradeLevel}
         />
       </div>
@@ -1373,6 +1425,7 @@ export default function EnrollmentPage() {
             fileInputRef={fileInputRef}
             setPreviousGradesFile={setPreviousGradesFile}
             suggestedGrade={suggestedGrade}
+            schoolYear={activeSchoolYear ?? CURRENT_SCHOOL_YEAR}
             fromAdmission={!!admissionData?.intendedGradeLevel}
           />
         </>
@@ -1397,6 +1450,7 @@ function EnrollmentForm({
   fileInputRef,
   setPreviousGradesFile,
   suggestedGrade,
+  schoolYear,
   fromAdmission,
 }: {
   gradeLevel: string;
@@ -1413,6 +1467,7 @@ function EnrollmentForm({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setPreviousGradesFile: (file: File | null) => void;
   suggestedGrade?: { lastGrade: string; nextGrade: string; isReturning: boolean } | null;
+  schoolYear: string;
   fromAdmission?: boolean;
 }) {
   return (
@@ -1515,9 +1570,7 @@ function EnrollmentForm({
         <div className="pt-1">
           <p className="text-xs text-gray-500 mb-3">
             School Year:{' '}
-            <span className="font-semibold text-gray-700">
-              {CURRENT_SCHOOL_YEAR}
-            </span>
+            <span className="font-semibold text-gray-700">{schoolYear}</span>
           </p>
           <Button
             onClick={onSubmit}

@@ -1,3 +1,4 @@
+import { friendlyError } from '@/lib/error-message';
 import { EmailService } from '@/lib/services/email-service';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -23,8 +24,15 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query;
 
   if (error) {
+    console.error('Enrollment requests fetch error:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      {
+        success: false,
+        error: friendlyError(
+          error,
+          'We could not load the enrollment requests. Please refresh the page and try again.'
+        ),
+      },
       { status: 500 }
     );
   }
@@ -42,21 +50,21 @@ export async function PATCH(request: NextRequest) {
 
     if (!requestId || !status) {
       return NextResponse.json(
-        { success: false, error: 'requestId and status are required' },
+        { success: false, error: 'Please choose a request and a decision before continuing.' },
         { status: 400 }
       );
     }
 
     if (!['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
-        { success: false, error: 'status must be approved or rejected' },
+        { success: false, error: 'The decision must be either approve or reject.' },
         { status: 400 }
       );
     }
 
     if (status === 'approved' && !sectionId && !classId) {
       return NextResponse.json(
-        { success: false, error: 'sectionId (or classId) is required when approving' },
+        { success: false, error: 'Please select a section to assign before approving this request.' },
         { status: 400 }
       );
     }
@@ -74,7 +82,7 @@ export async function PATCH(request: NextRequest) {
 
     if (fetchError || !enrollmentRequest) {
       return NextResponse.json(
-        { success: false, error: 'Enrollment request not found' },
+        { success: false, error: 'That enrollment request no longer exists. Please refresh the list.' },
         { status: 404 }
       );
     }
@@ -95,8 +103,15 @@ export async function PATCH(request: NextRequest) {
       .eq('id', requestId);
 
     if (updateError) {
+      console.error('Enrollment request update error:', updateError);
       return NextResponse.json(
-        { success: false, error: updateError.message },
+        {
+          success: false,
+          error: friendlyError(
+            updateError,
+            'We could not save this decision. Please try again in a moment.'
+          ),
+        },
         { status: 500 }
       );
     }
@@ -115,7 +130,10 @@ export async function PATCH(request: NextRequest) {
           .single();
 
         if (sectionError || !section) {
-          return NextResponse.json({ success: false, error: 'Section not found' }, { status: 404 });
+          return NextResponse.json(
+            { success: false, error: 'That section no longer exists. Please pick another section.' },
+            { status: 404 }
+          );
         }
 
         sectionName   = section.name;
@@ -187,8 +205,13 @@ export async function PATCH(request: NextRequest) {
         );
 
         if (classError) {
+          console.error('Class enrollment error:', classError);
           return NextResponse.json(
-            { success: false, error: `Approved but failed to enroll student in classes: ${classError.message}` },
+            {
+              success: false,
+              error:
+                'The request was approved, but the student could not be added to the section’s subjects. Please add them manually or try approving again.',
+            },
             { status: 500 }
           );
         }
@@ -270,9 +293,16 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (e) {
+    console.error('Enrollment request PATCH error:', e);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      {
+        success: false,
+        error: friendlyError(
+          e,
+          'We could not save this decision. Please try again in a moment.'
+        ),
+      },
       { status: 500 }
     );
   }

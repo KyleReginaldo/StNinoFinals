@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python3 -c \"import os;print\\(os.path.realpath\\('app/page.tsx'\\)\\)\")",
       "Bash(npx vitest *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(echo \"exit=$? \\(1 = no errors in touched files\\)\")",
+      "Bash(grep -n \"activeSchoolYear\\\\|const handleSubmitRequest\\\\|if \\(isLoading || initialLoad\\)\\\\|const enrollment = \\\\|const info = \\\\|}, \\\\[$\" app/student/enrollment/page.tsx)"
     ]
   }
 }

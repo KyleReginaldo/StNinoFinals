@@ -1,6 +1,7 @@
 'use client';
 
 import { AnnouncementCards } from '@/components/AnnouncementCards';
+import { ActivePeriodBadge } from '@/components/ui/active-period-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +30,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
-import { ActivePeriodBadge } from '@/components/ui/active-period-badge';
 
 interface DashboardData {
   stats: {
@@ -59,18 +59,6 @@ interface DashboardData {
     is_active: boolean;
   }[];
   recentAttendance: { date: string; timeIn: string | null; status: string }[];
-}
-
-function gradeToLetter(g: number): string {
-  if (g >= 97) return 'A+';
-  if (g >= 93) return 'A';
-  if (g >= 90) return 'A-';
-  if (g >= 87) return 'B+';
-  if (g >= 83) return 'B';
-  if (g >= 80) return 'B-';
-  if (g >= 77) return 'C+';
-  if (g >= 75) return 'C';
-  return 'F';
 }
 
 function gradeColor(g: number): string {
@@ -160,7 +148,9 @@ export default function StudentDashboardPage() {
           <h2 className="text-2xl font-bold text-gray-900">
             Welcome back, {displayName}!
           </h2>
-          <div className="mt-1.5"><ActivePeriodBadge /></div>
+          <div className="mt-1.5">
+            <ActivePeriodBadge />
+          </div>
         </div>
         <Button
           variant="outline"
@@ -295,11 +285,8 @@ export default function StudentDashboardPage() {
                       </p>
                       <div className="flex items-center gap-2 shrink-0">
                         <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded border ${gradeColor(num)}`}
+                          className={`text-sm font-bold px-2 py-0.5 rounded border ${gradeColor(num)}`}
                         >
-                          {gradeToLetter(num)}
-                        </span>
-                        <span className="text-sm font-bold text-gray-900 w-10 text-right">
                           {num}
                         </span>
                       </div>
