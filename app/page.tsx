@@ -1,7 +1,10 @@
 'use client';
 
 import { AddressFields } from '@/components/address-fields';
-import { EMPTY_ADDRESS } from '@/lib/address';
+import { EMPTY_ADDRESS, missingAddressFields } from '@/lib/address';
+
+// Most applicants live in the school's city; one click to change
+const DEFAULT_ADDRESS = { ...EMPTY_ADDRESS, province: 'Cavite', city: 'Trece Martires City' };
 import type React from 'react';
 
 import { SchoolMap } from '@/components/SchoolMap';
@@ -91,8 +94,8 @@ export default function HomePage() {
     middleName: '',
     dateOfBirth: '',
     suffix: '',
-    permanentAddress: EMPTY_ADDRESS,
-    currentAddress: EMPTY_ADDRESS,
+    permanentAddress: DEFAULT_ADDRESS,
+    currentAddress: DEFAULT_ADDRESS,
     currentSameAsPermanent: false,
     lrn: '',
     parentName: '',
@@ -191,6 +194,16 @@ export default function HomePage() {
 
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const missing = [
+      ...missingAddressFields(admissionForm.permanentAddress).map((f) => `Permanent ${f}`),
+      ...(admissionForm.currentSameAsPermanent
+        ? []
+        : missingAddressFields(admissionForm.currentAddress).map((f) => `Current ${f}`)),
+    ];
+    if (missing.length) {
+      showAlert({ message: `Please complete: ${missing.join(', ')}`, type: 'warning' });
+      return;
+    }
     setIsSubmittingAdmission(true);
 
     try {
@@ -235,8 +248,8 @@ export default function HomePage() {
           middleName: '',
           dateOfBirth: '',
           suffix: '',
-          permanentAddress: EMPTY_ADDRESS,
-          currentAddress: EMPTY_ADDRESS,
+          permanentAddress: DEFAULT_ADDRESS,
+          currentAddress: DEFAULT_ADDRESS,
           currentSameAsPermanent: false,
           lrn: '',
           parentName: '',
@@ -929,12 +942,13 @@ export default function HomePage() {
                             htmlFor="middleName"
                             className="text-sm font-medium text-gray-700"
                           >
-                            Middle Name
+                            Middle Initial
                           </Label>
                           <Input
                             id="middleName"
                             value={admissionForm.middleName}
-                            placeholder="Middle name"
+                            maxLength={3}
+                            placeholder="e.g., D"
                             onChange={(e) =>
                               setAdmissionForm({
                                 ...admissionForm,
