@@ -1,3 +1,4 @@
+import { getTodayISO } from '@/lib/academic-period'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { NextResponse } from 'next/server'
 
@@ -40,13 +41,13 @@ export async function GET(request: Request) {
     const startDateStr = startDate || (() => {
       const d = new Date()
       d.setDate(d.getDate() - 30)
-      return d.toISOString().split('T')[0]
+      return getTodayISO(d)
     })()
-    const endDateStr = endDate || new Date().toISOString().split('T')[0]
+    const endDateStr = endDate || getTodayISO()
     
     // Query range: from start of startDate to end of endDate (inclusive)
-    const startISO = `${startDateStr}T00:00:00.000Z`
-    const endISO = `${endDateStr}T23:59:59.999Z`
+    const startISO = `${startDateStr}T00:00:00.000+08:00`
+    const endISO = `${endDateStr}T23:59:59.999+08:00`
     
     console.log('🔍 Querying attendance records with student data...')
     

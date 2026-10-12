@@ -70,38 +70,44 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate grade is a number and within valid range
-    const numericGrade = parseFloat(grade);
-    if (isNaN(numericGrade) || numericGrade < 0 || numericGrade > 100) {
+    // Grades are whole numbers from 0 to 100
+    const numericGrade = Number(grade);
+    if (grade === null || grade === '' || !Number.isInteger(numericGrade) || numericGrade < 0 || numericGrade > 100) {
       return NextResponse.json(
-        { success: false, error: 'Grade must be a number between 0 and 100' },
+        { success: false, error: 'Grade must be a whole number from 0 to 100' },
         { status: 400 }
       );
     }
 
-    console.log('Upserting grade:', {
-      student_id: studentId,
-      subject: subject,
-      grade: numericGrade,
-    });
+    const quarter = activePeriod.quarter;
 
-    // First, check if a grade already exists
-    const query = admin
+    // One grade per student/subject/class per quarter
+    let query = admin
       .from('grades')
-      .select('id')
+      .select('id, status')
       .eq('student_id', studentId)
-      .eq('subject', subject);
+      .eq('subject', subject)
+      .eq('quarter', quarter);
 
-    if (classId) query.eq('class_id', classId);
+    if (classId) query = query.eq('class_id', classId);
 
-    const { data: existingGrade, error: selectError } = await query.single();
+    const { data: existingGrade, error: selectError } = await query
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (selectError && selectError.code !== 'PGRST116') {
-      // PGRST116 means no rows found, which is fine
+    if (selectError) {
       console.error('Error checking existing grade:', selectError);
       return NextResponse.json(
         { success: false, error: selectError.message },
         { status: 500 }
+      );
+    }
+
+    if (existingGrade?.status === 'approved') {
+      return NextResponse.json(
+        { success: false, error: 'This grade is already approved and can no longer be changed.' },
+        { status: 409 }
       );
     }
 
@@ -114,6 +120,7 @@ export async function POST(request: Request) {
           grade: numericGrade,
           teacher_id: teacherId ?? null,
           status: 'pending',
+          rejection_reason: null,
           reviewed_by: null,
           reviewed_at: null,
           updated_at: new Date().toISOString(),
@@ -129,7 +136,17 @@ export async function POST(request: Request) {
         );
       }
       result = data;
-      console.log('Grade updated successfully:', data);
+
+      // Record the resubmission so review history shows what the teacher changed
+      const { error: historyError } = await admin.from('grade_history').insert({
+        grade_id: existingGrade.id,
+        student_id: studentId,
+        subject,
+        quarter,
+        grade_value: numericGrade,
+        status: 'pending',
+      });
+      if (historyError) console.error('Failed to record grade history:', historyError);
     } else {
       // Insert new grade
       const { data, error } = await admin
@@ -140,6 +157,7 @@ export async function POST(request: Request) {
           grade: numericGrade,
           teacher_id: teacherId ?? null,
           class_id: classId ?? null,
+          quarter,
           status: 'pending',
         })
         .select();
@@ -152,7 +170,6 @@ export async function POST(request: Request) {
         );
       }
       result = data;
-      console.log('Grade inserted successfully:', data);
     }
 
     return NextResponse.json({

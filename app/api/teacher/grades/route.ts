@@ -1,3 +1,4 @@
+import { getActivePeriod } from '@/lib/academic-period';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -63,6 +64,12 @@ export async function GET(request: NextRequest) {
       gradesQuery = gradesQuery.eq('subject', subject);
     }
 
+    // Only the active quarter is editable; earlier quarters stay on record
+    const activePeriod = await getActivePeriod();
+    if (activePeriod) {
+      gradesQuery = gradesQuery.eq('quarter', activePeriod.quarter);
+    }
+
     const { data: existingGrades, error: gradesError } = await gradesQuery;
 
     if (gradesError) {
@@ -85,6 +92,7 @@ export async function GET(request: NextRequest) {
           status: studentGrade?.status ?? null,
           gradeId: studentGrade?.id ?? null,
           reviewedAt: studentGrade?.reviewed_at ?? null,
+          rejectionReason: studentGrade?.rejection_reason ?? null,
         };
       }) || [];
 

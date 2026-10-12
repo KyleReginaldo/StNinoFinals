@@ -35,3 +35,20 @@ export function parseCsv(text: string): string[][] {
   }
   return rows;
 }
+
+// Locates the student-number and grade columns in a grades sheet. Accepts the
+// plain "student number, grade" layout as well as the teacher export layout
+// (title rows, then "Student Number, Student Name, Grade, Status"), so an
+// exported sheet saved as CSV can be imported back.
+export function findGradeColumns(rows: string[][]): { start: number; numberCol: number; gradeCol: number } {
+  for (let r = 0; r < Math.min(rows.length, 10); r++) {
+    const cells = rows[r].map((c) => c.trim().toLowerCase());
+    const numberCol = cells.findIndex((c) => /^student\s*(no\.?|number|#)$/.test(c));
+    const gradeCol = cells.findIndex((c) => c === 'grade');
+    if (numberCol !== -1 && gradeCol !== -1) return { start: r + 1, numberCol, gradeCol };
+  }
+  // No recognizable header: column A = student number, column B = grade,
+  // skipping a first row whose cell A isn't a plausible student number
+  const start = /^\d+$/.test((rows[0]?.[0] || '').trim()) ? 0 : 1;
+  return { start, numberCol: 0, gradeCol: 1 };
+}

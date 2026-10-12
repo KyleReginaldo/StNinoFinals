@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,12 +15,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
-import { parseCsv } from '@/lib/csv';
+import { findGradeColumns, parseCsv } from '@/lib/csv';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { CheckCircle2, Clock, GraduationCap, Lock, Save, Search, Upload, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, GraduationCap, History, Lock, Save, Search, Upload, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
@@ -46,6 +47,7 @@ interface GradeRow {
   status: GradeStatus;
   gradeId: string | null;
   reviewedAt: string | null;
+  rejectionReason: string | null;
 }
 
 type FlatGradeRow = GradeRow & { statusLabel: string };
@@ -75,7 +77,24 @@ export default function TeacherGrades() {
   const [passingThreshold, setPassingThreshold] = useState(75);
   const [csvSummary, setCsvSummary] = useState<CsvImportSummary | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
+  const [historyGradeId, setHistoryGradeId] = useState<string | null>(null);
+  const [historyEntries, setHistoryEntries] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const { showAlert } = useAlert();
+
+  const openHistory = async (gradeId: string) => {
+    setHistoryGradeId(gradeId);
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/admin/grades/history?gradeId=${gradeId}`);
+      const result = await res.json();
+      setHistoryEntries(result.success ? result.data || [] : []);
+    } catch {
+      setHistoryEntries([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
   const { showConfirm } = useConfirm();
 
   useEffect(() => {
@@ -103,13 +122,9 @@ export default function TeacherGrades() {
   }, [gradesData]);
 
   const updateGrade = (studentId: number, value: string) => {
-    let clamped = value;
-    const num = parseFloat(value);
-    if (value !== '' && !isNaN(num)) {
-      const bounded = Math.min(100, Math.max(0, num));
-      // Only rewrite when out of range — keeps in-progress typing like "1" untouched
-      if (bounded !== num) clamped = String(bounded);
-    }
+    // Whole numbers 0–100 only: ignore keystrokes that aren't digits, cap at 100
+    if (!/^\d*$/.test(value)) return;
+    const clamped = value === '' ? '' : String(Math.min(100, Number(value)));
     setGradesData(prev =>
       prev.map(student =>
         student.id === studentId && student.status !== 'approved'
@@ -190,7 +205,7 @@ export default function TeacherGrades() {
       showAlert({ message: 'Grading period is locked. Contact your administrator.', type: 'error' });
       return;
     }
-    const submittable = gradesData.filter(s => s.status !== 'approved' && s.grade && parseFloat(s.grade) > 0);
+    const submittable = gradesData.filter(s => s.status !== 'approved' && s.grade !== '');
     if (submittable.length === 0) {
       showAlert({ message: 'No new or updated grades to submit.', type: 'warning' });
       return;
@@ -206,7 +221,7 @@ export default function TeacherGrades() {
               body: JSON.stringify({
                 studentId: student.id,
                 subject: teacherClasses.find(c => c.id === selectedClassId)?.class_name || '',
-                grade: parseFloat(student.grade),
+                grade: Number(student.grade),
                 teacherId: teacher.id,
                 classId: selectedClassId,
               }),
@@ -244,18 +259,16 @@ export default function TeacherGrades() {
         showAlert({ message: 'The CSV file appears to be empty.', type: 'warning' });
         return;
       }
-      // Skip a header row if the first cell isn't a plausible student number
-      const startIndex = /^\d+$/.test((rows[0][0] || '').trim()) ? 0 : 1;
+      const { start, numberCol, gradeCol } = findGradeColumns(rows);
 
       const byStudentNumber = new Map(gradesData.map((s) => [s.studentId, s]));
       const unmatched: string[] = [];
       const outOfRange: string[] = [];
       const updates = new Map<number, string>();
 
-      for (let i = startIndex; i < rows.length; i++) {
-        const [rawNumber, rawGrade] = rows[i];
-        const studentNumber = (rawNumber || '').trim();
-        const gradeStr = (rawGrade || '').trim();
+      for (let i = start; i < rows.length; i++) {
+        const studentNumber = (rows[i][numberCol] || '').trim();
+        const gradeStr = (rows[i][gradeCol] || '').trim();
         if (!studentNumber) continue;
         const student = byStudentNumber.get(studentNumber);
         if (!student) {
@@ -263,8 +276,8 @@ export default function TeacherGrades() {
           continue;
         }
         if (student.status === 'approved') continue;
-        const numeric = parseFloat(gradeStr);
-        if (isNaN(numeric) || numeric < 0 || numeric > 100) {
+        const numeric = Number(gradeStr);
+        if (gradeStr === '' || !Number.isInteger(numeric) || numeric < 0 || numeric > 100) {
           outOfRange.push(`${studentNumber} (${gradeStr || '—'})`);
           continue;
         }
@@ -514,10 +527,9 @@ export default function TeacherGrades() {
                               ) : (
                                 <div className="flex items-center gap-1.5">
                                   <Input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={3}
                                     value={student.grade}
                                     onChange={e => updateGrade(student.id, e.target.value)}
                                     disabled={gradingLocked}
@@ -554,9 +566,21 @@ export default function TeacherGrades() {
                                       {new Date(student.reviewedAt).toLocaleDateString()}
                                     </span>
                                   )}
+                                  {student.gradeId && (
+                                    <button
+                                      type="button"
+                                      onClick={() => openHistory(student.gradeId!)}
+                                      className="ml-1 text-xs text-gray-400 underline hover:text-gray-700"
+                                    >
+                                      History
+                                    </button>
+                                  )}
                                 </span>
                               ) : (
                                 <span className="text-gray-300">—</span>
+                              )}
+                              {student.status === 'rejected' && student.rejectionReason && (
+                                <p className="mt-0.5 text-xs text-red-700">Reason: {student.rejectionReason}</p>
                               )}
                             </td>
                           </tr>
@@ -612,7 +636,7 @@ export default function TeacherGrades() {
                     )}
                     {csvSummary.outOfRange.length > 0 && (
                       <p className="text-red-700 mt-1">
-                        Skipped (grade must be 0-100): {csvSummary.outOfRange.join(', ')}
+                        Skipped (grade must be a whole number 0-100): {csvSummary.outOfRange.join(', ')}
                       </p>
                     )}
                   </div>
@@ -673,6 +697,56 @@ export default function TeacherGrades() {
           )}
         </div>
       </div>
+
+      <Dialog open={!!historyGradeId} onOpenChange={(open) => !open && setHistoryGradeId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <History className="h-4 w-4 text-gray-400" />
+              Grade History
+            </DialogTitle>
+          </DialogHeader>
+          {loadingHistory ? (
+            <div className="flex justify-center py-8">
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-800 rounded-full animate-spin" />
+            </div>
+          ) : historyEntries.length === 0 ? (
+            <p className="text-center text-sm text-gray-400 py-8">No review history yet.</p>
+          ) : (
+            <div className="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto">
+              {historyEntries.map((h) => {
+                const cfg = STATUS_CONFIG[h.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.pending;
+                const reviewer = Array.isArray(h.reviewer) ? h.reviewer[0] : h.reviewer;
+                return (
+                  <div key={h.id} className="py-3 first:pt-0">
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                        {h.status === 'pending' ? 'Submitted' : cfg.label}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(h.created_at).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-1.5">
+                      Grade: <span className="font-semibold">{h.grade_value}</span>
+                      {reviewer && (
+                        <span className="text-gray-400"> · by {reviewer.first_name} {reviewer.last_name}</span>
+                      )}
+                    </p>
+                    {h.rejection_reason && (
+                      <p className="text-sm text-gray-500 mt-1 bg-gray-50 rounded-lg px-3 py-2">{h.rejection_reason}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryGradeId(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
