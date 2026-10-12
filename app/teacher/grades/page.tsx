@@ -435,11 +435,33 @@ export default function TeacherGrades() {
             )}
 
             {selectedClassId && (
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 <span className="text-sm text-gray-500">Subject:</span>
                 <span className="text-sm font-medium text-gray-900">
                   {teacherClasses.find(c => c.id === selectedClassId)?.class_name || '—'}
                 </span>
+                {gradesData.length > 0 && (
+                  <>
+                    <input
+                      ref={csvInputRef}
+                      type="file"
+                      accept=".xlsx,.csv,text/csv"
+                      className="hidden"
+                      onChange={handleImportCsv}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={gradingLocked}
+                      onClick={() => csvInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import Excel/CSV
+                    </Button>
+                    <ExportDropdown size="sm" onPDF={handleExportPDF} onExcel={handleExportExcel} />
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -469,6 +491,35 @@ export default function TeacherGrades() {
             </div>
           ) : (
             <>
+              {csvSummary && (
+                <div className="flex items-start gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+                  <Upload className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 text-blue-800">
+                    <p>
+                      Imported <strong>{csvSummary.matched}</strong> grade{csvSummary.matched !== 1 ? 's' : ''} into the table below.
+                      Review the values, then click Submit Grades to save.
+                    </p>
+                    {csvSummary.unmatched.length > 0 && (
+                      <p className="text-amber-700 mt-1">
+                        Not found in this class: {csvSummary.unmatched.join(', ')}
+                      </p>
+                    )}
+                    {csvSummary.outOfRange.length > 0 && (
+                      <p className="text-red-700 mt-1">
+                        Skipped (grade must be a whole number 0-100): {csvSummary.outOfRange.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCsvSummary(null)}
+                    className="text-blue-400 hover:text-blue-700 active:scale-90 transition-[color,transform] duration-150 ease-out text-xs"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
               {/* Status Summary Banner */}
               {(statusSummary.approved > 0 || statusSummary.rejected > 0 || statusSummary.pending > 0) && (
                 <div className="flex flex-wrap gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm">
@@ -622,54 +673,9 @@ export default function TeacherGrades() {
                 </span>
               </div>
 
-              {csvSummary && (
-                <div className="flex items-start gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
-                  <Upload className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <div className="flex-1 text-blue-800">
-                    <p>
-                      Imported <strong>{csvSummary.matched}</strong> grade{csvSummary.matched !== 1 ? 's' : ''} into the table below.
-                      Review the values, then click Submit Grades to save.
-                    </p>
-                    {csvSummary.unmatched.length > 0 && (
-                      <p className="text-amber-700 mt-1">
-                        Not found in this class: {csvSummary.unmatched.join(', ')}
-                      </p>
-                    )}
-                    {csvSummary.outOfRange.length > 0 && (
-                      <p className="text-red-700 mt-1">
-                        Skipped (grade must be a whole number 0-100): {csvSummary.outOfRange.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCsvSummary(null)}
-                    className="text-blue-400 hover:text-blue-700 active:scale-90 transition-[color,transform] duration-150 ease-out text-xs"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              )}
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-3">
-                <input
-                  ref={csvInputRef}
-                  type="file"
-                  accept=".xlsx,.csv,text/csv"
-                  className="hidden"
-                  onChange={handleImportCsv}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={gradingLocked}
-                  onClick={() => csvInputRef.current?.click()}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import Excel/CSV
-                </Button>
-                <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} />
                 <Button
                   onClick={handleSaveGrades}
                   disabled={isSavingGrades || gradingLocked}
