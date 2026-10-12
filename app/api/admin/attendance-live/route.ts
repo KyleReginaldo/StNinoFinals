@@ -55,6 +55,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const since = searchParams.get('since');
+    // Optional YYYY-MM-DD range (Manila calendar days, inclusive)
+    const isDay = (v: string | null) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+    const startDate = isDay(searchParams.get('startDate'));
+    const endDate = isDay(searchParams.get('endDate')) ?? startDate;
+    const hasRange = !!startDate;
 
     let supabaseClient;
     try {
@@ -102,7 +107,8 @@ export async function GET(request: Request) {
 
       let querySuccess = false;
 
-      try {
+      // The RPC has no upper time bound, so a date range goes straight to the direct query
+      if (!hasRange) try {
         console.log('Method 1: Trying RPC function...');
         const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
           'get_attendance_records',
@@ -140,6 +146,11 @@ export async function GET(request: Request) {
 
           if (since) {
             directQuery = directQuery.gt('scan_time', since);
+          }
+          if (hasRange) {
+            directQuery = directQuery
+              .gte('scan_time', `${startDate}T00:00:00.000+08:00`)
+              .lte('scan_time', `${endDate}T23:59:59.999+08:00`);
           }
 
           const directResult = await directQuery;

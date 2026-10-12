@@ -521,7 +521,12 @@ const AdmissionPage = () => {
                     { label: "Guardian's Phone", value: selectedAdmission.guardian_phone || selectedAdmission.phone_number, href: `tel:${selectedAdmission.guardian_phone || selectedAdmission.phone_number}` },
                     selectedAdmission.date_of_birth ? { label: 'Date of Birth', value: selectedAdmission.date_of_birth } : null,
                     (selectedAdmission as any).lrn ? { label: 'LRN', value: (selectedAdmission as any).lrn } : null,
-                    (selectedAdmission as any).address ? { label: `${(selectedAdmission as any).address_type === 'permanent' ? 'Permanent' : 'Current'} Address`, value: (selectedAdmission as any).address } : null,
+                    ...((selectedAdmission as any).current_address
+                      ? [
+                          { label: 'Permanent Address', value: (selectedAdmission as any).address },
+                          { label: 'Current Address', value: (selectedAdmission as any).current_address },
+                        ]
+                      : [(selectedAdmission as any).address ? { label: `${(selectedAdmission as any).address_type === 'permanent' ? 'Permanent' : 'Current'} Address`, value: (selectedAdmission as any).address } : null]),
                     (selectedAdmission as any).school_year ? { label: 'School Year', value: `S.Y. ${(selectedAdmission as any).school_year}` } : null,
                   ].filter(Boolean).map((row: any) => (
                     <div key={row.label} className="flex items-center justify-between px-4 py-2.5 bg-white">

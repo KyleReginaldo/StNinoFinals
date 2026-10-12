@@ -194,8 +194,20 @@ export async function POST(request: Request) {
           guardian_email: admission.parent_email || null,
           suffix: admission.suffix || null,
           lrn: (admission as any).lrn || null,
-          address: (admission as any).address_type !== 'current' ? (admission as any).address || null : null,
-          current_address: (admission as any).address_type === 'current' ? (admission as any).address || null : null,
+          // New applications carry both addresses; older ones a single typed address
+          ...(admission.permanent_street
+            ? {
+                address: admission.address,
+                current_address: admission.current_address,
+                street_details: admission.permanent_street,
+                barangay_name: admission.permanent_barangay,
+                city: admission.permanent_city,
+                province: admission.permanent_province,
+              }
+            : {
+                address: admission.address_type !== 'current' ? admission.address || null : null,
+                current_address: admission.address_type === 'current' ? admission.address || null : null,
+              }),
           role: 'student',
           grade_level: admission.intended_grade_level,
           created_at: new Date().toISOString(),

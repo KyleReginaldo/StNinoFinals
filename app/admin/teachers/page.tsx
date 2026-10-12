@@ -1,5 +1,6 @@
 'use client';
 
+import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { AlertTriangle, ArchiveRestore, Edit, Radio, Search, Trash2, UserPlus, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
 
 function RfidScanInput({
@@ -105,6 +106,7 @@ function RfidScanInput({
 import { useAuth } from '../hooks/useAuth';
 
 interface Teacher {
+  gender?: string | null;
   id: string;
   first_name: string;
   last_name: string;
@@ -208,7 +210,10 @@ export default function TeacherManagementPage() {
     fetchTeachers(showArchived);
   }, [showArchived, refreshKey]);
 
-  const tc = useTableControls(teachers, {
+  // has_rfid is derived so the exact-match table filter can filter on it
+  const rows = useMemo(() => teachers.map((r) => ({ ...r, has_rfid: r.rfid ? 'yes' : 'no' })), [teachers]);
+  const noRfidCount = rows.filter((r) => r.has_rfid === 'no').length;
+  const tc = useTableControls(rows, {
     searchFields: ['first_name', 'last_name', 'employee_number', 'email'],
     defaultSort: { key: 'last_name', dir: 'asc' },
     pageSize: 25,
@@ -413,7 +418,8 @@ export default function TeacherManagementPage() {
           <h1 className="text-base font-semibold text-gray-900">
             Teachers {showArchived && <span className="text-xs font-normal text-amber-600 ml-1">(Archived)</span>}
           </h1>
-          <p className="text-xs text-gray-400 mt-0.5">{tc.filteredCount} of {tc.totalCount} records</p>
+          <p className="text-xs text-gray-400 mt-0.5">{tc.filteredCount} of {tc.totalCount} records
+            {noRfidCount > 0 && <span className="text-amber-600"> · {noRfidCount} without RFID</span>}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -990,7 +996,16 @@ export default function TeacherManagementPage() {
             <option value="">All Departments</option>
             {deptOptions.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
-          {(tc.search || tc.filters['department']) && (
+          <select
+            value={tc.filters['has_rfid'] ?? ''}
+            onChange={(e) => tc.setFilter('has_rfid', e.target.value)}
+            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
+          >
+            <option value="">All RFID</option>
+            <option value="yes">Has RFID</option>
+            <option value="no">No RFID</option>
+          </select>
+          {(tc.search || tc.filters['department'] || tc.filters['has_rfid']) && (
             <button onClick={tc.clearFilters} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 active:scale-[0.97] transition-[color,transform] duration-150 ease-out">
               <X className="w-3 h-3" /> Clear
             </button>
@@ -1011,6 +1026,7 @@ export default function TeacherManagementPage() {
                   <SortHeader label="Name"           sortKey="last_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Department"     sortKey="department"     currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <SortHeader label="Gender"         sortKey="gender"         currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
                   {showArchived && (
@@ -1046,6 +1062,16 @@ export default function TeacherManagementPage() {
                       </td>
                       <td className="px-4 py-3 text-[13px] text-gray-700 whitespace-nowrap">
                         {teacher.specialization || <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <GenderCell
+                          resource="teachers"
+                          userId={teacher.id}
+                          value={teacher.gender}
+                          onSaved={(gender) =>
+                            setTeachers((prev) => prev.map((t) => (t.id === teacher.id ? { ...t, gender } : t)))
+                          }
+                        />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {teacher.rfid ? (
@@ -1107,7 +1133,7 @@ export default function TeacherManagementPage() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan={8} className="px-4 py-16 text-center text-sm text-gray-400">
+                    <td colSpan={9} className="px-4 py-16 text-center text-sm text-gray-400">
                       No teachers found
                     </td>
                   </tr>

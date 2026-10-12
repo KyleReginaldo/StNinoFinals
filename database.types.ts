@@ -91,6 +91,15 @@ export type Database = {
       }
       admissions: {
         Row: {
+          permanent_street: string | null
+          permanent_barangay: string | null
+          permanent_city: string | null
+          permanent_province: string | null
+          current_street: string | null
+          current_barangay: string | null
+          current_city: string | null
+          current_province: string | null
+          current_address: string | null
           additional_message: string | null
           address: string | null
           address_type: string | null
@@ -117,6 +126,15 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          permanent_street?: string | null
+          permanent_barangay?: string | null
+          permanent_city?: string | null
+          permanent_province?: string | null
+          current_street?: string | null
+          current_barangay?: string | null
+          current_city?: string | null
+          current_province?: string | null
+          current_address?: string | null
           additional_message?: string | null
           address?: string | null
           address_type?: string | null
@@ -143,6 +161,15 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          permanent_street?: string | null
+          permanent_barangay?: string | null
+          permanent_city?: string | null
+          permanent_province?: string | null
+          current_street?: string | null
+          current_barangay?: string | null
+          current_city?: string | null
+          current_province?: string | null
+          current_address?: string | null
           additional_message?: string | null
           address?: string | null
           address_type?: string | null

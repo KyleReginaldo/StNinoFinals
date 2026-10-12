@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from './school-year';
 import { getSupabaseAdmin } from './supabaseAdmin';
 
 export type PeriodStatus = 'active' | 'ended' | 'upcoming';
@@ -133,7 +134,7 @@ export async function getPeriodsForYear(schoolYear: string, now: Date = new Date
  * All other levels → "Quarter N".
  */
 export function getSemesterLabel(quarter: number, gradeLevel: string): string {
-  if (gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12') {
+  if (isSeniorHigh(gradeLevel)) {
     return quarter <= 2 ? '1st Semester' : '2nd Semester';
   }
   return `Quarter ${quarter}`;
@@ -145,6 +146,28 @@ export function getSemesterLabel(quarter: number, gradeLevel: string): string {
  */
 export function getQuartersForSemester(semester: 1 | 2): [number, number] {
   return semester === 1 ? [1, 2] : [3, 4];
+}
+
+function isSeniorHigh(gradeLevel: string | null | undefined): boolean {
+  return gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12';
+}
+
+/**
+ * Whether a grade belongs to the current grading window, i.e. is not archived:
+ * same school year, and for Grades 11–12 the active semester, for every other
+ * level the active quarter. A missing quarter or school year (legacy rows) is
+ * treated as current so nothing silently disappears.
+ */
+export function isCurrentPeriodGrade(
+  grade: { quarter: number | null; schoolYear: string | null; gradeLevel: string | null },
+  active: { quarter: number; schoolYear: string }
+): boolean {
+  if (grade.schoolYear && normalizeSchoolYear(grade.schoolYear) !== active.schoolYear) return false;
+  if (grade.quarter == null) return true;
+  if (isSeniorHigh(grade.gradeLevel)) {
+    return getQuartersForSemester(active.quarter <= 2 ? 1 : 2).includes(grade.quarter);
+  }
+  return grade.quarter === active.quarter;
 }
 
 // ─── internal ────────────────────────────────────────────────────────────────

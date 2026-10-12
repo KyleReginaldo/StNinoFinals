@@ -208,7 +208,7 @@ export default function LiveAttendancePage() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 active:scale-[0.97] transition-[background-color,transform] duration-150 ease-out"
           >
             <CalendarDays className="w-3.5 h-3.5" />
-            Daily Attendance Records
+            Attendance Records
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 min-h-0">

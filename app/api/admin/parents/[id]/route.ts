@@ -1,3 +1,4 @@
+import { normalizeGender } from '@/lib/gender'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -46,6 +47,7 @@ export async function PUT(
       email,
       phone_number,
       address,
+      gender,
     } = body
 
     const supabaseAdmin = getSupabaseAdmin()
@@ -59,6 +61,7 @@ export async function PUT(
     if (email !== undefined) updateData.email = email
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
     if (address !== undefined) updateData.address = address || null
+    if (gender !== undefined) updateData.gender = normalizeGender(gender)
 
     // Update user record
     const { error: updateError } = await supabaseAdmin
@@ -75,10 +78,12 @@ export async function PUT(
     }
 
     // Update auth email if changed
-    try {
-      await supabaseAdmin.auth.admin.updateUserById(id, { email })
-    } catch (authError) {
-      console.error('Failed to update auth email:', authError)
+    if (email !== undefined) {
+      try {
+        await supabaseAdmin.auth.admin.updateUserById(id, { email })
+      } catch (authError) {
+        console.error('Failed to update auth email:', authError)
+      }
     }
 
     return NextResponse.json({

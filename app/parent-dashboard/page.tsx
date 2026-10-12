@@ -1917,7 +1917,7 @@ function ProfileTab({
               </div>
             </div>
             <div>
-              <Label>M.I. (Middle Name)</Label>
+              <Label>Middle Name</Label>
               <Input
                 value={form.middle_name}
                 onChange={(e) =>

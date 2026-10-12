@@ -490,6 +490,13 @@ interface GradeRejectionToTeacherData {
   reason: string;
 }
 
+interface GradesApprovedToTeacherData {
+  to: string;
+  teacherName: string;
+  // One line per subject/quarter in the approved batch
+  groups: { subject: string; quarter: string | number | null; passed: number; failed: number }[];
+}
+
 interface AutoRejectData {
   to: string;
   studentName: string;
@@ -748,6 +755,38 @@ export class EmailService {
     await this.sendEmail({
       to: data.to,
       subject: 'Sto. Niño de Praga Academy — Grade Submission Rejected',
+      text,
+      html,
+    });
+  }
+
+  // ── Grade Submission Approved (notify the submitting teacher) ────────────────
+
+  static async sendGradesApprovedToTeacher(
+    data: GradesApprovedToTeacherData
+  ): Promise<void> {
+    const lines = data.groups.map((g) => {
+      const quarterLabel = g.quarter ? `Quarter ${g.quarter}` : 'N/A';
+      return {
+        label: `${g.subject} (${quarterLabel})`,
+        value: `${g.passed + g.failed} approved — ${g.passed} passed, ${g.failed} failed`,
+      };
+    });
+
+    const html = emailShell(`
+      ${sectionTitle('Grade Submission — Approved')}
+      ${statusBadge('Submission Approved', 'success')}
+      ${salutation(data.teacherName)}
+      ${para('The grades you submitted have been reviewed and approved by the school administrator.')}
+      ${infoBox('Approved Grades', lines.map((l) => infoRow(l.label, l.value)).join(''))}
+      ${closing('The Academic Office')}
+    `);
+
+    const text = `Grade Submission Approved\n\nDear ${data.teacherName},\n\nThe grades you submitted have been approved:\n\n${lines.map((l) => `- ${l.label}: ${l.value}`).join('\n')}\n\nRespectfully yours,\nThe Academic Office\nSto. Niño de Praga Academy`;
+
+    await this.sendEmail({
+      to: data.to,
+      subject: 'Sto. Niño de Praga Academy — Grade Submission Approved',
       text,
       html,
     });

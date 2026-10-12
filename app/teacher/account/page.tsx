@@ -254,7 +254,7 @@ export default function TeacherAccount() {
               </div>
             </div>
             <div>
-              <Label>M.I. (Middle Name)</Label>
+              <Label>Middle Name</Label>
               <Input value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} placeholder="Optional" />
             </div>
             <div>

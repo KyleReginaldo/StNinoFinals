@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeStatus,
   getTodayISO,
+  isCurrentPeriodGrade,
   pickCurrentPeriod,
   type AcademicPeriod,
 } from '../lib/academic-period';
@@ -177,5 +178,36 @@ describe('getTodayISO', () => {
   it('does not roll over early: 2026-09-30T15:59:00Z is still 2026-09-30 23:59 in Manila', () => {
     const utcAfternoon = new Date('2026-09-30T15:59:00Z');
     expect(getTodayISO(utcAfternoon)).toBe('2026-09-30');
+  });
+});
+
+describe('isCurrentPeriodGrade', () => {
+  const q2 = { quarter: 2, schoolYear: '2026-2027' };
+  const q3 = { quarter: 3, schoolYear: '2026-2027' };
+  const g = (quarter: number | null, gradeLevel: string, schoolYear: string | null = '2026-2027') => ({
+    quarter,
+    gradeLevel,
+    schoolYear,
+  });
+
+  it('junior high: only the active quarter is current', () => {
+    expect(isCurrentPeriodGrade(g(2, 'Grade 8'), q2)).toBe(true);
+    expect(isCurrentPeriodGrade(g(1, 'Grade 8'), q2)).toBe(false);
+  });
+
+  it('senior high: both quarters of the active semester are current', () => {
+    expect(isCurrentPeriodGrade(g(1, 'Grade 11'), q2)).toBe(true);
+    expect(isCurrentPeriodGrade(g(2, 'Grade 12'), q3)).toBe(false);
+    expect(isCurrentPeriodGrade(g(4, 'Grade 12'), q3)).toBe(true);
+  });
+
+  it('other school years are archived, legacy year format included', () => {
+    expect(isCurrentPeriodGrade(g(2, 'Grade 8', '2025-2026'), q2)).toBe(false);
+    expect(isCurrentPeriodGrade(g(2, 'Grade 8', '2026'), q2)).toBe(true);
+  });
+
+  it('rows missing quarter or school year stay visible', () => {
+    expect(isCurrentPeriodGrade(g(null, 'Grade 8'), q2)).toBe(true);
+    expect(isCurrentPeriodGrade(g(2, 'Grade 8', null), q2)).toBe(true);
   });
 });

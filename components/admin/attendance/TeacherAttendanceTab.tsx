@@ -5,7 +5,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { endOfWeek, format, startOfWeek, subWeeks } from 'date-fns';
+import { endOfWeek, format, startOfMonth, startOfWeek, subWeeks } from 'date-fns';
+
+// The table renders one column per day, so cap custom ranges at about a quarter
+const MAX_RANGE_DAYS = 92;
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { CalendarIcon, RefreshCw, UserCheck, XCircle } from 'lucide-react';
@@ -164,8 +167,10 @@ export function TeacherAttendanceTab() {
       {/* ── Filters ───────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 flex items-center gap-2 flex-wrap">
         {[
+          { label: 'Today', fn: () => setDateRange({ from: new Date(), to: new Date() }) },
           { label: 'This Week', fn: () => setDateRange({ from: startOfWeek(new Date(),{weekStartsOn:1}), to: endOfWeek(new Date(),{weekStartsOn:1}) }) },
           { label: 'Last Week', fn: () => { const lw=subWeeks(new Date(),1); setDateRange({from:startOfWeek(lw,{weekStartsOn:1}),to:endOfWeek(lw,{weekStartsOn:1})}); } },
+          { label: 'This Month', fn: () => setDateRange({ from: startOfMonth(new Date()), to: new Date() }) },
           { label: 'Last 30 Days', fn: () => { const e=new Date(),s=new Date(); s.setDate(s.getDate()-30); setDateRange({from:s,to:e}); } },
         ].map(({label,fn})=>(
           <button key={label} onClick={fn} className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-full hover:border-red-700 hover:text-red-700 hover:bg-red-50 transition-colors">{label}</button>
@@ -179,7 +184,8 @@ export function TeacherAttendanceTab() {
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="range" defaultMonth={tempDateRange?.from||dateRange?.from} selected={tempDateRange} onSelect={setTempDateRange} numberOfMonths={2} />
+            <Calendar mode="range" defaultMonth={tempDateRange?.from||dateRange?.from} selected={tempDateRange} onSelect={setTempDateRange} numberOfMonths={2} max={MAX_RANGE_DAYS} />
+            <p className="px-3 pt-2 text-[11px] text-gray-400">Up to {MAX_RANGE_DAYS} days per view</p>
             <div className="p-3 border-t flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={()=>{setTempDateRange(dateRange);setIsPickerOpen(false);}}>Cancel</Button>
               <Button size="sm" className="flex-1 text-xs bg-red-800 hover:bg-red-900" onClick={()=>{if(tempDateRange?.from&&tempDateRange?.to){setDateRange(tempDateRange);setIsPickerOpen(false);}}} disabled={!tempDateRange?.from||!tempDateRange?.to}>Apply</Button>
@@ -332,7 +338,7 @@ export function TeacherAttendanceTab() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4 flex-wrap">
               <div>
-                <h2 className="text-sm font-semibold text-gray-900">Daily Attendance Records</h2>
+                <h2 className="text-sm font-semibold text-gray-900">Attendance Records</h2>
                 <p className="text-[11px] text-gray-400 mt-0.5">{data.teachers.length} teacher{data.teachers.length!==1?'s':''} · {dateColumns.length} days</p>
               </div>
               <div className="ml-auto hidden lg:flex items-center gap-3">

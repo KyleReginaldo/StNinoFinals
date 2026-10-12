@@ -1,5 +1,6 @@
 'use client';
 
+import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 interface Parent {
+  gender?: string | null;
   id: string;
   first_name: string;
   last_name: string;
@@ -977,6 +979,12 @@ export default function ParentManagementPage() {
                     currentSort={tc.sort}
                     onSort={tc.toggleSort}
                   />
+                  <SortHeader
+                    label="Gender"
+                    sortKey="gender"
+                    currentSort={tc.sort}
+                    onSort={tc.toggleSort}
+                  />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     Children
                   </th>
@@ -1006,6 +1014,16 @@ export default function ParentManagementPage() {
                           {parent.phone_number || (
                             <span className="text-gray-300">—</span>
                           )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <GenderCell
+                            resource="parents"
+                            userId={parent.id}
+                            value={parent.gender}
+                            onSaved={(gender) =>
+                              setParents((prev) => prev.map((p) => (p.id === parent.id ? { ...p, gender } : p)))
+                            }
+                          />
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           {parent.children && parent.children.length > 0 ? (
@@ -1075,7 +1093,7 @@ export default function ParentManagementPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-4 py-16 text-center text-sm text-gray-400"
                     >
                       No guardians found

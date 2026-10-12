@@ -2,7 +2,12 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
-import { Clock, Radio, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { CalendarIcon, Clock, Radio, Users } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -63,14 +68,25 @@ export function LiveAttendanceTab() {
   const [spotlight, setSpotlight] = useState<AttendanceRecord | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastIdRef = useRef<string | null>(null);
+  // No range = latest scans (live view). The query is mirrored in a ref because
+  // the polling interval and realtime callback keep the first closure.
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
+  const [tempRange, setTempRange] = useState<DateRange | undefined>(undefined);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const rangeQueryRef = useRef('');
 
   const fetchToday = async () => {
+    const rangeQuery = rangeQueryRef.current;
     try {
-      const res = await fetch('/api/admin/attendance-live?limit=50');
+      const res = await fetch(
+        rangeQuery ? `/api/admin/attendance-live?limit=1000&${rangeQuery}` : '/api/admin/attendance-live?limit=50'
+      );
       const result = await res.json();
+      if (rangeQueryRef.current !== rangeQuery) return; // filter changed while loading
       if (result.success && result.records) {
         setRecords(result.records);
-        if (result.records.length > 0) {
+        // Only spotlight new scans in the live view, not when browsing a range
+        if (!rangeQuery && result.records.length > 0) {
           const newest = result.records[0];
           if (lastIdRef.current !== newest.id) {
             lastIdRef.current = newest.id;
@@ -109,6 +125,16 @@ export function LiveAttendanceTab() {
     };
   }, []);
 
+  const applyRange = (next: DateRange | undefined) => {
+    rangeQueryRef.current = next?.from
+      ? `startDate=${format(next.from, 'yyyy-MM-dd')}&endDate=${format(next.to ?? next.from, 'yyyy-MM-dd')}`
+      : '';
+    setRange(next?.from ? next : undefined);
+    setIsPickerOpen(false);
+    setLoading(true);
+    fetchToday();
+  };
+
   const formatTime = (ts: string) =>
     new Date(ts).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -133,8 +159,45 @@ export function LiveAttendanceTab() {
           <div>
             <p className="text-xs font-semibold text-gray-800">Scan History</p>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              {records.length} records
+              {records.length} records{range ? '' : ' · latest'}
             </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <Popover open={isPickerOpen} onOpenChange={(o) => { setIsPickerOpen(o); if (o) setTempRange(range); }} modal>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium text-gray-700 bg-white border border-gray-300 hover:border-red-700 rounded-lg transition-colors">
+                  <CalendarIcon className="w-3 h-3" />
+                  {range?.from
+                    ? range.to && range.to.getTime() !== range.from.getTime()
+                      ? `${format(range.from, 'MMM d')} – ${format(range.to, 'MMM d, yyyy')}`
+                      : format(range.from, 'MMM d, yyyy')
+                    : 'Latest'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  defaultMonth={tempRange?.from || range?.from}
+                  selected={tempRange}
+                  onSelect={setTempRange}
+                  numberOfMonths={2}
+                  disabled={{ after: new Date() }}
+                />
+                <div className="p-3 border-t flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => setIsPickerOpen(false)}>Cancel</Button>
+                  <Button size="sm" className="flex-1 text-xs bg-red-800 hover:bg-red-900" onClick={() => applyRange(tempRange)} disabled={!tempRange?.from}>Apply</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            {range && (
+              <button
+                type="button"
+                onClick={() => applyRange(undefined)}
+                className="text-[10px] text-gray-400 hover:text-gray-700 px-1"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 
@@ -150,7 +213,7 @@ export function LiveAttendanceTab() {
           ) : records.length === 0 ? (
             <div className="text-center py-10">
               <Radio className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">No scans today</p>
+              <p className="text-xs text-gray-400">{range ? 'No scans in this date range' : 'No scans yet'}</p>
             </div>
           ) : (
             records.map((rec, i) => {
@@ -186,7 +249,7 @@ export function LiveAttendanceTab() {
                         {rec.gradeLevel} · {rec.section}
                       </p>
                     </div>
-                    {i === 0 && (
+                    {i === 0 && !range && (
                       <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full flex-shrink-0">
                         NEW
                       </span>

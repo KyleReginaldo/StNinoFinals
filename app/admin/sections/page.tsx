@@ -1,5 +1,6 @@
 'use client';
 
+import { SchoolYearTabs } from '@/components/admin/school-year-tabs';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -534,16 +535,8 @@ function FormalSectionsPanel() {
 
   const { showAlert } = useAlert();
 
-  // Derive school year options from existing sections + a few upcoming years
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from(
-    { length: 4 },
-    (_, i) => `${currentYear + i - 1}-${currentYear + i}`
-  );
-
   useEffect(() => {
-    // Default to the first year option (current-ish)
-    setSchoolYear(yearOptions[1]);
+    // School year defaults to the active one via SchoolYearTabs
     // Load templates for "Import from template" button
     fetch('/api/admin/settings/sections')
       .then((r) => r.json())
@@ -755,20 +748,7 @@ function FormalSectionsPanel() {
 
       {/* Controls row */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={schoolYear} onValueChange={setSchoolYear}>
-            <SelectTrigger className="w-44 h-8 text-sm">
-              <SelectValue placeholder="School year" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((y) => (
-                <SelectItem key={y} value={y}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <SchoolYearTabs value={schoolYear} onChange={setSchoolYear} allowAll={false} />
 
         {/* Quick add row */}
         {!showArchived && (

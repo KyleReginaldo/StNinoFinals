@@ -709,7 +709,7 @@ export default function AttendanceReportsPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4 flex-wrap">
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-900">Daily Attendance Records</h2>
+                  <h2 className="text-sm font-semibold text-gray-900">Attendance Records</h2>
                   <p className="text-[11px] text-gray-400 mt-0.5">
                     {data.students.length} student{data.students.length !== 1 ? 's' : ''} · {dateColumns.length} days
                   </p>

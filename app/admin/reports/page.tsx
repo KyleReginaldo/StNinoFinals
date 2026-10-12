@@ -15,22 +15,17 @@ import { ExportDropdown } from "@/components/ui/export-dropdown"
 import { BarChart3, X } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
-  Bar,
   BarChart,
   CartesianGrid,
-  Cell,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts"
+import { genderBars } from "@/components/admin/gender-bars"
 import { useAuth } from "../hooks/useAuth"
 
-const GRADE_COLORS = [
-  "#1d4ed8", "#7c3aed", "#059669", "#d97706",
-  "#dc2626", "#0369a1", "#4f46e5", "#be185d",
-  "#15803d", "#b45309", "#6d28d9", "#0e7490",
-]
 
 type DateRange = { from?: Date; to?: Date } | undefined
 
@@ -93,13 +88,18 @@ export default function ReportsPage() {
   const allGradeData = useMemo(() => {
     if (!stats?.gradeDistribution) return []
     // Normalize & merge counts for inconsistently-cased grade names in DB
-    const merged: Record<string, number> = {}
+    const merged: Record<string, { count: number; male: number; female: number; unspecified: number }> = {}
     for (const [raw, count] of Object.entries(stats.gradeDistribution)) {
       const key = normalizeGrade(raw)
-      merged[key] = (merged[key] ?? 0) + (count as number)
+      const g = stats.gradeGender?.[raw] ?? { male: 0, female: 0, unspecified: count as number }
+      const m = (merged[key] ??= { count: 0, male: 0, female: 0, unspecified: 0 })
+      m.count += count as number
+      m.male += g.male
+      m.female += g.female
+      m.unspecified += g.unspecified
     }
     return Object.entries(merged)
-      .map(([name, count]) => ({ name, count }))
+      .map(([name, m]) => ({ name, ...m }))
       .sort((a, b) => {
         if (a.name === "Kinder") return -1
         if (b.name === "Kinder") return 1
@@ -116,13 +116,14 @@ export default function ReportsPage() {
   )
 
   const sectionData = useMemo(() => {
-    const out: { name: string; count: number }[] = []
+    const out: { name: string; count: number; male: number; female: number; unspecified: number }[] = []
     if (!stats?.sectionDistribution) return out
     for (const [raw, sections] of Object.entries(stats.sectionDistribution)) {
       const grade = normalizeGrade(raw)
       if (selectedGrade !== "all" && grade !== selectedGrade) continue
       for (const [section, count] of Object.entries(sections as Record<string, number>)) {
-        out.push({ name: `${grade} — ${section}`, count })
+        const g = stats.sectionGender?.[raw]?.[section] ?? { male: 0, female: 0, unspecified: count }
+        out.push({ name: `${grade} — ${section}`, count, ...g })
       }
     }
     return out.sort((a, b) => a.name.localeCompare(b.name))
@@ -429,14 +430,11 @@ export default function ReportsPage() {
                     <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}
-                      formatter={(v: number) => [`${v} students`, "Count"]}
+                      formatter={(v: number, name: string) => [`${v} students`, name]}
                       cursor={{ fill: "rgba(0,0,0,0.03)" }}
                     />
-                    <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                      {gradeData.map((_, i) => (
-                        <Cell key={i} fill={GRADE_COLORS[i % GRADE_COLORS.length]} />
-                      ))}
-                    </Bar>
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
+                    {genderBars("horizontal")}
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -471,10 +469,11 @@ export default function ReportsPage() {
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} width={92} axisLine={false} tickLine={false} tickFormatter={shortenSectionLabel} />
                     <Tooltip
                       contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}
-                      formatter={(v: number) => [`${v} students`, "Count"]}
+                      formatter={(v: number, name: string) => [`${v} students`, name]}
                       cursor={{ fill: "rgba(0,0,0,0.03)" }}
                     />
-                    <Bar dataKey="count" fill="#1d4ed8" radius={[0, 6, 6, 0]} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
+                    {genderBars("vertical")}
                   </BarChart>
                 </ResponsiveContainer>
               </div>

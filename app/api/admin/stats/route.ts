@@ -1,5 +1,13 @@
+import { normalizeGender } from '@/lib/gender';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
+
+type GenderCounts = { male: number; female: number; unspecified: number };
+
+function genderKey(raw: string | null | undefined): keyof GenderCounts {
+  const g = normalizeGender(raw);
+  return g === 'Male' ? 'male' : g === 'Female' ? 'female' : 'unspecified';
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,12 +77,15 @@ export async function GET(request: NextRequest) {
     // Always show ALL students regardless of date range (population is not time-filtered)
     const { data: studentsList } = await supabaseAdmin
       .from('users')
-      .select('grade_level, section, created_at')
+      .select('grade_level, section, gender, created_at')
       .eq('role', 'student')
       .not('grade_level', 'is', null);
 
     const gradeDistribution: Record<string, number> = {};
     const sectionDistribution: Record<string, Record<string, number>> = {};
+    // Same counts split by gender, for the male/female stacked charts
+    const gradeGender: Record<string, GenderCounts> = {};
+    const sectionGender: Record<string, Record<string, GenderCounts>> = {};
 
     if (studentsList) {
       for (const s of studentsList) {
@@ -82,10 +93,13 @@ export async function GET(request: NextRequest) {
         if (!rawGrade) continue; // Skip students with no grade level
         const grade = rawGrade;
         gradeDistribution[grade] = (gradeDistribution[grade] || 0) + 1;
+        const g = genderKey(s.gender);
+        (gradeGender[grade] ??= { male: 0, female: 0, unspecified: 0 })[g]++;
 
         if (s.section) {
           if (!sectionDistribution[grade]) sectionDistribution[grade] = {};
           sectionDistribution[grade][s.section] = (sectionDistribution[grade][s.section] || 0) + 1;
+          ((sectionGender[grade] ??= {})[s.section] ??= { male: 0, female: 0, unspecified: 0 })[g]++;
         }
       }
     }
@@ -97,12 +111,7 @@ export async function GET(request: NextRequest) {
       .eq('role', 'student');
 
     const genderBreakdown = { male: 0, female: 0, unspecified: 0 };
-    for (const row of genderRows || []) {
-      const g = (row.gender || '').trim().toLowerCase();
-      if (g === 'male') genderBreakdown.male++;
-      else if (g === 'female') genderBreakdown.female++;
-      else genderBreakdown.unspecified++;
-    }
+    for (const row of genderRows || []) genderBreakdown[genderKey(row.gender)]++;
 
     return NextResponse.json({
       success: true,
@@ -114,6 +123,8 @@ export async function GET(request: NextRequest) {
         attendanceCount,
         gradeDistribution,
         sectionDistribution,
+        gradeGender,
+        sectionGender,
         genderBreakdown,
         filteredStudents: studentsList?.length || 0,
         dateRange: startDate || endDate ? { startDate: attendanceStart, endDate: attendanceEnd } : null,

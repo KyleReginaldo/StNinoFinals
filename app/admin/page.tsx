@@ -35,6 +35,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { genderBars } from '@/components/admin/gender-bars';
 import { useAdminData } from './hooks/useAdminData';
 import { useAuth } from './hooks/useAuth';
 
@@ -425,7 +426,11 @@ export default function AdminPage() {
                   .sort(([a], [b]) =>
                     a.localeCompare(b, undefined, { numeric: true })
                   )
-                  .map(([grade, count]) => ({ grade, count }))}
+                  .map(([grade, count]) => ({
+                    grade,
+                    count,
+                    ...(stats.gradeGender?.[grade] ?? { male: 0, female: 0, unspecified: count }),
+                  }))}
                 margin={{ top: 4, right: 24, left: 16, bottom: 4 }}
               >
                 <CartesianGrid
@@ -454,15 +459,10 @@ export default function AdminPage() {
                   }}
                   cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 />
-                <Bar
-                  dataKey="count"
-                  fill="#1d4ed8"
-                  radius={[0, 6, 6, 0]}
-                  cursor="pointer"
-                  onClick={(data: any) => {
-                    if (data?.grade) handleBarClick(data.grade);
-                  }}
-                />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
+                {genderBars('vertical', (data: any) => {
+                  if (data?.grade) handleBarClick(data.grade);
+                })}
               </BarChart>
             </ResponsiveContainer>
           ) : (

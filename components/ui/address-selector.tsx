@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useEffect, useState } from "react"
 
-// Import address data
-const { barangays } = require('select-philippines-address')
+import { loadBarangays } from "@/lib/ph-address"
 
 // Trece Martires City, Cavite constants
 const CITY_CODE = "042122" // Trece Martires City code
@@ -31,9 +30,9 @@ export function AddressSelector({ value, onChange, required = false }: AddressSe
 
   // Load barangays for Trece Martires City on mount
   useEffect(() => {
-    barangays(CITY_CODE).then((barangayData: any[]) => {
-      setBarangayList(barangayData)
-    })
+    loadBarangays(CITY_CODE)
+      .then((list) => setBarangayList(list.map(([brgy_code, brgy_name]) => ({ brgy_code, brgy_name }))))
+      .catch(() => setBarangayList([]))
   }, [])
 
   const handleBarangayChange = (barangayCode: string) => {

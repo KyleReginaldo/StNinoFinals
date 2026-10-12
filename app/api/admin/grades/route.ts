@@ -1,3 +1,4 @@
+import { getActivePeriod, isCurrentPeriodGrade } from '@/lib/academic-period';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
@@ -13,10 +14,13 @@ export async function GET() {
         grade,
         subject,
         status,
+        quarter,
+        rejection_reason,
         created_at,
         updated_at,
         reviewed_at,
-        student:users!grades_student_id_fkey(id, first_name, last_name, student_number),
+        class:classes!grades_class_id_fkey(school_year),
+        student:users!grades_student_id_fkey(id, first_name, last_name, student_number, grade_level),
         teacher:users!grades_teacher_id_fkey(id, first_name, last_name),
         reviewer:users!grades_reviewed_by_fkey(id, first_name, last_name)
       `
@@ -31,7 +35,23 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ success: true, data: data || [] });
+    // Flag grades outside the current semester/quarter so the page can hide them
+    const active = await getActivePeriod();
+    const rows = (data || []).map((g: any) => {
+      const cls = Array.isArray(g.class) ? g.class[0] : g.class;
+      const student = Array.isArray(g.student) ? g.student[0] : g.student;
+      return {
+        ...g,
+        is_current: active
+          ? isCurrentPeriodGrade(
+              { quarter: g.quarter, schoolYear: cls?.school_year ?? null, gradeLevel: student?.grade_level ?? null },
+              active
+            )
+          : true,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: rows });
   } catch (error: any) {
     console.error('Admin grades GET unexpected error:', error);
     return NextResponse.json(
@@ -95,6 +115,43 @@ async function notifyRejection(entry: any) {
   }
 }
 
+// One email per teacher per review action, summarising pass/fail per subject
+async function notifyApprovals(admin: ReturnType<typeof getSupabaseAdmin>, entries: any[]) {
+  if (entries.length === 0) return;
+
+  const { data: setting } = await admin
+    .from('system_settings')
+    .select('setting_value')
+    .eq('setting_key', 'passingThreshold')
+    .maybeSingle();
+  const threshold = parseFloat(setting?.setting_value ?? '') || 75;
+
+  const byTeacher = new Map<string, { teacher: any; groups: Map<string, any> }>();
+  for (const entry of entries) {
+    const teacher = Array.isArray(entry.teacher) ? entry.teacher[0] : entry.teacher;
+    if (!teacher?.email) continue;
+    const bucket = byTeacher.get(teacher.email) ?? { teacher, groups: new Map() };
+    byTeacher.set(teacher.email, bucket);
+    const key = `${entry.subject}|${entry.quarter ?? ''}`;
+    const group = bucket.groups.get(key) ?? { subject: entry.subject, quarter: entry.quarter ?? null, passed: 0, failed: 0 };
+    bucket.groups.set(key, group);
+    if (Number(entry.grade) >= threshold) group.passed++;
+    else group.failed++;
+  }
+
+  for (const { teacher, groups } of byTeacher.values()) {
+    try {
+      await EmailService.sendGradesApprovedToTeacher({
+        to: teacher.email,
+        teacherName: `${teacher.first_name} ${teacher.last_name}`,
+        groups: [...groups.values()],
+      });
+    } catch (emailError) {
+      console.error('Failed to send grade approval email to teacher:', emailError);
+    }
+  }
+}
+
 export async function PATCH(request: Request) {
   try {
     const admin = getSupabaseAdmin();
@@ -134,6 +191,7 @@ export async function PATCH(request: Request) {
         await logHistory(admin, entry);
         if (status === 'rejected') await notifyRejection(entry);
       }
+      if (status === 'approved') await notifyApprovals(admin, data || []);
 
       return NextResponse.json({
         success: true,
@@ -173,6 +231,7 @@ export async function PATCH(request: Request) {
     if (data) {
       await logHistory(admin, data);
       if (status === 'rejected') await notifyRejection(data);
+      if (status === 'approved') await notifyApprovals(admin, [data]);
     }
 
     return NextResponse.json({ success: true, data });
