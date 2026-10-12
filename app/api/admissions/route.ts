@@ -1,3 +1,4 @@
+import { formatAddress, missingAddressFields, normalizeAddress } from '@/lib/address';
 import { Database } from '@/database.types';
 import { supabase } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
@@ -63,6 +64,22 @@ export async function POST(request: Request) {
           error:
             'Missing required fields: first_name, last_name, email_address, phone_number, date_of_birth',
         },
+        { status: 400 }
+      );
+    }
+
+    // Both addresses are required, every part filled in
+    const permanent = normalizeAddress(body.permanent_address);
+    const current = normalizeAddress(body.current_address);
+    const missingPermanent = missingAddressFields(permanent);
+    const missingCurrent = missingAddressFields(current);
+    if (missingPermanent.length || missingCurrent.length) {
+      const parts = [
+        missingPermanent.length ? `Permanent Address (${missingPermanent.join(', ')})` : '',
+        missingCurrent.length ? `Current Address (${missingCurrent.join(', ')})` : '',
+      ].filter(Boolean);
+      return NextResponse.json(
+        { success: false, error: `Please complete: ${parts.join('; ')}` },
         { status: 400 }
       );
     }
@@ -134,8 +151,18 @@ export async function POST(request: Request) {
       middle_name: body.middle_name || null,
       date_of_birth: body.date_of_birth,
       suffix: body.suffix || null,
-      address: body.address || null,
-      address_type: body.address ? body.address_type || null : null,
+      // address keeps the composed permanent address for existing readers
+      address: formatAddress(permanent),
+      address_type: 'permanent',
+      current_address: formatAddress(current),
+      permanent_street: permanent.street,
+      permanent_barangay: permanent.barangay,
+      permanent_city: permanent.city,
+      permanent_province: permanent.province,
+      current_street: current.street,
+      current_barangay: current.barangay,
+      current_city: current.city,
+      current_province: current.province,
       lrn: body.lrn || null,
       parent_name: body.parent_name,
       parent_email: body.parent_email || null,

@@ -1,5 +1,7 @@
 'use client';
 
+import { AddressFields } from '@/components/address-fields';
+import { EMPTY_ADDRESS } from '@/lib/address';
 import type React from 'react';
 
 import { SchoolMap } from '@/components/SchoolMap';
@@ -89,8 +91,9 @@ export default function HomePage() {
     middleName: '',
     dateOfBirth: '',
     suffix: '',
-    address: '',
-    addressType: 'current',
+    permanentAddress: EMPTY_ADDRESS,
+    currentAddress: EMPTY_ADDRESS,
+    currentSameAsPermanent: false,
     lrn: '',
     parentName: '',
     parentEmail: '',
@@ -202,10 +205,10 @@ export default function HomePage() {
           middle_name: admissionForm.middleName || null,
           date_of_birth: admissionForm.dateOfBirth,
           suffix: admissionForm.suffix || null,
-          address: admissionForm.address || null,
-          address_type: admissionForm.address
-            ? admissionForm.addressType
-            : null,
+          permanent_address: admissionForm.permanentAddress,
+          current_address: admissionForm.currentSameAsPermanent
+            ? admissionForm.permanentAddress
+            : admissionForm.currentAddress,
           lrn: admissionForm.lrn || null,
           parent_name: admissionForm.parentName,
           parent_email: admissionForm.parentEmail || null,
@@ -232,8 +235,9 @@ export default function HomePage() {
           middleName: '',
           dateOfBirth: '',
           suffix: '',
-          address: '',
-          addressType: 'current',
+          permanentAddress: EMPTY_ADDRESS,
+          currentAddress: EMPTY_ADDRESS,
+          currentSameAsPermanent: false,
           lrn: '',
           parentName: '',
           parentEmail: '',
@@ -1044,54 +1048,50 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="address"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Address
-                          </Label>
-                          <Input
-                            id="address"
-                            value={admissionForm.address}
-                            placeholder="House no., street, barangay, city"
+                      <fieldset className="space-y-3">
+                        <legend className="text-sm font-semibold text-gray-900">
+                          Permanent Address
+                        </legend>
+                        <AddressFields
+                          id="permanentAddress"
+                          value={admissionForm.permanentAddress}
+                          onChange={(v) =>
+                            setAdmissionForm({ ...admissionForm, permanentAddress: v })
+                          }
+                          disabled={isSubmittingAdmission}
+                        />
+                      </fieldset>
+
+                      <fieldset className="space-y-3">
+                        <legend className="text-sm font-semibold text-gray-900">
+                          Current Address
+                        </legend>
+                        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={admissionForm.currentSameAsPermanent}
                             onChange={(e) =>
                               setAdmissionForm({
                                 ...admissionForm,
-                                address: e.target.value,
+                                currentSameAsPermanent: e.target.checked,
                               })
                             }
                             disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
+                            className="rounded border-gray-300"
                           />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700">
-                            Address Type
-                          </Label>
-                          <Select
-                            value={admissionForm.addressType}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                addressType: v,
-                              })
+                          Same as permanent address
+                        </label>
+                        {!admissionForm.currentSameAsPermanent && (
+                          <AddressFields
+                            id="currentAddress"
+                            value={admissionForm.currentAddress}
+                            onChange={(v) =>
+                              setAdmissionForm({ ...admissionForm, currentAddress: v })
                             }
                             disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="current">Current</SelectItem>
-                              <SelectItem value="permanent">
-                                Permanent
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+                          />
+                        )}
+                      </fieldset>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
