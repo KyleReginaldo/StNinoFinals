@@ -1,3 +1,4 @@
+import { normalizeGender } from '@/lib/gender'
 import { findRfidOwner } from '@/lib/rfid';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -223,7 +224,7 @@ export async function POST(request: Request) {
       grade_level: grade_level,
       section: section || null,
       date_of_birth: date_of_birth || null,
-      gender: gender || null,
+      gender: normalizeGender(gender),
       address: address || null,
       current_address: current_address || null,
       barangay: barangay || null,

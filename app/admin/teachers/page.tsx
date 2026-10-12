@@ -1,5 +1,6 @@
 'use client';
 
+import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -105,6 +106,7 @@ function RfidScanInput({
 import { useAuth } from '../hooks/useAuth';
 
 interface Teacher {
+  gender?: string | null;
   id: string;
   first_name: string;
   last_name: string;
@@ -1024,6 +1026,7 @@ export default function TeacherManagementPage() {
                   <SortHeader label="Name"           sortKey="last_name"      currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Department"     sortKey="department"     currentSort={tc.sort} onSort={tc.toggleSort} />
                   <SortHeader label="Specialization" sortKey="specialization" currentSort={tc.sort} onSort={tc.toggleSort} />
+                  <SortHeader label="Gender"         sortKey="gender"         currentSort={tc.sort} onSort={tc.toggleSort} />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">RFID</th>
                   <SortHeader label="Email"          sortKey="email"          currentSort={tc.sort} onSort={tc.toggleSort} />
                   {showArchived && (
@@ -1059,6 +1062,16 @@ export default function TeacherManagementPage() {
                       </td>
                       <td className="px-4 py-3 text-[13px] text-gray-700 whitespace-nowrap">
                         {teacher.specialization || <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <GenderCell
+                          resource="teachers"
+                          userId={teacher.id}
+                          value={teacher.gender}
+                          onSaved={(gender) =>
+                            setTeachers((prev) => prev.map((t) => (t.id === teacher.id ? { ...t, gender } : t)))
+                          }
+                        />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {teacher.rfid ? (
@@ -1120,7 +1133,7 @@ export default function TeacherManagementPage() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan={8} className="px-4 py-16 text-center text-sm text-gray-400">
+                    <td colSpan={9} className="px-4 py-16 text-center text-sm text-gray-400">
                       No teachers found
                     </td>
                   </tr>

@@ -1,5 +1,6 @@
 'use client';
 
+import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -1446,6 +1447,12 @@ export default function StudentManagementPage() {
                     currentSort={tc.sort}
                     onSort={tc.toggleSort}
                   />
+                  <SortHeader
+                    label="Gender"
+                    sortKey="gender"
+                    currentSort={tc.sort}
+                    onSort={tc.toggleSort}
+                  />
                   <th className="px-4 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     RFID
                   </th>
@@ -1491,6 +1498,18 @@ export default function StudentManagementPage() {
                           {student.section || (
                             <span className="text-gray-300">—</span>
                           )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <GenderCell
+                            resource="students"
+                            userId={student.id}
+                            value={student.gender}
+                            onSaved={(gender) =>
+                              setStudents((prev) =>
+                                prev.map((s) => (s.id === student.id ? { ...s, gender: gender ?? undefined } : s))
+                              )
+                            }
+                          />
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           {student.rfid ? (
@@ -1569,7 +1588,7 @@ export default function StudentManagementPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-16 text-center text-sm text-gray-400"
                     >
                       No students found

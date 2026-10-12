@@ -1,14 +1,12 @@
+import { normalizeGender } from '@/lib/gender';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
 type GenderCounts = { male: number; female: number; unspecified: number };
 
-// Accepts "Male"/"male"/"M" etc.; anything else counts as unspecified
 function genderKey(raw: string | null | undefined): keyof GenderCounts {
-  const g = (raw || '').trim().toLowerCase();
-  if (g === 'male' || g === 'm') return 'male';
-  if (g === 'female' || g === 'f') return 'female';
-  return 'unspecified';
+  const g = normalizeGender(raw);
+  return g === 'Male' ? 'male' : g === 'Female' ? 'female' : 'unspecified';
 }
 
 export async function GET(request: NextRequest) {

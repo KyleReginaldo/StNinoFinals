@@ -1,3 +1,4 @@
+import { normalizeGender } from '@/lib/gender'
 import { findRfidOwner } from '@/lib/rfid';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
@@ -105,7 +106,7 @@ export async function PUT(
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
     if (guardian_phone !== undefined) updateData.guardian_phone = guardian_phone || null
     if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth || null
-    if (gender !== undefined) updateData.gender = gender || null
+    if (gender !== undefined) updateData.gender = normalizeGender(gender)
     if (address !== undefined) updateData.address = address || null
     if (current_address !== undefined) updateData.current_address = current_address || null
     if (barangay !== undefined) updateData.barangay = barangay || null
