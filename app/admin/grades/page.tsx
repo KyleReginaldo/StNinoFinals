@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
-import { findGradeColumns, parseCsv } from '@/lib/csv';
+import { findGradeColumns, readSheetFile } from '@/lib/csv';
 import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
@@ -284,47 +284,48 @@ export default function AdminGradesPage() {
     setCsvVerifySummary(null);
   }, [selectedGroupKey]);
 
-  const handleVerifyCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVerifyCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !selectedGroup) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result || '');
-      const rows = parseCsv(text);
-      if (rows.length === 0) {
-        showAlert({ message: 'The CSV file appears to be empty.', type: 'warning' });
-        return;
+    let rows: string[][];
+    try {
+      rows = await readSheetFile(file);
+    } catch {
+      showAlert({ message: 'Could not read that file. Use a .xlsx or .csv file.', type: 'error' });
+      return;
+    }
+    if (rows.length === 0) {
+      showAlert({ message: 'The file appears to be empty.', type: 'warning' });
+      return;
+    }
+    const { start, numberCol, gradeCol } = findGradeColumns(rows);
+    const byStudentNumber = new Map(
+      selectedGroup.entries.map((entry) => [entry.student?.student_number, entry])
+    );
+
+    const mismatches = new Map<string, string>();
+    const unmatched: string[] = [];
+    let checked = 0;
+
+    for (let i = start; i < rows.length; i++) {
+      const studentNumber = (rows[i][numberCol] || '').trim();
+      const csvGrade = (rows[i][gradeCol] || '').trim();
+      if (!studentNumber) continue;
+      const entry = byStudentNumber.get(studentNumber);
+      if (!entry) {
+        unmatched.push(studentNumber);
+        continue;
       }
-      const { start, numberCol, gradeCol } = findGradeColumns(rows);
-      const byStudentNumber = new Map(
-        selectedGroup.entries.map((entry) => [entry.student?.student_number, entry])
-      );
-
-      const mismatches = new Map<string, string>();
-      const unmatched: string[] = [];
-      let checked = 0;
-
-      for (let i = start; i < rows.length; i++) {
-        const studentNumber = (rows[i][numberCol] || '').trim();
-        const csvGrade = (rows[i][gradeCol] || '').trim();
-        if (!studentNumber) continue;
-        const entry = byStudentNumber.get(studentNumber);
-        if (!entry) {
-          unmatched.push(studentNumber);
-          continue;
-        }
-        checked++;
-        const csvNumeric = parseFloat(csvGrade);
-        if (!isNaN(csvNumeric) && csvNumeric !== entry.grade) {
-          mismatches.set(entry.id, csvGrade);
-        }
+      checked++;
+      const csvNumeric = parseFloat(csvGrade);
+      if (!isNaN(csvNumeric) && csvNumeric !== entry.grade) {
+        mismatches.set(entry.id, csvGrade);
       }
+    }
 
-      setCsvMismatches(mismatches);
-      setCsvVerifySummary({ checked, mismatched: mismatches.size, unmatched });
-    };
-    reader.readAsText(file);
+    setCsvMismatches(mismatches);
+    setCsvVerifySummary({ checked, mismatched: mismatches.size, unmatched });
   };
 
   const handleReview = async (
@@ -821,7 +822,7 @@ export default function AdminGradesPage() {
                     <input
                       ref={csvVerifyInputRef}
                       type="file"
-                      accept=".csv"
+                      accept=".xlsx,.csv"
                       className="hidden"
                       onChange={handleVerifyCsv}
                     />
@@ -831,7 +832,7 @@ export default function AdminGradesPage() {
                       variant="outline"
                     >
                       <Upload className="h-3.5 w-3.5 mr-1.5" />
-                      Verify CSV
+                      Verify Excel/CSV
                     </Button>
                     {selectedIds.size > 0 ? (
                       <>

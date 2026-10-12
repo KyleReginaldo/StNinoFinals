@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
-import { findGradeColumns, parseCsv } from '@/lib/csv';
+import { findGradeColumns, readSheetFile } from '@/lib/csv';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import jsPDF from 'jspdf';
@@ -247,51 +247,52 @@ export default function TeacherGrades() {
     }
   };
 
-  const handleImportCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result || '');
-      const rows = parseCsv(text);
-      if (rows.length === 0) {
-        showAlert({ message: 'The CSV file appears to be empty.', type: 'warning' });
-        return;
-      }
-      const { start, numberCol, gradeCol } = findGradeColumns(rows);
+    let rows: string[][];
+    try {
+      rows = await readSheetFile(file);
+    } catch {
+      showAlert({ message: 'Could not read that file. Use a .xlsx or .csv file.', type: 'error' });
+      return;
+    }
+    if (rows.length === 0) {
+      showAlert({ message: 'The file appears to be empty.', type: 'warning' });
+      return;
+    }
+    const { start, numberCol, gradeCol } = findGradeColumns(rows);
 
-      const byStudentNumber = new Map(gradesData.map((s) => [s.studentId, s]));
-      const unmatched: string[] = [];
-      const outOfRange: string[] = [];
-      const updates = new Map<number, string>();
+    const byStudentNumber = new Map(gradesData.map((s) => [s.studentId, s]));
+    const unmatched: string[] = [];
+    const outOfRange: string[] = [];
+    const updates = new Map<number, string>();
 
-      for (let i = start; i < rows.length; i++) {
-        const studentNumber = (rows[i][numberCol] || '').trim();
-        const gradeStr = (rows[i][gradeCol] || '').trim();
-        if (!studentNumber) continue;
-        const student = byStudentNumber.get(studentNumber);
-        if (!student) {
-          unmatched.push(studentNumber);
-          continue;
-        }
-        if (student.status === 'approved') continue;
-        const numeric = Number(gradeStr);
-        if (gradeStr === '' || !Number.isInteger(numeric) || numeric < 0 || numeric > 100) {
-          outOfRange.push(`${studentNumber} (${gradeStr || '—'})`);
-          continue;
-        }
-        updates.set(student.id, numeric.toString());
+    for (let i = start; i < rows.length; i++) {
+      const studentNumber = (rows[i][numberCol] || '').trim();
+      const gradeStr = (rows[i][gradeCol] || '').trim();
+      if (!studentNumber) continue;
+      const student = byStudentNumber.get(studentNumber);
+      if (!student) {
+        unmatched.push(studentNumber);
+        continue;
       }
+      if (student.status === 'approved') continue;
+      const numeric = Number(gradeStr);
+      if (gradeStr === '' || !Number.isInteger(numeric) || numeric < 0 || numeric > 100) {
+        outOfRange.push(`${studentNumber} (${gradeStr || '—'})`);
+        continue;
+      }
+      updates.set(student.id, numeric.toString());
+    }
 
-      if (updates.size > 0) {
-        setGradesData((prev) =>
-          prev.map((s) => (updates.has(s.id) ? { ...s, grade: updates.get(s.id)! } : s))
-        );
-      }
-      setCsvSummary({ matched: updates.size, unmatched, outOfRange });
-    };
-    reader.readAsText(file);
+    if (updates.size > 0) {
+      setGradesData((prev) =>
+        prev.map((s) => (updates.has(s.id) ? { ...s, grade: updates.get(s.id)! } : s))
+      );
+    }
+    setCsvSummary({ matched: updates.size, unmatched, outOfRange });
   };
 
   const handleExportExcel = async () => {
@@ -655,7 +656,7 @@ export default function TeacherGrades() {
                 <input
                   ref={csvInputRef}
                   type="file"
-                  accept=".csv,text/csv"
+                  accept=".xlsx,.csv,text/csv"
                   className="hidden"
                   onChange={handleImportCsv}
                 />
@@ -666,7 +667,7 @@ export default function TeacherGrades() {
                   onClick={() => csvInputRef.current?.click()}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Import CSV
+                  Import Excel/CSV
                 </Button>
                 <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} />
                 <Button
