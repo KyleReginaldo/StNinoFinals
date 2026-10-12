@@ -63,14 +63,24 @@ export function LiveAttendanceTab() {
   const [spotlight, setSpotlight] = useState<AttendanceRecord | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastIdRef = useRef<string | null>(null);
+  // '' = latest scans (live); YYYY-MM-DD = that day's scans. Mirrored in a ref
+  // because the polling interval and realtime callback keep the first closure.
+  const [date, setDate] = useState('');
+  const dateRef = useRef('');
+  const todayISO = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
 
   const fetchToday = async () => {
+    const day = dateRef.current;
     try {
-      const res = await fetch('/api/admin/attendance-live?limit=50');
+      const res = await fetch(
+        day ? `/api/admin/attendance-live?limit=500&date=${day}` : '/api/admin/attendance-live?limit=50'
+      );
       const result = await res.json();
+      if (dateRef.current !== day) return; // filter changed while loading
       if (result.success && result.records) {
         setRecords(result.records);
-        if (result.records.length > 0) {
+        // Only spotlight new scans in the live view, not when browsing a day
+        if (!day && result.records.length > 0) {
           const newest = result.records[0];
           if (lastIdRef.current !== newest.id) {
             lastIdRef.current = newest.id;
@@ -109,6 +119,13 @@ export function LiveAttendanceTab() {
     };
   }, []);
 
+  const changeDate = (next: string) => {
+    dateRef.current = next;
+    setDate(next);
+    setLoading(true);
+    fetchToday();
+  };
+
   const formatTime = (ts: string) =>
     new Date(ts).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -133,8 +150,27 @@ export function LiveAttendanceTab() {
           <div>
             <p className="text-xs font-semibold text-gray-800">Scan History</p>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              {records.length} records
+              {records.length} records{date ? '' : ' · latest'}
             </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={date}
+              max={todayISO}
+              onChange={(e) => changeDate(e.target.value)}
+              aria-label="Filter scans by date"
+              className="text-[11px] text-gray-600 border border-gray-200 rounded-md px-1.5 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-gray-200"
+            />
+            {date && (
+              <button
+                type="button"
+                onClick={() => changeDate('')}
+                className="text-[10px] text-gray-400 hover:text-gray-700 px-1"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 
@@ -150,7 +186,7 @@ export function LiveAttendanceTab() {
           ) : records.length === 0 ? (
             <div className="text-center py-10">
               <Radio className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">No scans today</p>
+              <p className="text-xs text-gray-400">{date ? 'No scans on this date' : 'No scans yet'}</p>
             </div>
           ) : (
             records.map((rec, i) => {
@@ -186,7 +222,7 @@ export function LiveAttendanceTab() {
                         {rec.gradeLevel} · {rec.section}
                       </p>
                     </div>
-                    {i === 0 && (
+                    {i === 0 && !date && (
                       <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full flex-shrink-0">
                         NEW
                       </span>

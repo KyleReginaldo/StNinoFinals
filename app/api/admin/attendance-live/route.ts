@@ -55,6 +55,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const since = searchParams.get('since');
+    // Optional YYYY-MM-DD: only scans from that Manila calendar day
+    const dateParam = searchParams.get('date');
+    const date = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : null;
 
     let supabaseClient;
     try {
@@ -102,7 +105,8 @@ export async function GET(request: Request) {
 
       let querySuccess = false;
 
-      try {
+      // The RPC has no upper time bound, so a date filter goes straight to the direct query
+      if (!date) try {
         console.log('Method 1: Trying RPC function...');
         const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
           'get_attendance_records',
@@ -140,6 +144,11 @@ export async function GET(request: Request) {
 
           if (since) {
             directQuery = directQuery.gt('scan_time', since);
+          }
+          if (date) {
+            directQuery = directQuery
+              .gte('scan_time', `${date}T00:00:00.000+08:00`)
+              .lte('scan_time', `${date}T23:59:59.999+08:00`);
           }
 
           const directResult = await directQuery;
