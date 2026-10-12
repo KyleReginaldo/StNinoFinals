@@ -1,71 +1,31 @@
 -- Backfill users.gender for students, teachers and parents.
 --
--- Gender cannot be known for certain from existing data, so this goes from
--- exact to best guess. Run each STEP separately in the Supabase SQL editor and
--- read its output before moving on. Every UPDATE only touches rows whose gender
--- is still NULL, so re-running is safe and never overwrites a value an admin set.
+-- HOW TO USE (Supabase SQL editor): paste this whole file and click Run.
+--   1. With save = false (below) it only PREVIEWS: one row per person whose
+--      gender is blank or invalid, showing the proposed value and its source.
+--      Nothing is changed.
+--   2. Happy with it? Change `false` to `true` on the settings line, Run again.
+--      The same list comes back, now saved.
+-- It is a single statement, so there are no steps to run in order.
 --
--- Afterwards, fix anything left (or guessed wrong) with the Gender drop-down in
--- the admin Students / Teachers / Parents tables: it saves on change, and
--- sorting by Gender groups the blanks together.
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 0. Where things stand
--- ════════════════════════════════════════════════════════════════════════════
-SELECT role, COALESCE(gender, '(blank)') AS gender, count(*)
-FROM users
-WHERE role IN ('student', 'teacher', 'parent')
-GROUP BY role, gender
-ORDER BY role, gender;
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 1. Normalize existing values to exactly 'Male' / 'Female'
--- ════════════════════════════════════════════════════════════════════════════
-UPDATE users SET gender = 'Male'   WHERE lower(trim(gender)) IN ('m', 'male')   AND gender <> 'Male';
-UPDATE users SET gender = 'Female' WHERE lower(trim(gender)) IN ('f', 'female') AND gender <> 'Female';
--- Anything else ('unspecified', '', typos) becomes blank so later steps fill it
-UPDATE users SET gender = NULL WHERE gender IS NOT NULL AND gender NOT IN ('Male', 'Female');
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 2. Guardians: exact, from their relationship to a linked student
---         (user_relationships.user_id is the parent). A guardian linked as
---         'father' to one child and 'mother' to another is skipped.
--- ════════════════════════════════════════════════════════════════════════════
-UPDATE users u
-SET gender = r.gender
-FROM (
-  SELECT user_id, min(g) AS gender
-  FROM (
-    SELECT user_id,
-           CASE
-             WHEN lower(relationship_type) IN ('father', 'uncle', 'grandfather', 'brother', 'stepfather') THEN 'Male'
-             WHEN lower(relationship_type) IN ('mother', 'aunt', 'grandmother', 'sister', 'stepmother') THEN 'Female'
-           END AS g
-    FROM user_relationships
-  ) t
-  WHERE g IS NOT NULL
-  GROUP BY user_id
-  HAVING count(DISTINCT g) = 1
-) r
-WHERE u.id = r.user_id
-  AND u.role = 'parent'
-  AND u.gender IS NULL;
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 3. Everyone else: best guess from the first given name, using common
---         Filipino names. Names used for both genders (Angel, Jan, Kim, Jamie,
---         Alex, Shane, Jessie, Jordan, ...) are deliberately not listed and
---         stay blank. Compound names use the first word: "John Paul" → john,
---         "Ma. Theresa" → ma.
+-- Where the value comes from, most reliable first:
+--   existing     – a stored 'm' / 'male' / 'F' etc., normalized to Male/Female
+--   relationship – guardians: linked to a student as father/mother/uncle/aunt...
+--                  (skipped if their links disagree)
+--   first name   – best guess from common Filipino given names; gender-neutral
+--                  names (Angel, Jan, Kim, Jamie, Alex, Shane...) are not listed
+--   (none)       – stays blank; set it with the Gender drop-down in the admin
+--                  Students / Teachers / Parents tables
 --
---         3a creates the lookup table, 3b previews, 3c applies, 3d cleans up.
--- ════════════════════════════════════════════════════════════════════════════
+-- Only blank or invalid values are touched, so an admin-set Male/Female is never
+-- overwritten and running it again is safe. A wrong guess in the preview? Remove
+-- that name from the list below, or fix it afterwards with the drop-down.
 
--- 3a. Lookup table (a real table, so the preview and apply can be separate runs)
-CREATE TABLE IF NOT EXISTS tmp_gender_names (name TEXT PRIMARY KEY, gender TEXT NOT NULL);
-
-INSERT INTO tmp_gender_names (name, gender)
-SELECT n, 'Male' FROM unnest(ARRAY[
+WITH settings AS (
+  SELECT false AS save            -- ← change to true to save
+),
+names (name, gender) AS (
+  SELECT unnest(ARRAY[
   'aaron','adrian','aldrin','alfred','allan','alvin','andrei','andres','andrew','angelo','anthony','antonio',
   'archie','arnel','arnold','arthur','axel','benedict','benjamin','bernard','bienvenido','bryan','brian','bryle',
   'carl','carlo','carlos','cedric','charles','christian','christopher','clarence','clark','daniel','danilo','darwin',
@@ -80,9 +40,9 @@ SELECT n, 'Male' FROM unnest(ARRAY[
   'renz','rey','reynaldo','ricardo','richard','rico','robert','roberto','rodel','rodrigo','rogelio','roland',
   'romeo','ronald','ronnie','ruel','ryan','salvador','samuel','sean','sebastian','stephen','steven','teodoro',
   'timothy','tristan','vincent','virgilio','wilfredo','william','zachary'
-]) AS n
-UNION ALL
-SELECT n, 'Female' FROM unnest(ARRAY[
+  ]), 'Male'
+  UNION ALL
+  SELECT unnest(ARRAY[
   'abigail','ailyn','aileen','aira','alexa','alma','althea','alyssa','amelia','ana','andrea','angela','angelica',
   'angelie','angeline','anna','anne','annie','april','arlene','ashley','audrey','bea','beatrice','bernadette',
   'carla','carmela','carmen','carol','catherine','cecilia','charlene','charmaine','cherry','christine','claire',
@@ -98,46 +58,64 @@ SELECT n, 'Female' FROM unnest(ARRAY[
   'patricia','pauline','precious','princess','rachel','rebecca','regina','rhea','rica','rizza','rosa','rosalie',
   'rose','rosemarie','ruby','ruth','sandra','sarah','sharon','sheila','shiela','sofia','sophia','stephanie','susan',
   'teresa','theresa','trisha','valerie','vanessa','veronica','victoria','vilma','wendy','yvonne','zenaida'
-]) AS n
-ON CONFLICT (name) DO NOTHING;
+  ]), 'Female'
+),
+relationship AS (
+  -- user_relationships.user_id is the guardian
+  SELECT user_id, min(g) AS gender
+  FROM (
+    SELECT user_id,
+           CASE
+             WHEN lower(relationship_type) IN ('father', 'uncle', 'grandfather', 'brother', 'stepfather') THEN 'Male'
+             WHEN lower(relationship_type) IN ('mother', 'aunt', 'grandmother', 'sister', 'stepmother') THEN 'Female'
+           END AS g
+    FROM user_relationships
+  ) t
+  WHERE g IS NOT NULL
+  GROUP BY user_id
+  HAVING count(DISTINCT g) = 1
+),
+candidates AS (
+  SELECT u.id, u.role, u.student_number, u.first_name, u.last_name, u.gender AS old_gender,
+         CASE WHEN lower(trim(u.gender)) IN ('m', 'male') THEN 'Male'
+              WHEN lower(trim(u.gender)) IN ('f', 'female') THEN 'Female' END AS from_existing,
+         CASE WHEN u.role = 'parent' THEN r.gender END AS from_relationship,
+         n.gender AS from_name
+  FROM users u
+  LEFT JOIN relationship r ON r.user_id = u.id
+  LEFT JOIN names n ON n.name = lower(split_part(trim(u.first_name), ' ', 1))
+  WHERE u.role IN ('student', 'teacher', 'parent')
+    AND (u.gender IS NULL OR u.gender NOT IN ('Male', 'Female'))
+),
+proposed AS (
+  SELECT c.*,
+         COALESCE(from_existing, from_relationship, from_name) AS new_gender,
+         CASE WHEN from_existing IS NOT NULL THEN 'existing'
+              WHEN from_relationship IS NOT NULL THEN 'relationship'
+              WHEN from_name IS NOT NULL THEN 'first name'
+              ELSE '(none) - set manually' END AS source
+  FROM candidates c
+),
+saved AS (
+  -- runs only when save = true; invalid values with no proposal become blank
+  UPDATE users u
+  SET gender = p.new_gender
+  FROM proposed p, settings s
+  WHERE s.save
+    AND u.id = p.id
+    AND u.gender IS DISTINCT FROM p.new_gender
+  RETURNING u.id
+)
+SELECT CASE WHEN (SELECT save FROM settings) THEN 'saved' ELSE 'preview' END AS mode,
+       p.role, p.student_number, p.first_name, p.last_name,
+       p.old_gender, p.new_gender, p.source
+FROM proposed p
+ORDER BY (p.new_gender IS NULL), p.source, p.role, p.last_name, p.first_name;
 
--- 3b. PREVIEW: who would be filled, and with what. Read through it; any name
---     here that is wrong for your school can be removed with
---     DELETE FROM tmp_gender_names WHERE name = '...';
-SELECT u.role, u.student_number, u.first_name, u.last_name, g.gender AS guessed
-FROM users u
-JOIN tmp_gender_names g ON g.name = lower(split_part(trim(u.first_name), ' ', 1))
-WHERE u.gender IS NULL
-  AND u.role IN ('student', 'teacher', 'parent')
-ORDER BY g.gender, u.first_name;
-
--- 3c. APPLY the guesses
-UPDATE users u
-SET gender = g.gender
-FROM tmp_gender_names g
-WHERE g.name = lower(split_part(trim(u.first_name), ' ', 1))
-  AND u.gender IS NULL
-  AND u.role IN ('student', 'teacher', 'parent');
-
--- 3d. Clean up
-DROP TABLE IF EXISTS tmp_gender_names;
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 4. Whoever is still blank. Fix these with the Gender drop-down in the
---         admin tables, or with the template in STEP 5.
--- ════════════════════════════════════════════════════════════════════════════
-SELECT role, student_number, email, first_name, last_name
-FROM users
-WHERE gender IS NULL
-  AND role IN ('student', 'teacher', 'parent')
-ORDER BY role, last_name, first_name;
-
--- ════════════════════════════════════════════════════════════════════════════
--- STEP 5 (optional). Set many at once from a list, e.g. copied out of a
---         spreadsheet. Matches on email (every role has one). Replace the
---         example rows; 'Male' / 'Female' only. This one DOES overwrite, so it
---         can also correct wrong guesses.
--- ════════════════════════════════════════════════════════════════════════════
+-- Optional: set or correct many at once from a list (e.g. copied out of a
+-- spreadsheet). Matches on email, which every role has. Replace the example
+-- rows, then run just this statement. Unlike the above, this DOES overwrite.
+--
 -- UPDATE users u
 -- SET gender = v.gender
 -- FROM (VALUES
