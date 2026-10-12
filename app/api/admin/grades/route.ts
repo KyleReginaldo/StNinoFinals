@@ -1,3 +1,4 @@
+import { getActivePeriod, isCurrentPeriodGrade } from '@/lib/academic-period';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
@@ -13,10 +14,13 @@ export async function GET() {
         grade,
         subject,
         status,
+        quarter,
+        rejection_reason,
         created_at,
         updated_at,
         reviewed_at,
-        student:users!grades_student_id_fkey(id, first_name, last_name, student_number),
+        class:classes!grades_class_id_fkey(school_year),
+        student:users!grades_student_id_fkey(id, first_name, last_name, student_number, grade_level),
         teacher:users!grades_teacher_id_fkey(id, first_name, last_name),
         reviewer:users!grades_reviewed_by_fkey(id, first_name, last_name)
       `
@@ -31,7 +35,23 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ success: true, data: data || [] });
+    // Flag grades outside the current semester/quarter so the page can hide them
+    const active = await getActivePeriod();
+    const rows = (data || []).map((g: any) => {
+      const cls = Array.isArray(g.class) ? g.class[0] : g.class;
+      const student = Array.isArray(g.student) ? g.student[0] : g.student;
+      return {
+        ...g,
+        is_current: active
+          ? isCurrentPeriodGrade(
+              { quarter: g.quarter, schoolYear: cls?.school_year ?? null, gradeLevel: student?.grade_level ?? null },
+              active
+            )
+          : true,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: rows });
   } catch (error: any) {
     console.error('Admin grades GET unexpected error:', error);
     return NextResponse.json(

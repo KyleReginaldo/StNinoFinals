@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
-import { parseCsv } from '@/lib/csv';
+import { findGradeColumns, parseCsv } from '@/lib/csv';
 import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
@@ -35,6 +35,9 @@ interface GradeEntry {
   grade: number;
   subject: string;
   status: GradeStatus;
+  quarter: number | null;
+  // false when the grade is from a past semester/quarter (computed by the API)
+  is_current?: boolean;
   created_at: string | null;
   updated_at: string | null;
   reviewed_at: string | null;
@@ -59,6 +62,7 @@ interface GradeEntry {
 interface SubjectGroup {
   key: string;
   subject: string;
+  quarter: number | null;
   teacher: GradeEntry['teacher'];
   entries: GradeEntry[];
   pendingCount: number;
@@ -101,6 +105,9 @@ function getStatusVisual(status: GradeStatus, isPassing: boolean) {
   return STATUS_CONFIG[status];
 }
 
+// Past-period grades are archived (hidden) unless still pending review
+const isArchived = (g: GradeEntry) => g.is_current === false && g.status !== 'pending';
+
 export default function AdminGradesPage() {
   const { admin } = useAuth();
   const { refreshKey } = useRefresh();
@@ -114,6 +121,7 @@ export default function AdminGradesPage() {
   const [batchProcessing, setBatchProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [showArchived, setShowArchived] = useState(false);
   const [reviewingGrade, setReviewingGrade] = useState<GradeEntry | null>(null);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -174,18 +182,24 @@ export default function AdminGradesPage() {
     fetchGrades();
   }, [fetchGrades, refreshKey]);
 
+  const archivedCount = useMemo(() => grades.filter(isArchived).length, [grades]);
+  const visibleGrades = useMemo(
+    () => (showArchived ? grades : grades.filter((g) => !isArchived(g))),
+    [grades, showArchived]
+  );
+
   const counts = useMemo(
     () => ({
-      total: grades.length,
-      pending: grades.filter((g) => g.status === 'pending').length,
-      approved: grades.filter((g) => g.status === 'approved').length,
-      rejected: grades.filter((g) => g.status === 'rejected').length,
+      total: visibleGrades.length,
+      pending: visibleGrades.filter((g) => g.status === 'pending').length,
+      approved: visibleGrades.filter((g) => g.status === 'approved').length,
+      rejected: visibleGrades.filter((g) => g.status === 'rejected').length,
     }),
-    [grades]
+    [visibleGrades]
   );
 
   const filteredGrades = useMemo(() => {
-    return grades.filter((g) => {
+    return visibleGrades.filter((g) => {
       const matchesTab = activeTab === 'all' || g.status === activeTab;
       const q = searchTerm.toLowerCase();
       const studentName =
@@ -200,16 +214,17 @@ export default function AdminGradesPage() {
         (g.student?.student_number ?? '').toLowerCase().includes(q);
       return matchesTab && matchesSearch;
     });
-  }, [grades, activeTab, searchTerm]);
+  }, [visibleGrades, activeTab, searchTerm]);
 
   const subjectGroups = useMemo(() => {
     const map = new Map<string, SubjectGroup>();
     for (const g of filteredGrades) {
-      const key = `${g.subject}__${g.teacher?.id || 'unknown'}`;
+      const key = `${g.subject}__${g.teacher?.id || 'unknown'}__${g.quarter ?? ''}`;
       if (!map.has(key)) {
         map.set(key, {
           key,
           subject: g.subject,
+          quarter: g.quarter,
           teacher: g.teacher,
           entries: [],
           pendingCount: 0,
@@ -258,7 +273,7 @@ export default function AdminGradesPage() {
         showAlert({ message: 'The CSV file appears to be empty.', type: 'warning' });
         return;
       }
-      const startIndex = /^\d+$/.test((rows[0][0] || '').trim()) ? 0 : 1;
+      const { start, numberCol, gradeCol } = findGradeColumns(rows);
       const byStudentNumber = new Map(
         selectedGroup.entries.map((entry) => [entry.student?.student_number, entry])
       );
@@ -267,10 +282,9 @@ export default function AdminGradesPage() {
       const unmatched: string[] = [];
       let checked = 0;
 
-      for (let i = startIndex; i < rows.length; i++) {
-        const [rawNumber, rawGrade] = rows[i];
-        const studentNumber = (rawNumber || '').trim();
-        const csvGrade = (rawGrade || '').trim();
+      for (let i = start; i < rows.length; i++) {
+        const studentNumber = (rows[i][numberCol] || '').trim();
+        const csvGrade = (rows[i][gradeCol] || '').trim();
         if (!studentNumber) continue;
         const entry = byStudentNumber.get(studentNumber);
         if (!entry) {
@@ -637,8 +651,8 @@ export default function AdminGradesPage() {
       </div>
 
       {/* Search toolbar */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
-        <div className="relative max-w-sm">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input
             className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
@@ -647,6 +661,17 @@ export default function AdminGradesPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        {archivedCount > 0 && (
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Show archived ({archivedCount} from past periods)
+          </label>
+        )}
       </div>
 
       {loading ? (
@@ -687,6 +712,7 @@ export default function AdminGradesPage() {
                         className={`font-semibold text-sm leading-tight truncate ${isSelected ? 'text-white' : 'text-gray-900'}`}
                       >
                         {group.subject}
+                        {group.quarter ? ` · Q${group.quarter}` : ''}
                       </p>
                       <p
                         className={`text-xs truncate mt-0.5 ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}
@@ -730,6 +756,7 @@ export default function AdminGradesPage() {
                   <div>
                     <p className="font-semibold text-gray-900">
                       {selectedGroup.subject}
+                      {selectedGroup.quarter ? ` · Q${selectedGroup.quarter}` : ''}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {selectedGroup.teacher ? (
