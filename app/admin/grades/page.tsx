@@ -1,5 +1,7 @@
 'use client';
 
+import { SchoolYearTabs } from '@/components/admin/school-year-tabs';
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -38,6 +40,7 @@ interface GradeEntry {
   quarter: number | null;
   // false when the grade is from a past semester/quarter (computed by the API)
   is_current?: boolean;
+  class?: { school_year: string | null } | null;
   created_at: string | null;
   updated_at: string | null;
   reviewed_at: string | null;
@@ -122,6 +125,9 @@ export default function AdminGradesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [showArchived, setShowArchived] = useState(false);
+  const [schoolYear, setSchoolYear] = useState('');
+  const [activeYear, setActiveYear] = useState('');
+  const [quarterFilter, setQuarterFilter] = useState('');
   const [reviewingGrade, setReviewingGrade] = useState<GradeEntry | null>(null);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -182,10 +188,27 @@ export default function AdminGradesPage() {
     fetchGrades();
   }, [fetchGrades, refreshKey]);
 
-  const archivedCount = useMemo(() => grades.filter(isArchived).length, [grades]);
+  // School year tab, then quarter drop-down. Grades without a class school
+  // year (legacy rows) stay visible under every tab.
+  const yearGrades = useMemo(
+    () =>
+      grades.filter((g) => {
+        const sy = g.class?.school_year;
+        if (schoolYear && sy && normalizeSchoolYear(sy) !== schoolYear) return false;
+        if (quarterFilter && String(g.quarter ?? '') !== quarterFilter) return false;
+        return true;
+      }),
+    [grades, schoolYear, quarterFilter]
+  );
+  // Archiving only applies to the current year; a past year's tab shows all of it
+  const archiveApplies = !schoolYear || schoolYear === activeYear;
+  const archivedCount = useMemo(
+    () => (archiveApplies ? yearGrades.filter(isArchived).length : 0),
+    [yearGrades, archiveApplies]
+  );
   const visibleGrades = useMemo(
-    () => (showArchived ? grades : grades.filter((g) => !isArchived(g))),
-    [grades, showArchived]
+    () => (showArchived || !archiveApplies ? yearGrades : yearGrades.filter((g) => !isArchived(g))),
+    [yearGrades, showArchived, archiveApplies]
   );
 
   const counts = useMemo(
@@ -650,8 +673,23 @@ export default function AdminGradesPage() {
         ))}
       </div>
 
+      <SchoolYearTabs value={schoolYear} onChange={setSchoolYear} onActiveYear={setActiveYear} />
+
       {/* Search toolbar */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <select
+          value={quarterFilter}
+          onChange={(e) => setQuarterFilter(e.target.value)}
+          className="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          aria-label="Quarter"
+        >
+          <option value="">All quarters</option>
+          {[1, 2, 3, 4].map((q) => (
+            <option key={q} value={q}>
+              Quarter {q}
+            </option>
+          ))}
+        </select>
         <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input

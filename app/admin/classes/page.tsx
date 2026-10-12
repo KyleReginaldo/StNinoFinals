@@ -1,5 +1,6 @@
 'use client';
 
+import { SchoolYearTabs } from '@/components/admin/school-year-tabs';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
@@ -411,6 +412,8 @@ export default function ClassesManagementPage() {
     classes.map(c => ({
       ...c,
       teacherName: c.teacher_name ?? 'Unassigned',
+      // normalized so the exact-match school year filter catches legacy "2026"
+      school_year: normalizeSchoolYear(c.school_year),
       quarterDisplay: String((c as any).quarter ?? c.semester ?? ''),
       statusLabel: c.is_active ? 'active' : 'inactive',
     })),
@@ -484,6 +487,11 @@ export default function ClassesManagementPage() {
           )}
         </div>
       </div>
+
+      <SchoolYearTabs
+        value={tc.filters['school_year'] ?? ''}
+        onChange={(sy) => tc.setFilter('school_year', sy)}
+      />
 
       {/* Toolbar */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 flex flex-wrap items-center gap-3">

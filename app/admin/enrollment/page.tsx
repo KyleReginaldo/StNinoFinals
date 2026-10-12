@@ -1,5 +1,7 @@
 'use client';
 
+import { SchoolYearTabs } from '@/components/admin/school-year-tabs';
+import { normalizeSchoolYear } from '@/lib/school-year';
 import { friendlyError } from '@/lib/error-message';
 import { useRefresh } from '@/lib/refresh-context';
 import { Button } from '@/components/ui/button';
@@ -314,6 +316,7 @@ export default function AdminEnrollmentPage() {
   const flatRequests: FlatEnrollment[] = requests.map((r) => ({
     ...r,
     studentName: getStudentName(r),
+    school_year: normalizeSchoolYear(r.school_year),
   }));
 
   const gradeOptions = sortGradeLevels([...new Set(requests.map((r) => r.grade_level))] as string[]);
@@ -341,7 +344,7 @@ export default function AdminEnrollmentPage() {
 
   const availableSections = [...new Set(relevantClasses.map((c) => c.section).filter(Boolean))].sort() as string[];
 
-  const hasFilters = !!tc.search || !!tc.filters['status'] || !!tc.filters['grade_level'];
+  const hasFilters = !!tc.search || !!tc.filters['status'] || !!tc.filters['grade_level'] || !!tc.filters['school_year'];
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -371,6 +374,12 @@ export default function AdminEnrollmentPage() {
           </div>
         ))}
       </div>
+
+      <SchoolYearTabs
+        value={tc.filters['school_year'] ?? ''}
+        onChange={(sy) => tc.setFilter('school_year', sy)}
+        startOnAll
+      />
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
