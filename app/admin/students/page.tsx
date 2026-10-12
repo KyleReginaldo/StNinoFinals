@@ -46,7 +46,7 @@ import {
   UserPlus,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 interface Student {
@@ -301,7 +301,10 @@ export default function StudentManagementPage() {
     fetchStudents(showArchived);
   }, [showArchived, refreshKey]);
 
-  const tc = useTableControls(students, {
+  // has_rfid is derived so the exact-match table filter can filter on it
+  const rows = useMemo(() => students.map((r) => ({ ...r, has_rfid: r.rfid ? 'yes' : 'no' })), [students]);
+  const noRfidCount = rows.filter((r) => r.has_rfid === 'no').length;
+  const tc = useTableControls(rows, {
     searchFields: ['first_name', 'last_name', 'student_number', 'email'],
     defaultSort: { key: 'last_name', dir: 'asc' },
     pageSize: 25,
@@ -320,6 +323,7 @@ export default function StudentManagementPage() {
     if (!newStudent.last_name.trim()) missing.push('Last Name');
     if (!newStudent.student_number.trim()) missing.push('Student Number');
     if (!newStudent.grade_level) missing.push('Grade Level');
+    if (!newStudent.gender) missing.push('Gender');
     if (!newStudent.email.trim()) missing.push('Email');
     if (missing.length) {
       setAddError(`Required: ${missing.join(', ')}`);
@@ -576,6 +580,7 @@ export default function StudentManagementPage() {
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
             {tc.filteredCount} of {tc.totalCount} records
+            {noRfidCount > 0 && <span className="text-amber-600"> · {noRfidCount} without RFID</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -815,7 +820,7 @@ export default function StudentManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label>Gender</Label>
+                      <Label required>Gender</Label>
                       <Select
                         value={newStudent.gender || 'unspecified'}
                         onValueChange={(v) =>
@@ -1391,7 +1396,16 @@ export default function StudentManagementPage() {
               </option>
             ))}
           </select>
-          {(tc.search || tc.filters['grade_level']) && (
+          <select
+            value={tc.filters['has_rfid'] ?? ''}
+            onChange={(e) => tc.setFilter('has_rfid', e.target.value)}
+            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
+          >
+            <option value="">All RFID</option>
+            <option value="yes">Has RFID</option>
+            <option value="no">No RFID</option>
+          </select>
+          {(tc.search || tc.filters['grade_level'] || tc.filters['has_rfid']) && (
             <button
               onClick={tc.clearFilters}
               className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 active:scale-95 transition-[color,transform] duration-150 ease-out"
