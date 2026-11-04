@@ -923,6 +923,125 @@ export default function HomePage() {
                       onSubmit={handleAdmissionSubmit}
                       className="space-y-5"
                     >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="intendedGradeLevel"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Intended Grade Level
+                          </Label>
+                          <Select
+                            value={admissionForm.intendedGradeLevel}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                intendedGradeLevel: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="Select grade level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {GRADE_LEVELS.map((g) => (
+                                <SelectItem key={g} value={g}>
+                                  {g}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="enrollmentType"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Enrollment Type
+                          </Label>
+                          <Select
+                            value={admissionForm.enrollmentType}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                enrollmentType: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ENROLLMENT_TYPE_OPTIONS.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="schoolYear"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            School Year to Enroll
+                          </Label>
+                          <Select
+                            value={admissionForm.schoolYear}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                schoolYear: v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getSchoolYearOptions().map((sy) => (
+                                <SelectItem key={sy} value={sy}>
+                                  S.Y. {sy}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {needsPreviousSchool && (
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor="previousSchool"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Previous School
+                            </Label>
+                            <Input
+                              id="previousSchool"
+                              value={admissionForm.previousSchool}
+                              placeholder="Previous school name"
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  previousSchool: e.target.value,
+                                })
+                              }
+                              disabled={isSubmittingAdmission}
+                              className="h-11 bg-white border-gray-200"
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_110px] gap-5">
                         <div className="space-y-1.5">
                           <Label
@@ -1120,125 +1239,6 @@ export default function HomePage() {
                           />
                         )}
                       </fieldset>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="intendedGradeLevel"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Intended Grade Level
-                          </Label>
-                          <Select
-                            value={admissionForm.intendedGradeLevel}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                intendedGradeLevel: v,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue placeholder="Select grade level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {GRADE_LEVELS.map((g) => (
-                                <SelectItem key={g} value={g}>
-                                  {g}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="enrollmentType"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Enrollment Type
-                          </Label>
-                          <Select
-                            value={admissionForm.enrollmentType}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                enrollmentType: v,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ENROLLMENT_TYPE_OPTIONS.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="schoolYear"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            School Year to Enroll
-                          </Label>
-                          <Select
-                            value={admissionForm.schoolYear}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                schoolYear: v,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getSchoolYearOptions().map((sy) => (
-                                <SelectItem key={sy} value={sy}>
-                                  S.Y. {sy}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        {needsPreviousSchool && (
-                          <div className="space-y-1.5">
-                            <Label
-                              htmlFor="previousSchool"
-                              className="text-sm font-medium text-gray-700"
-                            >
-                              Previous School
-                            </Label>
-                            <Input
-                              id="previousSchool"
-                              value={admissionForm.previousSchool}
-                              placeholder="Previous school name"
-                              onChange={(e) =>
-                                setAdmissionForm({
-                                  ...admissionForm,
-                                  previousSchool: e.target.value,
-                                })
-                              }
-                              disabled={isSubmittingAdmission}
-                              className="h-11 bg-white border-gray-200"
-                            />
-                          </div>
-                        )}
-                      </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
