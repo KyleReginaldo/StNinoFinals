@@ -38,6 +38,7 @@ import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { fetchSectionsByGrade } from '@/lib/sections';
+import { lrnError, lrnRequired } from '@/lib/lrn';
 import { sortGradeLevels } from '@/lib/utils';
 import {
   AlertTriangle,
@@ -314,7 +315,7 @@ export default function StudentManagementPage() {
     const missing: string[] = [];
     if (!newStudent.first_name.trim()) missing.push('First Name');
     if (!newStudent.last_name.trim()) missing.push('Last Name');
-    if (!/^\d{12}$/.test(newStudent.student_number)) missing.push('LRN (12 digits)');
+    if (lrnError(newStudent.student_number, newStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!newStudent.grade_level) missing.push('Grade Level');
     if (!newStudent.gender) missing.push('Gender');
     if (!newStudent.email.trim()) missing.push('Email');
@@ -397,7 +398,7 @@ export default function StudentManagementPage() {
     const missing: string[] = [];
     if (!editStudent.first_name.trim()) missing.push('First Name');
     if (!editStudent.last_name.trim()) missing.push('Last Name');
-    if (!/^\d{12}$/.test(editStudent.student_number || '')) missing.push('LRN (12 digits)');
+    if (lrnError(editStudent.student_number, editStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!editStudent.grade_level) missing.push('Grade Level');
     if (!editStudent.email.trim()) missing.push('Email');
     if (missing.length) {
@@ -669,7 +670,9 @@ export default function StudentManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label required>LRN</Label>
+                      <Label required={lrnRequired(newStudent.grade_level)}>
+                        LRN{!lrnRequired(newStudent.grade_level) && ' (optional for Kinder)'}
+                      </Label>
                       <Input
                         value={newStudent.student_number}
                         placeholder="e.g. 202400000001"
@@ -683,7 +686,7 @@ export default function StudentManagementPage() {
                               .slice(0, 12),
                           })
                         }
-                        required
+                        required={lrnRequired(newStudent.grade_level)}
                       />
                     </div>
                     <div>
@@ -966,7 +969,9 @@ export default function StudentManagementPage() {
                 />
               </div>
               <div>
-                <Label required>LRN</Label>
+                <Label required={lrnRequired(editStudent.grade_level)}>
+                  LRN{!lrnRequired(editStudent.grade_level) && ' (optional for Kinder)'}
+                </Label>
                 <Input
                   value={editStudent.student_number}
                   inputMode="numeric"

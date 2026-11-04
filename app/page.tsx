@@ -44,6 +44,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { latestBirthYear } from '@/lib/person';
 import { GRADE_LEVELS } from '@/lib/grade-levels';
+import { lrnError, lrnRequired } from '@/lib/lrn';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
@@ -189,7 +190,7 @@ export default function HomePage() {
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const missing = [
-      ...(/^\d{12}$/.test(admissionForm.lrn) ? [] : ['LRN (12 digits)']),
+      ...(lrnError(admissionForm.lrn, admissionForm.intendedGradeLevel) ? ['LRN (12 digits)'] : []),
       ...missingAddressFields(admissionForm.permanentAddress).map((f) => `Permanent ${f}`),
       ...(admissionForm.currentSameAsPermanent
         ? []
@@ -1036,9 +1037,9 @@ export default function HomePage() {
                           <Label
                             htmlFor="lrn"
                             className="text-sm font-medium text-gray-700"
-                            required
+                            required={lrnRequired(admissionForm.intendedGradeLevel)}
                           >
-                            LRN
+                            LRN{!lrnRequired(admissionForm.intendedGradeLevel) && ' (optional for Kinder)'}
                           </Label>
                           <Input
                             id="lrn"
@@ -1051,7 +1052,7 @@ export default function HomePage() {
                                 lrn: e.target.value.replace(/\D/g, ''),
                               })
                             }
-                            required
+                            required={lrnRequired(admissionForm.intendedGradeLevel)}
                             minLength={12}
                             pattern="\d{12}"
                             title="12-digit LRN"

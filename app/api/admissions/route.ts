@@ -1,5 +1,6 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
 import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
+import { lrnError } from '@/lib/lrn';
 import { formatAddress, missingAddressFields, normalizeAddress } from '@/lib/address';
 import { Database } from '@/database.types';
 import { supabase } from '@/lib/supabaseClient';
@@ -110,19 +111,23 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!/^\d{12}$/.test(body.lrn || '')) {
+    const lrn = (body.lrn ?? '').trim();
+    const lrnProblem = lrnError(lrn, gradeLevel);
+    if (lrnProblem) {
       return NextResponse.json(
-        { success: false, error: 'Please enter the 12-digit LRN (Learner Reference Number).' },
+        { success: false, error: `${lrnProblem} (12-digit Learner Reference Number).` },
         { status: 400 }
       );
     }
 
-    const { data: lrnOwner } = await supabase
-      .from('users')
-      .select('id')
-      .or(`student_number.eq.${body.lrn},lrn.eq.${body.lrn}`)
-      .limit(1)
-      .maybeSingle();
+    const { data: lrnOwner } = lrn
+      ? await supabase
+          .from('users')
+          .select('id')
+          .or(`student_number.eq.${lrn},lrn.eq.${lrn}`)
+          .limit(1)
+          .maybeSingle()
+      : { data: null };
     if (lrnOwner) {
       return NextResponse.json(
         { success: false, error: 'This LRN is already registered. Please contact the school.' },
@@ -198,7 +203,7 @@ export async function POST(request: Request) {
       current_barangay: current.barangay,
       current_city: current.city,
       current_province: current.province,
-      lrn: body.lrn || null,
+      lrn: lrn || null,
       parent_name: body.parent_name,
       parent_email: body.parent_email || null,
       email_address: body.email_address,

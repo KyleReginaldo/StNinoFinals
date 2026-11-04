@@ -1,3 +1,4 @@
+import { isValidLrn } from '@/lib/lrn';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -17,13 +18,20 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!isValidLrn(String(student_number).trim())) {
+      return NextResponse.json(
+        { success: false, error: 'LRN must be exactly 12 digits' },
+        { status: 400 }
+      )
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
 
     // Find student by student number
     const { data: student, error: studentError } = await supabaseAdmin
       .from('users')
       .select('id, first_name, last_name, student_number, grade_level, section, email')
-      .eq('student_number', student_number)
+      .eq('student_number', String(student_number).trim())
       .eq('role', 'student')
       .single()
 
