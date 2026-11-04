@@ -26,7 +26,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
-import { DAY_LABELS, LATEST_END, parseScheduleSlots, slotTimeError, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, formatTime12, parseScheduleSlots, slotTimeError, timeOptions, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
@@ -79,6 +79,10 @@ interface Student {
   grade_level: string | null;
   section: string | null;
 }
+
+// Saved times off the 15-minute grid (older subjects) still show, so editing doesn't blank them
+const withCurrent = (opts: string[], current: string) =>
+  current && !opts.includes(current) ? [current, ...opts].sort() : opts;
 
 export default function ClassesManagementPage() {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -795,21 +799,44 @@ export default function ClassesManagementPage() {
                     <div key={slot.day} className="flex items-center gap-2">
                       <span className="w-8 text-xs font-semibold text-gray-500 text-center">{slot.day}</span>
                       <span className="text-xs text-gray-400 hidden sm:inline">{DAY_LABELS[slot.day]}</span>
-                      <Input
-                        type="time"
+                      {/* Drop-downs, not free time inputs: only times up to 5:00 PM can be picked */}
+                      <Select
                         value={slot.start}
-                        max={LATEST_END}
-                        onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, start: e.target.value } : s))}
-                        className="h-8 w-28 text-sm"
-                      />
+                        onValueChange={v =>
+                          setScheduleSlots(prev =>
+                            prev.map(s => {
+                              if (s.day !== slot.day) return s;
+                              // Keep end valid: if it's no longer after the new start, move it 1 hour later (capped at 5 PM)
+                              const ends = timeOptions(v);
+                              const end = ends.includes(s.end) ? s.end : ends[Math.min(3, ends.length - 1)];
+                              return { ...s, start: v, end };
+                            })
+                          )
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-28 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {withCurrent(timeOptions(), slot.start).map(t => (
+                            <SelectItem key={t} value={t}>{formatTime12(t)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <span className="text-xs text-gray-400">→</span>
-                      <Input
-                        type="time"
+                      <Select
                         value={slot.end}
-                        max={LATEST_END}
-                        onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, end: e.target.value } : s))}
-                        className="h-8 w-28 text-sm"
-                      />
+                        onValueChange={v => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, end: v } : s))}
+                      >
+                        <SelectTrigger className="h-8 w-28 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {withCurrent(timeOptions(slot.start), slot.end).map(t => (
+                            <SelectItem key={t} value={t}>{formatTime12(t)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   ))}
                 </div>

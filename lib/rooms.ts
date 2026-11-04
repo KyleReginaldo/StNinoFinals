@@ -100,3 +100,24 @@ export function slotTimeError(s: { start: string; end: string }): string | null 
   if (toMinutes(s.end) > toMinutes(LATEST_END)) return 'Classes must end by 5:00 PM';
   return null;
 }
+
+export const EARLIEST_START = '06:00';
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * Selectable times ("HH:MM") in 15-minute steps up to LATEST_END. With `after`, only
+ * times later than it (for the end-time list). Start list ends 15 min before LATEST_END.
+ */
+export function timeOptions(after?: string, step = 15): string[] {
+  const from = after ? toMinutes(after) + step : toMinutes(EARLIEST_START);
+  const to = toMinutes(LATEST_END) - (after ? 0 : step);
+  const out: string[] = [];
+  for (let m = from; m <= to; m += step) out.push(`${pad(Math.floor(m / 60))}:${pad(m % 60)}`);
+  return out;
+}
+
+/** "17:00" → "5:00 PM" */
+export function formatTime12(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  return `${h % 12 || 12}:${pad(m || 0)} ${h < 12 ? 'AM' : 'PM'}`;
+}
