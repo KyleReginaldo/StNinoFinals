@@ -56,6 +56,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { SHS_STRANDS } from '@/lib/school-year';
+import { GRADE_LEVELS } from '@/lib/grade-levels';
 import { ParentDashboard } from './components/ParentDashboard';
 
 interface Child {
@@ -1225,20 +1226,7 @@ export default function ParentDashboardPage() {
                             <SelectValue placeholder="Select grade level" />
                           </SelectTrigger>
                           <SelectContent>
-                            {[
-                              'Grade 1',
-                              'Grade 2',
-                              'Grade 3',
-                              'Grade 4',
-                              'Grade 5',
-                              'Grade 6',
-                              'Grade 7',
-                              'Grade 8',
-                              'Grade 9',
-                              'Grade 10',
-                              'Grade 11',
-                              'Grade 12',
-                            ].map((g) => (
+                            {GRADE_LEVELS.map((g) => (
                               <SelectItem key={g} value={g}>
                                 {g}
                               </SelectItem>

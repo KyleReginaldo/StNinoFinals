@@ -53,23 +53,10 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
+import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
 
 const CURRENT_SCHOOL_YEAR = getEnrollmentSchoolYear();
 
-const GRADE_LEVELS = [
-  'Grade 1',
-  'Grade 2',
-  'Grade 3',
-  'Grade 4',
-  'Grade 5',
-  'Grade 6',
-  'Grade 7',
-  'Grade 8',
-  'Grade 9',
-  'Grade 10',
-  'Grade 11',
-  'Grade 12',
-];
 
 
 interface StudentInfo {
@@ -225,12 +212,10 @@ export default function EnrollmentPage() {
     if (suggestedGrade) {
       gl = suggestedGrade.nextGrade;
     } else if (admissionData?.intendedGradeLevel) {
-      // Normalize admission format: "grade6" → "Grade 6", "Grade 6" → "Grade 6"
-      gl = String(admissionData.intendedGradeLevel).trim();
-      if (/^grade\d+$/i.test(gl)) gl = `Grade ${gl.replace(/^grade/i, '')}`;
+      gl = normalizeGradeLevel(String(admissionData.intendedGradeLevel));
     } else if (student?.grade_level) {
       const raw = String(student.grade_level).trim();
-      gl = raw.startsWith('Grade ') ? raw : `Grade ${raw}`;
+      gl = /^\d+$/.test(raw) ? `Grade ${raw}` : normalizeGradeLevel(raw);
     }
 
     if (gl && GRADE_LEVELS.includes(gl)) {

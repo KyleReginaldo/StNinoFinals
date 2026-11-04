@@ -26,17 +26,14 @@ import {
 } from "recharts"
 import { genderBars } from "@/components/admin/gender-bars"
 import { useAuth } from "../hooks/useAuth"
+import { normalizeGradeLevel } from "@/lib/grade-levels"
 
 
 type DateRange = { from?: Date; to?: Date } | undefined
 
 // Normalize inconsistent grade_level values stored in DB
 function normalizeGrade(raw: string): string {
-  const t = raw.trim().toLowerCase()
-  if (t === "kindergarten" || t === "kinder") return "Kinder"
-  const m = t.match(/^grade\s*(\d+)$/)
-  if (m) return `Grade ${m[1]}`
-  return raw.trim()
+  return normalizeGradeLevel(raw) ?? raw.trim()
 }
 
 // "Grade 7 — Rizal" → "G7 — Rizal", so the vertical bar chart's Y axis fits in

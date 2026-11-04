@@ -43,6 +43,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { latestBirthYear } from '@/lib/person';
+import { GRADE_LEVELS } from '@/lib/grade-levels';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
@@ -121,15 +122,7 @@ export default function HomePage() {
     admissionForm.enrollmentType === 'transferee' ||
     admissionForm.enrollmentType === 'returnee';
 
-  const GRADE_6_AND_BELOW = [
-    'kindergarten',
-    'grade1',
-    'grade2',
-    'grade3',
-    'grade4',
-    'grade5',
-    'grade6',
-  ];
+  const GRADE_6_AND_BELOW = GRADE_LEVELS.slice(0, 7); // Kinder … Grade 6
   const needsParentEmail = GRADE_6_AND_BELOW.includes(
     admissionForm.intendedGradeLevel
   );
@@ -1136,12 +1129,9 @@ export default function HomePage() {
                               <SelectValue placeholder="Select grade level" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="kindergarten">
-                                Kindergarten
-                              </SelectItem>
-                              {Array.from({ length: 12 }, (_, i) => (
-                                <SelectItem key={i + 1} value={`grade${i + 1}`}>
-                                  Grade {i + 1}
+                              {GRADE_LEVELS.map((g) => (
+                                <SelectItem key={g} value={g}>
+                                  {g}
                                 </SelectItem>
                               ))}
                             </SelectContent>

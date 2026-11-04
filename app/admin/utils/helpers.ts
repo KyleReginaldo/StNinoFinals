@@ -1,3 +1,4 @@
+import { GRADE_LEVELS } from '@/lib/grade-levels'
 export const generatePassword = () => {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
   let password = ""
@@ -52,20 +53,6 @@ export const getRate = (present: number, total: number): string => {
   return ((present / total) * 100).toFixed(1)
 }
 
-export const gradeOptions = [
-  "All Grades",
-  "Grade 1",
-  "Grade 2",
-  "Grade 3",
-  "Grade 4",
-  "Grade 5",
-  "Grade 6",
-  "Grade 7",
-  "Grade 8",
-  "Grade 9",
-  "Grade 10",
-  "Grade 11",
-  "Grade 12",
-]
+export const gradeOptions = ["All Grades", ...GRADE_LEVELS]
 
 export const studentStatusOptions = ["Enrolled", "Pending", "Alumni", "Inactive"]

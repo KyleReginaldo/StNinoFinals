@@ -1,4 +1,5 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
+import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
 import { formatAddress, missingAddressFields, normalizeAddress } from '@/lib/address';
 import { Database } from '@/database.types';
 import { supabase } from '@/lib/supabaseClient';
@@ -65,6 +66,14 @@ export async function POST(request: Request) {
           error:
             'Missing required fields: first_name, last_name, email_address, phone_number, date_of_birth',
         },
+        { status: 400 }
+      );
+    }
+
+    const gradeLevel = normalizeGradeLevel(body.intended_grade_level);
+    if (!gradeLevel || !GRADE_LEVELS.includes(gradeLevel)) {
+      return NextResponse.json(
+        { success: false, error: 'Please select a valid grade level' },
         { status: 400 }
       );
     }
@@ -195,7 +204,7 @@ export async function POST(request: Request) {
       email_address: body.email_address,
       phone_number: body.phone_number,
       guardian_phone: body.guardian_phone || body.phone_number,
-      intended_grade_level: body.intended_grade_level,
+      intended_grade_level: gradeLevel,
       previous_school: body.previous_school || null,
       enrollment_type: enrollmentType,
       school_year: body.school_year || null,

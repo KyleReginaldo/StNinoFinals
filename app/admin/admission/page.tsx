@@ -30,6 +30,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { normalizeGradeLevel } from '@/lib/grade-levels';
 
 type Admission = Database['public']['Tables']['admissions']['Row'];
 type FlatAdmission = Admission & { normalizedStatus: string };
@@ -480,9 +481,7 @@ const AdmissionPage = () => {
               selectedAdmission.last_name,
               selectedAdmission.suffix || '',
             ].filter(Boolean).join(' ');
-            const gradeLabel = (selectedAdmission.intended_grade_level || '')
-              .replace(/^grade(\d+)$/i, 'Grade $1')
-              .replace(/^kindergarten$/i, 'Kindergarten');
+            const gradeLabel = normalizeGradeLevel(selectedAdmission.intended_grade_level) ?? '';
             const statusBadge: Record<string, string> = {
               pending:  'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
               approved: 'bg-green-50 text-green-700 ring-1 ring-green-200',
