@@ -1,5 +1,6 @@
 import { Database } from '@/database.types';
 import { EmailService } from '@/lib/services/email-service';
+import { normalizeGradeLevel } from '@/lib/grade-levels';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { supabase } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
           studentLastName: admission.last_name,
           email: admission.email_address,
           reason: rejectionReason,
-        });
+        }, wasApproved);
       } catch (emailError) {
         console.error('Rejection email error:', emailError);
       }
@@ -210,8 +211,9 @@ export async function POST(request: Request) {
                 address: admission.address_type !== 'current' ? admission.address || null : null,
                 current_address: admission.address_type === 'current' ? admission.address || null : null,
               }),
+          guardian_address: admission.guardian_address || null,
           role: 'student',
-          grade_level: admission.intended_grade_level,
+          grade_level: normalizeGradeLevel(admission.intended_grade_level),
           created_at: new Date().toISOString(),
           password_change_required: true,
         });
@@ -248,9 +250,9 @@ export async function POST(request: Request) {
           studentLastName: admission.last_name,
           email: admission.email_address,
           password: tempPassword,
-          gradeLevel: admission.intended_grade_level,
+          gradeLevel: normalizeGradeLevel(admission.intended_grade_level) ?? '',
           loginUrl: `${request.headers.get('origin')}/login?email=${encodeURIComponent(admission.email_address)}&password=${encodeURIComponent(tempPassword)}`,
-        });
+        }, wasRejected);
       } catch (emailError) {
         console.error('Email error:', emailError);
       }

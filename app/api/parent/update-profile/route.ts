@@ -10,6 +10,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Parent ID is required' }, { status: 400 });
     }
 
+    for (const [value, label] of [[phone_number, 'Phone number'], [address, 'Address']] as const) {
+      if (value !== undefined && !String(value ?? '').trim()) {
+        return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 });
+      }
+    }
+
     const supabaseAdmin = getSupabaseAdmin();
     const updateData: Record<string, any> = {};
 

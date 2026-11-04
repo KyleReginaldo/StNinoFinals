@@ -56,6 +56,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { SHS_STRANDS } from '@/lib/school-year';
+import { GRADE_LEVELS } from '@/lib/grade-levels';
+import { isValidLrn } from '@/lib/lrn';
 import { ParentDashboard } from './components/ParentDashboard';
 
 interface Child {
@@ -79,7 +81,8 @@ export default function ParentDashboardPage() {
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [studentNumber, setStudentNumber] = useState('');
-  const [relationshipType, setRelationshipType] = useState('parent');
+  const [relationshipType, setRelationshipType] = useState('guardian');
+  const [childPreview, setChildPreview] = useState<{ name: string; grade_level: string | null } | null>(null);
   const [addError, setAddError] = useState('');
   const [viewingChild, setViewingChild] = useState<Child | null>(null);
   const [enrollmentRequests, setEnrollmentRequests] = useState<any[]>([]);
@@ -325,7 +328,8 @@ export default function ParentDashboardPage() {
 
       // Reset form
       setStudentNumber('');
-      setRelationshipType('parent');
+      setRelationshipType('guardian');
+      setChildPreview(null);
       setShowAddDialog(false);
 
       // Refresh children list from database
@@ -341,6 +345,116 @@ export default function ParentDashboardPage() {
       setIsAddingChild(false);
     }
   };
+
+  // Step 1 of tagging: look up the LRN and show the child's (masked) name to confirm
+  const handleFindChild = async () => {
+    const lrn = studentNumber.trim();
+    if (!isValidLrn(lrn)) {
+      setAddError('Please enter the 12-digit LRN');
+      return;
+    }
+    setIsAddingChild(true);
+    setAddError('');
+    try {
+      const res = await fetch(`/api/parent/link-student?lrn=${lrn}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setAddError(data.error || 'No student found with this LRN');
+        return;
+      }
+      setChildPreview(data.student);
+    } catch {
+      setAddError('Failed to look up student. Please try again.');
+    } finally {
+      setIsAddingChild(false);
+    }
+  };
+
+  const closeAddDialog = () => {
+    setShowAddDialog(false);
+    setStudentNumber('');
+    setChildPreview(null);
+    setAddError('');
+  };
+
+  const addChildDialogContent = (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Add Your Student</DialogTitle>
+        <DialogDescription>
+          {childPreview
+            ? 'Please confirm this is your child before linking.'
+            : "Enter your child's LRN to link them to your account."}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 mt-4">
+        {childPreview ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+            <p className="text-sm text-gray-600">Is this your child?</p>
+            <p className="text-lg font-semibold text-gray-900">{childPreview.name}</p>
+            {childPreview.grade_level && (
+              <p className="text-sm text-gray-600">{childPreview.grade_level}</p>
+            )}
+          </div>
+        ) : (
+          <>
+            <div>
+              <Label htmlFor="studentNumber">LRN</Label>
+              <Input
+                id="studentNumber"
+                placeholder="12-digit LRN"
+                inputMode="numeric"
+                maxLength={12}
+                value={studentNumber}
+                onChange={(e) => setStudentNumber(e.target.value.replace(/\D/g, ''))}
+                disabled={isAddingChild}
+              />
+            </div>
+            <div>
+              <Label>Relationship</Label>
+              <Select value={relationshipType} onValueChange={setRelationshipType} disabled={isAddingChild}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="guardian">Guardian</SelectItem>
+                  <SelectItem value="mother">Mother</SelectItem>
+                  <SelectItem value="father">Father</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+        {addError && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+            {addError}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Button
+            onClick={childPreview ? handleAddChild : handleFindChild}
+            disabled={isAddingChild}
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
+            {isAddingChild
+              ? childPreview ? 'Adding...' : 'Searching...'
+              : childPreview ? 'Yes, add my child' : 'Find Student'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (!childPreview) return closeAddDialog();
+              setChildPreview(null);
+              setAddError('');
+            }}
+            disabled={isAddingChild}
+          >
+            {childPreview ? 'Back' : 'Cancel'}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  );
 
   const currentSchoolYear = (() => {
     const now = new Date();
@@ -613,75 +727,14 @@ export default function ParentDashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <Dialog open={showAddDialog} onOpenChange={(o) => (o ? setShowAddDialog(true) : closeAddDialog())}>
                   <DialogTrigger asChild>
                     <Button className="w-full bg-red-800 hover:bg-red-700">
                       <UserPlus className="w-4 h-4 mr-2" />
                       Add Your Child
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Your Student</DialogTitle>
-                      <DialogDescription>
-                        Enter the student number to link them to your account.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <Label htmlFor="studentNumber">LRN</Label>
-                        <Input
-                          id="studentNumber"
-                          placeholder="12-digit LRN"
-                          value={studentNumber}
-                          onChange={(e) => setStudentNumber(e.target.value)}
-                          disabled={isAddingChild}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="relationship">Relationship</Label>
-                        <Select
-                          value={relationshipType}
-                          onValueChange={setRelationshipType}
-                          disabled={isAddingChild}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="guardian">Guardian</SelectItem>
-                            <SelectItem value="mother">Mother</SelectItem>
-                            <SelectItem value="father">Father</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {addError && (
-                        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-                          {addError}
-                        </div>
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddChild}
-                          disabled={isAddingChild}
-                          className="flex-1 bg-red-800 hover:bg-red-700"
-                        >
-                          {isAddingChild ? 'Adding...' : 'Add Student'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowAddDialog(false);
-                            setStudentNumber('');
-                            setAddError('');
-                          }}
-                          disabled={isAddingChild}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
+                  {addChildDialogContent}
                 </Dialog>
               </CardContent>
             </Card>
@@ -717,81 +770,15 @@ export default function ParentDashboardPage() {
             </span>
             <div className="ml-auto flex items-center gap-2">
               <RefreshButton />
-              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-white"
-                  >
-                    <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-                    Add Student
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Your Student</DialogTitle>
-                    <DialogDescription>
-                      Enter the student number to link them to your account.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div>
-                      <Label htmlFor="studentNumberMobile">
-                        LRN
-                      </Label>
-                      <Input
-                        id="studentNumberMobile"
-                        placeholder="12-digit LRN"
-                        value={studentNumber}
-                        onChange={(e) => setStudentNumber(e.target.value)}
-                        disabled={isAddingChild}
-                      />
-                    </div>
-                    <div>
-                      <Label>Relationship</Label>
-                      <Select
-                        value={relationshipType}
-                        onValueChange={setRelationshipType}
-                        disabled={isAddingChild}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="guardian">Guardian</SelectItem>
-                          <SelectItem value="mother">Mother</SelectItem>
-                          <SelectItem value="father">Father</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {addError && (
-                      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
-                        {addError}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleAddChild}
-                        disabled={isAddingChild}
-                        className="flex-1 bg-primary hover:bg-primary/90"
-                      >
-                        {isAddingChild ? 'Adding...' : 'Add Student'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowAddDialog(false);
-                          setStudentNumber('');
-                          setAddError('');
-                        }}
-                        disabled={isAddingChild}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {/* Opens the single dialog rendered in the desktop bar (it portals, so it shows on mobile too) */}
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => setShowAddDialog(true)}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                Add Student
+              </Button>
             </div>
           </div>
 
@@ -801,7 +788,7 @@ export default function ParentDashboardPage() {
               Guardian Portal
             </span>
             <RefreshButton />
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+            <Dialog open={showAddDialog} onOpenChange={(o) => (o ? setShowAddDialog(true) : closeAddDialog())}>
               <DialogTrigger asChild>
                 <Button
                   size="sm"
@@ -811,68 +798,7 @@ export default function ParentDashboardPage() {
                   Add Student
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Your Student</DialogTitle>
-                  <DialogDescription>
-                    Enter the student number to link them to your account.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <div>
-                    <Label htmlFor="studentNumber">LRN</Label>
-                    <Input
-                      id="studentNumber"
-                      placeholder="12-digit LRN"
-                      value={studentNumber}
-                      onChange={(e) => setStudentNumber(e.target.value)}
-                      disabled={isAddingChild}
-                    />
-                  </div>
-                  <div>
-                    <Label>Relationship</Label>
-                    <Select
-                      value={relationshipType}
-                      onValueChange={setRelationshipType}
-                      disabled={isAddingChild}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="guardian">Guardian</SelectItem>
-                        <SelectItem value="mother">Mother</SelectItem>
-                        <SelectItem value="father">Father</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {addError && (
-                    <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
-                      {addError}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleAddChild}
-                      disabled={isAddingChild}
-                      className="flex-1 bg-primary hover:bg-primary/90"
-                    >
-                      {isAddingChild ? 'Adding...' : 'Add Student'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowAddDialog(false);
-                        setStudentNumber('');
-                        setAddError('');
-                      }}
-                      disabled={isAddingChild}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
+              {addChildDialogContent}
             </Dialog>
           </div>
 
@@ -1225,20 +1151,7 @@ export default function ParentDashboardPage() {
                             <SelectValue placeholder="Select grade level" />
                           </SelectTrigger>
                           <SelectContent>
-                            {[
-                              'Grade 1',
-                              'Grade 2',
-                              'Grade 3',
-                              'Grade 4',
-                              'Grade 5',
-                              'Grade 6',
-                              'Grade 7',
-                              'Grade 8',
-                              'Grade 9',
-                              'Grade 10',
-                              'Grade 11',
-                              'Grade 12',
-                            ].map((g) => (
+                            {GRADE_LEVELS.map((g) => (
                               <SelectItem key={g} value={g}>
                                 {g}
                               </SelectItem>
@@ -1769,8 +1682,8 @@ function ProfileTab({
   };
 
   const handleSave = async () => {
-    if (!form.first_name.trim() || !form.last_name.trim()) {
-      setError('First name and last name are required.');
+    if (!form.first_name.trim() || !form.last_name.trim() || !form.phone_number.trim() || !form.address.trim()) {
+      setError('Name, phone number and address are required.');
       return;
     }
     setSaving(true);
@@ -1912,7 +1825,7 @@ function ProfileTab({
               />
             </div>
             <div>
-              <Label>Phone Number</Label>
+              <Label required>Phone Number</Label>
               <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
                   +63
@@ -1933,7 +1846,7 @@ function ProfileTab({
               </div>
             </div>
             <div>
-              <Label>Address</Label>
+              <Label required>Address</Label>
               <Input
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}

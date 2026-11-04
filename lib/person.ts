@@ -41,3 +41,12 @@ export function birthDateError(dateOfBirth: string | null | undefined, now: Date
   if (year > max) return `Applicants must be born in ${max} or earlier.`;
   return null;
 }
+
+/** "Juan Miguel" + "dela Cruz" → "Juan Miguel D." — enough for a parent to confirm, not a full name. */
+export function maskStudentName(first: string | null | undefined, last: string | null | undefined): string {
+  const initial = (last ?? '').trim().charAt(0).toUpperCase();
+  return [(first ?? '').trim(), initial && `${initial}.`].filter(Boolean).join(' ');
+}
+
+/** +63XXXXXXXXXX or 09XXXXXXXXX (same rule the admissions API uses). */
+export const isValidPhPhone = (v: string | null | undefined) => /^(\+63\d{10}|0\d{10})$/.test((v ?? '').trim());

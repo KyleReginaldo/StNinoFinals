@@ -1,6 +1,7 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
 import { normalizeGender } from '@/lib/gender'
 import { findRfidOwner } from '@/lib/rfid';
+import { lrnError } from '@/lib/lrn'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -53,6 +54,7 @@ export async function PUT(
       email,
       phone_number,
       guardian_phone,
+      guardian_address,
       date_of_birth,
       gender,
       address,
@@ -71,18 +73,26 @@ export async function PUT(
     }
 
     // The student number IS the LRN; check format and uniqueness if it's being changed
-    if (student_number !== undefined) {
-      if (!/^\d{12}$/.test(student_number)) {
-        return NextResponse.json(
-          { success: false, error: 'LRN must be exactly 12 digits.' },
-          { status: 400 }
-        )
+    // Optional for Kinder; blank is stored as null
+    let lrnValue = student_number === undefined ? undefined : String(student_number ?? '').trim()
+    if (lrnValue !== undefined) {
+      const { data: current } = await supabaseAdmin.from('users').select('grade_level, student_number').eq('id', id).maybeSingle()
+      // Unchanged LRN (incl. old short numbers) is left alone so legacy records stay editable
+      if (lrnValue === (current?.student_number ?? '').trim()) {
+        lrnValue = undefined
+      } else {
+        const lrnProblem = lrnError(lrnValue, grade_level ?? current?.grade_level)
+        if (lrnProblem) {
+          return NextResponse.json({ success: false, error: `${lrnProblem}.` }, { status: 400 })
+        }
       }
+    }
 
+    if (lrnValue) {
       const { data: existing } = await supabaseAdmin
         .from('users')
         .select('id')
-        .or(`student_number.eq.${student_number},lrn.eq.${student_number}`)
+        .or(`student_number.eq.${lrnValue},lrn.eq.${lrnValue}`)
         .neq('id', id)
         .limit(1)
         .maybeSingle()
@@ -92,6 +102,13 @@ export async function PUT(
           { success: false, error: 'This LRN is already used by another student.' },
           { status: 409 }
         )
+      }
+    }
+
+    // Guardian contact is required; partial updates (e.g. inline gender edit) may omit it
+    for (const [value, label] of [[guardian_phone, "Guardian's phone number"], [guardian_address, 'Guardian address']] as const) {
+      if (value !== undefined && !String(value ?? '').trim()) {
+        return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 })
       }
     }
 
@@ -112,15 +129,16 @@ export async function PUT(
     if (last_name !== undefined) updateData.last_name = last_name
     if (middle_name !== undefined) updateData.middle_name = middle_name || null
     if (suffix !== undefined) updateData.suffix = suffix || null
-    if (student_number !== undefined) {
-      updateData.student_number = student_number
-      updateData.lrn = student_number
+    if (lrnValue !== undefined) {
+      updateData.student_number = lrnValue || null
+      updateData.lrn = lrnValue || null
     }
     if (grade_level !== undefined) updateData.grade_level = grade_level
     if (section !== undefined) updateData.section = section || null
     if (email !== undefined) updateData.email = email
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
     if (guardian_phone !== undefined) updateData.guardian_phone = guardian_phone || null
+    if (guardian_address !== undefined) updateData.guardian_address = String(guardian_address).trim()
     if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth || null
     if (gender !== undefined) updateData.gender = normalizeGender(gender)
     if (address !== undefined) updateData.address = address || null

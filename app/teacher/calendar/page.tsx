@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
@@ -33,9 +34,8 @@ export default function TeacherCalendar() {
   const router = useRouter();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [schedule, setSchedule] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  // Local date, not UTC: toISOString() shows yesterday before 8 AM in PH
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   // Get day name from date
   const getDayName = (dateString: string) => {
@@ -49,7 +49,7 @@ export default function TeacherCalendar() {
       'Friday',
       'Saturday',
     ];
-    return days[date.getDay()];
+    return days[date.getUTCDay()]; // 'YYYY-MM-DD' parses as UTC midnight
   };
 
   // Check if teacher is logged in
@@ -86,11 +86,10 @@ export default function TeacherCalendar() {
       );
       const data = await response.json();
 
-      if (data.success && data.data) {
-        setSchedule(data.data);
-      }
+      setSchedule(data.success && data.data ? data.data : []);
     } catch (error) {
       console.error('Error fetching schedule:', error);
+      setSchedule([]);
     }
   };
 
@@ -126,7 +125,7 @@ export default function TeacherCalendar() {
                       id="schedule-date"
                       className="w-64 justify-between font-normal border-red-200 hover:bg-red-50"
                     >
-                      {new Date(selectedDate).toLocaleDateString('en-US', {
+                      {new Date(`${selectedDate}T00:00`).toLocaleDateString('en-US', {
                         weekday: 'short',
                         month: 'long',
                         day: 'numeric',
@@ -142,7 +141,7 @@ export default function TeacherCalendar() {
                     <CalendarComponent
                       mode="single"
                       selected={
-                        selectedDate ? new Date(selectedDate) : new Date()
+                        selectedDate ? new Date(`${selectedDate}T00:00`) : new Date()
                       }
                       captionLayout="dropdown"
                       onSelect={(date) => {

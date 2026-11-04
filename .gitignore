@@ -38,3 +38,4 @@ next-env.d.ts
 
 # generated SQL containing real user data
 *.local.sql
+.superpowers/

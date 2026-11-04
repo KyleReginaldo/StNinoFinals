@@ -108,6 +108,7 @@ export type Database = {
           email_address: string
           enrollment_type: string | null
           first_name: string
+          guardian_address: string | null
           guardian_phone: string | null
           id: number
           intended_grade_level: string
@@ -143,6 +144,7 @@ export type Database = {
           email_address: string
           enrollment_type?: string | null
           first_name: string
+          guardian_address?: string | null
           guardian_phone?: string | null
           id?: number
           intended_grade_level: string
@@ -178,6 +180,7 @@ export type Database = {
           email_address?: string
           enrollment_type?: string | null
           first_name?: string
+          guardian_address?: string | null
           guardian_phone?: string | null
           id?: number
           intended_grade_level?: string
@@ -1071,6 +1074,7 @@ export type Database = {
           grade_level: string | null
           guardian_email: string | null
           guardian_name: string | null
+          guardian_address: string | null
           guardian_phone: string | null
           id: string
           last_name: string
@@ -1113,6 +1117,7 @@ export type Database = {
           grade_level?: string | null
           guardian_email?: string | null
           guardian_name?: string | null
+          guardian_address?: string | null
           guardian_phone?: string | null
           id: string
           last_name: string
@@ -1155,6 +1160,7 @@ export type Database = {
           grade_level?: string | null
           guardian_email?: string | null
           guardian_name?: string | null
+          guardian_address?: string | null
           guardian_phone?: string | null
           id?: string
           last_name?: string

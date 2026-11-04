@@ -1,4 +1,4 @@
-import { parseScheduleTime, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
@@ -123,6 +123,14 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function scheduleTimeError(schedule: string | null | undefined): string | null {
+  for (const slot of parseScheduleSlots(schedule)) {
+    const err = slotTimeError(slot);
+    if (err) return `${DAY_LABELS[slot.day] ?? slot.day}: ${err}`;
+  }
+  return null;
 }
 
 function getSlotsFromSchedule(schedule: string): { day: string; start: number; end: number }[] {
@@ -263,6 +271,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const timeError = scheduleTimeError(schedule);
+    if (timeError) {
+      return NextResponse.json({ success: false, error: timeError }, { status: 400 });
+    }
+
     // Check for room/time conflict
     if (room && schedule) {
       const conflict = await checkRoomConflict(admin, room, schedule, school_year);
@@ -369,6 +382,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check for room/time conflict (exclude the class being edited)
+    const timeError = scheduleTimeError(schedule);
+    if (timeError) {
+      return NextResponse.json({ success: false, error: timeError }, { status: 400 });
+    }
+
     if (room && schedule && school_year) {
       const conflict = await checkRoomConflict(admin, room, schedule, school_year, id);
       if (conflict) {

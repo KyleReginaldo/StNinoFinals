@@ -60,6 +60,11 @@ export async function PUT(
     if (middle_name !== undefined) updateData.middle_name = middle_name || null
     if (suffix !== undefined) updateData.suffix = suffix || null
     if (email !== undefined) updateData.email = email
+    for (const [value, label] of [[phone_number, 'Phone number'], [address, 'Address']] as const) {
+      if (value !== undefined && !String(value ?? '').trim()) {
+        return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 })
+      }
+    }
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
     if (address !== undefined) updateData.address = address || null
     if (gender !== undefined) updateData.gender = normalizeGender(gender)

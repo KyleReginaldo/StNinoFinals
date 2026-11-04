@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { birthDateError, nameCase, nameCaseFields } from '../lib/person';
+import { birthDateError, isValidPhPhone, maskStudentName, nameCase, nameCaseFields } from '../lib/person';
 
 describe('nameCase', () => {
   it('capitalizes each word', () => {
@@ -33,5 +33,25 @@ describe('birthDateError', () => {
   it('rejects 2022 onwards in 2026', () => {
     expect(birthDateError('2022-01-01', now)).toBe('Applicants must be born in 2021 or earlier.');
     expect(birthDateError('2026-03-01', now)).not.toBeNull();
+  });
+});
+
+describe('maskStudentName', () => {
+  it('shows first name and last-name initial only', () => {
+    expect(maskStudentName('Juan Miguel', 'dela Cruz')).toBe('Juan Miguel D.');
+    expect(maskStudentName('Ana', '')).toBe('Ana');
+    expect(maskStudentName(null, 'Reyes')).toBe('R.');
+  });
+});
+
+describe('isValidPhPhone', () => {
+  it('accepts +63 and 09 formats', () => {
+    expect(isValidPhPhone('+639171234567')).toBe(true);
+    expect(isValidPhPhone('09171234567')).toBe(true);
+  });
+  it('rejects incomplete or empty numbers', () => {
+    expect(isValidPhPhone('+63917')).toBe(false);
+    expect(isValidPhPhone('')).toBe(false);
+    expect(isValidPhPhone(null)).toBe(false);
   });
 });

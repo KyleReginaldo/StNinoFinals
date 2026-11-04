@@ -44,6 +44,7 @@ const NAV_ITEMS = [
     label: 'Grades & Reports',
     icon: GraduationCap,
     href: '/student/grades',
+    requiresEnrollment: true,
   },
   { id: 'profile', label: 'Profile', icon: User, href: '/student/profile' },
   { id: 'help', label: 'Help & Support', icon: HelpCircle, href: '/student/help' },
@@ -67,6 +68,19 @@ export default function StudentLayout({
   const pathname = usePathname();
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
+
+  // Tabs marked requiresEnrollment are locked until the student is enrolled
+  useEffect(() => {
+    if (!student?.id) return;
+    fetch(`/api/student/enrollment?studentId=${student.id}`)
+      .then((r) => r.json())
+      .then((d) => setIsEnrolled(d?.success ? !!d.data?.enrollment?.isEnrolled : null))
+      .catch(() => setIsEnrolled(null));
+  }, [student?.id]);
+  const lockedPage =
+    isEnrolled === false &&
+    NAV_ITEMS.some((n) => 'requiresEnrollment' in n && n.requiresEnrollment && pathname.startsWith(n.href));
 
   useEffect(() => {
     const storedStudent = localStorage.getItem('student');
@@ -146,6 +160,7 @@ export default function StudentLayout({
               navItems={NAV_ITEMS}
               currentPath={pathname}
               onLogout={handleLogout}
+              isEnrolled={isEnrolled}
             />
           </aside>
 
@@ -166,6 +181,7 @@ export default function StudentLayout({
                       navItems={NAV_ITEMS}
                       currentPath={pathname}
                       onLogout={handleLogout}
+                      isEnrolled={isEnrolled}
                     />
                   </SheetContent>
                 </Sheet>
@@ -179,7 +195,21 @@ export default function StudentLayout({
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            <main className="flex-1 overflow-y-auto">
+              {lockedPage ? (
+                <div className="max-w-lg mx-auto mt-16 p-6 bg-white rounded-xl border border-red-200 text-center space-y-3">
+                  <h2 className="text-lg font-semibold text-red-800">Enroll first</h2>
+                  <p className="text-sm text-gray-600">
+                    This page is available once you are enrolled for the current school year.
+                  </p>
+                  <Button onClick={() => router.push('/student/enrollment')} className="bg-red-800 hover:bg-red-700">
+                    Go to Enrollment
+                  </Button>
+                </div>
+              ) : (
+                children
+              )}
+            </main>
           </div>
         </div>
       </PasswordChangeWrapper>

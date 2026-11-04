@@ -37,6 +37,8 @@ import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
+import { fetchSectionsByGrade } from '@/lib/sections';
+import { lrnEditError, lrnError, lrnRequired } from '@/lib/lrn';
 import { sortGradeLevels } from '@/lib/utils';
 import {
   AlertTriangle,
@@ -49,7 +51,8 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { latestBirthYear } from '@/lib/person';
+import { isValidPhPhone, latestBirthYear } from '@/lib/person';
+import { composeTreceAddress } from '@/lib/address';
 import { useAuth } from '../hooks/useAuth';
 
 interface Student {
@@ -65,6 +68,7 @@ interface Student {
   email: string;
   phone_number?: string;
   guardian_phone?: string;
+  guardian_address?: string;
   guardian_name?: string;
   guardian_email?: string;
   date_of_birth?: string;
@@ -223,6 +227,8 @@ export default function StudentManagementPage() {
     email: '',
     phone_number: '',
     guardian_phone: '',
+    guardian_address: '',
+    guardian_same: true,
     date_of_birth: '',
     gender: '',
     address: '',
@@ -247,6 +253,8 @@ export default function StudentManagementPage() {
     email: '',
     phone_number: '',
     guardian_phone: '',
+    guardian_address: '',
+    guardian_same: true,
     date_of_birth: '',
     gender: '',
     address: '',
@@ -270,19 +278,8 @@ export default function StudentManagementPage() {
 
   // Fetch sections defined in admin settings
   useEffect(() => {
-    const fetchSections = async () => {
-      try {
-        const res = await fetch('/api/admin/settings/sections');
-        const data = await res.json();
-        if (data.success && data.sections) {
-          setSectionsByGrade(data.sections);
-        }
-      } catch (error) {
-        console.error('Error fetching sections:', error);
-      }
-    };
-    fetchSections();
-  }, []);
+    fetchSectionsByGrade().then(setSectionsByGrade).catch(() => {});
+  }, [refreshKey]);
 
   const fetchStudents = async (archived = false) => {
     setLoading(true);
@@ -324,10 +321,13 @@ export default function StudentManagementPage() {
     const missing: string[] = [];
     if (!newStudent.first_name.trim()) missing.push('First Name');
     if (!newStudent.last_name.trim()) missing.push('Last Name');
-    if (!/^\d{12}$/.test(newStudent.student_number)) missing.push('LRN (12 digits)');
+    if (lrnError(newStudent.student_number, newStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!newStudent.grade_level) missing.push('Grade Level');
     if (!newStudent.gender) missing.push('Gender');
     if (!newStudent.email.trim()) missing.push('Email');
+    if (!newStudentAddress.barangay || !newStudentAddress.streetDetails.trim()) missing.push('Permanent Address');
+    if (!isValidPhPhone(newStudent.guardian_phone)) missing.push("Guardian's Phone Number");
+    if (!newStudent.guardian_same && !newStudent.guardian_address.trim()) missing.push('Guardian Address');
     if (missing.length) {
       setAddError(`Required: ${missing.join(', ')}`);
       return;
@@ -355,6 +355,7 @@ export default function StudentManagementPage() {
           ...newStudent,
           password: tempPassword,
           address: fullAddress,
+          guardian_address: newStudent.guardian_same ? fullAddress : newStudent.guardian_address.trim(),
           barangay: newStudentAddress.barangay,
           barangay_name: newStudentAddress.barangayName,
           street_details: newStudentAddress.streetDetails,
@@ -378,6 +379,8 @@ export default function StudentManagementPage() {
         email: '',
         phone_number: '',
         guardian_phone: '',
+        guardian_address: '',
+        guardian_same: true,
         date_of_birth: '',
         gender: '',
         address: '',
@@ -407,9 +410,14 @@ export default function StudentManagementPage() {
     const missing: string[] = [];
     if (!editStudent.first_name.trim()) missing.push('First Name');
     if (!editStudent.last_name.trim()) missing.push('Last Name');
-    if (!/^\d{12}$/.test(editStudent.student_number || '')) missing.push('LRN (12 digits)');
+    const savedLrn = students.find((s) => s.id === editStudent.id)?.student_number;
+    if (lrnEditError(editStudent.student_number, savedLrn, editStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!editStudent.grade_level) missing.push('Grade Level');
     if (!editStudent.email.trim()) missing.push('Email');
+    // No barangay picked = keep the saved address (admission-created records have no barangay code)
+    if (!composeTreceAddress(editStudentAddress, editStudent.address)) missing.push('Permanent Address');
+    if (!isValidPhPhone(editStudent.guardian_phone)) missing.push("Guardian's Phone Number");
+    if (!editStudent.guardian_same && !editStudent.guardian_address.trim()) missing.push('Guardian Address');
     if (missing.length) {
       setEditError(`Required: ${missing.join(', ')}`);
       return;
@@ -418,15 +426,8 @@ export default function StudentManagementPage() {
     setEditError('');
 
     try {
-      // Combine address data into a single string
-      const fullAddress = [
-        editStudentAddress.streetDetails,
-        editStudentAddress.barangayName,
-        'Trece Martires City',
-        'Cavite',
-      ]
-        .filter(Boolean)
-        .join(', ');
+      const fullAddress = composeTreceAddress(editStudentAddress, editStudent.address);
+      const pickedBarangay = !!editStudentAddress.barangay;
 
       const response = await fetch(`/api/admin/students/${editStudent.id}`, {
         method: 'PUT',
@@ -434,9 +435,13 @@ export default function StudentManagementPage() {
         body: JSON.stringify({
           ...editStudent,
           address: fullAddress,
-          barangay: editStudentAddress.barangay,
-          barangay_name: editStudentAddress.barangayName,
-          street_details: editStudentAddress.streetDetails,
+          guardian_address: editStudent.guardian_same ? fullAddress : editStudent.guardian_address.trim(),
+          // Only overwrite the structured parts when the admin actually picked a barangay
+          ...(pickedBarangay && {
+            barangay: editStudentAddress.barangay,
+            barangay_name: editStudentAddress.barangayName,
+            street_details: editStudentAddress.streetDetails,
+          }),
         }),
       });
 
@@ -542,6 +547,9 @@ export default function StudentManagementPage() {
       email: student.email,
       phone_number: student.phone_number || '',
       guardian_phone: student.guardian_phone || '',
+      guardian_address: student.guardian_address || '',
+      // Blank (pre-existing records) → unticked, so the admin must confirm or type it
+      guardian_same: !!student.guardian_address && student.guardian_address === student.address,
       date_of_birth: student.date_of_birth || '',
       gender: student.gender || '',
       address: student.address || '',
@@ -679,7 +687,9 @@ export default function StudentManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label required>LRN</Label>
+                      <Label required={lrnRequired(newStudent.grade_level)}>
+                        LRN{!lrnRequired(newStudent.grade_level) && ' (optional for Kinder)'}
+                      </Label>
                       <Input
                         value={newStudent.student_number}
                         placeholder="e.g. 202400000001"
@@ -693,7 +703,7 @@ export default function StudentManagementPage() {
                               .slice(0, 12),
                           })
                         }
-                        required
+                        required={lrnRequired(newStudent.grade_level)}
                       />
                     </div>
                     <div>
@@ -790,7 +800,7 @@ export default function StudentManagementPage() {
                       </div>
                     </div>
                     <div>
-                      <Label>Guardian's Phone Number</Label>
+                      <Label required>Guardian's Phone Number</Label>
                       <div className="flex">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
                           +63
@@ -856,11 +866,35 @@ export default function StudentManagementPage() {
                     </div>
                   </div>
                   <div>
-                    <Label>Permanent Address</Label>
+                    <Label required>Permanent Address</Label>
                     <AddressSelector
                       value={newStudentAddress}
                       onChange={setNewStudentAddress}
+                      required
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label required>Guardian Address</Label>
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={newStudent.guardian_same}
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, guardian_same: e.target.checked })
+                        }
+                        className="rounded border-gray-300"
+                      />
+                      Guardian lives in the same household as the student
+                    </label>
+                    {!newStudent.guardian_same && (
+                      <Input
+                        value={newStudent.guardian_address}
+                        placeholder="House no., street, barangay, city, province"
+                        onChange={(e) =>
+                          setNewStudent({ ...newStudent, guardian_address: e.target.value })
+                        }
+                      />
+                    )}
                   </div>
                   <div>
                     <Label>Mailing Address</Label>
@@ -976,7 +1010,9 @@ export default function StudentManagementPage() {
                 />
               </div>
               <div>
-                <Label required>LRN</Label>
+                <Label required={lrnRequired(editStudent.grade_level)}>
+                  LRN{!lrnRequired(editStudent.grade_level) && ' (optional for Kinder)'}
+                </Label>
                 <Input
                   value={editStudent.student_number}
                   inputMode="numeric"
@@ -1082,7 +1118,7 @@ export default function StudentManagementPage() {
                 </div>
               </div>
               <div>
-                <Label>Guardian's Phone Number</Label>
+                <Label required>Guardian's Phone Number</Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
                     +63
@@ -1147,11 +1183,35 @@ export default function StudentManagementPage() {
               </div>
             </div>
             <div>
-              <Label>Permanent Address</Label>
+              <Label required>Permanent Address</Label>
               <AddressSelector
                 value={editStudentAddress}
                 onChange={setEditStudentAddress}
+                required
               />
+            </div>
+            <div className="space-y-2">
+              <Label required>Guardian Address</Label>
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={editStudent.guardian_same}
+                  onChange={(e) =>
+                    setEditStudent({ ...editStudent, guardian_same: e.target.checked })
+                  }
+                  className="rounded border-gray-300"
+                />
+                Guardian lives in the same household as the student
+              </label>
+              {!editStudent.guardian_same && (
+                <Input
+                  value={editStudent.guardian_address}
+                  placeholder="House no., street, barangay, city, province"
+                  onChange={(e) =>
+                    setEditStudent({ ...editStudent, guardian_address: e.target.value })
+                  }
+                />
+              )}
             </div>
             <div>
               <Label>Mailing Address</Label>
@@ -1319,6 +1379,14 @@ export default function StudentManagementPage() {
                   </h3>
                   <p className="text-base">
                     {selectedStudent.guardian_phone || 'N/A'}
+                  </p>
+                </div>
+                <div className="pb-3 border-b">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">
+                    Guardian Address
+                  </h3>
+                  <p className="text-base">
+                    {selectedStudent.guardian_address || 'N/A'}
                   </p>
                 </div>
                 <div className="pb-3 border-b">

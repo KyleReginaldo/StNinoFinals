@@ -1,4 +1,6 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
+import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
+import { lrnError } from '@/lib/lrn';
 import { formatAddress, missingAddressFields, normalizeAddress } from '@/lib/address';
 import { Database } from '@/database.types';
 import { supabase } from '@/lib/supabaseClient';
@@ -69,6 +71,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const gradeLevel = normalizeGradeLevel(body.intended_grade_level);
+    if (!gradeLevel || !GRADE_LEVELS.includes(gradeLevel)) {
+      return NextResponse.json(
+        { success: false, error: 'Please select a valid grade level' },
+        { status: 400 }
+      );
+    }
+
     const dobError = birthDateError(body.date_of_birth);
     if (dobError) {
       return NextResponse.json({ success: false, error: dobError }, { status: 400 });
@@ -77,12 +87,16 @@ export async function POST(request: Request) {
     // Both addresses are required, every part filled in
     const permanent = normalizeAddress(body.permanent_address);
     const current = normalizeAddress(body.current_address);
+    const guardian = normalizeAddress(body.guardian_address);
     const missingPermanent = missingAddressFields(permanent);
     const missingCurrent = missingAddressFields(current);
-    if (missingPermanent.length || missingCurrent.length) {
+    const missingGuardian = missingAddressFields(guardian);
+    if (missingPermanent.length || missingCurrent.length || missingGuardian.length || !String(body.parent_name ?? '').trim()) {
       const parts = [
         missingPermanent.length ? `Permanent Address (${missingPermanent.join(', ')})` : '',
         missingCurrent.length ? `Current Address (${missingCurrent.join(', ')})` : '',
+        missingGuardian.length ? `Guardian Address (${missingGuardian.join(', ')})` : '',
+        String(body.parent_name ?? '').trim() ? '' : 'Guardian Name',
       ].filter(Boolean);
       return NextResponse.json(
         { success: false, error: `Please complete: ${parts.join('; ')}` },
@@ -101,19 +115,23 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!/^\d{12}$/.test(body.lrn || '')) {
+    const lrn = (body.lrn ?? '').trim();
+    const lrnProblem = lrnError(lrn, gradeLevel);
+    if (lrnProblem) {
       return NextResponse.json(
-        { success: false, error: 'Please enter the 12-digit LRN (Learner Reference Number).' },
+        { success: false, error: `${lrnProblem}.` },
         { status: 400 }
       );
     }
 
-    const { data: lrnOwner } = await supabase
-      .from('users')
-      .select('id')
-      .or(`student_number.eq.${body.lrn},lrn.eq.${body.lrn}`)
-      .limit(1)
-      .maybeSingle();
+    const { data: lrnOwner } = lrn
+      ? await supabase
+          .from('users')
+          .select('id')
+          .or(`student_number.eq.${lrn},lrn.eq.${lrn}`)
+          .limit(1)
+          .maybeSingle()
+      : { data: null };
     if (lrnOwner) {
       return NextResponse.json(
         { success: false, error: 'This LRN is already registered. Please contact the school.' },
@@ -181,6 +199,7 @@ export async function POST(request: Request) {
       address: formatAddress(permanent),
       address_type: 'permanent',
       current_address: formatAddress(current),
+      guardian_address: formatAddress(guardian),
       permanent_street: permanent.street,
       permanent_barangay: permanent.barangay,
       permanent_city: permanent.city,
@@ -189,13 +208,13 @@ export async function POST(request: Request) {
       current_barangay: current.barangay,
       current_city: current.city,
       current_province: current.province,
-      lrn: body.lrn || null,
+      lrn: lrn || null,
       parent_name: body.parent_name,
       parent_email: body.parent_email || null,
       email_address: body.email_address,
       phone_number: body.phone_number,
       guardian_phone: body.guardian_phone || body.phone_number,
-      intended_grade_level: body.intended_grade_level,
+      intended_grade_level: gradeLevel,
       previous_school: body.previous_school || null,
       enrollment_type: enrollmentType,
       school_year: body.school_year || null,

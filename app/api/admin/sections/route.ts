@@ -1,10 +1,13 @@
+import { getActivePeriod } from '@/lib/academic-period';
+import { getActiveSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const gradeLevel = searchParams.get('gradeLevel');
-  const schoolYear = searchParams.get('schoolYear');
+  let schoolYear = searchParams.get('schoolYear');
+  if (schoolYear === 'active') schoolYear = (await getActivePeriod())?.schoolYear ?? getActiveSchoolYear();
   const archived = searchParams.get('archived') === 'true';
 
   const supabase = getSupabaseAdmin();

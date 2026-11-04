@@ -43,6 +43,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { latestBirthYear } from '@/lib/person';
+import { GRADE_LEVELS } from '@/lib/grade-levels';
+import { lrnError, lrnRequired } from '@/lib/lrn';
 import { useUser } from './context/user-context';
 
 export default function HomePage() {
@@ -103,6 +105,8 @@ export default function HomePage() {
     parentEmail: '',
     emailAddress: '',
     guardianPhone: '+63',
+    guardianSameHousehold: true,
+    guardianAddress: DEFAULT_ADDRESS,
     intendedGradeLevel: '',
     previousSchool: '',
     enrollmentType: 'new',
@@ -121,15 +125,7 @@ export default function HomePage() {
     admissionForm.enrollmentType === 'transferee' ||
     admissionForm.enrollmentType === 'returnee';
 
-  const GRADE_6_AND_BELOW = [
-    'kindergarten',
-    'grade1',
-    'grade2',
-    'grade3',
-    'grade4',
-    'grade5',
-    'grade6',
-  ];
+  const GRADE_6_AND_BELOW = GRADE_LEVELS.slice(0, 7); // Kinder … Grade 6
   const needsParentEmail = GRADE_6_AND_BELOW.includes(
     admissionForm.intendedGradeLevel
   );
@@ -196,11 +192,15 @@ export default function HomePage() {
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const missing = [
-      ...(/^\d{12}$/.test(admissionForm.lrn) ? [] : ['LRN (12 digits)']),
+      ...(lrnError(admissionForm.lrn, admissionForm.intendedGradeLevel) ? ['LRN (12 digits)'] : []),
       ...missingAddressFields(admissionForm.permanentAddress).map((f) => `Permanent ${f}`),
       ...(admissionForm.currentSameAsPermanent
         ? []
         : missingAddressFields(admissionForm.currentAddress).map((f) => `Current ${f}`)),
+      ...(admissionForm.parentName.trim() ? [] : ['Guardian Name']),
+      ...(admissionForm.guardianSameHousehold
+        ? []
+        : missingAddressFields(admissionForm.guardianAddress).map((f) => `Guardian ${f}`)),
     ];
     if (missing.length) {
       showAlert({ message: `Please complete: ${missing.join(', ')}`, type: 'warning' });
@@ -226,6 +226,12 @@ export default function HomePage() {
             : admissionForm.currentAddress,
           lrn: admissionForm.lrn,
           parent_name: admissionForm.parentName,
+          // "Same household" = where the child currently lives
+          guardian_address: admissionForm.guardianSameHousehold
+            ? admissionForm.currentSameAsPermanent
+              ? admissionForm.permanentAddress
+              : admissionForm.currentAddress
+            : admissionForm.guardianAddress,
           parent_email: admissionForm.parentEmail || null,
           email_address: admissionForm.emailAddress,
           phone_number: admissionForm.guardianPhone,
@@ -258,6 +264,8 @@ export default function HomePage() {
           parentEmail: '',
           emailAddress: '',
           guardianPhone: '+63',
+          guardianSameHousehold: true,
+          guardianAddress: DEFAULT_ADDRESS,
           intendedGradeLevel: '',
           previousSchool: '',
           enrollmentType: 'new',
@@ -915,204 +923,6 @@ export default function HomePage() {
                       onSubmit={handleAdmissionSubmit}
                       className="space-y-5"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_110px] gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="firstName"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            First Name
-                          </Label>
-                          <Input
-                            id="firstName"
-                            value={admissionForm.firstName}
-                            placeholder="First name"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                firstName: e.target.value,
-                              })
-                            }
-                            required
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="middleName"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Middle Initial
-                          </Label>
-                          <Input
-                            id="middleName"
-                            value={admissionForm.middleName}
-                            maxLength={3}
-                            placeholder="e.g., D"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                middleName: e.target.value,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="lastName"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Last Name
-                          </Label>
-                          <Input
-                            id="lastName"
-                            value={admissionForm.lastName}
-                            placeholder="Last name"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                lastName: e.target.value,
-                              })
-                            }
-                            required
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-sm font-medium text-gray-700">
-                            Suffix
-                          </Label>
-                          <Select
-                            value={admissionForm.suffix || 'none'}
-                            onValueChange={(v) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                suffix: v === 'none' ? '' : v,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                          >
-                            <SelectTrigger className="h-11 bg-white border-gray-200">
-                              <SelectValue placeholder="None" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">None</SelectItem>
-                              {ADMISSION_SUFFIX_OPTIONS.map((s) => (
-                                <SelectItem key={s} value={s}>
-                                  {s}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="dateOfBirth"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Date of Birth
-                          </Label>
-                          <Input
-                            id="dateOfBirth"
-                            type="date"
-                            value={admissionForm.dateOfBirth}
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                dateOfBirth: e.target.value,
-                              })
-                            }
-                            required
-                            max={`${latestBirthYear()}-12-31`}
-                            title={`Applicants must be born in ${latestBirthYear()} or earlier`}
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="lrn"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            LRN
-                          </Label>
-                          <Input
-                            id="lrn"
-                            value={admissionForm.lrn}
-                            placeholder="12-digit Learner Reference Number"
-                            maxLength={12}
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                lrn: e.target.value.replace(/\D/g, ''),
-                              })
-                            }
-                            required
-                            minLength={12}
-                            pattern="\d{12}"
-                            title="12-digit LRN"
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                      </div>
-
-                      <fieldset className="space-y-3">
-                        <legend className="text-sm font-semibold text-gray-900">
-                          Permanent Address
-                        </legend>
-                        <AddressFields
-                          id="permanentAddress"
-                          value={admissionForm.permanentAddress}
-                          onChange={(v) =>
-                            setAdmissionForm({ ...admissionForm, permanentAddress: v })
-                          }
-                          disabled={isSubmittingAdmission}
-                        />
-                      </fieldset>
-
-                      <fieldset className="space-y-3">
-                        <legend className="text-sm font-semibold text-gray-900">
-                          Current Address
-                        </legend>
-                        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={admissionForm.currentSameAsPermanent}
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                currentSameAsPermanent: e.target.checked,
-                              })
-                            }
-                            disabled={isSubmittingAdmission}
-                            className="rounded border-gray-300"
-                          />
-                          Same as permanent address
-                        </label>
-                        {!admissionForm.currentSameAsPermanent && (
-                          <AddressFields
-                            id="currentAddress"
-                            value={admissionForm.currentAddress}
-                            onChange={(v) =>
-                              setAdmissionForm({ ...admissionForm, currentAddress: v })
-                            }
-                            disabled={isSubmittingAdmission}
-                          />
-                        )}
-                      </fieldset>
-
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
                           <Label
@@ -1136,12 +946,9 @@ export default function HomePage() {
                               <SelectValue placeholder="Select grade level" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="kindergarten">
-                                Kindergarten
-                              </SelectItem>
-                              {Array.from({ length: 12 }, (_, i) => (
-                                <SelectItem key={i + 1} value={`grade${i + 1}`}>
-                                  Grade {i + 1}
+                              {GRADE_LEVELS.map((g) => (
+                                <SelectItem key={g} value={g}>
+                                  {g}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1234,6 +1041,204 @@ export default function HomePage() {
                           </div>
                         )}
                       </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_110px] gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="lastName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Last Name
+                          </Label>
+                          <Input
+                            id="lastName"
+                            value={admissionForm.lastName}
+                            placeholder="Last name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                lastName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="firstName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            First Name
+                          </Label>
+                          <Input
+                            id="firstName"
+                            value={admissionForm.firstName}
+                            placeholder="First name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                firstName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="middleName"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Middle Initial
+                          </Label>
+                          <Input
+                            id="middleName"
+                            value={admissionForm.middleName}
+                            maxLength={3}
+                            placeholder="e.g., D"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                middleName: e.target.value,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-medium text-gray-700">
+                            Suffix
+                          </Label>
+                          <Select
+                            value={admissionForm.suffix || 'none'}
+                            onValueChange={(v) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                suffix: v === 'none' ? '' : v,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="None" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {ADMISSION_SUFFIX_OPTIONS.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="dateOfBirth"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Date of Birth
+                          </Label>
+                          <Input
+                            id="dateOfBirth"
+                            type="date"
+                            value={admissionForm.dateOfBirth}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                dateOfBirth: e.target.value,
+                              })
+                            }
+                            required
+                            max={`${latestBirthYear()}-12-31`}
+                            title={`Applicants must be born in ${latestBirthYear()} or earlier`}
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="lrn"
+                            className="text-sm font-medium text-gray-700"
+                            required={lrnRequired(admissionForm.intendedGradeLevel)}
+                          >
+                            LRN{!lrnRequired(admissionForm.intendedGradeLevel) && ' (optional for Kinder)'}
+                          </Label>
+                          <Input
+                            id="lrn"
+                            value={admissionForm.lrn}
+                            placeholder="12-digit Learner Reference Number"
+                            maxLength={12}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                lrn: e.target.value.replace(/\D/g, ''),
+                              })
+                            }
+                            required={lrnRequired(admissionForm.intendedGradeLevel)}
+                            minLength={12}
+                            pattern="\d{12}"
+                            title="12-digit LRN"
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                      </div>
+
+                      <fieldset className="space-y-3">
+                        <legend className="text-sm font-semibold text-gray-900">
+                          Permanent Address
+                        </legend>
+                        <AddressFields
+                          id="permanentAddress"
+                          value={admissionForm.permanentAddress}
+                          onChange={(v) =>
+                            setAdmissionForm({ ...admissionForm, permanentAddress: v })
+                          }
+                          disabled={isSubmittingAdmission}
+                        />
+                      </fieldset>
+
+                      <fieldset className="space-y-3">
+                        <legend className="text-sm font-semibold text-gray-900">
+                          Current Address
+                        </legend>
+                        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={admissionForm.currentSameAsPermanent}
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                currentSameAsPermanent: e.target.checked,
+                              })
+                            }
+                            disabled={isSubmittingAdmission}
+                            className="rounded border-gray-300"
+                          />
+                          Same as permanent address
+                        </label>
+                        {!admissionForm.currentSameAsPermanent && (
+                          <AddressFields
+                            id="currentAddress"
+                            value={admissionForm.currentAddress}
+                            onChange={(v) =>
+                              setAdmissionForm({ ...admissionForm, currentAddress: v })
+                            }
+                            disabled={isSubmittingAdmission}
+                          />
+                        )}
+                      </fieldset>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
@@ -1362,6 +1367,37 @@ export default function HomePage() {
                               )}
                           </div>
                         </div>
+
+                        <fieldset className="space-y-3">
+                          <legend className="text-sm font-semibold text-gray-900">
+                            Guardian Address
+                          </legend>
+                          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={admissionForm.guardianSameHousehold}
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  guardianSameHousehold: e.target.checked,
+                                })
+                              }
+                              disabled={isSubmittingAdmission}
+                              className="rounded border-gray-300"
+                            />
+                            I live in the same household as my child
+                          </label>
+                          {!admissionForm.guardianSameHousehold && (
+                            <AddressFields
+                              id="guardianAddress"
+                              value={admissionForm.guardianAddress}
+                              onChange={(v) =>
+                                setAdmissionForm({ ...admissionForm, guardianAddress: v })
+                              }
+                              disabled={isSubmittingAdmission}
+                            />
+                          )}
+                        </fieldset>
                       </div>
 
                       <div className="space-y-1.5">

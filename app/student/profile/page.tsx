@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
+import { normalizeGradeLevel } from '@/lib/grade-levels';
 
 export default function ProfilePage() {
   const { student, setStudent, isLoading } = useStudentAuth();
@@ -208,15 +209,6 @@ export default function ProfilePage() {
 
   if (!student) return null;
 
-  const normalizeGradeLevel = (gl: string | null | undefined): string => {
-    if (!gl) return '';
-    const s = gl.trim();
-    // "grade6" → "Grade 6", "grade11" → "Grade 11"
-    if (/^grade\d+$/i.test(s)) return `Grade ${s.replace(/^grade/i, '')}`;
-    // "kinder" / "kindergarten" → "Kinder"
-    if (/^kinder/i.test(s)) return 'Kinder';
-    return s;
-  };
 
   const gradeSection = isEnrolled
     ? [normalizeGradeLevel(enrolledGradeLevel), enrolledSection]

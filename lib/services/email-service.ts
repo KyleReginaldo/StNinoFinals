@@ -564,14 +564,19 @@ export class EmailService {
 
   // ── Admission Approved ───────────────────────────────────────────────────────
 
+  /** override: the application was previously rejected and the decision was reversed. */
   static async sendAdmissionApproval(
-    data: AdmissionApprovalData
+    data: AdmissionApprovalData,
+    override = false
   ): Promise<void> {
+    const opening = override
+      ? `After reconsideration, we are pleased to inform you that <strong>${data.studentFirstName} ${data.studentLastName}</strong> is now qualified to enroll at Sto. Niño de Praga Academy. We sincerely apologize for any inconvenience the earlier decision may have caused.`
+      : `We are pleased to inform you that the admission application for <strong>${data.studentFirstName} ${data.studentLastName}</strong> has been reviewed and approved by the Admissions Committee of Sto. Niño de Praga Academy.`;
     const html = emailShell(`
-      ${sectionTitle('Admission Application — Decision')}
+      ${sectionTitle(override ? 'Admission Application — Updated Decision' : 'Admission Application — Decision')}
       ${statusBadge('Application Approved', 'success')}
       ${salutation(data.parentName)}
-      ${para(`We are pleased to inform you that the admission application for <strong>${data.studentFirstName} ${data.studentLastName}</strong> has been reviewed and approved by the Admissions Committee of Sto. Niño de Praga Academy.`)}
+      ${para(opening)}
       ${para('A student portal account has been created. Please find the access credentials below:')}
       ${infoBox(
         'Student Portal Access',
@@ -592,11 +597,11 @@ export class EmailService {
       ${closing('The Admissions Office')}
     `);
 
-    const text = `Admission Approved\n\nDear ${data.parentName},\n\nThe admission application for ${data.studentFirstName} ${data.studentLastName} has been approved.\n\nStudent Portal Access:\nEmail: ${data.email}\nTemporary Password: ${data.password}\nGrade Level: ${data.gradeLevel}\n\nPlease change the password after first login.\nLogin: ${data.loginUrl}\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
+    const text = `Admission Approved\n\nDear ${data.parentName},\n\n${override ? `After reconsideration, ${data.studentFirstName} ${data.studentLastName} is now qualified to enroll. We sincerely apologize for any inconvenience the earlier decision may have caused.` : `The admission application for ${data.studentFirstName} ${data.studentLastName} has been approved.`}\n\nStudent Portal Access:\nEmail: ${data.email}\nTemporary Password: ${data.password}\nGrade Level: ${data.gradeLevel}\n\nPlease change the password after first login.\nLogin: ${data.loginUrl}\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
 
     await this.sendEmail({
       to: data.email,
-      subject: 'Sto. Niño de Praga Academy — Admission Application Approved',
+      subject: `Sto. Niño de Praga Academy — Admission Application Approved${override ? ' (Updated Decision)' : ''}`,
       text,
       html,
     });
@@ -604,15 +609,19 @@ export class EmailService {
 
   // ── Admission Rejected ───────────────────────────────────────────────────────
 
+  /** override: the application was previously approved and the decision was reversed. */
   static async sendAdmissionRejection(
-    data: AdmissionRejectionData
+    data: AdmissionRejectionData,
+    override = false
   ): Promise<void> {
     const html = emailShell(`
-      ${sectionTitle('Admission Application — Decision')}
+      ${sectionTitle(override ? 'Admission Application — Updated Decision' : 'Admission Application — Decision')}
       ${statusBadge('Application Not Approved', 'danger')}
       ${salutation(data.parentName)}
       ${para(`Thank you for your interest in enrolling <strong>${data.studentFirstName} ${data.studentLastName}</strong> at Sto. Niño de Praga Academy. We sincerely appreciate the time and effort invested in the application process.`)}
-      ${para('After thorough review by the Admissions Committee, we regret to inform you that the application has not been approved at this time.')}
+      ${para(override
+        ? 'After further review, we regret to inform you that the previously approved application has been reconsidered and is not approved at this time. The student portal account created for this application has been deactivated. We sincerely apologize for any inconvenience this may cause.'
+        : 'After thorough review by the Admissions Committee, we regret to inform you that the application has not been approved at this time.')}
       ${
         data.reason
           ? infoBox(
@@ -626,11 +635,11 @@ export class EmailService {
       ${closing('The Admissions Office')}
     `);
 
-    const text = `Admission Application Update\n\nDear ${data.parentName},\n\nThe admission application for ${data.studentFirstName} ${data.studentLastName} was not approved at this time.\n\n${data.reason ? `Basis for Decision: ${data.reason}\n\n` : ''}Please contact our admissions office if you have questions.\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
+    const text = `Admission Application Update\n\nDear ${data.parentName},\n\n${override ? `After further review, the previously approved application for ${data.studentFirstName} ${data.studentLastName} has been reconsidered and is not approved at this time. The student portal account has been deactivated. We sincerely apologize for any inconvenience.` : `The admission application for ${data.studentFirstName} ${data.studentLastName} was not approved at this time.`}\n\n${data.reason ? `Basis for Decision: ${data.reason}\n\n` : ''}Please contact our admissions office if you have questions.\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
 
     await this.sendEmail({
       to: data.email,
-      subject: 'Sto. Niño de Praga Academy — Admission Application Update',
+      subject: `Sto. Niño de Praga Academy — Admission Application Update${override ? ' (Updated Decision)' : ''}`,
       text,
       html,
     });

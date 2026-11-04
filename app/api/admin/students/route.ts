@@ -1,5 +1,6 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
 import { normalizeGender } from '@/lib/gender'
+import { lrnError } from '@/lib/lrn';
 import { findRfidOwner } from '@/lib/rfid';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -119,6 +120,7 @@ export async function POST(request: Request) {
       email,
       phone_number,
       guardian_phone,
+      guardian_address,
       date_of_birth,
       gender,
       address,
@@ -134,15 +136,17 @@ export async function POST(request: Request) {
     if (
       !first_name ||
       !last_name ||
-      !student_number ||
       !grade_level ||
       !email ||
-      !password
+      !password ||
+      !String(guardian_phone ?? '').trim() ||
+      !String(guardian_address ?? '').trim() ||
+      !String(address ?? '').trim()
     ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields',
+          error: "Missing required fields (name, grade level, email, permanent address, guardian's phone and address)",
         },
         { status: 400 }
       );
@@ -153,12 +157,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: dobError }, { status: 400 });
     }
 
-    // The student number IS the LRN (DepEd 12-digit Learner Reference Number)
-    if (!/^\d{12}$/.test(student_number)) {
-      return NextResponse.json(
-        { success: false, error: 'LRN must be exactly 12 digits.' },
-        { status: 400 }
-      );
+    // The student number IS the LRN (DepEd 12-digit Learner Reference Number).
+    // Optional for Kinder; stored as null when blank.
+    const lrnValue = String(student_number ?? '').trim();
+    const lrnProblem = lrnError(lrnValue, grade_level);
+    if (lrnProblem) {
+      return NextResponse.json({ success: false, error: `${lrnProblem}.` }, { status: 400 });
     }
 
     // Get admin client
@@ -176,12 +180,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: lrnOwner } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .or(`student_number.eq.${student_number},lrn.eq.${student_number}`)
-      .limit(1)
-      .maybeSingle();
+    const { data: lrnOwner } = lrnValue
+      ? await supabaseAdmin
+          .from('users')
+          .select('id')
+          .or(`student_number.eq.${lrnValue},lrn.eq.${lrnValue}`)
+          .limit(1)
+          .maybeSingle()
+      : { data: null };
     if (lrnOwner) {
       return NextResponse.json(
         { success: false, error: 'This LRN is already used by another student.' },
@@ -246,8 +252,9 @@ export async function POST(request: Request) {
       email: email,
       phone_number: phone_number || null,
       guardian_phone: guardian_phone || null,
-      student_number: student_number,
-      lrn: student_number,
+      guardian_address: String(guardian_address).trim(),
+      student_number: lrnValue || null,
+      lrn: lrnValue || null,
       grade_level: grade_level,
       section: section || null,
       date_of_birth: date_of_birth || null,
