@@ -26,7 +26,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
-import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, LATEST_END, parseScheduleSlots, slotTimeError, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
@@ -260,6 +260,13 @@ export default function ClassesManagementPage() {
     if (!formData.class_code || !formData.class_name) {
       showAlert({ message: 'Please fill in all required fields', type: 'error' });
       return;
+    }
+    for (const slot of scheduleSlots) {
+      const err = slotTimeError(slot);
+      if (err) {
+        showAlert({ message: `${DAY_LABELS[slot.day]}: ${err}`, type: 'error' });
+        return;
+      }
     }
     try {
       const schedule = scheduleSlots.length > 0 ? JSON.stringify(scheduleSlots) : null;
@@ -791,6 +798,7 @@ export default function ClassesManagementPage() {
                       <Input
                         type="time"
                         value={slot.start}
+                        max={LATEST_END}
                         onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, start: e.target.value } : s))}
                         className="h-8 w-28 text-sm"
                       />
@@ -798,6 +806,7 @@ export default function ClassesManagementPage() {
                       <Input
                         type="time"
                         value={slot.end}
+                        max={LATEST_END}
                         onChange={e => setScheduleSlots(prev => prev.map(s => s.day === slot.day ? { ...s, end: e.target.value } : s))}
                         className="h-8 w-28 text-sm"
                       />

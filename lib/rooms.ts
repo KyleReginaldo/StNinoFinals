@@ -85,3 +85,17 @@ export function timesOverlap(
 ): boolean {
   return a.start < b.end && b.start < a.end;
 }
+
+/** Latest a class may end (CRF: room availability limited to 5 PM). */
+export const LATEST_END = '17:00';
+
+const toMinutes = (t: string) => {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + (m || 0);
+};
+
+export function slotTimeError(s: { start: string; end: string }): string | null {
+  if (toMinutes(s.end) <= toMinutes(s.start)) return 'End time must be after start time';
+  if (toMinutes(s.end) > toMinutes(LATEST_END)) return 'Classes must end by 5:00 PM';
+  return null;
+}
