@@ -1,5 +1,7 @@
 export interface ScheduleSlot { day: string; start: string; end: string; }
 
+export const DAY_LABELS: Record<string, string> = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', Th: 'Thursday', F: 'Friday' };
+
 /** Parse a schedule value (old string OR JSON array) into per-day slots. */
 export function parseScheduleSlots(schedule: string | null | undefined): ScheduleSlot[] {
   if (!schedule) return [];

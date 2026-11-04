@@ -26,7 +26,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
-import { parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
@@ -39,7 +39,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 const DAY_OPTIONS = ['M', 'T', 'W', 'Th', 'F'];
 
-const DAY_LABELS: Record<string, string> = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', Th: 'Thursday', F: 'Friday' };
 
 interface Class {
   id: string;
