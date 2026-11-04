@@ -926,6 +926,29 @@ export default function HomePage() {
                       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_110px] gap-5">
                         <div className="space-y-1.5">
                           <Label
+                            htmlFor="lastName"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Last Name
+                          </Label>
+                          <Input
+                            id="lastName"
+                            value={admissionForm.lastName}
+                            placeholder="Last name"
+                            onChange={(e) =>
+                              setAdmissionForm({
+                                ...admissionForm,
+                                lastName: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isSubmittingAdmission}
+                            className="h-11 bg-white border-gray-200"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
                             htmlFor="firstName"
                             className="text-sm font-medium text-gray-700"
                             required
@@ -965,29 +988,6 @@ export default function HomePage() {
                                 middleName: e.target.value,
                               })
                             }
-                            disabled={isSubmittingAdmission}
-                            className="h-11 bg-white border-gray-200"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label
-                            htmlFor="lastName"
-                            className="text-sm font-medium text-gray-700"
-                            required
-                          >
-                            Last Name
-                          </Label>
-                          <Input
-                            id="lastName"
-                            value={admissionForm.lastName}
-                            placeholder="Last name"
-                            onChange={(e) =>
-                              setAdmissionForm({
-                                ...admissionForm,
-                                lastName: e.target.value,
-                              })
-                            }
-                            required
                             disabled={isSubmittingAdmission}
                             className="h-11 bg-white border-gray-200"
                           />
