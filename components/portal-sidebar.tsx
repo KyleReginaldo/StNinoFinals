@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, Lock, LogOut } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ComponentType } from 'react';
@@ -15,6 +15,9 @@ export interface PortalNavItem {
   icon: IconType;
   badge?: number;
   exact?: boolean;
+  /** Shown but not clickable; `disabledHint` explains why (tooltip). */
+  disabled?: boolean;
+  disabledHint?: string;
 }
 
 export interface PortalNavGroup {
@@ -56,6 +59,19 @@ function NavLink({
   accentBar: string;
 }) {
   const active = isActive(item, pathname);
+  if (item.disabled) {
+    return (
+      <span
+        aria-disabled="true"
+        title={item.disabledHint}
+        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 cursor-not-allowed select-none"
+      >
+        <item.icon className="w-4 h-4 flex-shrink-0 text-gray-700" />
+        <span className="flex-1 truncate">{item.label}</span>
+        <Lock className="w-3 h-3 text-gray-600" />
+      </span>
+    );
+  }
   return (
     <Link href={item.href}>
       <span

@@ -8,6 +8,7 @@ interface NavItem {
   label: string;
   icon: ComponentType<{ className?: string }>;
   href: string;
+  requiresEnrollment?: boolean;
 }
 
 interface Student {
@@ -24,6 +25,8 @@ interface StudentSidebarContentProps {
   navItems: readonly NavItem[];
   currentPath: string;
   onLogout: () => void;
+  /** null while loading — nothing is locked until we know */
+  isEnrolled?: boolean | null;
 }
 
 export function StudentSidebarContent({
@@ -31,6 +34,7 @@ export function StudentSidebarContent({
   navItems,
   currentPath,
   onLogout,
+  isEnrolled = null,
 }: StudentSidebarContentProps) {
   const studentName =
     student.first_name && student.last_name
@@ -45,6 +49,8 @@ export function StudentSidebarContent({
           href: item.href,
           icon: item.icon,
           exact: item.href === '/student/dashboard',
+          disabled: !!item.requiresEnrollment && isEnrolled === false,
+          disabledHint: 'Available once you are enrolled',
         },
       })),
     },
@@ -53,7 +59,7 @@ export function StudentSidebarContent({
   return (
     <PortalSidebar
       portalLabel="Student Portal"
-      accent="blue"
+      accent="red"
       sections={sections}
       pathname={currentPath}
       userName={studentName}

@@ -239,7 +239,7 @@ export default function GradesPage() {
           head: [['SUBJECT', 'QUARTERLY GRADE', 'ACTION TAKEN']],
           body: tableData,
           theme: 'grid',
-          headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 10 },
+          headStyles: { fillColor: [77, 17, 22], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
           bodyStyles: { fontSize: 9, textColor: [0, 0, 0] },
           columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 40, halign: 'center' }, 2: { cellWidth: 50, halign: 'center' } },
           margin: { left: 10, right: 10 },

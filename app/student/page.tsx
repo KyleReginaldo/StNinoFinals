@@ -1318,8 +1318,8 @@ export default function StudentDashboard() {
         body: tableData,
         theme: 'grid',
         headStyles: {
-          fillColor: [220, 220, 220],
-          textColor: [0, 0, 0],
+          fillColor: [77, 17, 22], // school maroon #4d1116
+          textColor: [255, 255, 255],
           fontStyle: 'bold',
           fontSize: 10,
         },
