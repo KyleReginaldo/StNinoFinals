@@ -95,6 +95,7 @@ const toMinutes = (t: string) => {
 };
 
 export function slotTimeError(s: { start: string; end: string }): string | null {
+  if (!/^\d{1,2}:\d{2}$/.test(s.start ?? '') || !/^\d{1,2}:\d{2}$/.test(s.end ?? '')) return 'Invalid time';
   if (toMinutes(s.end) <= toMinutes(s.start)) return 'End time must be after start time';
   if (toMinutes(s.end) > toMinutes(LATEST_END)) return 'Classes must end by 5:00 PM';
   return null;

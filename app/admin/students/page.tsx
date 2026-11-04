@@ -51,7 +51,8 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { latestBirthYear } from '@/lib/person';
+import { isValidPhPhone, latestBirthYear } from '@/lib/person';
+import { composeTreceAddress } from '@/lib/address';
 import { useAuth } from '../hooks/useAuth';
 
 interface Student {
@@ -325,7 +326,7 @@ export default function StudentManagementPage() {
     if (!newStudent.gender) missing.push('Gender');
     if (!newStudent.email.trim()) missing.push('Email');
     if (!newStudentAddress.barangay || !newStudentAddress.streetDetails.trim()) missing.push('Permanent Address');
-    if (newStudent.guardian_phone.length !== 13) missing.push("Guardian's Phone Number");
+    if (!isValidPhPhone(newStudent.guardian_phone)) missing.push("Guardian's Phone Number");
     if (!newStudent.guardian_same && !newStudent.guardian_address.trim()) missing.push('Guardian Address');
     if (missing.length) {
       setAddError(`Required: ${missing.join(', ')}`);
@@ -412,8 +413,9 @@ export default function StudentManagementPage() {
     if (lrnError(editStudent.student_number, editStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!editStudent.grade_level) missing.push('Grade Level');
     if (!editStudent.email.trim()) missing.push('Email');
-    if (!editStudentAddress.barangay || !editStudentAddress.streetDetails.trim()) missing.push('Permanent Address');
-    if (editStudent.guardian_phone.length !== 13) missing.push("Guardian's Phone Number");
+    // No barangay picked = keep the saved address (admission-created records have no barangay code)
+    if (!composeTreceAddress(editStudentAddress, editStudent.address)) missing.push('Permanent Address');
+    if (!isValidPhPhone(editStudent.guardian_phone)) missing.push("Guardian's Phone Number");
     if (!editStudent.guardian_same && !editStudent.guardian_address.trim()) missing.push('Guardian Address');
     if (missing.length) {
       setEditError(`Required: ${missing.join(', ')}`);
@@ -423,15 +425,8 @@ export default function StudentManagementPage() {
     setEditError('');
 
     try {
-      // Combine address data into a single string
-      const fullAddress = [
-        editStudentAddress.streetDetails,
-        editStudentAddress.barangayName,
-        'Trece Martires City',
-        'Cavite',
-      ]
-        .filter(Boolean)
-        .join(', ');
+      const fullAddress = composeTreceAddress(editStudentAddress, editStudent.address);
+      const pickedBarangay = !!editStudentAddress.barangay;
 
       const response = await fetch(`/api/admin/students/${editStudent.id}`, {
         method: 'PUT',
@@ -440,9 +435,12 @@ export default function StudentManagementPage() {
           ...editStudent,
           address: fullAddress,
           guardian_address: editStudent.guardian_same ? fullAddress : editStudent.guardian_address.trim(),
-          barangay: editStudentAddress.barangay,
-          barangay_name: editStudentAddress.barangayName,
-          street_details: editStudentAddress.streetDetails,
+          // Only overwrite the structured parts when the admin actually picked a barangay
+          ...(pickedBarangay && {
+            barangay: editStudentAddress.barangay,
+            barangay_name: editStudentAddress.barangayName,
+            street_details: editStudentAddress.streetDetails,
+          }),
         }),
       });
 
@@ -549,7 +547,8 @@ export default function StudentManagementPage() {
       phone_number: student.phone_number || '',
       guardian_phone: student.guardian_phone || '',
       guardian_address: student.guardian_address || '',
-      guardian_same: !student.guardian_address || student.guardian_address === student.address,
+      // Blank (pre-existing records) → unticked, so the admin must confirm or type it
+      guardian_same: !!student.guardian_address && student.guardian_address === student.address,
       date_of_birth: student.date_of_birth || '',
       gender: student.gender || '',
       address: student.address || '',

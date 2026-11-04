@@ -20,4 +20,8 @@ describe('slotTimeError', () => {
     expect(slotTimeError({ start: '09:00', end: '09:00' })).toBe('End time must be after start time');
     expect(slotTimeError({ start: '10:00', end: '9:30' })).toBe('End time must be after start time');
   });
+  it('rejects malformed times instead of letting NaN pass', () => {
+    expect(slotTimeError({ start: 'abc', end: '10:00' })).toBe('Invalid time');
+    expect(slotTimeError({ start: '08:00', end: '' })).toBe('Invalid time');
+  });
 });

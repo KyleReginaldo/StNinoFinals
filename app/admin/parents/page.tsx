@@ -2,6 +2,8 @@
 
 import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
+import { composeTreceAddress } from '@/lib/address';
+import { isValidPhPhone } from '@/lib/person';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/data-table/Pagination';
@@ -74,12 +76,8 @@ interface Student {
   grade_level: string;
 }
 
-// Barangay picked → compose the Trece Martires address. Not picked (editing an
-// existing parent) → streetDetails already holds the full saved address.
-const composeAddress = (a: AddressData) =>
-  a.barangayName
-    ? [a.streetDetails.trim(), a.barangayName, 'Trece Martires City', 'Cavite'].filter(Boolean).join(', ')
-    : a.streetDetails.trim();
+// Editing: streetDetails starts as the full saved address, used as-is unless a barangay is picked.
+const composeAddress = (a: AddressData) => composeTreceAddress(a, a.streetDetails);
 
 export default function ParentManagementPage() {
   const { admin, loading: authLoading } = useAuth();
@@ -187,7 +185,7 @@ export default function ParentManagementPage() {
     if (!newParent.first_name.trim()) missing.push('First Name');
     if (!newParent.last_name.trim()) missing.push('Last Name');
     if (!newParent.email.trim()) missing.push('Email');
-    if (newParent.phone_number.length !== 13) missing.push('Phone Number');
+    if (!isValidPhPhone(newParent.phone_number)) missing.push('Phone Number');
     if (!newParent.address.barangay || !newParent.address.streetDetails.trim()) missing.push('Address');
     if (missing.length) {
       setAddError(`Required: ${missing.join(', ')}`);
@@ -244,7 +242,7 @@ export default function ParentManagementPage() {
     if (!editParent.first_name.trim()) missing.push('First Name');
     if (!editParent.last_name.trim()) missing.push('Last Name');
     if (!editParent.email.trim()) missing.push('Email');
-    if (editParent.phone_number.length !== 13) missing.push('Phone Number');
+    if (!isValidPhPhone(editParent.phone_number)) missing.push('Phone Number');
     if (!composeAddress(editParent.address)) missing.push('Address');
     if (missing.length) {
       setEditError(`Required: ${missing.join(', ')}`);
@@ -699,7 +697,14 @@ export default function ParentManagementPage() {
                 <AddressSelector
                   value={editParent.address}
                   onChange={(addr) =>
-                    setEditParent({ ...editParent, address: addr })
+                    setEditParent({
+                      ...editParent,
+                      // First barangay pick replaces the saved full address with street-only entry
+                      address:
+                        addr.barangay && !editParent.address.barangay
+                          ? { ...addr, streetDetails: '' }
+                          : addr,
+                    })
                   }
                 />
               </div>

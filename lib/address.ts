@@ -36,3 +36,16 @@ export function normalizeAddress(raw: unknown): AddressParts {
   const part = (k: keyof AddressParts) => (typeof r[k] === 'string' ? (r[k] as string).trim() : '');
   return { street: part('street'), barangay: part('barangay'), city: part('city'), province: part('province') };
 }
+
+/**
+ * Admin forms use AddressSelector (Trece Martires barangays only). Barangay picked →
+ * compose "street, Barangay, Trece Martires City, Cavite"; nothing picked → keep `saved`
+ * (records from the admission form, or any other city, must not be rewritten).
+ */
+export function composeTreceAddress(
+  a: { barangay: string; barangayName: string; streetDetails: string },
+  saved: string
+): string {
+  if (!a.barangay || !a.barangayName) return saved.trim();
+  return [a.streetDetails.trim(), a.barangayName, 'Trece Martires City', 'Cavite'].filter(Boolean).join(', ');
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAddress, missingAddressFields, normalizeAddress } from '../lib/address';
+import { composeTreceAddress, formatAddress, missingAddressFields, normalizeAddress } from '../lib/address';
 
 describe('address helpers', () => {
   const full = { street: 'Blk 23 Lt 20 Pacific Town', barangay: 'Luciano', city: 'Trece Martires City', province: 'Cavite' };
@@ -28,5 +28,16 @@ describe('normalizeAddress', () => {
       province: '',
     });
     expect(normalizeAddress(undefined)).toEqual({ street: '', barangay: '', city: '', province: '' });
+  });
+});
+
+describe('composeTreceAddress', () => {
+  it('composes when a barangay is picked', () => {
+    expect(composeTreceAddress({ barangay: '1', barangayName: 'San Agustin', streetDetails: ' Blk 1 ' }, 'old'))
+      .toBe('Blk 1, San Agustin, Trece Martires City, Cavite');
+  });
+  it('keeps the saved address when no barangay was picked (e.g. admission-created record)', () => {
+    expect(composeTreceAddress({ barangay: '', barangayName: '', streetDetails: 'Blk 2' }, '12 Rizal St, Brgy. X, Dasmariñas, Cavite'))
+      .toBe('12 Rizal St, Brgy. X, Dasmariñas, Cavite');
   });
 });
