@@ -27,6 +27,7 @@ const WATCHED_TABLES = [
   'admissions',
   'class_subjects',
   'rooms',
+  'sections',
 ];
 
 export function RefreshProvider({ children }: { children: React.ReactNode }) {

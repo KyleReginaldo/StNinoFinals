@@ -37,6 +37,7 @@ import { useRefresh } from '@/lib/refresh-context';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
+import { fetchSectionsByGrade } from '@/lib/sections';
 import { sortGradeLevels } from '@/lib/utils';
 import {
   AlertTriangle,
@@ -270,19 +271,8 @@ export default function StudentManagementPage() {
 
   // Fetch sections defined in admin settings
   useEffect(() => {
-    const fetchSections = async () => {
-      try {
-        const res = await fetch('/api/admin/settings/sections');
-        const data = await res.json();
-        if (data.success && data.sections) {
-          setSectionsByGrade(data.sections);
-        }
-      } catch (error) {
-        console.error('Error fetching sections:', error);
-      }
-    };
-    fetchSections();
-  }, []);
+    fetchSectionsByGrade().then(setSectionsByGrade).catch(() => {});
+  }, [refreshKey]);
 
   const fetchStudents = async (archived = false) => {
     setLoading(true);

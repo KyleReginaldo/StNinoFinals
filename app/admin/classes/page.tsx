@@ -33,6 +33,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Archive, ArchiveRestore, BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
+import { fetchSectionsByGrade } from '@/lib/sections';
 import { sortGradeLevels } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -118,17 +119,8 @@ export default function ClassesManagementPage() {
   const { refreshKey } = useRefresh();
 
   useEffect(() => {
-    const fetchSections = async () => {
-      try {
-        const res = await fetch('/api/admin/settings/sections');
-        const data = await res.json();
-        if (data.success && data.sections) setSectionsByGrade(data.sections);
-      } catch (error) {
-        console.error('Error fetching sections:', error);
-      }
-    };
-    fetchSections();
-  }, []);
+    fetchSectionsByGrade().then(setSectionsByGrade).catch(() => {});
+  }, [refreshKey]);
 
   useEffect(() => {
     fetchClasses();
