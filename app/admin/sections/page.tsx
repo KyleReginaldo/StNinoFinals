@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -15,16 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { GRADE_LEVELS } from '@/lib/grade-levels';
 import { useRefresh } from '@/lib/refresh-context';
 import { SHS_STRANDS } from '@/lib/school-year';
 import { useAlert } from '@/lib/use-alert';
 import { Archive, ArchiveRestore, Loader2, Plus, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const GRADE_LEVELS = [
-  'Kinder',
-  ...Array.from({ length: 12 }, (_, i) => `Grade ${i + 1}`),
-];
 
 // ─── Batch Enroll Modal ───────────────────────────────────────────────────────
 
@@ -280,6 +280,7 @@ function FormalSectionsPanel() {
   const [addStrand, setAddStrand] = useState('');
   const addIsSHS = addGrade === 'Grade 11' || addGrade === 'Grade 12';
   const [adding, setAdding] = useState(false);
+  const [showAddSection, setShowAddSection] = useState(false);
 
   const { showAlert } = useAlert();
   const { refreshKey } = useRefresh();
@@ -402,6 +403,7 @@ function FormalSectionsPanel() {
       if (data.success) {
         setSections((prev) => [...prev, data.section]);
         setAddName('');
+        setShowAddSection(false);
         showAlert({
           message: `Section "${data.section.name}" created.`,
           type: 'success',
@@ -500,66 +502,97 @@ function FormalSectionsPanel() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 space-y-3">
         <SchoolYearTabs value={schoolYear} onChange={setSchoolYear} allowAll={false} />
 
-        {/* Quick add row */}
         {!showArchived && (
-        <div className="flex flex-col sm:flex-row gap-2 border-t border-gray-100 pt-3">
-          <Select value={addGrade} onValueChange={setAddGrade}>
-            <SelectTrigger className="w-full sm:w-40 h-8 text-sm">
-              <SelectValue placeholder="Grade" />
-            </SelectTrigger>
-            <SelectContent>
-              {GRADE_LEVELS.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {g}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {addIsSHS && (
-            <Select value={addStrand} onValueChange={setAddStrand}>
-              <SelectTrigger className="w-full sm:w-40 h-8 text-sm">
-                <SelectValue placeholder="Strand" />
-              </SelectTrigger>
-              <SelectContent>
-                {SHS_STRANDS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <input
-            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            placeholder="Section name"
-            value={addName}
-            onChange={(e) => setAddName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
-          <input
-            type="number"
-            className="w-20 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 bg-white"
-            placeholder="Cap."
-            value={addCapacity}
-            onChange={(e) => setAddCapacity(e.target.value)}
-            min={1}
-          />
-          <Button
-            size="sm"
-            onClick={handleAdd}
-            disabled={adding || !addGrade || !addName.trim() || (addIsSHS && !addStrand)}
-            className="bg-primary hover:bg-primary/90 text-white shrink-0"
-          >
-            {adding ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
+          <div className="flex justify-end border-t border-gray-100 pt-3">
+            <Button
+              size="sm"
+              onClick={() => setShowAddSection(true)}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
               <Plus className="w-3.5 h-3.5 mr-1" />
-            )}
-            Add
-          </Button>
-        </div>
+              Add Section
+            </Button>
+          </div>
         )}
       </div>
+
+      <Dialog open={showAddSection} onOpenChange={setShowAddSection}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Section</DialogTitle>
+            <DialogDescription>New section for school year {schoolYear}.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-2">
+            <div className="space-y-2">
+              <Label required>Grade Level</Label>
+              <Select value={addGrade} onValueChange={setAddGrade}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select grade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GRADE_LEVELS.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {addIsSHS ? (
+              <div className="space-y-2">
+                <Label required>Strand</Label>
+                <Select value={addStrand} onValueChange={setAddStrand}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select strand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SHS_STRANDS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div />
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="sectionName" required>Section Name</Label>
+              <Input
+                id="sectionName"
+                placeholder="e.g. Rizal"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sectionCapacity">Capacity</Label>
+              <Input
+                id="sectionCapacity"
+                type="number"
+                min={1}
+                value={addCapacity}
+                onChange={(e) => setAddCapacity(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowAddSection(false)} disabled={adding}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAdd}
+              disabled={adding || !addGrade || !addName.trim() || (addIsSHS && !addStrand)}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              {adding && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
+              Save Section
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Sections table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
