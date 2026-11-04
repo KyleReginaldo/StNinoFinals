@@ -92,7 +92,24 @@
       "Bash(grep -c 'max={`${latestBirthYear\\(\\)}' app/page.tsx)",
       "Bash(curl -s -X POST http://localhost:3000/api/admissions -H 'Content-Type: application/json' -d '{\"first_name\":\"juan\",\"last_name\":\"cruz\",\"email_address\":\"x@example.com\",\"phone_number\":\"09123456789\",\"date_of_birth\":\"2026-01-01\"}')",
       "Bash(curl -s http://localhost:3000/api/admin/academic-periods)",
-      "Bash(python3 -c \"import json,sys;d=json.load\\(sys.stdin\\);print\\(d['schoolYear']\\);[print\\(p['quarter'],p['startDate'],p['endDate'],p['status'],'grading open' if p['isGradingOpen'] else 'locked'\\) for p in d['data']]\")"
+      "Bash(python3 -c \"import json,sys;d=json.load\\(sys.stdin\\);print\\(d['schoolYear']\\);[print\\(p['quarter'],p['startDate'],p['endDate'],p['status'],'grading open' if p['isGradingOpen'] else 'locked'\\) for p in d['data']]\")",
+      "Bash(python3 -I -c ' *)",
+      "Bash(grep -iE '^\\(xlsx|exceljs\\)$')",
+      "Bash(awk -F: '$1>940 && $1<1400')",
+      "Bash(grep -ohE \"\\(bg|text|border|from|to|ring\\)-\\(green|emerald|red|rose|amber|blue|primary\\)-[0-9]{2,3}\" app/student -r)",
+      "Bash(awk '/Row: \\\\{/{print; next} /guardian|parent_|address|^ {6}[a-z_]+: \\\\{/')",
+      "Bash(grep -nE \"jspdf|jsPDF|autoTable|Color|\\\\[[0-9]+, ?[0-9]+, ?[0-9]+\\\\]|#[0-9a-fA-F]{3,6}\" app/student/enrollment/page.tsx)",
+      "Bash(grep -nE \"jspdf|jsPDF|\\\\.pdf|#[0-9a-fA-F]{6}|\\\\[[0-9]+, ?[0-9]+, ?[0-9]+\\\\]\" app/student/page.tsx app/student/grades/page.tsx)",
+      "Bash(grep -ohE \"\\(bg|text|border\\)-\\(green|red|blue|emerald\\)-[0-9]{2,3}\" app/student/dashboard/page.tsx)",
+      "Bash(.superpowers/sdd/2026-11-04-crf-client-feedback/tsc-check.sh)",
+      "Bash(grep -n \"kindergarten\\\\|grade\\\\${\\\\|'grade'\\\\|gradeLevel\\\\b\\\\|intendedGrade\\\\|needsParentEmail\\\\|isSHS\\\\|grade1\\\\|grade11\\\\|grade12\" app/page.tsx)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(grep -n \"^      [a-z_]*: {$\" database.types.ts)",
+      "Bash(grep -rn \"parent/components\\\\|from '\\\\.\\\\./parent\\\\|\\\\\"/parent\\\\b\\\\|'/parent'\\\\|\\\\`/parent\\\\`\\\\|/parent?\" app components lib hooks)",
+      "Bash(git rm *)",
+      "Bash(echo \"exit $?\")",
+      "Bash(grep -rn \"api/admissions'\\\\|api/admissions\\\\`\\\\|'/api/admin/students'\\\\|api/admin/students/\\\\${\\\\|api/admin/parents\\\\|api/parent/update-profile\\\\|api/parent/link-student\\\\|api/admin/classes'\" app components lib hooks)",
+      "Bash(grep -rn \"admin/students/\\\\${\" app)"
     ]
   }
 }
