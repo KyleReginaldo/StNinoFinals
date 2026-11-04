@@ -74,16 +74,17 @@ export async function PUT(
 
     // The student number IS the LRN; check format and uniqueness if it's being changed
     // Optional for Kinder; blank is stored as null
-    const lrnValue = student_number === undefined ? undefined : String(student_number ?? '').trim()
+    let lrnValue = student_number === undefined ? undefined : String(student_number ?? '').trim()
     if (lrnValue !== undefined) {
-      let grade = grade_level
-      if (grade === undefined) {
-        const { data: current } = await supabaseAdmin.from('users').select('grade_level').eq('id', id).maybeSingle()
-        grade = current?.grade_level
-      }
-      const lrnProblem = lrnError(lrnValue, grade)
-      if (lrnProblem) {
-        return NextResponse.json({ success: false, error: `${lrnProblem}.` }, { status: 400 })
+      const { data: current } = await supabaseAdmin.from('users').select('grade_level, student_number').eq('id', id).maybeSingle()
+      // Unchanged LRN (incl. old short numbers) is left alone so legacy records stay editable
+      if (lrnValue === (current?.student_number ?? '').trim()) {
+        lrnValue = undefined
+      } else {
+        const lrnProblem = lrnError(lrnValue, grade_level ?? current?.grade_level)
+        if (lrnProblem) {
+          return NextResponse.json({ success: false, error: `${lrnProblem}.` }, { status: 400 })
+        }
       }
     }
 

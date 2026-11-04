@@ -770,18 +770,15 @@ export default function ParentDashboardPage() {
             </span>
             <div className="ml-auto flex items-center gap-2">
               <RefreshButton />
-              <Dialog open={showAddDialog} onOpenChange={(o) => (o ? setShowAddDialog(true) : closeAddDialog())}>
-                <DialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-white"
-                  >
-                    <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-                    Add Student
-                  </Button>
-                </DialogTrigger>
-                {addChildDialogContent}
-              </Dialog>
+              {/* Opens the single dialog rendered in the desktop bar (it portals, so it shows on mobile too) */}
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => setShowAddDialog(true)}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                Add Student
+              </Button>
             </div>
           </div>
 

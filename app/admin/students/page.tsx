@@ -38,7 +38,7 @@ import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
 import { fetchSectionsByGrade } from '@/lib/sections';
-import { lrnError, lrnRequired } from '@/lib/lrn';
+import { lrnEditError, lrnError, lrnRequired } from '@/lib/lrn';
 import { sortGradeLevels } from '@/lib/utils';
 import {
   AlertTriangle,
@@ -410,7 +410,8 @@ export default function StudentManagementPage() {
     const missing: string[] = [];
     if (!editStudent.first_name.trim()) missing.push('First Name');
     if (!editStudent.last_name.trim()) missing.push('Last Name');
-    if (lrnError(editStudent.student_number, editStudent.grade_level)) missing.push('LRN (12 digits)');
+    const savedLrn = students.find((s) => s.id === editStudent.id)?.student_number;
+    if (lrnEditError(editStudent.student_number, savedLrn, editStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!editStudent.grade_level) missing.push('Grade Level');
     if (!editStudent.email.trim()) missing.push('Email');
     // No barangay picked = keep the saved address (admission-created records have no barangay code)

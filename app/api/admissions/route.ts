@@ -119,7 +119,7 @@ export async function POST(request: Request) {
     const lrnProblem = lrnError(lrn, gradeLevel);
     if (lrnProblem) {
       return NextResponse.json(
-        { success: false, error: `${lrnProblem} (12-digit Learner Reference Number).` },
+        { success: false, error: `${lrnProblem}.` },
         { status: 400 }
       );
     }

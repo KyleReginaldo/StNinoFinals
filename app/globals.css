@@ -101,7 +101,7 @@ body[data-scroll-locked] {
   }
   /* Striped tables everywhere. Base layer, so a row's own bg/hover utility still wins. */
   tbody tr:nth-child(even) {
-    background-color: hsl(var(--muted) / 0.6);
+    background-color: hsl(0 0% 96%);
   }
   h1 {
     @apply text-xl font-semibold;
