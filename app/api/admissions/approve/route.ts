@@ -100,7 +100,7 @@ export async function POST(request: Request) {
           studentLastName: admission.last_name,
           email: admission.email_address,
           reason: rejectionReason,
-        });
+        }, wasApproved);
       } catch (emailError) {
         console.error('Rejection email error:', emailError);
       }
@@ -252,7 +252,7 @@ export async function POST(request: Request) {
           password: tempPassword,
           gradeLevel: normalizeGradeLevel(admission.intended_grade_level) ?? '',
           loginUrl: `${request.headers.get('origin')}/login?email=${encodeURIComponent(admission.email_address)}&password=${encodeURIComponent(tempPassword)}`,
-        });
+        }, wasRejected);
       } catch (emailError) {
         console.error('Email error:', emailError);
       }
