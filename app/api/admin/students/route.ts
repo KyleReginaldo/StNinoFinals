@@ -120,6 +120,7 @@ export async function POST(request: Request) {
       email,
       phone_number,
       guardian_phone,
+      guardian_address,
       date_of_birth,
       gender,
       address,
@@ -137,12 +138,15 @@ export async function POST(request: Request) {
       !last_name ||
       !grade_level ||
       !email ||
-      !password
+      !password ||
+      !String(guardian_phone ?? '').trim() ||
+      !String(guardian_address ?? '').trim() ||
+      !String(address ?? '').trim()
     ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields',
+          error: "Missing required fields (name, grade level, email, permanent address, guardian's phone and address)",
         },
         { status: 400 }
       );
@@ -248,6 +252,7 @@ export async function POST(request: Request) {
       email: email,
       phone_number: phone_number || null,
       guardian_phone: guardian_phone || null,
+      guardian_address: String(guardian_address).trim(),
       student_number: lrnValue || null,
       lrn: lrnValue || null,
       grade_level: grade_level,

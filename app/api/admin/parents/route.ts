@@ -81,9 +81,9 @@ export async function POST(request: Request) {
       password,
     } = body;
 
-    if (!first_name || !last_name || !email) {
+    if (!first_name || !last_name || !email || !String(phone_number ?? '').trim() || !String(address ?? '').trim()) {
       return NextResponse.json(
-        { success: false, error: 'First name, last name, and email are required' },
+        { success: false, error: 'First name, last name, email, phone number and address are required' },
         { status: 400 }
       );
     }

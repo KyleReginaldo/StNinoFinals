@@ -87,12 +87,16 @@ export async function POST(request: Request) {
     // Both addresses are required, every part filled in
     const permanent = normalizeAddress(body.permanent_address);
     const current = normalizeAddress(body.current_address);
+    const guardian = normalizeAddress(body.guardian_address);
     const missingPermanent = missingAddressFields(permanent);
     const missingCurrent = missingAddressFields(current);
-    if (missingPermanent.length || missingCurrent.length) {
+    const missingGuardian = missingAddressFields(guardian);
+    if (missingPermanent.length || missingCurrent.length || missingGuardian.length || !String(body.parent_name ?? '').trim()) {
       const parts = [
         missingPermanent.length ? `Permanent Address (${missingPermanent.join(', ')})` : '',
         missingCurrent.length ? `Current Address (${missingCurrent.join(', ')})` : '',
+        missingGuardian.length ? `Guardian Address (${missingGuardian.join(', ')})` : '',
+        String(body.parent_name ?? '').trim() ? '' : 'Guardian Name',
       ].filter(Boolean);
       return NextResponse.json(
         { success: false, error: `Please complete: ${parts.join('; ')}` },
@@ -195,6 +199,7 @@ export async function POST(request: Request) {
       address: formatAddress(permanent),
       address_type: 'permanent',
       current_address: formatAddress(current),
+      guardian_address: formatAddress(guardian),
       permanent_street: permanent.street,
       permanent_barangay: permanent.barangay,
       permanent_city: permanent.city,

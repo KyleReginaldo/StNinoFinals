@@ -1685,8 +1685,8 @@ function ProfileTab({
   };
 
   const handleSave = async () => {
-    if (!form.first_name.trim() || !form.last_name.trim()) {
-      setError('First name and last name are required.');
+    if (!form.first_name.trim() || !form.last_name.trim() || !form.phone_number.trim() || !form.address.trim()) {
+      setError('Name, phone number and address are required.');
       return;
     }
     setSaving(true);
@@ -1828,7 +1828,7 @@ function ProfileTab({
               />
             </div>
             <div>
-              <Label>Phone Number</Label>
+              <Label required>Phone Number</Label>
               <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
                   +63
@@ -1849,7 +1849,7 @@ function ProfileTab({
               </div>
             </div>
             <div>
-              <Label>Address</Label>
+              <Label required>Address</Label>
               <Input
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}

@@ -54,6 +54,7 @@ export async function PUT(
       email,
       phone_number,
       guardian_phone,
+      guardian_address,
       date_of_birth,
       gender,
       address,
@@ -103,6 +104,13 @@ export async function PUT(
       }
     }
 
+    // Guardian contact is required; partial updates (e.g. inline gender edit) may omit it
+    for (const [value, label] of [[guardian_phone, "Guardian's phone number"], [guardian_address, 'Guardian address']] as const) {
+      if (value !== undefined && !String(value ?? '').trim()) {
+        return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 })
+      }
+    }
+
     // Check RFID uniqueness if it's being changed
     if (rfid) {
       const owner = await findRfidOwner(supabaseAdmin, rfid, id)
@@ -129,6 +137,7 @@ export async function PUT(
     if (email !== undefined) updateData.email = email
     if (phone_number !== undefined) updateData.phone_number = phone_number || null
     if (guardian_phone !== undefined) updateData.guardian_phone = guardian_phone || null
+    if (guardian_address !== undefined) updateData.guardian_address = String(guardian_address).trim()
     if (date_of_birth !== undefined) updateData.date_of_birth = date_of_birth || null
     if (gender !== undefined) updateData.gender = normalizeGender(gender)
     if (address !== undefined) updateData.address = address || null

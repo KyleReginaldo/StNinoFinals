@@ -211,6 +211,7 @@ export async function POST(request: Request) {
                 address: admission.address_type !== 'current' ? admission.address || null : null,
                 current_address: admission.address_type === 'current' ? admission.address || null : null,
               }),
+          guardian_address: admission.guardian_address || null,
           role: 'student',
           grade_level: normalizeGradeLevel(admission.intended_grade_level),
           created_at: new Date().toISOString(),

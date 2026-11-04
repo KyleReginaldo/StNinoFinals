@@ -74,6 +74,13 @@ interface Student {
   grade_level: string;
 }
 
+// Barangay picked → compose the Trece Martires address. Not picked (editing an
+// existing parent) → streetDetails already holds the full saved address.
+const composeAddress = (a: AddressData) =>
+  a.barangayName
+    ? [a.streetDetails.trim(), a.barangayName, 'Trece Martires City', 'Cavite'].filter(Boolean).join(', ')
+    : a.streetDetails.trim();
+
 export default function ParentManagementPage() {
   const { admin, loading: authLoading } = useAuth();
   const { refreshKey } = useRefresh();
@@ -180,6 +187,8 @@ export default function ParentManagementPage() {
     if (!newParent.first_name.trim()) missing.push('First Name');
     if (!newParent.last_name.trim()) missing.push('Last Name');
     if (!newParent.email.trim()) missing.push('Email');
+    if (newParent.phone_number.length !== 13) missing.push('Phone Number');
+    if (!newParent.address.barangay || !newParent.address.streetDetails.trim()) missing.push('Address');
     if (missing.length) {
       setAddError(`Required: ${missing.join(', ')}`);
       return;
@@ -190,7 +199,7 @@ export default function ParentManagementPage() {
     try {
       const tempPassword = `SN${Math.random().toString(36).slice(-6)}`;
 
-      const addressString = `${newParent.address.streetDetails}${newParent.address.barangayName ? ', ' + newParent.address.barangayName : ''}, Trece Martires City, Cavite`;
+      const addressString = composeAddress(newParent.address);
 
       const response = await fetch('/api/admin/parents', {
         method: 'POST',
@@ -235,6 +244,8 @@ export default function ParentManagementPage() {
     if (!editParent.first_name.trim()) missing.push('First Name');
     if (!editParent.last_name.trim()) missing.push('Last Name');
     if (!editParent.email.trim()) missing.push('Email');
+    if (editParent.phone_number.length !== 13) missing.push('Phone Number');
+    if (!composeAddress(editParent.address)) missing.push('Address');
     if (missing.length) {
       setEditError(`Required: ${missing.join(', ')}`);
       return;
@@ -243,7 +254,7 @@ export default function ParentManagementPage() {
     setEditError('');
 
     try {
-      const addressString = `${editParent.address.streetDetails}${editParent.address.barangayName ? ', ' + editParent.address.barangayName : ''}, Trece Martires City, Cavite`;
+      const addressString = composeAddress(editParent.address);
 
       const response = await fetch(`/api/admin/parents/${editParent.id}`, {
         method: 'PUT',
@@ -550,7 +561,7 @@ export default function ParentManagementPage() {
                       </div>
                     </div>
                     <div className="col-span-2">
-                      <Label>Address</Label>
+                      <Label required>Address</Label>
                       <AddressSelector
                         value={newParent.address}
                         onChange={(addr) =>
@@ -660,7 +671,7 @@ export default function ParentManagementPage() {
                 />
               </div>
               <div>
-                <Label>Phone Number</Label>
+                <Label required>Phone Number</Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">
                     +63
@@ -684,7 +695,7 @@ export default function ParentManagementPage() {
                 </div>
               </div>
               <div className="col-span-2">
-                <Label>Address</Label>
+                <Label required>Address</Label>
                 <AddressSelector
                   value={editParent.address}
                   onChange={(addr) =>

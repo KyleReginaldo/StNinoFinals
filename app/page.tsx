@@ -105,6 +105,8 @@ export default function HomePage() {
     parentEmail: '',
     emailAddress: '',
     guardianPhone: '+63',
+    guardianSameHousehold: true,
+    guardianAddress: DEFAULT_ADDRESS,
     intendedGradeLevel: '',
     previousSchool: '',
     enrollmentType: 'new',
@@ -195,6 +197,10 @@ export default function HomePage() {
       ...(admissionForm.currentSameAsPermanent
         ? []
         : missingAddressFields(admissionForm.currentAddress).map((f) => `Current ${f}`)),
+      ...(admissionForm.parentName.trim() ? [] : ['Guardian Name']),
+      ...(admissionForm.guardianSameHousehold
+        ? []
+        : missingAddressFields(admissionForm.guardianAddress).map((f) => `Guardian ${f}`)),
     ];
     if (missing.length) {
       showAlert({ message: `Please complete: ${missing.join(', ')}`, type: 'warning' });
@@ -220,6 +226,12 @@ export default function HomePage() {
             : admissionForm.currentAddress,
           lrn: admissionForm.lrn,
           parent_name: admissionForm.parentName,
+          // "Same household" = where the child currently lives
+          guardian_address: admissionForm.guardianSameHousehold
+            ? admissionForm.currentSameAsPermanent
+              ? admissionForm.permanentAddress
+              : admissionForm.currentAddress
+            : admissionForm.guardianAddress,
           parent_email: admissionForm.parentEmail || null,
           email_address: admissionForm.emailAddress,
           phone_number: admissionForm.guardianPhone,
@@ -252,6 +264,8 @@ export default function HomePage() {
           parentEmail: '',
           emailAddress: '',
           guardianPhone: '+63',
+          guardianSameHousehold: true,
+          guardianAddress: DEFAULT_ADDRESS,
           intendedGradeLevel: '',
           previousSchool: '',
           enrollmentType: 'new',
@@ -1353,6 +1367,37 @@ export default function HomePage() {
                               )}
                           </div>
                         </div>
+
+                        <fieldset className="space-y-3">
+                          <legend className="text-sm font-semibold text-gray-900">
+                            Guardian Address
+                          </legend>
+                          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={admissionForm.guardianSameHousehold}
+                              onChange={(e) =>
+                                setAdmissionForm({
+                                  ...admissionForm,
+                                  guardianSameHousehold: e.target.checked,
+                                })
+                              }
+                              disabled={isSubmittingAdmission}
+                              className="rounded border-gray-300"
+                            />
+                            I live in the same household as my child
+                          </label>
+                          {!admissionForm.guardianSameHousehold && (
+                            <AddressFields
+                              id="guardianAddress"
+                              value={admissionForm.guardianAddress}
+                              onChange={(v) =>
+                                setAdmissionForm({ ...admissionForm, guardianAddress: v })
+                              }
+                              disabled={isSubmittingAdmission}
+                            />
+                          )}
+                        </fieldset>
                       </div>
 
                       <div className="space-y-1.5">
