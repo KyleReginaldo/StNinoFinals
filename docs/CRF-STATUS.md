@@ -1,8 +1,8 @@
 # CRF Status — Client Feedback (CRF.xlsx)
 
-Branch: `fix/crf-client-feedback` · Updated: 2026-11-04
+Branch: `fix/crf-client-feedback` (+ `feat/change-log` for #25) · Updated: 2026-11-09
 
-**17 of 21 items done** · 4 waiting on someone (see [Pending](#pending)).
+**All 21 items done.** #22 uses a default that Jez should confirm (see below).
 
 Legend: `[/]` checked by you · `[*]` checked by Claude · `[x]` not okay.
 
@@ -111,14 +111,28 @@ checks below for that, then tick the box.
 
 ---
 
-## Pending
+## Added after the first round
 
-| CRF | Item                                       | Waiting on                                                                                                                                |
-| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| #22 | Require section                            | Jez — where it should be required (enrollment approval already requires it)                                                               |
-| #23 | Export on admin Enrollment tab             | JJ — confirm it's wanted (small job once confirmed)                                                                                       |
-| #24 | Teacher portal tables exportable           | Client — Attendance, Grades, Classes (student list) and Reports already export; which table do they mean?                                 |
-| #25 | Change log (time, date, name, IP, changes) | Needs server-side login checks first. Right now the API can't tell who made a change, so a log could be faked. Planned as a separate job. |
+- [ ] **#22 — Require section** · `5a1b98a`
+  - Section is now required when an admin adds a student (Admin › Students › Add Student). Enrollment approval already required it.
+  - Not required when editing, because 208 existing students have no section yet.
+  - ⚠️ **Confirm with Jez** that this is the place they meant; it's a one-line change to add it elsewhere.
+  - **Check:** Add Student without a section → "Required: Section".
+
+- [ ] **#23 — Export on admin Enrollment tab** · `d0a8d85`
+  - Export button (PDF / Excel) on Admin › Enrollment. Exports what's on screen: the school year tab, status/grade filters and search all apply.
+  - Columns: student, LRN, email, grade, strand, section, school year, type, status, submitted.
+  - **Check:** Admin › Enrollment → Export → Excel / PDF.
+
+- [ ] **#24 — Teacher portal tables exportable** · `2c85b38`
+  - Attendance, Grades, Reports and each class's student list already exported. My Classes is now a table (no more cards) and the class list itself exports too.
+  - **Check:** Teacher › My Classes → Export.
+
+- [ ] **#25 — Change Log** · branch `feat/change-log` (separate PR)
+  - Admin › System › Change Log: date & time, name and role, IP address, action, record, and what changed (old → new). Filters by name, record type and date.
+  - Names come from the verified login, so they can't be faked. Only admins can see the log. Passwords are never stored.
+  - Requires `migrations/create-activity-log-triggers.sql` (already run on the database).
+  - **Check:** make an edit as admin → Change Log shows your name, IP and the changed field. (Verified 2026-11-09 with a real admin edit.)
 
 ## Also fixed (not in CRF)
 
