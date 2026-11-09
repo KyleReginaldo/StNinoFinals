@@ -1,5 +1,6 @@
 import { Database } from '@/database.types';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { auditFetch } from './audit';
 
 /**
  * Supabase Admin Client for Server-Side Operations
@@ -50,7 +51,8 @@ export function getSupabaseAdmin(): SupabaseClient<Database> {
           autoRefreshToken: false,
           persistSession: false,
         },
-        // You can add global config here if needed
+        // Tags every database call with the verified caller (Change Log triggers)
+        global: { fetch: auditFetch },
       }
     );
   }

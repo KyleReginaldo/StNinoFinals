@@ -1,7 +1,8 @@
-import { supabase } from '@/lib/supabaseClient';
+import { createIsolatedClient } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
+  const supabase = createIsolatedClient(); // never sign in on the shared client
   try {
     const { email, password } = await request.json();
     const emailLower = email.toLowerCase().trim();
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
       console.error('Admin profile error:', error);
 
       // Sign out if not an admin
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
 
       return NextResponse.json(
         {

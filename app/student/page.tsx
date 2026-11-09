@@ -984,7 +984,7 @@ export default function StudentDashboard() {
       setStudent(null);
       setDashboardData(null);
       clearStudentSession();
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     }
   };

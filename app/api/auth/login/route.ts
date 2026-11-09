@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabaseClient'
+import { createIsolatedClient } from '@/lib/supabaseClient';
 
 export async function POST(request: Request) {
+  const supabase = createIsolatedClient(); // never sign in on the shared client
   try {
     const { email, password, userType } = await request.json()
 

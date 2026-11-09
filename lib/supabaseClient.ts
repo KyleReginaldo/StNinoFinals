@@ -26,3 +26,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * Use this for all client-side database operations
  */
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+
+/**
+ * Server routes that sign someone in (login, password check) must use their own
+ * throwaway client: signing in on the shared `supabase` instance above would leave the
+ * whole server process logged in as that person (wrong names in the Change Log, and
+ * refresh-token clashes with the browser's session).
+ */
+export const createIsolatedClient = () =>
+  createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })

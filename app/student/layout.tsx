@@ -117,7 +117,7 @@ export default function StudentLayout({
       // Clear state first
       setStudent(null);
       localStorage.removeItem('student');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     }
   };
