@@ -63,6 +63,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       teacher: teacher,
+      // Browser stores this so its API calls carry a verifiable token (Change Log)
+      session: authData.session
+        ? { access_token: authData.session.access_token, refresh_token: authData.session.refresh_token }
+        : null,
     });
   } catch (e: any) {
     console.error('Teacher login error:', e);

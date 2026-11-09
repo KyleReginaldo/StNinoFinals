@@ -74,6 +74,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
+      // Browser stores this so its API calls carry a verifiable token (Change Log)
+      session: authData.session
+        ? { access_token: authData.session.access_token, refresh_token: authData.session.refresh_token }
+        : null,
       student: {
         ...student,
         name: studentName,

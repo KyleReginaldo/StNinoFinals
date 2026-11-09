@@ -3,6 +3,7 @@
 import { AlertProvider } from "@/lib/use-alert";
 import { ConfirmProvider } from "@/lib/use-confirm";
 import { DeletePromptProvider } from "@/lib/use-delete-prompt";
+import { AuthTokenFetch } from "@/components/auth-token-fetch";
 import { UserProvider } from "./context/user-context";
 
 
@@ -11,7 +12,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <UserProvider>
       <AlertProvider>
         <ConfirmProvider>
-          <DeletePromptProvider>{children}</DeletePromptProvider>
+          <DeletePromptProvider>
+            <AuthTokenFetch />
+            {children}
+          </DeletePromptProvider>
         </ConfirmProvider>
       </AlertProvider>
     </UserProvider>
