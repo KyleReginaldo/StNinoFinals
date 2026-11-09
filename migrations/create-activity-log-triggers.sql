@@ -4,12 +4,16 @@
 --
 -- Who: the app's server verifies the user's login token and sends x-actor-id /
 -- x-actor-ip / x-actor-ua headers with its database calls; PostgREST exposes them as
--- request.headers. Direct browser writes fall back to auth.uid().
+-- request.headers. Those headers are trusted ONLY on service-role requests (our
+-- server); anything else (e.g. the public anon key) uses auth.uid() so it can't forge
+-- a name. activity_logs.record_id is uuid, so non-uuid ids are stored as NULL.
 
 CREATE OR REPLACE FUNCTION public.log_activity() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   h      json;
+  trusted boolean;
+  rid    text;
   old_j  jsonb := CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END;
   new_j  jsonb := CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END;
 BEGIN
@@ -20,16 +24,20 @@ BEGIN
 
   BEGIN
     h := nullif(current_setting('request.headers', true), '')::json;
+    trusted := coalesce(nullif(current_setting('request.jwt.claims', true), '')::json ->> 'role', '') = 'service_role';
+    IF NOT trusted THEN h := NULL; END IF;
 
     -- Never store secrets
     SELECT jsonb_object_agg(key, value) INTO old_j FROM jsonb_each(old_j) WHERE key !~* '(password|token|secret)';
     SELECT jsonb_object_agg(key, value) INTO new_j FROM jsonb_each(new_j) WHERE key !~* '(password|token|secret)';
 
+    rid := coalesce(new_j ->> 'id', old_j ->> 'id');
+
     INSERT INTO activity_logs (action, table_name, record_id, old_values, new_values, user_id, ip_address, user_agent, created_at)
     VALUES (
       lower(TG_OP),
       TG_TABLE_NAME,
-      coalesce(new_j ->> 'id', old_j ->> 'id'),
+      CASE WHEN rid ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN rid::uuid END,
       old_j,
       new_j,
       coalesce(nullif(h ->> 'x-actor-id', '')::uuid, auth.uid()),
