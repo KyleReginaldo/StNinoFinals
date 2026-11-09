@@ -6,6 +6,7 @@ import { normalizeSchoolYear } from '@/lib/school-year';
 import { friendlyError } from '@/lib/error-message';
 import { useRefresh } from '@/lib/refresh-context';
 import { Button } from '@/components/ui/button';
+import { ExportDropdown } from '@/components/ui/export-dropdown';
 import { Pagination } from '@/components/ui/data-table/Pagination';
 import { SortHeader } from '@/components/ui/data-table/SortHeader';
 import {
@@ -46,6 +47,7 @@ interface StudentInfo {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  student_number?: string | null;
 }
 
 interface EnrollmentRequest {
@@ -64,6 +66,7 @@ interface EnrollmentRequest {
   created_at: string;
   previous_grades_url: string | null;
   student: StudentInfo | null;
+  assigned_section?: { name: string } | null;
 }
 
 type FlatEnrollment = EnrollmentRequest & { studentName: string };
@@ -346,13 +349,67 @@ export default function AdminEnrollmentPage() {
 
   const availableSections = [...new Set(relevantClasses.map((c) => c.section).filter(Boolean))].sort() as string[];
 
+  // Export what's on screen: current school year tab + status/grade filters + search
+  const EXPORT_COLUMNS = ['Student', 'LRN', 'Email', 'Grade', 'Strand', 'Section', 'School Year', 'Type', 'Status', 'Submitted'];
+  const exportRows = () =>
+    tc.allRows.map((r) => [
+      r.studentName,
+      r.student?.student_number || '',
+      r.student?.email || '',
+      r.grade_level,
+      r.strand || '',
+      r.assigned_section?.name || '',
+      r.school_year,
+      r.enrollment_type ? r.enrollment_type.charAt(0).toUpperCase() + r.enrollment_type.slice(1) : '',
+      r.status.charAt(0).toUpperCase() + r.status.slice(1),
+      formatDate(r.created_at, ''),
+    ]);
+  const exportTitle = `Enrollment Requests${tc.filters['status'] ? ` — ${tc.filters['status']}` : ''}`;
+
+  const handleExportExcel = async () => {
+    const { downloadExcel } = await import('@/lib/export-excel');
+    await downloadExcel(`enrollment-requests-${new Date().toISOString().slice(0, 10)}`, {
+      title: ['STO. NIÑO DE PRAGA ACADEMY OF LA PAZ HOMES II, INC.', exportTitle, `Generated: ${formatDate(new Date())}`],
+      columns: EXPORT_COLUMNS,
+      colWidths: [32, 16, 30, 12, 10, 16, 14, 14, 12, 14],
+      rows: exportRows(),
+      headerColor: 'red',
+    });
+  };
+
+  const handleExportPDF = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('STO. NIÑO DE PRAGA ACADEMY', 148, 15, { align: 'center' });
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('OF LA PAZ HOMES II, INC.', 148, 21, { align: 'center' });
+    doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+    doc.text(exportTitle.toUpperCase(), 148, 30, { align: 'center' });
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${formatDate(new Date())}`, 148, 36, { align: 'center' });
+    autoTable(doc, {
+      startY: 42,
+      head: [EXPORT_COLUMNS],
+      body: exportRows(),
+      theme: 'grid',
+      headStyles: { fillColor: [77, 17, 22], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      bodyStyles: { fontSize: 7.5 },
+      margin: { left: 10, right: 10 },
+    });
+    doc.save(`enrollment-requests-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const hasFilters = !!tc.search || !!tc.filters['status'] || !!tc.filters['grade_level'] || !!tc.filters['school_year'];
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Enrollment Requests</h2>
-        <p className="text-sm text-gray-500 mt-0.5">Review and process student enrollment applications</p>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Enrollment Requests</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Review and process student enrollment applications</p>
+        </div>
+        <ExportDropdown onPDF={handleExportPDF} onExcel={handleExportExcel} disabled={tc.filteredCount === 0} size="sm" />
       </div>
 
       {/* Stats */}
