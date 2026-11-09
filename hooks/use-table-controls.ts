@@ -15,6 +15,7 @@ export interface TableControlsConfig<T> {
 
 export interface TableControls<T> {
   rows: T[];
+  allRows: T[];
   page: number;
   setPage: (p: number) => void;
   pageCount: number;
@@ -103,6 +104,8 @@ export function useTableControls<T extends Record<string, any>>(
 
   return {
     rows,
+    /** Every row after search/filters/sort (not just this page), e.g. for export */
+    allRows: processed,
     page: safePage,
     setPage,
     pageCount,

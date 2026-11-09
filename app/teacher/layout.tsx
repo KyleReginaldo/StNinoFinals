@@ -70,7 +70,7 @@ export default function TeacherLayout({
     if (confirmed) {
       setTeacher(null);
       localStorage.removeItem('teacher');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     }
   };

@@ -2,7 +2,6 @@ import { Database } from '@/database.types';
 import { EmailService } from '@/lib/services/email-service';
 import { normalizeGradeLevel } from '@/lib/grade-levels';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabase } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
 
 type Admission = Database['public']['Tables']['admissions']['Row'];
@@ -11,6 +10,8 @@ type Admission = Database['public']['Tables']['admissions']['Row'];
 export async function POST(request: Request) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
+    // Was the public anon client; the admin client tags writes with the verified admin (Change Log)
+    const supabase = supabaseAdmin;
     const body = await request.json();
     const { admissionId, action } = body; // action: 'approve' or 'reject'
 

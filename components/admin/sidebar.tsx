@@ -13,6 +13,7 @@ import {
   ClipboardList,
   DoorOpen,
   GraduationCap,
+  History,
   Layers,
   LayoutDashboard,
   List,
@@ -46,7 +47,7 @@ export const AdminSidebarContent = () => {
     setLoggingOut(true);
     try {
       localStorage.removeItem('admin');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     } catch {
       setLoggingOut(false);
@@ -143,6 +144,7 @@ export const AdminSidebarContent = () => {
       label: 'System',
       entries: [
         { item: { label: 'Announcements', href: '/admin/announcements', icon: Bell } },
+        { item: { label: 'Change Log', href: '/admin/change-log', icon: History } },
         { item: { label: 'Settings', href: '/admin/settings', icon: Settings } },
       ],
     },

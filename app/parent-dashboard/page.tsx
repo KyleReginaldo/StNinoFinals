@@ -278,7 +278,7 @@ export default function ParentDashboardPage() {
     if (confirmed) {
       localStorage.removeItem('parent');
       localStorage.removeItem('parentChildren');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     }
   };

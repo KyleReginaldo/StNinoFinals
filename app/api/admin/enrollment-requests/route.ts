@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('enrollment_requests')
     .select(
-      `*, student:users!enrollment_requests_student_id_fkey(id, first_name, last_name, email)`
+      `*, student:users!enrollment_requests_student_id_fkey(id, first_name, last_name, email, student_number), assigned_section:sections(name)`
     )
     .order('created_at', { ascending: false });
 

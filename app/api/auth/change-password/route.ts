@@ -1,8 +1,9 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabase } from '@/lib/supabaseClient';
+import { createIsolatedClient } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
+  const supabase = createIsolatedClient(); // never sign in on the shared client
   try {
     const body = await request.json();
     const { userId, currentPassword, newPassword } = body;
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
 
 // GET endpoint to check if user needs to change password
 export async function GET(request: Request) {
+  const supabase = createIsolatedClient(); // never sign in on the shared client
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');

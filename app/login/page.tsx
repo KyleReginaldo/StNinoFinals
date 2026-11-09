@@ -123,6 +123,7 @@ function LoginPageContent() {
           setError(data.error || 'Invalid email or password.');
           return;
         }
+        if (data.session) await supabase.auth.setSession(data.session);
         localStorage.setItem('student', JSON.stringify(data.student));
         router.push(data.firstLogin ? '/student?firstLogin=true' : '/student');
       } else if (role === 'teacher') {
@@ -136,6 +137,7 @@ function LoginPageContent() {
           setError(data.error || 'Invalid email or password.');
           return;
         }
+        if (data.session) await supabase.auth.setSession(data.session);
         localStorage.setItem('teacher', JSON.stringify(data.teacher));
         router.push('/teacher');
       } else if (role === 'parent' || role === 'admin') {
@@ -158,7 +160,7 @@ function LoginPageContent() {
           .single();
 
         if (profileError || !userProfile) {
-          await supabase.auth.signOut();
+          await supabase.auth.signOut({ scope: 'local' }); // this device only
           setError('Account not found. Please contact support.');
           return;
         }

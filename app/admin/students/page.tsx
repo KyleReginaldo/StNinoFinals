@@ -323,6 +323,8 @@ export default function StudentManagementPage() {
     if (!newStudent.last_name.trim()) missing.push('Last Name');
     if (lrnError(newStudent.student_number, newStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!newStudent.grade_level) missing.push('Grade Level');
+    // CRF #22: a student added here is enrolled directly, so they need a section
+    if (!newStudent.section) missing.push('Section');
     if (!newStudent.gender) missing.push('Gender');
     if (!newStudent.email.trim()) missing.push('Email');
     if (!newStudentAddress.barangay || !newStudentAddress.streetDetails.trim()) missing.push('Permanent Address');
@@ -732,7 +734,7 @@ export default function StudentManagementPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label>Section</Label>
+                      <Label required>Section</Label>
                       <Select
                         value={newStudent.section}
                         onValueChange={(value) =>
@@ -754,7 +756,9 @@ export default function StudentManagementPage() {
                             sectionsByGrade[newStudent.grade_level].length ===
                               0) && (
                             <SelectItem value="__none" disabled>
-                              No sections for this grade level
+                              {newStudent.grade_level
+                                ? 'No sections yet. Add one in Sections first.'
+                                : 'Select a grade level first'}
                             </SelectItem>
                           )}
                         </SelectContent>
