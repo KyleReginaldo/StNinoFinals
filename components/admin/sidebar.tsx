@@ -47,7 +47,7 @@ export const AdminSidebarContent = () => {
     setLoggingOut(true);
     try {
       localStorage.removeItem('admin');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }); // this device only
       window.location.href = '/login';
     } catch {
       setLoggingOut(false);

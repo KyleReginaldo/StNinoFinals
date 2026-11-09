@@ -160,7 +160,7 @@ function LoginPageContent() {
           .single();
 
         if (profileError || !userProfile) {
-          await supabase.auth.signOut();
+          await supabase.auth.signOut({ scope: 'local' }); // this device only
           setError('Account not found. Please contact support.');
           return;
         }

@@ -75,10 +75,11 @@ export default function ChangeLogPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => setPage(1), [from, to, table, q]);
+  useEffect(() => setPage(1), [from, to, table, q, pageSize]);
 
   useEffect(() => {
-    const params = new URLSearchParams({ page: String(page) });
+    let stale = false; // a newer filter/page won: ignore this response
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (from) params.set('from', from);
     if (to) params.set('to', to);
     if (table) params.set('table', table);
@@ -88,14 +89,17 @@ export default function ChangeLogPage() {
     fetch(`/api/admin/activity-logs?${params}`)
       .then((r) => r.json())
       .then((d) => {
+        if (stale) return;
         if (!d.success) throw new Error(d.error || 'Could not load the change log.');
         setRows(d.logs);
         setTotal(d.total);
-        setPageSize(d.pageSize);
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [page, from, to, table, q]);
+      .catch((e) => !stale && setError(e.message))
+      .finally(() => !stale && setLoading(false));
+    return () => {
+      stale = true;
+    };
+  }, [page, pageSize, from, to, table, q]);
 
   const filtered = from || to || table || q;
 
@@ -206,7 +210,7 @@ export default function ChangeLogPage() {
           </table>
         </div>
 
-        {total > pageSize && (
+        {total > 10 && (
           <Pagination
             page={page}
             pageCount={Math.ceil(total / pageSize)}
@@ -214,7 +218,7 @@ export default function ChangeLogPage() {
             filteredCount={total}
             pageSize={pageSize}
             onPageChange={setPage}
-            onPageSizeChange={() => {}}
+            onPageSizeChange={setPageSize}
           />
         )}
       </div>

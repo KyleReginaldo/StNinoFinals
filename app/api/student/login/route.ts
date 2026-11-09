@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { createIsolatedClient } from '@/lib/supabaseClient';
 import { NextResponse } from 'next/server';
 
 const buildMockStudent = (email: string) => ({
@@ -10,6 +10,7 @@ const buildMockStudent = (email: string) => ({
 });
 
 export async function POST(request: Request) {
+  const supabase = createIsolatedClient(); // never sign in on the shared client
   try {
     const { email, password } = await request.json();
     const emailLower = email.toLowerCase().trim();
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
       console.error('Student profile error:', profileError);
 
       // Sign out if not a student
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
 
       return NextResponse.json(
         {

@@ -21,20 +21,32 @@ export function actorHeaders(a: Partial<Actor> | null): Record<string, string> {
   return out;
 }
 
+/** Supabase login tokens are JWTs ("eyJ…"); anything else (e.g. a cron secret) is not sent to Auth. */
+export const looksLikeJwt = (t: string) => /^eyJ[\w-]+\.[\w-]+\.[\w-]+$/.test(t);
+
 // Verified token → user id. ponytail: per-instance in-memory cache, 5 min; fine for one school.
 const TOKEN_TTL_MS = 5 * 60 * 1000;
-const tokenCache = new Map<string, { id: string | null; until: number }>();
+const tokenCache = new Map<string, { id: Promise<string | null>; until: number }>();
 let verifier: ReturnType<typeof createClient> | null = null;
 
-async function userIdFromToken(token: string): Promise<string | null> {
+function userIdFromToken(token: string): Promise<string | null> {
   const hit = tokenCache.get(token);
   if (hit && hit.until > Date.now()) return hit.id;
   // Plain client (no audit fetch) so verifying never recurses into getActor()
   verifier ??= createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data } = await verifier.auth.getUser(token);
-  const id = data.user?.id ?? null;
+  // Cache the promise so parallel DB calls in one request verify once
+  const id = verifier.auth
+    .getUser(token)
+    .then(({ data, error }) => {
+      if (error) tokenCache.delete(token); // transient Auth error: don't remember "unknown"
+      return data.user?.id ?? null;
+    })
+    .catch(() => {
+      tokenCache.delete(token);
+      return null;
+    });
   if (tokenCache.size > 500) tokenCache.clear();
   tokenCache.set(token, { id, until: Date.now() + TOKEN_TTL_MS });
   return id;
@@ -51,7 +63,7 @@ export async function getActor(): Promise<Actor | null> {
   }
   const token = h.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
   let id: string | null = null;
-  if (token) {
+  if (token && looksLikeJwt(token)) {
     try {
       id = await userIdFromToken(token);
     } catch {
@@ -67,7 +79,7 @@ export const auditFetch: typeof fetch = async (input, init) => {
   if (!url.includes('/rest/v1/')) return fetch(input, init);
   const extra = actorHeaders(await getActor());
   if (!Object.keys(extra).length) return fetch(input, init);
-  const headers = new Headers(init?.headers);
+  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
   for (const [k, v] of Object.entries(extra)) headers.set(k, v);
   return fetch(input, { ...init, headers });
 };

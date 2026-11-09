@@ -2,7 +2,6 @@ import { getActor } from '@/lib/audit';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
-const PAGE_SIZE = 50;
 
 // GET /api/admin/activity-logs?from=YYYY-MM-DD&to=YYYY-MM-DD&table=users&q=name&page=1
 // Admin only: the log contains IP addresses and before/after values.
@@ -19,6 +18,7 @@ export async function GET(request: NextRequest) {
 
   const p = new URL(request.url).searchParams;
   const page = Math.max(1, parseInt(p.get('page') ?? '1', 10) || 1);
+  const PAGE_SIZE = Math.min(200, Math.max(10, parseInt(p.get('pageSize') ?? '50', 10) || 50));
   let query = db
     .from('activity_logs')
     .select('id, created_at, action, table_name, record_id, ip_address, user_agent, user_id, old_values, new_values', { count: 'exact' })
@@ -34,8 +34,9 @@ export async function GET(request: NextRequest) {
   if (table && /^[a-z_]+$/.test(table)) query = query.eq('table_name', table);
 
   const q = p.get('q')?.trim();
-  if (q) {
-    const term = q.replace(/[%,()]/g, ' ');
+  if (q && q.replace(/[%,()"\\*_\s]/g, '')) {
+    // Characters with meaning in PostgREST filters / LIKE are dropped
+    const term = q.replace(/[%,()"\\*_]/g, ' ').trim();
     const { data: matches } = await db
       .from('users')
       .select('id')
