@@ -99,8 +99,9 @@ body[data-scroll-locked] {
   body {
     @apply bg-background text-foreground;
   }
-  /* Striped tables everywhere. Base layer, so a row's own bg/hover utility still wins. */
-  tbody tr:nth-child(even) {
+  /* Striped data tables. Base layer, so a row's own bg/hover utility still wins.
+     Not the date picker: its month grid is also a <table role="grid">. */
+  table:not([role='grid']) > tbody > tr:nth-child(even) {
     background-color: hsl(0 0% 96%);
   }
   h1 {

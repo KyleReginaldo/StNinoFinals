@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GRADE_LEVELS } from '@/lib/grade-levels';
+import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
 import { useRefresh } from '@/lib/refresh-context';
 import { SHS_STRANDS } from '@/lib/school-year';
 import { useAlert } from '@/lib/use-alert';
@@ -53,11 +53,14 @@ function BatchEnrollModal({
   const [enrolling, setEnrolling] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
+  // Client: only the section's grade level by default; other grades only on purpose
+  const [otherGrades, setOtherGrades] = useState(false);
 
   useEffect(() => {
     if (!open || !section) return;
     setSelected(new Set());
     setSearch('');
+    setOtherGrades(false);
     setLoading(true);
     fetch(`/api/admin/sections/eligible-students?sectionId=${section.id}`)
       .then((r) => r.json())
@@ -68,7 +71,11 @@ function BatchEnrollModal({
       .finally(() => setLoading(false));
   }, [open, section]);
 
+  const sameGrade = (s: EligibleStudent) =>
+    normalizeGradeLevel(s.gradeLevel) === normalizeGradeLevel(section?.grade_level);
+  const otherGradeCount = students.filter((s) => !sameGrade(s)).length;
   const filtered = students.filter((s) => {
+    if (!otherGrades && !sameGrade(s)) return false;
     const q = search.toLowerCase();
     return (
       s.firstName.toLowerCase().includes(q) ||
@@ -165,6 +172,20 @@ function BatchEnrollModal({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        {otherGradeCount > 0 && (
+          <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none -mt-1">
+            <input
+              type="checkbox"
+              checked={otherGrades}
+              onChange={(e) => {
+                setOtherGrades(e.target.checked);
+                setSelected(new Set()); // never enroll someone you can't see
+              }}
+              className="rounded border-gray-300"
+            />
+            Also show students from other grade levels ({otherGradeCount})
+          </label>
+        )}
 
         <div className="border border-gray-200 rounded-xl overflow-hidden">
           {loading ? (
@@ -173,8 +194,8 @@ function BatchEnrollModal({
             </div>
           ) : filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-400">
-              {students.length === 0
-                ? 'No eligible students for this section.'
+              {students.length === 0 || (!otherGrades && students.every((s) => !sameGrade(s)))
+                ? `No ${section?.grade_level ?? ''} students without a section.`
                 : 'No students match your search.'}
             </p>
           ) : (

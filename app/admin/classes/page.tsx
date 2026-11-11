@@ -32,6 +32,7 @@ import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Archive, ArchiveRestore, BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { friendlyError } from '@/lib/error-message';
 import { useRefresh } from '@/lib/refresh-context';
 import { fetchSectionsByGrade } from '@/lib/sections';
 import { sortGradeLevels } from '@/lib/utils';
@@ -286,11 +287,11 @@ export default function ClassesManagementPage() {
         setShowDialog(false);
         fetchClasses();
       } else {
-        showAlert({ message: data.error || 'Operation failed', type: 'error' });
+        showAlert({ message: data.error || 'We could not save this subject. Please try again.', type: 'error' });
       }
     } catch (error) {
       console.error('Error saving subject:', error);
-      showAlert({ message: 'Failed to save subject', type: 'error' });
+      showAlert({ message: friendlyError(error, 'We could not save this subject. Please try again.'), type: 'error' });
     }
   };
 
@@ -394,10 +395,10 @@ export default function ClassesManagementPage() {
         s.grade_level && s.grade_level.trim().toLowerCase() === formData.grade_level.trim().toLowerCase()
       );
     }
-    // When a section is selected, show only students in that section OR with no section
+    // When a section is selected, show only that section's students (not unassigned ones)
     if (formData.section) {
       list = list.filter(s =>
-        !s.section || s.section.trim().toLowerCase() === formData.section.trim().toLowerCase()
+        !!s.section && s.section.trim().toLowerCase() === formData.section.trim().toLowerCase()
       );
     }
     if (studentSearch.trim()) {
@@ -861,7 +862,7 @@ export default function ClassesManagementPage() {
                 {formData.grade_level && (
                   <span className="text-xs font-normal text-gray-500">
                     — showing {formData.grade_level}
-                    {formData.section ? ` · ${formData.section} + unassigned` : ' students'}
+                    {formData.section ? ` · ${formData.section}` : ' students'}
                   </span>
                 )}
               </Label>

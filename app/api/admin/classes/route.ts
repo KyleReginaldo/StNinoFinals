@@ -1,3 +1,4 @@
+import { friendlyError } from '@/lib/error-message';
 import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -314,7 +315,7 @@ export async function POST(request: NextRequest) {
     if (classError) {
       console.error('Error creating class:', classError);
       return NextResponse.json(
-        { success: false, error: 'Failed to create class' },
+        { success: false, error: friendlyError(classError, 'We could not create this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
@@ -426,7 +427,7 @@ export async function PUT(request: NextRequest) {
     if (updateError) {
       console.error('Error updating class:', updateError);
       return NextResponse.json(
-        { success: false, error: 'Failed to update class' },
+        { success: false, error: friendlyError(updateError, 'We could not save changes to this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
@@ -529,7 +530,7 @@ export async function DELETE(request: NextRequest) {
     if (deleteError) {
       console.error('Error deleting class:', deleteError);
       return NextResponse.json(
-        { success: false, error: 'Failed to delete class' },
+        { success: false, error: 'We could not delete this subject. Please refresh the page and try again.' },
         { status: 500 }
       );
     }

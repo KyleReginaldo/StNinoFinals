@@ -144,13 +144,6 @@ export default function TeacherManagementPage() {
     streetDetails: '',
   };
 
-  // Default date of birth for 18 years old
-  const getDefault18YearsOld = () => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - 18);
-    return date.toISOString().split('T')[0];
-  };
-
   const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V'];
 
   const [newTeacher, setNewTeacher] = useState({
@@ -163,7 +156,7 @@ export default function TeacherManagementPage() {
     specialization: '',
     email: '',
     phone_number: '',
-    date_of_birth: getDefault18YearsOld(),
+    date_of_birth: '', // admin picks it; the picker opens around 18 years ago
     date_hired: '',
     address: initialAddress,
     rfid: '',
@@ -262,7 +255,7 @@ export default function TeacherManagementPage() {
         specialization: '',
         email: '',
         phone_number: '',
-        date_of_birth: getDefault18YearsOld(),
+        date_of_birth: '', // admin picks it; the picker opens around 18 years ago
         date_hired: '',
         address: initialAddress,
         rfid: '',
