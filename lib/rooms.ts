@@ -1,3 +1,4 @@
+import { normalizeSchoolYear } from './school-year';
 export interface ScheduleSlot { day: string; start: string; end: string; }
 
 export const DAY_LABELS: Record<string, string> = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', Th: 'Thursday', F: 'Friday' };
@@ -120,4 +121,35 @@ export function timeOptions(after?: string, step = 15): string[] {
 export function formatTime12(t: string): string {
   const [h, m] = t.split(':').map(Number);
   return `${h % 12 || 12}:${pad(m || 0)} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/**
+ * First room or teacher double-booking for these slots, as a message for the admin,
+ * or null. Same school year only; back-to-back slots (9:00 end / 9:00 start) are fine.
+ */
+export function findScheduleClash(
+  mine: { day: string; start: string; end: string }[],
+  others: { id: string; class_name: string; room: string | null; teacher_id: string | null; school_year: string; schedule: string | null }[],
+  opts: { room?: string | null; teacherId?: string | null; schoolYear: string; excludeId?: string }
+): string | null {
+  const sy = normalizeSchoolYear(opts.schoolYear);
+  for (const other of others) {
+    if (other.id === opts.excludeId || normalizeSchoolYear(other.school_year) !== sy) continue;
+    const sameRoom = !!opts.room && other.room === opts.room;
+    const sameTeacher = !!opts.teacherId && other.teacher_id === opts.teacherId;
+    if (!sameRoom && !sameTeacher) continue;
+    for (const theirs of parseScheduleSlots(other.schedule)) {
+      for (const m of mine) {
+        if (m.day !== theirs.day) continue;
+        const overlap =
+          toMinutes(m.start) < toMinutes(theirs.end) && toMinutes(theirs.start) < toMinutes(m.end);
+        if (!overlap) continue;
+        const when = `${DAY_LABELS[theirs.day] ?? theirs.day} ${formatTime12(theirs.start)}–${formatTime12(theirs.end)}`;
+        return sameRoom
+          ? `${opts.room} is already used by "${other.class_name}" on ${when}.`
+          : `This teacher already has "${other.class_name}" on ${when}.`;
+      }
+    }
+  }
+  return null;
 }

@@ -26,7 +26,7 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
-import { DAY_LABELS, formatTime12, parseScheduleSlots, slotTimeError, timeOptions, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, findScheduleClash, formatTime12, parseScheduleSlots, slotTimeError, timeOptions, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
@@ -439,6 +439,18 @@ export default function ClassesManagementPage() {
   });
 
   const hasFilters = !!tc.search || !!tc.filters['grade_level'];
+
+  // Room or teacher already booked at one of these times → can't create/save
+  const scheduleClash = useMemo(
+    () =>
+      findScheduleClash(scheduleSlots, classes, {
+        room: formData.room || null,
+        teacherId: formData.teacher_id || null,
+        schoolYear: formData.school_year || getActiveSchoolYear(),
+        excludeId: editingClass?.id,
+      }),
+    [scheduleSlots, classes, formData.room, formData.teacher_id, formData.school_year, editingClass]
+  );
 
   const conflictedRooms = useMemo(() => {
     if (scheduleSlots.length === 0) return new Set<string>();
@@ -930,9 +942,14 @@ export default function ClassesManagementPage() {
             </div>
           </div>
 
+          {scheduleClash && (
+            <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {scheduleClash} Change the time, room or teacher to continue.
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90 text-white">
+            <Button onClick={handleSubmit} disabled={!!scheduleClash} className="bg-primary hover:bg-primary/90 text-white">
               {editingClass ? 'Update Subject' : 'Create Subject'}
             </Button>
           </div>

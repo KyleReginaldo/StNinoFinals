@@ -1,5 +1,5 @@
 import { friendlyError } from '@/lib/error-message';
-import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, findScheduleClash, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
@@ -188,6 +188,23 @@ async function checkRoomConflict(
   return null;
 }
 
+/** Teacher already teaching at one of these times (same school year)? */
+async function checkTeacherConflict(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  teacherId: string | null | undefined,
+  schedule: string | null | undefined,
+  schoolYear: string,
+  excludeId?: string
+): Promise<string | null> {
+  if (!teacherId || !schedule) return null;
+  const { data } = await admin
+    .from('classes')
+    .select('id, class_name, room, teacher_id, school_year, schedule')
+    .eq('teacher_id', teacherId)
+    .eq('is_active', true);
+  return findScheduleClash(parseScheduleSlots(schedule), (data ?? []) as any, { teacherId, schoolYear, excludeId });
+}
+
 async function checkStudentScheduleConflicts(
   admin: ReturnType<typeof getSupabaseAdmin>,
   studentIds: string[],
@@ -284,6 +301,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: conflict }, { status: 409 });
       }
     }
+
+    const teacherClash = await checkTeacherConflict(admin, teacher_id, schedule, school_year);
+    if (teacherClash) return NextResponse.json({ success: false, error: teacherClash }, { status: 409 });
 
     // Check for duplicate/overlapping schedule on any student being added
     if (schedule && student_ids && student_ids.length > 0) {
@@ -393,6 +413,11 @@ export async function PUT(request: NextRequest) {
       if (conflict) {
         return NextResponse.json({ success: false, error: conflict }, { status: 409 });
       }
+    }
+
+    if (school_year) {
+      const teacherClash = await checkTeacherConflict(admin, teacher_id, schedule, school_year, id);
+      if (teacherClash) return NextResponse.json({ success: false, error: teacherClash }, { status: 409 });
     }
 
     // Check for duplicate/overlapping schedule on any student being (re)added
