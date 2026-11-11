@@ -61,6 +61,12 @@ export async function PUT(
 
     // Build update object with only defined values
     const updateData: any = {}
+    // Required when sent (partial updates such as the inline gender cell may omit them)
+    for (const [value, label] of [[department, 'Department'], [phone_number, 'Phone number'], [date_of_birth, 'Date of birth'], [address, 'Address']] as const) {
+      if (value !== undefined && !String(value ?? '').trim()) {
+        return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 })
+      }
+    }
     if (first_name !== undefined) updateData.first_name = first_name
     if (last_name !== undefined) updateData.last_name = last_name
     if (middle_name !== undefined) updateData.middle_name = middle_name || null

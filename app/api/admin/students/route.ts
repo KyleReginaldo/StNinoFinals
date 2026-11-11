@@ -141,6 +141,7 @@ export async function POST(request: Request) {
       !last_name ||
       !grade_level ||
       !String(section ?? '').trim() ||
+      !date_of_birth ||
       !email ||
       !password ||
       !String(guardian_phone ?? '').trim() ||
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields (name, grade level, section, email, permanent address, guardian's phone and address)",
+          error: "Missing required fields (name, grade level, section, date of birth, email, permanent address, guardian's phone and address)",
         },
         { status: 400 }
       );

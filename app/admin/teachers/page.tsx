@@ -3,6 +3,8 @@
 import { formatDate } from '@/lib/format-date';
 import { GenderCell } from '@/components/admin/gender-cell';
 import { AddressData, AddressSelector } from '@/components/ui/address-selector';
+import { composeTreceAddress } from '@/lib/address';
+import { isValidPhPhone } from '@/lib/person';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import DatePicker from '@/components/ui/date-picker';
@@ -125,6 +127,9 @@ interface Teacher {
   status: string;
 }
 
+// Editing: streetDetails starts as the full saved address, used as-is unless a barangay is picked.
+const composeAddress = (a: AddressData) => composeTreceAddress(a, a.streetDetails);
+
 export default function TeacherManagementPage() {
   const { admin, loading: authLoading } = useAuth();
   const { refreshKey } = useRefresh();
@@ -221,6 +226,10 @@ export default function TeacherManagementPage() {
     if (!newTeacher.first_name.trim()) missing.push('First Name');
     if (!newTeacher.last_name.trim()) missing.push('Last Name');
     if (!newTeacher.email.trim()) missing.push('Email');
+    if (!newTeacher.department.trim()) missing.push('Department');
+    if (!isValidPhPhone(newTeacher.phone_number)) missing.push('Phone Number');
+    if (!newTeacher.date_of_birth) missing.push('Date of Birth');
+    if (!newTeacher.address.barangay || !newTeacher.address.streetDetails.trim()) missing.push('Address');
     if (missing.length) { setAddError(`Required: ${missing.join(', ')}`); return; }
     setAddingTeacher(true);
     setAddError('');
@@ -228,7 +237,7 @@ export default function TeacherManagementPage() {
     try {
       const tempPassword = `SN${Math.random().toString(36).slice(-6)}`;
 
-      const addressString = `${newTeacher.address.streetDetails}${newTeacher.address.barangayName ? ', ' + newTeacher.address.barangayName : ''}, Trece Martires City, Cavite`;
+      const addressString = composeAddress(newTeacher.address);
 
       const response = await fetch('/api/admin/teachers', {
         method: 'POST',
@@ -279,12 +288,16 @@ export default function TeacherManagementPage() {
     if (!editTeacher.first_name.trim()) missing.push('First Name');
     if (!editTeacher.last_name.trim()) missing.push('Last Name');
     if (!editTeacher.email.trim()) missing.push('Email');
+    if (!editTeacher.department?.trim()) missing.push('Department');
+    if (!isValidPhPhone(editTeacher.phone_number)) missing.push('Phone Number');
+    if (!editTeacher.date_of_birth) missing.push('Date of Birth');
+    if (!composeAddress(editTeacher.address)) missing.push('Address');
     if (missing.length) { setEditError(`Required: ${missing.join(', ')}`); return; }
     setUpdatingTeacher(true);
     setEditError('');
 
     try {
-      const addressString = `${editTeacher.address.streetDetails}${editTeacher.address.barangayName ? ', ' + editTeacher.address.barangayName : ''}, Trece Martires City, Cavite`;
+      const addressString = composeAddress(editTeacher.address);
 
       const response = await fetch(`/api/admin/teachers/${editTeacher.id}`, {
         method: 'PUT',
@@ -511,7 +524,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Department</Label>
+                    <Label required>Department</Label>
                     <Select
                       value={newTeacher.department}
                       onValueChange={(value) =>
@@ -563,7 +576,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label>Phone Number</Label>
+                    <Label required>Phone Number</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
                       <Input
@@ -580,7 +593,7 @@ export default function TeacherManagementPage() {
                     </div>
                   </div>
                   <div>
-                    <Label>Date of Birth</Label>
+                    <Label required>Date of Birth</Label>
                     <DatePicker
                       value={newTeacher.date_of_birth}
                       onChange={(v) =>
@@ -605,7 +618,7 @@ export default function TeacherManagementPage() {
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label>Address</Label>
+                    <Label required>Address</Label>
                     <AddressSelector
                       value={newTeacher.address}
                       onChange={(addr) =>
@@ -722,7 +735,7 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Department</Label>
+                  <Label required>Department</Label>
                   <Select
                     value={editTeacher.department}
                     onValueChange={(value) =>
@@ -774,7 +787,7 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div>
-                  <Label>Phone Number</Label>
+                  <Label required>Phone Number</Label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-sm text-muted-foreground select-none">+63</span>
                     <Input
@@ -791,7 +804,7 @@ export default function TeacherManagementPage() {
                   </div>
                 </div>
                 <div>
-                  <Label>Date of Birth</Label>
+                  <Label required>Date of Birth</Label>
                   <DatePicker
                     value={editTeacher.date_of_birth}
                     onChange={(v) =>
@@ -816,11 +829,18 @@ export default function TeacherManagementPage() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label>Address</Label>
+                  <Label required>Address</Label>
                   <AddressSelector
                     value={editTeacher.address}
                     onChange={(addr) =>
-                      setEditTeacher({ ...editTeacher, address: addr })
+                      setEditTeacher({
+                        ...editTeacher,
+                        // First barangay pick replaces the saved full address with street-only entry
+                        address:
+                          addr.barangay && !editTeacher.address.barangay
+                            ? { ...addr, streetDetails: '' }
+                            : addr,
+                      })
                     }
                   />
                 </div>

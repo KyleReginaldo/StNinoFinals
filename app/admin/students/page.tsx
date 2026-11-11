@@ -326,6 +326,7 @@ export default function StudentManagementPage() {
     // CRF #22: a student added here is enrolled directly, so they need a section
     if (!newStudent.section) missing.push('Section');
     if (!newStudent.gender) missing.push('Gender');
+    if (!newStudent.date_of_birth) missing.push('Date of Birth');
     if (!newStudent.email.trim()) missing.push('Email');
     if (!newStudentAddress.barangay || !newStudentAddress.streetDetails.trim()) missing.push('Permanent Address');
     if (!isValidPhPhone(newStudent.guardian_phone)) missing.push("Guardian's Phone Number");
@@ -416,6 +417,8 @@ export default function StudentManagementPage() {
     if (lrnEditError(editStudent.student_number, savedLrn, editStudent.grade_level)) missing.push('LRN (12 digits)');
     if (!editStudent.grade_level) missing.push('Grade Level');
     if (!editStudent.email.trim()) missing.push('Email');
+    if (!editStudent.gender) missing.push('Gender');
+    if (!editStudent.date_of_birth) missing.push('Date of Birth');
     // No barangay picked = keep the saved address (admission-created records have no barangay code)
     if (!composeTreceAddress(editStudentAddress, editStudent.address)) missing.push('Permanent Address');
     if (!isValidPhPhone(editStudent.guardian_phone)) missing.push("Guardian's Phone Number");
@@ -828,7 +831,7 @@ export default function StudentManagementPage() {
                       </div>
                     </div>
                     <div>
-                      <Label>Date of Birth</Label>
+                      <Label required>Date of Birth</Label>
                       <DatePicker
                         value={newStudent.date_of_birth}
                         onChange={(v) =>
@@ -1146,7 +1149,7 @@ export default function StudentManagementPage() {
                 </div>
               </div>
               <div>
-                <Label>Date of Birth</Label>
+                <Label required>Date of Birth</Label>
                 <DatePicker
                   value={editStudent.date_of_birth}
                   onChange={(v) =>
@@ -1157,7 +1160,7 @@ export default function StudentManagementPage() {
                 />
               </div>
               <div>
-                <Label>Gender</Label>
+                <Label required>Gender</Label>
                 <Select
                   value={editStudent.gender || 'unspecified'}
                   onValueChange={(v) =>
