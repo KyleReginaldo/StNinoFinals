@@ -1485,11 +1485,7 @@ export default function HomePage() {
                         >
                           I have read and agree to the{' '}
                           <span className="text-red-700 font-medium">
-                            Terms of Service
-                          </span>{' '}
-                          and{' '}
-                          <span className="text-red-700 font-medium">
-                            Privacy Policy
+                            Terms of Service and Privacy Policy
                           </span>{' '}
                           of Sto. Niño de Praga Academy.
                         </label>
