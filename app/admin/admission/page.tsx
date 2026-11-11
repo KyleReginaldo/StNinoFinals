@@ -43,9 +43,9 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string }> = {
 
 const ENROLLMENT_TYPE_LABELS: Record<string, string> = {
   new: 'New Student',
-  returning: 'Returning Student',
+  returning: 'Continuing Student',
   transferee: 'Transferee',
-  returnee: 'Returnee',
+  returnee: 'Returnee / Balik-Aral',
   repeater: 'Repeater',
 };
 

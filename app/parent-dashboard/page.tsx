@@ -1171,9 +1171,9 @@ export default function ParentDashboardPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="new">New Student</SelectItem>
-                            <SelectItem value="returning">Returning Student</SelectItem>
+                            <SelectItem value="returning">Continuing Student (enrolled here last school year)</SelectItem>
                             <SelectItem value="transferee">Transferee</SelectItem>
-                            <SelectItem value="returnee">Returnee</SelectItem>
+                            <SelectItem value="returnee">Returnee / Balik-Aral (stopped schooling, now coming back)</SelectItem>
                             <SelectItem value="repeater">Repeater</SelectItem>
                           </SelectContent>
                         </Select>

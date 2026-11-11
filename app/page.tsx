@@ -117,9 +117,9 @@ export default function HomePage() {
 
   const ENROLLMENT_TYPE_OPTIONS = [
     { value: 'new', label: 'New Student' },
-    { value: 'returning', label: 'Returning Student' },
+    { value: 'returning', label: 'Continuing Student (enrolled here last school year)' },
     { value: 'transferee', label: 'Transferee' },
-    { value: 'returnee', label: 'Returnee' },
+    { value: 'returnee', label: 'Returnee / Balik-Aral (stopped schooling, now coming back)' },
     { value: 'repeater', label: 'Repeater' },
   ];
   const needsPreviousSchool =
@@ -843,8 +843,12 @@ export default function HomePage() {
                         def: 'A student moving in from another school, currently enrolled in the same grade level they are applying for.',
                       },
                       {
-                        term: 'Returnee',
-                        def: 'A former student of this school who is re-enrolling after an absence.',
+                        term: 'Continuing Student',
+                        def: 'A student who was enrolled at this school last school year and is enrolling again for the next one.',
+                      },
+                      {
+                        term: 'Returnee / Balik-Aral',
+                        def: 'A learner who stopped going to school for a school year or more and is now coming back. We ask for the last school attended.',
                       },
                       {
                         term: 'Repeater',

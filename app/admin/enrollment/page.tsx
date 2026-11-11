@@ -96,9 +96,9 @@ const STATUS_CONFIG = {
 
 const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
   new:        { label: 'New',        className: 'bg-blue-50   text-blue-700   border-blue-200'   },
-  returning:  { label: 'Returning',  className: 'bg-green-50  text-green-700  border-green-200'  },
+  returning:  { label: 'Continuing', className: 'bg-green-50  text-green-700  border-green-200'  },
   transferee: { label: 'Transferee', className: 'bg-amber-50  text-amber-700  border-amber-200'  },
-  returnee:   { label: 'Returnee',   className: 'bg-purple-50 text-purple-700 border-purple-200' },
+  returnee:   { label: 'Returnee (Balik-Aral)', className: 'bg-purple-50 text-purple-700 border-purple-200' },
   repeater:   { label: 'Repeater',   className: 'bg-orange-50 text-orange-700 border-orange-200' },
 };
 
