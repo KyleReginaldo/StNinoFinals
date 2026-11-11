@@ -96,6 +96,7 @@ export default function HomePage() {
     lastName: '',
     middleName: '',
     dateOfBirth: '',
+    gender: '',
     suffix: '',
     permanentAddress: DEFAULT_ADDRESS,
     currentAddress: DEFAULT_ADDRESS,
@@ -192,6 +193,7 @@ export default function HomePage() {
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const missing = [
+      ...(admissionForm.gender ? [] : ['Sex']),
       ...(lrnError(admissionForm.lrn, admissionForm.intendedGradeLevel) ? ['LRN (12 digits)'] : []),
       ...missingAddressFields(admissionForm.permanentAddress).map((f) => `Permanent ${f}`),
       ...(admissionForm.currentSameAsPermanent
@@ -219,6 +221,7 @@ export default function HomePage() {
           last_name: admissionForm.lastName,
           middle_name: admissionForm.middleName || null,
           date_of_birth: admissionForm.dateOfBirth,
+          gender: admissionForm.gender,
           suffix: admissionForm.suffix || null,
           permanent_address: admissionForm.permanentAddress,
           current_address: admissionForm.currentSameAsPermanent
@@ -255,6 +258,7 @@ export default function HomePage() {
           lastName: '',
           middleName: '',
           dateOfBirth: '',
+          gender: '',
           suffix: '',
           permanentAddress: DEFAULT_ADDRESS,
           currentAddress: DEFAULT_ADDRESS,
@@ -1140,7 +1144,7 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         <div className="space-y-1.5">
                           <Label
                             htmlFor="dateOfBirth"
@@ -1165,6 +1169,28 @@ export default function HomePage() {
                             disabled={isSubmittingAdmission}
                             className="h-11 bg-white border-gray-200"
                           />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="gender"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Sex
+                          </Label>
+                          <Select
+                            value={admissionForm.gender}
+                            onValueChange={(v) => setAdmissionForm({ ...admissionForm, gender: v })}
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger id="gender" className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-1.5">
                           <Label

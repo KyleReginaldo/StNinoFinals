@@ -107,6 +107,7 @@ export type Database = {
           date_of_birth: string | null
           email_address: string
           enrollment_type: string | null
+          gender: string | null
           first_name: string
           guardian_address: string | null
           guardian_phone: string | null
@@ -143,6 +144,7 @@ export type Database = {
           date_of_birth?: string | null
           email_address: string
           enrollment_type?: string | null
+          gender?: string | null
           first_name: string
           guardian_address?: string | null
           guardian_phone?: string | null
@@ -179,6 +181,7 @@ export type Database = {
           date_of_birth?: string | null
           email_address?: string
           enrollment_type?: string | null
+          gender?: string | null
           first_name?: string
           guardian_address?: string | null
           guardian_phone?: string | null

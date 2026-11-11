@@ -1,6 +1,7 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
 import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
 import { lrnError } from '@/lib/lrn';
+import { normalizeGender } from '@/lib/gender';
 import { formatAddress, missingAddressFields, normalizeAddress } from '@/lib/address';
 import { Database } from '@/database.types';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -79,6 +80,11 @@ export async function POST(request: Request) {
         { success: false, error: 'Please select a valid grade level' },
         { status: 400 }
       );
+    }
+
+    const gender = normalizeGender(body.gender);
+    if (!gender) {
+      return NextResponse.json({ success: false, error: 'Please select the applicant’s sex.' }, { status: 400 });
     }
 
     const dobError = birthDateError(body.date_of_birth);
@@ -196,6 +202,7 @@ export async function POST(request: Request) {
       last_name: body.last_name,
       middle_name: body.middle_name || null,
       date_of_birth: body.date_of_birth,
+      gender,
       suffix: body.suffix || null,
       // address keeps the composed permanent address for existing readers
       address: formatAddress(permanent),

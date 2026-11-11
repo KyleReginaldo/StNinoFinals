@@ -1,6 +1,7 @@
 import { Database } from '@/database.types';
 import { EmailService } from '@/lib/services/email-service';
 import { normalizeGradeLevel } from '@/lib/grade-levels';
+import { normalizeGender } from '@/lib/gender';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextResponse } from 'next/server';
 
@@ -191,6 +192,7 @@ export async function POST(request: Request) {
           last_name: admission.last_name,
           middle_name: admission.middle_name || null,
           date_of_birth: admission.date_of_birth || null,
+          gender: normalizeGender(admission.gender),
           guardian_phone: admission.guardian_phone || admission.phone_number,
           guardian_name: admission.parent_name || null,
           guardian_email: admission.parent_email || null,
