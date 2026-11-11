@@ -920,6 +920,8 @@ export default function EnrollmentPage() {
           </CardContent>
         </Card>
 
+        {student?.id && <GradesHistoryCard studentId={String(student.id)} />}
+
         <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1409,17 +1411,54 @@ export default function EnrollmentPage() {
 }
 
 // ─── EnrollmentForm sub-component ─────────────────────────────────────────────
-// Returning students see last school year's grades while they enroll (read-only)
-function PastGradesPanel({ studentId, schoolYear, gradeLevel }: { studentId: string; schoolYear: string; gradeLevel: string }) {
-  const [rows, setRows] = useState<GradeSummaryRow[] | null>(null);
+// Read-only grades table: one row per subject, Q1-Q4 + average (below 75 in red)
+function GradesTable({ rows }: { rows: GradeSummaryRow[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 text-left text-xs text-gray-500">
+          <tr>
+            <th className="px-3 py-1.5 font-medium">Subject</th>
+            {[1, 2, 3, 4].map((q) => (
+              <th key={q} className="px-2 py-1.5 font-medium text-center">Q{q}</th>
+            ))}
+            <th className="px-3 py-1.5 font-medium text-right">Average</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((r) => (
+            <tr key={r.subject}>
+              <td className="px-3 py-1.5 text-gray-800">{r.subject}</td>
+              {([1, 2, 3, 4] as const).map((q) => (
+                <td key={q} className="px-2 py-1.5 text-center tabular-nums text-gray-700">{r.quarters[q] ?? '—'}</td>
+              ))}
+              <td className={`px-3 py-1.5 text-right tabular-nums font-medium ${r.average !== null && r.average < 75 ? 'text-red-700' : 'text-gray-900'}`}>
+                {r.average ?? '—'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function useApprovedGrades(studentId: string) {
+  const [grades, setGrades] = useState<any[] | null>(null);
   useEffect(() => {
     fetch(`/api/parent/student-grades?student_id=${studentId}`)
       .then((r) => r.json())
-      .then((d) => setRows(d?.success ? summarizeGrades(d.grades ?? [], schoolYear) : []))
-      .catch(() => setRows([]));
-  }, [studentId, schoolYear]);
+      .then((d) => setGrades(d?.success ? d.grades ?? [] : []))
+      .catch(() => setGrades([]));
+  }, [studentId]);
+  return grades;
+}
 
-  if (rows === null) return null;
+// Returning students see last school year's grades while they enroll (read-only)
+function PastGradesPanel({ studentId, schoolYear, gradeLevel }: { studentId: string; schoolYear: string; gradeLevel: string }) {
+  const grades = useApprovedGrades(studentId);
+  if (grades === null) return null;
+  const rows = summarizeGrades(grades, schoolYear);
   return (
     <div className="rounded-lg border border-gray-200">
       <div className="px-3 py-2 border-b border-gray-100 text-sm font-medium text-gray-800">
@@ -1428,34 +1467,39 @@ function PastGradesPanel({ studentId, schoolYear, gradeLevel }: { studentId: str
       {rows.length === 0 ? (
         <p className="px-3 py-3 text-sm text-gray-500">No approved grades on record for that school year yet.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs text-gray-500">
-              <tr>
-                <th className="px-3 py-1.5 font-medium">Subject</th>
-                {[1, 2, 3, 4].map((q) => (
-                  <th key={q} className="px-2 py-1.5 font-medium text-center">Q{q}</th>
-                ))}
-                <th className="px-3 py-1.5 font-medium text-right">Average</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map((r) => (
-                <tr key={r.subject}>
-                  <td className="px-3 py-1.5 text-gray-800">{r.subject}</td>
-                  {([1, 2, 3, 4] as const).map((q) => (
-                    <td key={q} className="px-2 py-1.5 text-center tabular-nums text-gray-700">{r.quarters[q] ?? '—'}</td>
-                  ))}
-                  <td className={`px-3 py-1.5 text-right tabular-nums font-medium ${r.average !== null && r.average < 75 ? 'text-red-700' : 'text-gray-900'}`}>
-                    {r.average ?? '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <GradesTable rows={rows} />
       )}
     </div>
+  );
+}
+
+// Enrolled students: all approved grades, newest school year first (read-only)
+function GradesHistoryCard({ studentId }: { studentId: string }) {
+  const grades = useApprovedGrades(studentId);
+  if (grades === null) return null;
+  const years = [...new Set(grades.map((g) => g.school_year).filter(Boolean) as string[])].sort().reverse();
+  return (
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <GraduationCap className="w-4 h-4 text-red-700" />
+          My Grades
+        </CardTitle>
+        <CardDescription>Approved grades from each school year.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {years.length === 0 ? (
+          <p className="text-sm text-gray-500">No approved grades yet.</p>
+        ) : (
+          years.map((sy) => (
+            <div key={sy} className="rounded-lg border border-gray-200">
+              <div className="px-3 py-2 border-b border-gray-100 text-sm font-medium text-gray-800">S.Y. {sy}</div>
+              <GradesTable rows={summarizeGrades(grades, sy)} />
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
