@@ -1,4 +1,5 @@
-import { DAY_LABELS, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
+import { friendlyError } from '@/lib/error-message';
+import { DAY_LABELS, findScheduleClash, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
@@ -187,6 +188,23 @@ async function checkRoomConflict(
   return null;
 }
 
+/** Teacher already teaching at one of these times (same school year)? */
+async function checkTeacherConflict(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  teacherId: string | null | undefined,
+  schedule: string | null | undefined,
+  schoolYear: string,
+  excludeId?: string
+): Promise<string | null> {
+  if (!teacherId || !schedule) return null;
+  const { data } = await admin
+    .from('classes')
+    .select('id, class_name, room, teacher_id, school_year, schedule')
+    .eq('teacher_id', teacherId)
+    .eq('is_active', true);
+  return findScheduleClash(parseScheduleSlots(schedule), (data ?? []) as any, { teacherId, schoolYear, excludeId });
+}
+
 async function checkStudentScheduleConflicts(
   admin: ReturnType<typeof getSupabaseAdmin>,
   studentIds: string[],
@@ -284,6 +302,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const teacherClash = await checkTeacherConflict(admin, teacher_id, schedule, school_year);
+    if (teacherClash) return NextResponse.json({ success: false, error: teacherClash }, { status: 409 });
+
     // Check for duplicate/overlapping schedule on any student being added
     if (schedule && student_ids && student_ids.length > 0) {
       const conflict = await checkStudentScheduleConflicts(admin, student_ids, schedule, school_year);
@@ -314,7 +335,7 @@ export async function POST(request: NextRequest) {
     if (classError) {
       console.error('Error creating class:', classError);
       return NextResponse.json(
-        { success: false, error: 'Failed to create class' },
+        { success: false, error: friendlyError(classError, 'We could not create this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
@@ -394,6 +415,11 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    if (school_year) {
+      const teacherClash = await checkTeacherConflict(admin, teacher_id, schedule, school_year, id);
+      if (teacherClash) return NextResponse.json({ success: false, error: teacherClash }, { status: 409 });
+    }
+
     // Check for duplicate/overlapping schedule on any student being (re)added
     if (schedule && school_year && student_ids && student_ids.length > 0) {
       const conflict = await checkStudentScheduleConflicts(admin, student_ids, schedule, school_year, id);
@@ -426,7 +452,7 @@ export async function PUT(request: NextRequest) {
     if (updateError) {
       console.error('Error updating class:', updateError);
       return NextResponse.json(
-        { success: false, error: 'Failed to update class' },
+        { success: false, error: friendlyError(updateError, 'We could not save changes to this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
@@ -529,7 +555,7 @@ export async function DELETE(request: NextRequest) {
     if (deleteError) {
       console.error('Error deleting class:', deleteError);
       return NextResponse.json(
-        { success: false, error: 'Failed to delete class' },
+        { success: false, error: 'We could not delete this subject. Please refresh the page and try again.' },
         { status: 500 }
       );
     }

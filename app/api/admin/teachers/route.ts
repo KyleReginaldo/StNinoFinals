@@ -62,11 +62,15 @@ export async function POST(request: Request) {
     } = body;
 
     // Validation
-    if (!first_name || !last_name || !email) {
+    if (
+      !first_name || !last_name || !email ||
+      !String(department ?? '').trim() || !String(phone_number ?? '').trim() ||
+      !date_of_birth || !String(address ?? '').trim()
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'First name, last name, and email are required',
+          error: 'Required: first and last name, email, department, phone number, date of birth and address.',
         },
         { status: 400 }
       );

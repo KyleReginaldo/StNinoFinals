@@ -1,6 +1,9 @@
 import { birthDateError, NAME_FIELDS, nameCaseFields } from '@/lib/person';
 import { normalizeGender } from '@/lib/gender'
 import { lrnError } from '@/lib/lrn';
+import { countSectionStudents, fullSectionError } from '@/lib/sections';
+import { getActivePeriod } from '@/lib/academic-period';
+import { getActiveSchoolYear } from '@/lib/school-year';
 import { findRfidOwner } from '@/lib/rfid';
 import { EmailService } from '@/lib/services/email-service';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -138,6 +141,7 @@ export async function POST(request: Request) {
       !last_name ||
       !grade_level ||
       !String(section ?? '').trim() ||
+      !date_of_birth ||
       !email ||
       !password ||
       !String(guardian_phone ?? '').trim() ||
@@ -147,7 +151,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields (name, grade level, section, email, permanent address, guardian's phone and address)",
+          error: "Missing required fields (name, grade level, section, date of birth, email, permanent address, guardian's phone and address)",
         },
         { status: 400 }
       );
@@ -194,6 +198,25 @@ export async function POST(request: Request) {
         { success: false, error: 'This LRN is already used by another student.' },
         { status: 409 }
       );
+    }
+
+    // Section capacity (active school year's section with this name + grade)
+    const activeYear = (await getActivePeriod())?.schoolYear ?? getActiveSchoolYear();
+    const { data: targetSection } = await supabaseAdmin
+      .from('sections')
+      .select('name, grade_level, max_capacity')
+      .eq('name', String(section).trim())
+      .eq('grade_level', grade_level)
+      .eq('school_year', activeYear)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (targetSection) {
+      const full = fullSectionError(
+        targetSection.name,
+        await countSectionStudents(supabaseAdmin, targetSection.name, targetSection.grade_level),
+        targetSection.max_capacity
+      );
+      if (full) return NextResponse.json({ success: false, error: full }, { status: 409 });
     }
 
     if (rfid) {

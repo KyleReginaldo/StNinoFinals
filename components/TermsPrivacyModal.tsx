@@ -7,7 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { LegalContent } from '@/components/LegalContent';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface TermsPrivacyModalProps {
   open: boolean;
@@ -20,9 +22,23 @@ export function TermsPrivacyModal({
   onOpenChange,
   onAgree,
 }: TermsPrivacyModalProps) {
+  // Full text the admin maintains in Settings (same as /terms and /privacy)
+  const [legal, setLegal] = useState<{ terms: string; privacy: string } | null>(null);
+  useEffect(() => {
+    if (!open || legal) return;
+    fetch('/api/admin/settings')
+      .then((r) => r.json())
+      .then((d) => {
+        const terms = d?.settings?.termsContent ?? '';
+        const privacy = d?.settings?.privacyContent ?? '';
+        if (terms || privacy) setLegal({ terms, privacy });
+      })
+      .catch(() => {});
+  }, [open, legal]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-gray-900">
             Terms of Service &amp; Privacy Policy
@@ -30,6 +46,23 @@ export function TermsPrivacyModal({
         </DialogHeader>
 
         <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
+          {legal ? (
+            <>
+              {legal.terms && (
+                <section>
+                  <p className="text-base font-bold text-red-900 mb-3">Terms of Service</p>
+                  <LegalContent text={legal.terms} />
+                </section>
+              )}
+              {legal.privacy && (
+                <section className="pt-4 border-t border-gray-100">
+                  <p className="text-base font-bold text-red-900 mb-3">Privacy Policy</p>
+                  <LegalContent text={legal.privacy} />
+                </section>
+              )}
+            </>
+          ) : (
+          <>
           <div>
             <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
             <p>
@@ -72,7 +105,7 @@ export function TermsPrivacyModal({
               >
                 Terms of Service
               </Link>{' '}
-              and{' '}
+              <span className="text-red-700">and</span>{' '}
               <Link
                 href="/privacy"
                 target="_blank"
@@ -83,6 +116,15 @@ export function TermsPrivacyModal({
               .
             </p>
           </div>
+          </>
+          )}
+          <p className="text-xs text-gray-500">
+            Open the{' '}
+            <Link href="/terms" target="_blank" className="text-red-700 hover:underline">Terms of Service</Link>{' '}
+            <span className="text-red-700">and</span>{' '}
+            <Link href="/privacy" target="_blank" className="text-red-700 hover:underline">Privacy Policy</Link>{' '}
+            in a new tab.
+          </p>
         </div>
 
         <DialogFooter className="flex gap-2 mt-4 pt-4 border-t border-gray-100">

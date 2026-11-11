@@ -26,12 +26,13 @@ import { useTableControls } from '@/hooks/use-table-controls';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
-import { DAY_LABELS, formatTime12, parseScheduleSlots, slotTimeError, timeOptions, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
+import { DAY_LABELS, findScheduleClash, formatTime12, parseScheduleSlots, slotTimeError, timeOptions, parseScheduleTime, ScheduleSlot, timesOverlap } from '@/lib/rooms';
 import { getActiveSchoolYear, getSchoolYearOptions, normalizeSchoolYear } from '@/lib/school-year';
 import { ExportDropdown } from '@/components/ui/export-dropdown';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Archive, ArchiveRestore, BookOpen, Edit, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { friendlyError } from '@/lib/error-message';
 import { useRefresh } from '@/lib/refresh-context';
 import { fetchSectionsByGrade } from '@/lib/sections';
 import { sortGradeLevels } from '@/lib/utils';
@@ -286,11 +287,11 @@ export default function ClassesManagementPage() {
         setShowDialog(false);
         fetchClasses();
       } else {
-        showAlert({ message: data.error || 'Operation failed', type: 'error' });
+        showAlert({ message: data.error || 'We could not save this subject. Please try again.', type: 'error' });
       }
     } catch (error) {
       console.error('Error saving subject:', error);
-      showAlert({ message: 'Failed to save subject', type: 'error' });
+      showAlert({ message: friendlyError(error, 'We could not save this subject. Please try again.'), type: 'error' });
     }
   };
 
@@ -394,10 +395,10 @@ export default function ClassesManagementPage() {
         s.grade_level && s.grade_level.trim().toLowerCase() === formData.grade_level.trim().toLowerCase()
       );
     }
-    // When a section is selected, show only students in that section OR with no section
+    // When a section is selected, show only that section's students (not unassigned ones)
     if (formData.section) {
       list = list.filter(s =>
-        !s.section || s.section.trim().toLowerCase() === formData.section.trim().toLowerCase()
+        !!s.section && s.section.trim().toLowerCase() === formData.section.trim().toLowerCase()
       );
     }
     if (studentSearch.trim()) {
@@ -438,6 +439,18 @@ export default function ClassesManagementPage() {
   });
 
   const hasFilters = !!tc.search || !!tc.filters['grade_level'];
+
+  // Room or teacher already booked at one of these times → can't create/save
+  const scheduleClash = useMemo(
+    () =>
+      findScheduleClash(scheduleSlots, classes, {
+        room: formData.room || null,
+        teacherId: formData.teacher_id || null,
+        schoolYear: formData.school_year || getActiveSchoolYear(),
+        excludeId: editingClass?.id,
+      }),
+    [scheduleSlots, classes, formData.room, formData.teacher_id, formData.school_year, editingClass]
+  );
 
   const conflictedRooms = useMemo(() => {
     if (scheduleSlots.length === 0) return new Set<string>();
@@ -861,7 +874,7 @@ export default function ClassesManagementPage() {
                 {formData.grade_level && (
                   <span className="text-xs font-normal text-gray-500">
                     — showing {formData.grade_level}
-                    {formData.section ? ` · ${formData.section} + unassigned` : ' students'}
+                    {formData.section ? ` · ${formData.section}` : ' students'}
                   </span>
                 )}
               </Label>
@@ -929,9 +942,14 @@ export default function ClassesManagementPage() {
             </div>
           </div>
 
+          {scheduleClash && (
+            <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {scheduleClash} Change the time, room or teacher to continue.
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90 text-white">
+            <Button onClick={handleSubmit} disabled={!!scheduleClash} className="bg-primary hover:bg-primary/90 text-white">
               {editingClass ? 'Update Subject' : 'Create Subject'}
             </Button>
           </div>

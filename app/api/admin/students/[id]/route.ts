@@ -106,7 +106,7 @@ export async function PUT(
     }
 
     // Guardian contact is required; partial updates (e.g. inline gender edit) may omit it
-    for (const [value, label] of [[guardian_phone, "Guardian's phone number"], [guardian_address, 'Guardian address']] as const) {
+    for (const [value, label] of [[guardian_phone, "Guardian's phone number"], [guardian_address, 'Guardian address'], [date_of_birth, 'Date of birth']] as const) {
       if (value !== undefined && !String(value ?? '').trim()) {
         return NextResponse.json({ success: false, error: `${label} is required.` }, { status: 400 })
       }

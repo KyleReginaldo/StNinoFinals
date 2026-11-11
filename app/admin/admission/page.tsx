@@ -43,9 +43,9 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string }> = {
 
 const ENROLLMENT_TYPE_LABELS: Record<string, string> = {
   new: 'New Student',
-  returning: 'Returning Student',
+  returning: 'Continuing Student',
   transferee: 'Transferee',
-  returnee: 'Returnee',
+  returnee: 'Returnee / Balik-Aral',
   repeater: 'Repeater',
 };
 
@@ -513,6 +513,7 @@ const AdmissionPage = () => {
                     { label: 'Applicant Email', value: selectedAdmission.email_address, href: `mailto:${selectedAdmission.email_address}` },
                     { label: "Guardian's Phone", value: selectedAdmission.guardian_phone || selectedAdmission.phone_number, href: `tel:${selectedAdmission.guardian_phone || selectedAdmission.phone_number}` },
                     selectedAdmission.date_of_birth ? { label: 'Date of Birth', value: formatDate(selectedAdmission.date_of_birth) } : null,
+                    (selectedAdmission as any).gender ? { label: 'Sex', value: (selectedAdmission as any).gender } : null,
                     (selectedAdmission as any).lrn ? { label: 'LRN', value: (selectedAdmission as any).lrn } : null,
                     ...((selectedAdmission as any).current_address
                       ? [

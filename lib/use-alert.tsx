@@ -48,6 +48,22 @@ export function AlertProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setIsOpen(true), 0);
   }, []);
 
+  // If the alert opened while another dialog was still closing (e.g. "Subject
+  // created" right after the subject dialog closes), the alert remembers the
+  // dialog's `pointer-events: none` on <body> and puts it back when it closes,
+  // leaving the whole page unclickable. Clear it once the alert has closed,
+  // unless another dialog is genuinely still open.
+  const closeOrOpen = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setTimeout(() => {
+        if (!document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) {
+          document.body.style.pointerEvents = '';
+        }
+      }, 300);
+    }
+  }, []);
+
   const getIcon = () => {
     switch (alertOptions.type) {
       case 'success':
@@ -78,7 +94,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   return (
     <AlertContext.Provider value={{ showAlert }}>
       {children}
-      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialog open={isOpen} onOpenChange={closeOrOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-center gap-3">
@@ -90,7 +106,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsOpen(false)}>
+            <AlertDialogAction onClick={() => closeOrOpen(false)}>
               OK
             </AlertDialogAction>
           </AlertDialogFooter>

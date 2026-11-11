@@ -1,5 +1,6 @@
 import { getActivePeriod } from '@/lib/academic-period';
 import { getActiveSchoolYear } from '@/lib/school-year';
+import { capacityError, countSectionStudents } from '@/lib/sections';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -114,11 +115,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH - Archive or restore a section (does not touch enrollment/classes)
+// PATCH - Archive/restore a section ({ id, is_active }) or change its capacity ({ id, max_capacity })
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, is_active } = body;
+    const { id, is_active, max_capacity } = body;
+    const supabase = getSupabaseAdmin();
+
+    if (id && max_capacity !== undefined) {
+      const { data: sec } = await supabase.from('sections').select('name, grade_level').eq('id', id).maybeSingle();
+      if (!sec) return NextResponse.json({ success: false, error: 'Section not found.' }, { status: 404 });
+      const capacity = Number(max_capacity);
+      const problem = capacityError(capacity, await countSectionStudents(supabase, sec.name, sec.grade_level));
+      if (problem) return NextResponse.json({ success: false, error: problem }, { status: 400 });
+      const { data, error } = await supabase.from('sections').update({ max_capacity: capacity }).eq('id', id).select().single();
+      if (error) return NextResponse.json({ success: false, error: 'We could not save the new capacity. Please try again.' }, { status: 500 });
+      return NextResponse.json({ success: true, section: data });
+    }
 
     if (!id || typeof is_active !== 'boolean') {
       return NextResponse.json(
@@ -127,7 +140,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('sections')
       .update({ is_active })

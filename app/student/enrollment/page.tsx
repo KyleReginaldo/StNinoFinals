@@ -54,6 +54,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
+import { summarizeGrades, type GradeSummaryRow } from '@/lib/grades';
 
 const CURRENT_SCHOOL_YEAR = getEnrollmentSchoolYear();
 
@@ -196,6 +197,7 @@ export default function EnrollmentPage() {
       lastGrade: `Grade ${lastGradeNum}`,
       nextGrade: `Grade ${nextGradeNum}`,
       strand: lastApproved.strand,
+      lastSchoolYear: lastApproved.school_year as string,
       isReturning: true,
     };
   }, [enrollmentHistory, enrollmentData]);
@@ -918,6 +920,8 @@ export default function EnrollmentPage() {
           </CardContent>
         </Card>
 
+        {student?.id && <GradesHistoryCard studentId={String(student.id)} />}
+
         <Card className="bg-white border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -1334,6 +1338,7 @@ export default function EnrollmentPage() {
           fileInputRef={fileInputRef}
           setPreviousGradesFile={setPreviousGradesFile}
           suggestedGrade={suggestedGrade}
+          studentId={student?.id ? String(student.id) : undefined}
           schoolYear={activeSchoolYear ?? CURRENT_SCHOOL_YEAR}
           fromAdmission={!!admissionData?.intendedGradeLevel}
         />
@@ -1395,6 +1400,7 @@ export default function EnrollmentPage() {
             fileInputRef={fileInputRef}
             setPreviousGradesFile={setPreviousGradesFile}
             suggestedGrade={suggestedGrade}
+          studentId={student?.id ? String(student.id) : undefined}
             schoolYear={activeSchoolYear ?? CURRENT_SCHOOL_YEAR}
             fromAdmission={!!admissionData?.intendedGradeLevel}
           />
@@ -1405,6 +1411,98 @@ export default function EnrollmentPage() {
 }
 
 // ─── EnrollmentForm sub-component ─────────────────────────────────────────────
+// Read-only grades table: one row per subject, Q1-Q4 + average (below 75 in red)
+function GradesTable({ rows }: { rows: GradeSummaryRow[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 text-left text-xs text-gray-500">
+          <tr>
+            <th className="px-3 py-1.5 font-medium">Subject</th>
+            {[1, 2, 3, 4].map((q) => (
+              <th key={q} className="px-2 py-1.5 font-medium text-center">Q{q}</th>
+            ))}
+            <th className="px-3 py-1.5 font-medium text-right">Average</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((r) => (
+            <tr key={r.subject}>
+              <td className="px-3 py-1.5 text-gray-800">{r.subject}</td>
+              {([1, 2, 3, 4] as const).map((q) => (
+                <td key={q} className="px-2 py-1.5 text-center tabular-nums text-gray-700">{r.quarters[q] ?? '—'}</td>
+              ))}
+              <td className={`px-3 py-1.5 text-right tabular-nums font-medium ${r.average !== null && r.average < 75 ? 'text-red-700' : 'text-gray-900'}`}>
+                {r.average ?? '—'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function useApprovedGrades(studentId: string) {
+  const [grades, setGrades] = useState<any[] | null>(null);
+  useEffect(() => {
+    fetch(`/api/parent/student-grades?student_id=${studentId}`)
+      .then((r) => r.json())
+      .then((d) => setGrades(d?.success ? d.grades ?? [] : []))
+      .catch(() => setGrades([]));
+  }, [studentId]);
+  return grades;
+}
+
+// Returning students see last school year's grades while they enroll (read-only)
+function PastGradesPanel({ studentId, schoolYear, gradeLevel }: { studentId: string; schoolYear: string; gradeLevel: string }) {
+  const grades = useApprovedGrades(studentId);
+  if (grades === null) return null;
+  const rows = summarizeGrades(grades, schoolYear);
+  return (
+    <div className="rounded-lg border border-gray-200">
+      <div className="px-3 py-2 border-b border-gray-100 text-sm font-medium text-gray-800">
+        Your grades — {gradeLevel}, S.Y. {schoolYear}
+      </div>
+      {rows.length === 0 ? (
+        <p className="px-3 py-3 text-sm text-gray-500">No approved grades on record for that school year yet.</p>
+      ) : (
+        <GradesTable rows={rows} />
+      )}
+    </div>
+  );
+}
+
+// Enrolled students: all approved grades, newest school year first (read-only)
+function GradesHistoryCard({ studentId }: { studentId: string }) {
+  const grades = useApprovedGrades(studentId);
+  if (grades === null) return null;
+  const years = [...new Set(grades.map((g) => g.school_year).filter(Boolean) as string[])].sort().reverse();
+  return (
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <GraduationCap className="w-4 h-4 text-red-700" />
+          My Grades
+        </CardTitle>
+        <CardDescription>Approved grades from each school year.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {years.length === 0 ? (
+          <p className="text-sm text-gray-500">No approved grades yet.</p>
+        ) : (
+          years.map((sy) => (
+            <div key={sy} className="rounded-lg border border-gray-200">
+              <div className="px-3 py-2 border-b border-gray-100 text-sm font-medium text-gray-800">S.Y. {sy}</div>
+              <GradesTable rows={summarizeGrades(grades, sy)} />
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function EnrollmentForm({
   gradeLevel,
   setGradeLevel,
@@ -1422,6 +1520,7 @@ function EnrollmentForm({
   suggestedGrade,
   schoolYear,
   fromAdmission,
+  studentId,
 }: {
   gradeLevel: string;
   setGradeLevel: (v: string) => void;
@@ -1436,9 +1535,10 @@ function EnrollmentForm({
   description: string;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   setPreviousGradesFile: (file: File | null) => void;
-  suggestedGrade?: { lastGrade: string; nextGrade: string; isReturning: boolean } | null;
+  suggestedGrade?: { lastGrade: string; nextGrade: string; isReturning: boolean; lastSchoolYear?: string } | null;
   schoolYear: string;
   fromAdmission?: boolean;
+  studentId?: string;
 }) {
   return (
     <Card className="bg-white border border-gray-200 shadow-sm">
@@ -1465,6 +1565,9 @@ function EnrollmentForm({
             <span className="text-green-500 font-bold">→</span>
             <span className="font-semibold">{suggestedGrade.nextGrade}</span>
           </div>
+        )}
+        {!fromAdmission && suggestedGrade?.lastSchoolYear && studentId && (
+          <PastGradesPanel studentId={studentId} schoolYear={suggestedGrade.lastSchoolYear} gradeLevel={suggestedGrade.lastGrade} />
         )}
         <div className="space-y-1.5">
           <Label htmlFor="gradeLevel" required>Grade Level</Label>

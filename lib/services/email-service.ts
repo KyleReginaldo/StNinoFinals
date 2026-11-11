@@ -318,6 +318,24 @@ function infoBox(
 /**
  * Single key-value row inside an infoBox.
  */
+/** Numbered step inside an infoBox (for "what to do next" instructions). */
+function stepRow(n: number, text: string): string {
+  return `<tr>
+    <td style="padding:6px 12px 6px 0;color:#6e1a1f;font-family:Arial,sans-serif;
+               font-size:13px;font-weight:700;vertical-align:top;width:22px;">${n}.</td>
+    <td style="padding:6px 0;color:#1a1a1e;font-family:Arial,sans-serif;
+               font-size:13px;vertical-align:top;line-height:1.6;">${text}</td>
+  </tr>`;
+}
+
+/** After an admission is approved: how the family actually gets the child enrolled. */
+const ADMISSION_NEXT_STEPS = [
+  'Click <strong>Access Student Portal</strong> below and sign in with the email address and temporary password above.',
+  'Set a new password when the portal asks you to.',
+  'Open the <strong>Enrollment</strong> tab and submit the enrollment form for the school year.',
+  'Wait for the school to review it. Check the <strong>Enrollment</strong> tab for its status; once it is approved, the section and subjects appear in the portal.',
+];
+
 function infoRow(label: string, value: string): string {
   return `<tr>
     <td style="padding:6px 16px 6px 0;color:#8a8a9e;
@@ -592,12 +610,13 @@ export class EmailService {
           infoRow('Grade Level', data.gradeLevel)
       )}
       ${warningBox('Please change the temporary password immediately upon first login to protect the security of the account.')}
+      ${infoBox('What to do next', ADMISSION_NEXT_STEPS.map((t, i) => stepRow(i + 1, t)).join(''))}
       ${actionBtn(data.loginUrl, 'Access Student Portal')}
       ${para('We look forward to welcoming your child into our school community. Should you have any questions, please contact the admissions office at your earliest convenience.')}
       ${closing('The Admissions Office')}
     `);
 
-    const text = `Admission Approved\n\nDear ${data.parentName},\n\n${override ? `After reconsideration, ${data.studentFirstName} ${data.studentLastName} is now qualified to enroll. We sincerely apologize for any inconvenience the earlier decision may have caused.` : `The admission application for ${data.studentFirstName} ${data.studentLastName} has been approved.`}\n\nStudent Portal Access:\nEmail: ${data.email}\nTemporary Password: ${data.password}\nGrade Level: ${data.gradeLevel}\n\nPlease change the password after first login.\nLogin: ${data.loginUrl}\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
+    const text = `Admission Approved\n\nDear ${data.parentName},\n\n${override ? `After reconsideration, ${data.studentFirstName} ${data.studentLastName} is now qualified to enroll. We sincerely apologize for any inconvenience the earlier decision may have caused.` : `The admission application for ${data.studentFirstName} ${data.studentLastName} has been approved.`}\n\nStudent Portal Access:\nEmail: ${data.email}\nTemporary Password: ${data.password}\nGrade Level: ${data.gradeLevel}\n\nWhat to do next:\n${ADMISSION_NEXT_STEPS.map((t, i) => `${i + 1}. ${t.replace(/<[^>]+>/g, '')}`).join('\n')}\n\nLogin: ${data.loginUrl}\n\nRespectfully yours,\nThe Admissions Office\nSto. Niño de Praga Academy`;
 
     await this.sendEmail({
       to: data.email,

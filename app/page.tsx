@@ -96,6 +96,7 @@ export default function HomePage() {
     lastName: '',
     middleName: '',
     dateOfBirth: '',
+    gender: '',
     suffix: '',
     permanentAddress: DEFAULT_ADDRESS,
     currentAddress: DEFAULT_ADDRESS,
@@ -116,9 +117,9 @@ export default function HomePage() {
 
   const ENROLLMENT_TYPE_OPTIONS = [
     { value: 'new', label: 'New Student' },
-    { value: 'returning', label: 'Returning Student' },
+    { value: 'returning', label: 'Continuing Student (enrolled here last school year)' },
     { value: 'transferee', label: 'Transferee' },
-    { value: 'returnee', label: 'Returnee' },
+    { value: 'returnee', label: 'Returnee / Balik-Aral (stopped schooling, now coming back)' },
     { value: 'repeater', label: 'Repeater' },
   ];
   const needsPreviousSchool =
@@ -192,6 +193,7 @@ export default function HomePage() {
   const handleAdmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const missing = [
+      ...(admissionForm.gender ? [] : ['Sex']),
       ...(lrnError(admissionForm.lrn, admissionForm.intendedGradeLevel) ? ['LRN (12 digits)'] : []),
       ...missingAddressFields(admissionForm.permanentAddress).map((f) => `Permanent ${f}`),
       ...(admissionForm.currentSameAsPermanent
@@ -219,6 +221,7 @@ export default function HomePage() {
           last_name: admissionForm.lastName,
           middle_name: admissionForm.middleName || null,
           date_of_birth: admissionForm.dateOfBirth,
+          gender: admissionForm.gender,
           suffix: admissionForm.suffix || null,
           permanent_address: admissionForm.permanentAddress,
           current_address: admissionForm.currentSameAsPermanent
@@ -255,6 +258,7 @@ export default function HomePage() {
           lastName: '',
           middleName: '',
           dateOfBirth: '',
+          gender: '',
           suffix: '',
           permanentAddress: DEFAULT_ADDRESS,
           currentAddress: DEFAULT_ADDRESS,
@@ -839,8 +843,12 @@ export default function HomePage() {
                         def: 'A student moving in from another school, currently enrolled in the same grade level they are applying for.',
                       },
                       {
-                        term: 'Returnee',
-                        def: 'A former student of this school who is re-enrolling after an absence.',
+                        term: 'Continuing Student',
+                        def: 'A student who was enrolled at this school last school year and is enrolling again for the next one.',
+                      },
+                      {
+                        term: 'Returnee / Balik-Aral',
+                        def: 'A learner who stopped going to school for a school year or more and is now coming back. We ask for the last school attended.',
                       },
                       {
                         term: 'Repeater',
@@ -1140,7 +1148,7 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         <div className="space-y-1.5">
                           <Label
                             htmlFor="dateOfBirth"
@@ -1165,6 +1173,28 @@ export default function HomePage() {
                             disabled={isSubmittingAdmission}
                             className="h-11 bg-white border-gray-200"
                           />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="gender"
+                            className="text-sm font-medium text-gray-700"
+                            required
+                          >
+                            Sex
+                          </Label>
+                          <Select
+                            value={admissionForm.gender}
+                            onValueChange={(v) => setAdmissionForm({ ...admissionForm, gender: v })}
+                            disabled={isSubmittingAdmission}
+                          >
+                            <SelectTrigger id="gender" className="h-11 bg-white border-gray-200">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-1.5">
                           <Label
@@ -1459,11 +1489,7 @@ export default function HomePage() {
                         >
                           I have read and agree to the{' '}
                           <span className="text-red-700 font-medium">
-                            Terms of Service
-                          </span>{' '}
-                          and{' '}
-                          <span className="text-red-700 font-medium">
-                            Privacy Policy
+                            Terms of Service and Privacy Policy
                           </span>{' '}
                           of Sto. Niño de Praga Academy.
                         </label>
