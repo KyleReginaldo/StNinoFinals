@@ -1,3 +1,4 @@
+import { countSectionStudents, fullSectionError } from '@/lib/sections';
 import { friendlyError } from '@/lib/error-message';
 import { EmailService } from '@/lib/services/email-service';
 import { normalizeSchoolYear } from '@/lib/school-year';
@@ -101,6 +102,27 @@ export async function PATCH(request: NextRequest) {
           { success: false, error: `${target.name} is a ${target.strand} section, but this student enrolled in ${requestStrand}. Please pick a ${requestStrand} section.` },
           { status: 400 }
         );
+      }
+    }
+
+    // Section capacity: no approval into a full section (a student already in it doesn't need a new seat)
+    if (status === 'approved' && sectionId) {
+      const { data: target } = await supabase
+        .from('sections')
+        .select('name, grade_level, max_capacity')
+        .eq('id', sectionId)
+        .maybeSingle();
+      if (target) {
+        const { data: me } = await supabase
+          .from('users')
+          .select('section, grade_level')
+          .eq('id', (enrollmentRequest as any).student_id)
+          .maybeSingle();
+        const alreadyThere = me?.section === target.name && me?.grade_level === target.grade_level;
+        const full = alreadyThere
+          ? null
+          : fullSectionError(target.name, await countSectionStudents(supabase, target.name, target.grade_level), target.max_capacity);
+        if (full) return NextResponse.json({ success: false, error: full }, { status: 409 });
       }
     }
 

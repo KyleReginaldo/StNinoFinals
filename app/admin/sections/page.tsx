@@ -283,6 +283,65 @@ interface SectionRow {
   class_count: number;
 }
 
+// Click the number to change a section's capacity (can't go below its current students)
+function CapacityCell({ section, onSaved }: { section: SectionRow; onSaved: (capacity: number) => void }) {
+  const { showAlert } = useAlert();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(section.max_capacity));
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const capacity = Number(value);
+    if (capacity === section.max_capacity) return setEditing(false);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/sections', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: section.id, max_capacity: capacity }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      onSaved(capacity);
+      setEditing(false);
+    } catch (e: any) {
+      showAlert({ message: e?.message || 'We could not save the new capacity.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => { setValue(String(section.max_capacity)); setEditing(true); }}
+        className="px-2 py-0.5 rounded hover:bg-gray-100 underline decoration-dotted underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20"
+        title="Change capacity"
+        aria-label={`Capacity ${section.max_capacity}, click to change`}
+      >
+        {section.max_capacity}
+      </button>
+    );
+  }
+  return (
+    <input
+      type="number"
+      min={Math.max(1, section.student_count)}
+      autoFocus
+      disabled={saving}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={save}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') save();
+        if (e.key === 'Escape') setEditing(false);
+      }}
+      className="w-16 px-1.5 py-0.5 text-sm text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+      aria-label="Section capacity"
+    />
+  );
+}
+
 function FormalSectionsPanel() {
   const [schoolYear, setSchoolYear] = useState('');
   const [sections, setSections] = useState<SectionRow[]>([]);
@@ -684,7 +743,10 @@ function FormalSectionsPanel() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-center text-sm text-gray-500 tabular-nums">
-                      {sec.max_capacity}
+                      <CapacityCell
+                        section={sec}
+                        onSaved={(cap) => setSections((prev) => prev.map((x) => (x.id === sec.id ? { ...x, max_capacity: cap } : x)))}
+                      />
                     </td>
                     <td className="px-4 py-2.5 text-center text-sm text-gray-500 tabular-nums">
                       {sec.class_count}

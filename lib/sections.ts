@@ -12,3 +12,32 @@ export async function fetchSectionsByGrade(): Promise<Record<string, string[]>> 
   const data = await res.json().catch(() => ({}));
   return data?.success ? groupSectionNames(data.sections ?? []) : {};
 }
+
+/** Validates a new section capacity against how many students are already in it. */
+export function capacityError(capacity: number, enrolled: number): string | null {
+  if (!Number.isInteger(capacity) || capacity < 1) return 'Capacity must be a whole number of at least 1.';
+  if (capacity < enrolled) return `This section already has ${enrolled} students. Capacity can’t be lower than that.`;
+  return null;
+}
+
+/** Message when there's no seat left for one more student, else null. */
+export function fullSectionError(name: string, enrolled: number, capacity: number): string | null {
+  return enrolled >= capacity
+    ? `Section "${name}" is full (${enrolled}/${capacity}). Raise its capacity in Sections or choose another section.`
+    : null;
+}
+
+/** Students currently in a section (users.section + grade, same rule as the Sections list). */
+export async function countSectionStudents(
+  db: { from: (t: 'users') => any },
+  name: string,
+  gradeLevel: string
+): Promise<number> {
+  const { count } = await db
+    .from('users')
+    .select('id', { count: 'exact', head: true })
+    .eq('role', 'student')
+    .eq('section', name)
+    .eq('grade_level', gradeLevel);
+  return count ?? 0;
+}
