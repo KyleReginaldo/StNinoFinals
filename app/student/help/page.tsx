@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 const FAQS = [
   {
     q: 'How do I view my grades?',
-    a: 'Go to Grades & Reports in the sidebar. You can filter by school year and quarter, and download a PDF or Excel copy of your report card from there.',
+    a: 'Open Grades in the sidebar to see your approved grades. You can switch the school year, so past years stay visible. Open Reports for your report card and to download a PDF or Excel copy.',
   },
   {
     q: 'How do I enroll for the next school year?',

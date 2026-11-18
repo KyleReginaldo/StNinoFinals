@@ -52,6 +52,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useApprovedGrades } from '../hooks/useStudentRecords';
 import { useStudentAuth } from '../hooks/useStudentAuth';
 import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
 import { summarizeGrades, type GradeSummaryRow } from '@/lib/grades';
@@ -1441,17 +1442,6 @@ function GradesTable({ rows }: { rows: GradeSummaryRow[] }) {
       </table>
     </div>
   );
-}
-
-function useApprovedGrades(studentId: string) {
-  const [grades, setGrades] = useState<any[] | null>(null);
-  useEffect(() => {
-    fetch(`/api/parent/student-grades?student_id=${studentId}`)
-      .then((r) => r.json())
-      .then((d) => setGrades(d?.success ? d.grades ?? [] : []))
-      .catch(() => setGrades([]));
-  }, [studentId]);
-  return grades;
 }
 
 // Returning students see last school year's grades while they enroll (read-only)
