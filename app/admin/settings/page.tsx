@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { LegalEditor } from '@/components/admin/legal-editor';
+import { DEFAULT_PRIVACY_CONTENT, DEFAULT_TERMS_CONTENT } from '@/lib/legal-defaults';
 import { CheckCircle, Clock, FileText, Mail, MapPin, MessageSquare, Phone, RefreshCw, Save, Settings as SettingsIcon, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -307,32 +308,26 @@ export default function SettingsPage() {
             Legal Content
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
-            Shown on the public Terms of Service and Privacy Policy pages. Plain text only — start a line with "## " for a section heading, or "- " for a bullet point.
+            Shown on the public Terms of Service and Privacy Policy pages, and in the "I agree" pop-up on the admission form and sign-in page. Changes apply after you press Save.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 px-5 py-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Terms of Service
-            </label>
-            <Textarea
-              value={settings.termsContent}
-              onChange={e => handleInputChange('termsContent', e.target.value)}
-              rows={10}
-              className="font-mono text-xs resize-y"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Privacy Policy
-            </label>
-            <Textarea
-              value={settings.privacyContent}
-              onChange={e => handleInputChange('privacyContent', e.target.value)}
-              rows={10}
-              className="font-mono text-xs resize-y"
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-8 px-5 py-4">
+          <LegalEditor
+            id="termsContent"
+            label="Terms of Service"
+            value={settings.termsContent}
+            onChange={v => handleInputChange('termsContent', v)}
+            defaultValue={DEFAULT_TERMS_CONTENT}
+            publicHref="/terms"
+          />
+          <LegalEditor
+            id="privacyContent"
+            label="Privacy Policy"
+            value={settings.privacyContent}
+            onChange={v => handleInputChange('privacyContent', v)}
+            defaultValue={DEFAULT_PRIVACY_CONTENT}
+            publicHref="/privacy"
+          />
         </div>
       </div>
 
