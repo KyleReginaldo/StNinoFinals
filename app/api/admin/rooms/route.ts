@@ -1,3 +1,4 @@
+import { roomCapacityError } from '@/lib/rooms';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -21,6 +22,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, capacity, description } = body;
     if (!name?.trim()) return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
+    const capacityProblem = roomCapacityError(capacity, null);
+    if (capacityProblem) return NextResponse.json({ success: false, error: capacityProblem }, { status: 400 });
 
     const { data, error } = await admin
       .from('rooms')
@@ -40,6 +43,13 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { id, name, capacity, description, is_active } = body;
     if (!id) return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
+
+    if (capacity !== undefined) {
+      // Unchanged old capacities (e.g. Gymnasium = 300) pass; anything changed must be 1-60
+      const { data: current } = await (admin as any).from('rooms').select('capacity').eq('id', id).maybeSingle(); // rooms isn't in the generated types
+      const capacityProblem = roomCapacityError(capacity, current?.capacity);
+      if (capacityProblem) return NextResponse.json({ success: false, error: capacityProblem }, { status: 400 });
+    }
 
     const updates: Record<string, any> = {};
     if (name !== undefined) updates.name = name.trim();

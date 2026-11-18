@@ -1,6 +1,6 @@
 import { getActivePeriod } from '@/lib/academic-period';
 import { getActiveSchoolYear } from '@/lib/school-year';
-import { capacityError, countSectionStudents } from '@/lib/sections';
+import { capacityError, countSectionStudents, newSectionCapacityError } from '@/lib/sections';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -77,6 +77,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { name, gradeLevel, strand, schoolYear, maxCapacity = 45 } = body;
+    const capacityProblem = newSectionCapacityError(String(maxCapacity ?? ''));
+    if (capacityProblem) return NextResponse.json({ success: false, error: capacityProblem }, { status: 400 });
 
     if (!name || !gradeLevel || !schoolYear) {
       return NextResponse.json(

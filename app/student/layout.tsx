@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { RefreshProvider } from '@/lib/refresh-context';
 import { useConfirm } from '@/lib/use-confirm';
 import {
+  ClipboardList,
   FileText,
   GraduationCap,
   HelpCircle,
@@ -19,6 +20,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { StudentSidebarContent } from './components/StudentSidebar';
+import { useApprovedGrades } from './hooks/useStudentRecords';
 
 const NAV_ITEMS = [
   {
@@ -41,10 +43,17 @@ const NAV_ITEMS = [
   // },
   {
     id: 'grades',
-    label: 'Grades & Reports',
+    label: 'Grades',
     icon: GraduationCap,
     href: '/student/grades',
-    requiresEnrollment: true,
+    requiresAcademicRecord: true,
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: ClipboardList,
+    href: '/student/reports',
+    requiresAcademicRecord: true,
   },
   { id: 'profile', label: 'Profile', icon: User, href: '/student/profile' },
   { id: 'help', label: 'Help & Support', icon: HelpCircle, href: '/student/help' },
@@ -69,8 +78,10 @@ export default function StudentLayout({
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
+  const grades = useApprovedGrades(student?.id ? String(student.id) : undefined);
 
-  // Tabs marked requiresEnrollment are locked until the student is enrolled
+  // Grades and Reports open for a student who is enrolled OR already has approved grades
+  // (so past school years stay visible between years). Brand-new students have nothing to show yet.
   useEffect(() => {
     if (!student?.id) return;
     fetch(`/api/student/enrollment?studentId=${student.id}`)
@@ -78,9 +89,11 @@ export default function StudentLayout({
       .then((d) => setIsEnrolled(d?.success ? !!d.data?.enrollment?.isEnrolled : null))
       .catch(() => setIsEnrolled(null));
   }, [student?.id]);
+  const hasAcademicRecord: boolean | null =
+    isEnrolled === true || (grades?.length ?? 0) > 0 ? true : isEnrolled === false && grades !== null ? false : null;
   const lockedPage =
-    isEnrolled === false &&
-    NAV_ITEMS.some((n) => 'requiresEnrollment' in n && n.requiresEnrollment && pathname.startsWith(n.href));
+    hasAcademicRecord === false &&
+    NAV_ITEMS.some((n) => 'requiresAcademicRecord' in n && n.requiresAcademicRecord && pathname.startsWith(n.href));
 
   useEffect(() => {
     const storedStudent = localStorage.getItem('student');
@@ -160,7 +173,7 @@ export default function StudentLayout({
               navItems={NAV_ITEMS}
               currentPath={pathname}
               onLogout={handleLogout}
-              isEnrolled={isEnrolled}
+              hasAcademicRecord={hasAcademicRecord}
             />
           </aside>
 
@@ -181,7 +194,7 @@ export default function StudentLayout({
                       navItems={NAV_ITEMS}
                       currentPath={pathname}
                       onLogout={handleLogout}
-                      isEnrolled={isEnrolled}
+                      hasAcademicRecord={hasAcademicRecord}
                     />
                   </SheetContent>
                 </Sheet>
@@ -200,7 +213,7 @@ export default function StudentLayout({
                 <div className="max-w-lg mx-auto mt-16 p-6 bg-white rounded-xl border border-red-200 text-center space-y-3">
                   <h2 className="text-lg font-semibold text-red-800">Enroll first</h2>
                   <p className="text-sm text-gray-600">
-                    This page is available once you are enrolled for the current school year.
+                    This page is available once you are enrolled or have grades on record.
                   </p>
                   <Button onClick={() => router.push('/student/enrollment')} className="bg-red-800 hover:bg-red-700">
                     Go to Enrollment

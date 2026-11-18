@@ -1,15 +1,16 @@
 'use client';
 
+import { LegalContent } from '@/components/LegalContent';
+import { LegalLinks } from '@/components/LegalLinks';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { LegalContent } from '@/components/LegalContent';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useLegalContent } from '@/hooks/use-legal-content';
 
 interface TermsPrivacyModalProps {
   open: boolean;
@@ -17,114 +18,54 @@ interface TermsPrivacyModalProps {
   onAgree: () => void;
 }
 
-export function TermsPrivacyModal({
-  open,
-  onOpenChange,
-  onAgree,
-}: TermsPrivacyModalProps) {
-  // Full text the admin maintains in Settings (same as /terms and /privacy)
-  const [legal, setLegal] = useState<{ terms: string; privacy: string } | null>(null);
-  useEffect(() => {
-    if (!open || legal) return;
-    fetch('/api/admin/settings')
-      .then((r) => r.json())
-      .then((d) => {
-        const terms = d?.settings?.termsContent ?? '';
-        const privacy = d?.settings?.privacyContent ?? '';
-        if (terms || privacy) setLegal({ terms, privacy });
-      })
-      .catch(() => {});
-  }, [open, legal]);
+/**
+ * "I have read and agree" pop-up. Shows the full Terms of Service and Privacy Policy
+ * the admin maintains in Settings (the same text as /terms and /privacy).
+ */
+export function TermsPrivacyModal({ open, onOpenChange, onAgree }: TermsPrivacyModalProps) {
+  const legal = useLegalContent(open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">
-            Terms of Service &amp; Privacy Policy
-          </DialogTitle>
+          <DialogTitle className="text-gray-900">Terms of Service &amp; Privacy Policy</DialogTitle>
+          <DialogDescription className="sr-only">
+            Read both documents, then choose I Agree to continue.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto flex-1 pr-1 space-y-5 text-sm text-gray-600 leading-relaxed">
-          {legal ? (
-            <>
-              {legal.terms && (
-                <section>
-                  <p className="text-base font-bold text-red-900 mb-3">Terms of Service</p>
-                  <LegalContent text={legal.terms} />
-                </section>
-              )}
-              {legal.privacy && (
-                <section className="pt-4 border-t border-gray-100">
-                  <p className="text-base font-bold text-red-900 mb-3">Privacy Policy</p>
-                  <LegalContent text={legal.privacy} />
-                </section>
-              )}
-            </>
-          ) : (
-          <>
-          <div>
-            <p className="font-bold text-gray-800 mb-1">Terms of Service</p>
+        <div className="overflow-y-auto flex-1 pr-1 text-sm text-gray-600 leading-relaxed">
+          {legal.status === 'ready' ? (
+            <div className="space-y-6">
+              <section>
+                <p className="text-base font-bold text-red-900 mb-3">Terms of Service</p>
+                <LegalContent text={legal.terms} />
+              </section>
+              <section className="pt-4 border-t border-gray-100">
+                <p className="text-base font-bold text-red-900 mb-3">Privacy Policy</p>
+                <LegalContent text={legal.privacy} />
+              </section>
+              <p className="text-xs text-gray-500">
+                Also available as full pages: <LegalLinks newTab />.
+              </p>
+            </div>
+          ) : legal.status === 'error' ? (
             <p>
-              By using the Sto. Niño de Praga Academy portal, you agree to use
-              the system only for lawful, school-related purposes. Accounts
-              are personal and non-transferable. Misuse, unauthorized access,
-              or sharing of credentials may result in account suspension.
-            </p>
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 mb-1">Privacy Policy</p>
-            <p>
-              We collect personal information (name, contact details, grades,
-              attendance) solely to manage enrollment and school operations,
-              in compliance with the{' '}
-              <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your data
-              will not be sold or shared with third parties outside of
-              authorized school personnel and required government agencies.
-            </p>
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 mb-1">Data You Provide</p>
-            <ul className="list-disc pl-4 space-y-1 text-gray-500">
-              <li>Student name, grade level, and contact information</li>
-              <li>Guardian name and email address</li>
-              <li>Previous school details submitted in this inquiry</li>
-            </ul>
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 mb-1">Your Rights</p>
-            <p>
-              You may request access, correction, or deletion of your data by
-              contacting us at{' '}
-              <span className="text-red-700">info@stnino.ph</span>. For the
-              full policies, see{' '}
-              <Link
-                href="/terms"
-                target="_blank"
-                className="text-red-700 hover:underline"
-              >
-                Terms of Service
-              </Link>{' '}
-              <span className="text-red-700">and</span>{' '}
-              <Link
-                href="/privacy"
-                target="_blank"
-                className="text-red-700 hover:underline"
-              >
-                Privacy Policy
-              </Link>
+              We could not load the Terms of Service and Privacy Policy. Check your connection and{' '}
+              <button onClick={legal.reload} className="text-red-700 underline underline-offset-2">
+                try again
+              </button>
               .
             </p>
-          </div>
-          </>
+          ) : (
+            <div className="animate-pulse space-y-3" aria-label="Loading">
+              <div className="h-4 bg-gray-100 rounded w-1/3" />
+              <div className="h-4 bg-gray-100 rounded w-full" />
+              <div className="h-4 bg-gray-100 rounded w-5/6" />
+              <div className="h-4 bg-gray-100 rounded w-2/3" />
+            </div>
           )}
-          <p className="text-xs text-gray-500">
-            Open the{' '}
-            <Link href="/terms" target="_blank" className="text-red-700 hover:underline">Terms of Service</Link>{' '}
-            <span className="text-red-700">and</span>{' '}
-            <Link href="/privacy" target="_blank" className="text-red-700 hover:underline">Privacy Policy</Link>{' '}
-            in a new tab.
-          </p>
         </div>
 
         <DialogFooter className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
@@ -138,7 +79,8 @@ export function TermsPrivacyModal({
           <button
             type="button"
             onClick={onAgree}
-            className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors"
+            disabled={legal.status !== 'ready'}
+            className="flex-1 h-10 rounded-lg bg-red-900 hover:bg-red-800 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             I Agree
           </button>

@@ -37,6 +37,7 @@ import {
   Bell,
   Calendar,
   ChevronRight,
+  ClipboardList,
   Download,
   FileText,
   GraduationCap,
@@ -147,7 +148,8 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'enrollment', label: 'Enrollment', icon: FileText },
   { id: 'schedule', label: 'Schedule Calendar', icon: Calendar },
-  { id: 'grades', label: 'Grades & Reports', icon: GraduationCap },
+  { id: 'grades', label: 'Grades', icon: GraduationCap },
+  { id: 'reports', label: 'Reports', icon: ClipboardList },
   { id: 'profile', label: 'Profile', icon: User },
 ] as const;
 
@@ -1683,6 +1685,7 @@ export default function StudentDashboard() {
       enrollment: '/student/enrollment',
       schedule: '/student/schedule',
       grades: '/student/grades',
+      reports: '/student/reports',
       profile: '/student/profile',
     };
     router.push(routes[view]);
@@ -2449,7 +2452,7 @@ export default function StudentDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Grades & Reports
+                  Grades
                 </h2>
               </div>
               <Card className="bg-white border border-gray-200">

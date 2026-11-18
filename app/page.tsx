@@ -8,6 +8,7 @@ const DEFAULT_ADDRESS = { ...EMPTY_ADDRESS, province: 'Cavite', city: 'Trece Mar
 import type React from 'react';
 
 import { SchoolMap } from '@/components/SchoolMap';
+import { LegalLinks } from '@/components/LegalLinks';
 import { TermsPrivacyModal } from '@/components/TermsPrivacyModal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -1656,20 +1657,9 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex flex-col sm:items-end gap-1">
-              <div className="flex items-center gap-4">
-                <Link
-                  href="/terms"
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  Terms of Service
-                </Link>
-                <Link
-                  href="/privacy"
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </div>
+              <p className="text-xs text-gray-500">
+                <LegalLinks className="hover:text-gray-300 transition-colors" />
+              </p>
               <p className="text-xs text-gray-600 text-center sm:text-right">
                 © {new Date().getFullYear()} {schoolContact.schoolName}. All
                 rights reserved.

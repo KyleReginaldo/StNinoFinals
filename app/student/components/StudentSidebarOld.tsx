@@ -2,13 +2,14 @@
 
 import {
   Calendar,
+  ClipboardList,
   FileText,
   GraduationCap,
   LayoutDashboard,
   User,
 } from 'lucide-react';
 
-type NavItem = 'dashboard' | 'enrollment' | 'schedule' | 'grades' | 'profile';
+type NavItem = 'dashboard' | 'enrollment' | 'schedule' | 'grades' | 'reports' | 'profile';
 
 interface StudentSidebarContentOldProps {
   activeNav: NavItem;
@@ -19,7 +20,8 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'enrollment', label: 'Enrollment', icon: FileText },
   { id: 'schedule', label: 'Schedule Calendar', icon: Calendar },
-  { id: 'grades', label: 'Grades & Reports', icon: GraduationCap },
+  { id: 'grades', label: 'Grades', icon: GraduationCap },
+  { id: 'reports', label: 'Reports', icon: ClipboardList },
   { id: 'profile', label: 'Profile', icon: User },
 ] as const;
 

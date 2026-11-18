@@ -13,9 +13,20 @@ export async function fetchSectionsByGrade(): Promise<Record<string, string[]>> 
   return data?.success ? groupSectionNames(data.sections ?? []) : {};
 }
 
-/** Validates a new section capacity against how many students are already in it. */
+/** Largest number of students a section can hold. */
+export const SECTION_MAX_CAPACITY = 60;
+const CAPACITY_RANGE_MESSAGE = `Section capacity must be a whole number from 1 to ${SECTION_MAX_CAPACITY}.`;
+
+/** Capacity typed into "Add Section": blank is fine (it defaults to 45), otherwise 1 to 60. */
+export function newSectionCapacityError(raw: string): string | null {
+  if (raw.trim() === '') return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= SECTION_MAX_CAPACITY ? null : CAPACITY_RANGE_MESSAGE;
+}
+
+/** Validates a new section capacity: 1 to 60, and not below how many students are already in it. */
 export function capacityError(capacity: number, enrolled: number): string | null {
-  if (!Number.isInteger(capacity) || capacity < 1) return 'Capacity must be a whole number of at least 1.';
+  if (!Number.isInteger(capacity) || capacity < 1 || capacity > SECTION_MAX_CAPACITY) return CAPACITY_RANGE_MESSAGE;
   if (capacity < enrolled) return `This section already has ${enrolled} students. Capacity can’t be lower than that.`;
   return null;
 }

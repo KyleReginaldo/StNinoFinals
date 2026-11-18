@@ -46,3 +46,16 @@ export function friendlyError(err: unknown, fallback: string): string {
 
   return fallback;
 }
+
+/**
+ * Saving a subject (class). The database may still carry the old UNIQUE rule on
+ * classes.class_code, which makes the same subject code impossible across sections
+ * ("This record already exists"). Say what is actually wrong and how to fix it.
+ */
+export function subjectSaveError(err: unknown, fallback: string): string {
+  const e = (typeof err === 'object' && err !== null ? err : {}) as { code?: string; message?: string; details?: string };
+  if (e.code === '23505' && /class_code|class_name/.test(`${e.message ?? ''} ${e.details ?? ''}`)) {
+    return 'The database still blocks two subjects with the same subject code. Run migrations/allow-duplicate-subject-codes.sql once in Supabase; after that the same subject can be used in many sections and with different teachers.';
+  }
+  return friendlyError(err, fallback);
+}

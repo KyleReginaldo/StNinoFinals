@@ -1,4 +1,4 @@
-import { friendlyError } from '@/lib/error-message';
+import { subjectSaveError } from '@/lib/error-message';
 import { DAY_LABELS, findScheduleClash, parseScheduleSlots, parseScheduleTime, slotTimeError, timesOverlap } from '@/lib/rooms';
 import { normalizeSchoolYear } from '@/lib/school-year';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -335,7 +335,7 @@ export async function POST(request: NextRequest) {
     if (classError) {
       console.error('Error creating class:', classError);
       return NextResponse.json(
-        { success: false, error: friendlyError(classError, 'We could not create this subject. Please check the details and try again.') },
+        { success: false, error: subjectSaveError(classError, 'We could not create this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
@@ -452,7 +452,7 @@ export async function PUT(request: NextRequest) {
     if (updateError) {
       console.error('Error updating class:', updateError);
       return NextResponse.json(
-        { success: false, error: friendlyError(updateError, 'We could not save changes to this subject. Please check the details and try again.') },
+        { success: false, error: subjectSaveError(updateError, 'We could not save changes to this subject. Please check the details and try again.') },
         { status: 500 }
       );
     }
