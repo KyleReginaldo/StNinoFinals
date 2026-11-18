@@ -1,10 +1,22 @@
 import { normalizeSchoolYear } from './school-year';
-export interface ScheduleSlot { day: string; start: string; end: string; }
+export interface ScheduleSlot {
+  day: string;
+  start: string;
+  end: string;
+}
 
-export const DAY_LABELS: Record<string, string> = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', Th: 'Thursday', F: 'Friday' };
+export const DAY_LABELS: Record<string, string> = {
+  M: 'Monday',
+  T: 'Tuesday',
+  W: 'Wednesday',
+  Th: 'Thursday',
+  F: 'Friday',
+};
 
 /** Parse a schedule value (old string OR JSON array) into per-day slots. */
-export function parseScheduleSlots(schedule: string | null | undefined): ScheduleSlot[] {
+export function parseScheduleSlots(
+  schedule: string | null | undefined
+): ScheduleSlot[] {
   if (!schedule) return [];
   try {
     const parsed = JSON.parse(schedule);
@@ -22,7 +34,10 @@ function parseDayTokensSimple(daysStr: string): string[] {
   const result: string[] = [];
   let i = 0;
   while (i < daysStr.length) {
-    if (i + 1 < daysStr.length && ['Th', 'Sa', 'Su'].includes(daysStr.slice(i, i + 2))) {
+    if (
+      i + 1 < daysStr.length &&
+      ['Th', 'Sa', 'Su'].includes(daysStr.slice(i, i + 2))
+    ) {
       result.push(daysStr.slice(i, i + 2));
       i += 2;
     } else {
@@ -68,7 +83,9 @@ export const ROOMS = [
  * Parse a schedule string like "MWF 08:00 - 09:00" into start/end minutes from midnight.
  * Returns null if unparseable.
  */
-export function parseScheduleTime(schedule: string): { start: number; end: number } | null {
+export function parseScheduleTime(
+  schedule: string
+): { start: number; end: number } | null {
   const match = schedule.match(/(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/);
   if (!match) return null;
   const start = parseInt(match[1]) * 60 + parseInt(match[2]);
@@ -95,10 +112,19 @@ const toMinutes = (t: string) => {
   return h * 60 + (m || 0);
 };
 
-export function slotTimeError(s: { start: string; end: string }): string | null {
-  if (!/^\d{1,2}:\d{2}$/.test(s.start ?? '') || !/^\d{1,2}:\d{2}$/.test(s.end ?? '')) return 'Invalid time';
-  if (toMinutes(s.end) <= toMinutes(s.start)) return 'End time must be after start time';
-  if (toMinutes(s.end) > toMinutes(LATEST_END)) return 'Classes must end by 5:00 PM';
+export function slotTimeError(s: {
+  start: string;
+  end: string;
+}): string | null {
+  if (
+    !/^\d{1,2}:\d{2}$/.test(s.start ?? '') ||
+    !/^\d{1,2}:\d{2}$/.test(s.end ?? '')
+  )
+    return 'Invalid time';
+  if (toMinutes(s.end) <= toMinutes(s.start))
+    return 'End time must be after start time';
+  if (toMinutes(s.end) > toMinutes(LATEST_END))
+    return 'Classes must end by 5:00 PM';
   return null;
 }
 
@@ -113,7 +139,8 @@ export function timeOptions(after?: string, step = 15): string[] {
   const from = after ? toMinutes(after) + step : toMinutes(EARLIEST_START);
   const to = toMinutes(LATEST_END) - (after ? 0 : step);
   const out: string[] = [];
-  for (let m = from; m <= to; m += step) out.push(`${pad(Math.floor(m / 60))}:${pad(m % 60)}`);
+  for (let m = from; m <= to; m += step)
+    out.push(`${pad(Math.floor(m / 60))}:${pad(m % 60)}`);
   return out;
 }
 
@@ -129,12 +156,28 @@ export function formatTime12(t: string): string {
  */
 export function findScheduleClash(
   mine: { day: string; start: string; end: string }[],
-  others: { id: string; class_name: string; room: string | null; teacher_id: string | null; school_year: string; schedule: string | null }[],
-  opts: { room?: string | null; teacherId?: string | null; schoolYear: string; excludeId?: string }
+  others: {
+    id: string;
+    class_name: string;
+    room: string | null;
+    teacher_id: string | null;
+    school_year: string;
+    schedule: string | null;
+  }[],
+  opts: {
+    room?: string | null;
+    teacherId?: string | null;
+    schoolYear: string;
+    excludeId?: string;
+  }
 ): string | null {
   const sy = normalizeSchoolYear(opts.schoolYear);
   for (const other of others) {
-    if (other.id === opts.excludeId || normalizeSchoolYear(other.school_year) !== sy) continue;
+    if (
+      other.id === opts.excludeId ||
+      normalizeSchoolYear(other.school_year) !== sy
+    )
+      continue;
     const sameRoom = !!opts.room && other.room === opts.room;
     const sameTeacher = !!opts.teacherId && other.teacher_id === opts.teacherId;
     if (!sameRoom && !sameTeacher) continue;
@@ -142,7 +185,8 @@ export function findScheduleClash(
       for (const m of mine) {
         if (m.day !== theirs.day) continue;
         const overlap =
-          toMinutes(m.start) < toMinutes(theirs.end) && toMinutes(theirs.start) < toMinutes(m.end);
+          toMinutes(m.start) < toMinutes(theirs.end) &&
+          toMinutes(theirs.start) < toMinutes(m.end);
         if (!overlap) continue;
         const when = `${DAY_LABELS[theirs.day] ?? theirs.day} ${formatTime12(theirs.start)}–${formatTime12(theirs.end)}`;
         return sameRoom
@@ -166,7 +210,8 @@ export function roomCapacityError(
   capacity: string | number | null | undefined,
   savedCapacity: number | null | undefined
 ): string | null {
-  const raw = capacity === null || capacity === undefined ? '' : String(capacity).trim();
+  const raw =
+    capacity === null || capacity === undefined ? '' : String(capacity).trim();
   if (raw === '') return null;
   if (savedCapacity != null && raw === String(savedCapacity)) return null;
   const n = Number(raw);
