@@ -3,6 +3,11 @@
 -- on classes that covers class_code and/or class_name (never the primary key).
 -- Safe to re-run; prints what it dropped.
 
+-- 1. The rule that is blocking subjects today (found on the live database 2026-11-18:
+--    duplicate key value violates unique constraint "classes_class_code_key").
+ALTER TABLE public.classes DROP CONSTRAINT IF EXISTS classes_class_code_key;
+
+-- 2. Anything else unique on the subject code / name (other names, unique indexes).
 DO $$
 DECLARE
   r record;
@@ -43,3 +48,8 @@ BEGIN
     RAISE NOTICE 'Dropped index %', r.indexname;
   END LOOP;
 END $$;
+
+-- 3. Check: this should return no rows except the primary key.
+SELECT conname AS remaining_rule, contype
+FROM pg_constraint
+WHERE conrelid = 'public.classes'::regclass AND contype IN ('u', 'p');
