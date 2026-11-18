@@ -1,5 +1,6 @@
 'use client';
 
+import { ROOM_MAX_CAPACITY, roomCapacityError } from '@/lib/rooms';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import { useDeletePrompt } from '@/lib/use-delete-prompt';
@@ -71,6 +72,8 @@ export default function RoomsPage() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { showAlert({ message: 'Room name is required', type: 'error' }); return; }
+    const capacityProblem = roomCapacityError(form.capacity, editing?.capacity);
+    if (capacityProblem) { showAlert({ message: capacityProblem, type: 'error' }); return; }
     setSaving(true);
     try {
       const payload = { name: form.name, capacity: form.capacity ? parseInt(form.capacity) : null, description: form.description };
@@ -174,7 +177,8 @@ export default function RoomsPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="capacity">Capacity</Label>
-              <Input id="capacity" type="number" min="1" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="e.g. 40" />
+              <Input id="capacity" type="number" min="1" max={ROOM_MAX_CAPACITY} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="e.g. 40" />
+              <p className="text-xs text-gray-400">Up to {ROOM_MAX_CAPACITY} students.</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="description">Description</Label>

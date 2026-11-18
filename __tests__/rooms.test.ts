@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_LABELS, findScheduleClash, formatTime12, parseScheduleSlots, slotTimeError, timeOptions } from '../lib/rooms';
+import { DAY_LABELS, ROOM_MAX_CAPACITY, findScheduleClash, roomCapacityError, formatTime12, parseScheduleSlots, slotTimeError, timeOptions } from '../lib/rooms';
 
 describe('schedule slots', () => {
   it('admin slot format maps to full day names', () => {
@@ -66,5 +66,31 @@ describe('findScheduleClash', () => {
     expect(findScheduleClash([{ day: 'M', start: '09:00', end: '10:00' }], others, { room: 'Room 101', teacherId: 't1', schoolYear: '2026-2027' })).toBeNull();
     expect(findScheduleClash([{ day: 'T', start: '10:00', end: '11:00' }], others, { room: 'Room 202', teacherId: 't2', schoolYear: '2026-2027' })).toBeNull();
     expect(findScheduleClash(mine, others, { room: 'Room 101', teacherId: 't1', schoolYear: '2026-2027', excludeId: 'a' })).toBeNull();
+  });
+});
+
+describe('roomCapacityError', () => {
+  it('max capacity is 60', () => {
+    expect(ROOM_MAX_CAPACITY).toBe(60);
+  });
+  it('accepts blank, and 1 to 60', () => {
+    expect(roomCapacityError('', null)).toBeNull();
+    expect(roomCapacityError(null, null)).toBeNull();
+    expect(roomCapacityError(1, null)).toBeNull();
+    expect(roomCapacityError('60', null)).toBeNull();
+  });
+  it('rejects more than 60, zero, negatives, decimals and non-numbers', () => {
+    const msg = 'Room capacity must be a whole number from 1 to 60.';
+    expect(roomCapacityError(61, null)).toBe(msg);
+    expect(roomCapacityError('300', null)).toBe(msg);
+    expect(roomCapacityError(0, null)).toBe(msg);
+    expect(roomCapacityError(-5, null)).toBe(msg);
+    expect(roomCapacityError('12.5', null)).toBe(msg);
+    expect(roomCapacityError('abc', null)).toBe(msg);
+  });
+  it('an unchanged old value (e.g. Gymnasium 300) does not block editing the room', () => {
+    expect(roomCapacityError(300, 300)).toBeNull();
+    expect(roomCapacityError('300', 300)).toBeNull();
+    expect(roomCapacityError(301, 300)).toBe('Room capacity must be a whole number from 1 to 60.');
   });
 });

@@ -153,3 +153,24 @@ export function findScheduleClash(
   }
   return null;
 }
+
+/** Largest capacity a room can have (client: "max na dapat yung capacity to 60"). */
+export const ROOM_MAX_CAPACITY = 60;
+
+/**
+ * Validates a room's capacity from the admin form. Blank is allowed (capacity is optional).
+ * A value left exactly as saved is not re-checked, so an old room (e.g. Gymnasium = 300)
+ * can still be renamed; any *changed* capacity must be a whole number from 1 to 60.
+ */
+export function roomCapacityError(
+  capacity: string | number | null | undefined,
+  savedCapacity: number | null | undefined
+): string | null {
+  const raw = capacity === null || capacity === undefined ? '' : String(capacity).trim();
+  if (raw === '') return null;
+  if (savedCapacity != null && raw === String(savedCapacity)) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= ROOM_MAX_CAPACITY
+    ? null
+    : `Room capacity must be a whole number from 1 to ${ROOM_MAX_CAPACITY}.`;
+}
