@@ -15,10 +15,12 @@ Claude checked every item in the browser against the live data (view-only, nothi
 
 ## Done
 
-- [ ] **1 — Room capacity max 60 (create and edit)** · `8327f37`
-  - Rooms form: the field stops at 60 and says "Up to 60 students". The server also refuses anything above 60, 0, negatives and decimals.
+- [ ] **1 — Capacity max 60: rooms and sections** · `8327f37` + inline errors (latest commit)
+  - The error now appears **right under the field while you type** (red border + message), and the Save button stays off until the number is valid. Above 60, below 1, decimals and huge numbers are all caught. The server still refuses them as a backstop.
+  - Applies to **Rooms** (Add/Edit Room) and **Sections** (Add Section, and clicking a capacity number in the table). The client's note said rooms, but sections had no limit at all, so I used the same 60.
+  - Existing sections already above 60 (the table has one at 70) show as they are; changing their capacity needs 60 or less.
   - Old rooms above 60 (**Gymnasium 300**, **Audio-Visual Room 80**) can still be renamed or re-described. Their capacity only has to be 60 or less if you change it.
-  - **Check:** Admin › Rooms → Add Room, capacity 61 → "Room capacity must be a whole number from 1 to 60."
+  - **Check:** Admin › Rooms → Add Room → type 61 → red message under the field right away. Same in Admin › Sections → Add Section.
 
 - [ ] **2 — "This record already exists" when the same subject code is used for another section** · `ee17705`
   - Cause (found on the live database): a unique rule `classes_class_code_key` on the subject code. Nothing in the app depends on codes being unique.

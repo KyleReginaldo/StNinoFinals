@@ -19,6 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GRADE_LEVELS, normalizeGradeLevel } from '@/lib/grade-levels';
+import { CapacityField } from '@/components/ui/capacity-field';
+import { SECTION_MAX_CAPACITY, capacityError, newSectionCapacityError } from '@/lib/sections';
 import { useRefresh } from '@/lib/refresh-context';
 import { SHS_STRANDS } from '@/lib/school-year';
 import { useAlert } from '@/lib/use-alert';
@@ -323,22 +325,32 @@ function CapacityCell({ section, onSaved }: { section: SectionRow; onSaved: (cap
       </button>
     );
   }
+  const problem = capacityError(Number(value), section.student_count);
   return (
-    <input
-      type="number"
-      min={Math.max(1, section.student_count)}
-      autoFocus
-      disabled={saving}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={save}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') save();
-        if (e.key === 'Escape') setEditing(false);
-      }}
-      className="w-16 px-1.5 py-0.5 text-sm text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-      aria-label="Section capacity"
-    />
+    <div className="inline-flex flex-col items-center">
+      <input
+        type="number"
+        min={Math.max(1, section.student_count)}
+        max={SECTION_MAX_CAPACITY}
+        autoFocus
+        disabled={saving}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => (problem ? setEditing(false) : save())}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !problem) save();
+          if (e.key === 'Escape') setEditing(false);
+        }}
+        aria-invalid={problem ? true : undefined}
+        className={`w-16 px-1.5 py-0.5 text-sm text-center border rounded focus:outline-none focus:ring-2 ${problem ? 'border-red-500 focus:ring-red-500/30' : 'border-gray-300 focus:ring-gray-900/10'}`}
+        aria-label="Section capacity"
+      />
+      {problem && (
+        <span role="alert" className="mt-1 max-w-[11rem] text-[11px] leading-tight text-red-600 whitespace-normal">
+          {problem}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -357,6 +369,7 @@ function FormalSectionsPanel() {
   const [addGrade, setAddGrade] = useState('');
   const [addName, setAddName] = useState('');
   const [addCapacity, setAddCapacity] = useState('45');
+  const addCapacityError = newSectionCapacityError(addCapacity);
   const [addStrand, setAddStrand] = useState('');
   const addIsSHS = addGrade === 'Grade 11' || addGrade === 'Grade 12';
   const [adding, setAdding] = useState(false);
@@ -465,7 +478,7 @@ function FormalSectionsPanel() {
   };
 
   const handleAdd = async () => {
-    if (!addGrade || !addName.trim() || !schoolYear || (addIsSHS && !addStrand)) return;
+    if (!addGrade || !addName.trim() || !schoolYear || (addIsSHS && !addStrand) || addCapacityError) return;
     setAdding(true);
     try {
       const res = await fetch('/api/admin/sections', {
@@ -647,16 +660,14 @@ function FormalSectionsPanel() {
                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="sectionCapacity">Capacity</Label>
-              <Input
-                id="sectionCapacity"
-                type="number"
-                min={1}
-                value={addCapacity}
-                onChange={(e) => setAddCapacity(e.target.value)}
-              />
-            </div>
+            <CapacityField
+              id="sectionCapacity"
+              label="Capacity"
+              value={addCapacity}
+              onChange={setAddCapacity}
+              error={addCapacityError}
+              hint={`Up to ${SECTION_MAX_CAPACITY} students. Leave blank for 45.`}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setShowAddSection(false)} disabled={adding}>
@@ -664,7 +675,7 @@ function FormalSectionsPanel() {
             </Button>
             <Button
               onClick={handleAdd}
-              disabled={adding || !addGrade || !addName.trim() || (addIsSHS && !addStrand)}
+              disabled={adding || !addGrade || !addName.trim() || (addIsSHS && !addStrand) || !!addCapacityError}
               className="bg-primary hover:bg-primary/90 text-white"
             >
               {adding && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
