@@ -15,14 +15,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTableControls } from '@/hooks/use-table-controls';
-import { findGradeColumns, readSheetFile } from '@/lib/csv';
+import { friendlyError } from '@/lib/error-message';
+import { readSheetFile } from '@/lib/csv';
+import { type GradeImportPlan, planGradeImport } from '@/lib/grade-import';
 import { useAlert } from '@/lib/use-alert';
 import { useConfirm } from '@/lib/use-confirm';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { CheckCircle2, Clock, GraduationCap, History, Lock, Save, Search, Upload, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRefresh } from '@/lib/refresh-context';
 import { formatDate, formatDateTime } from '@/lib/format-date';
 
@@ -63,6 +65,8 @@ interface CsvImportSummary {
   matched: number;
   unmatched: string[];
   outOfRange: string[];
+  blank: number;
+  locked: GradeImportPlan['locked'];
 }
 
 export default function TeacherGrades() {
@@ -77,6 +81,25 @@ export default function TeacherGrades() {
   const [gradingLocked, setGradingLocked] = useState(false);
   const [passingThreshold, setPassingThreshold] = useState(75);
   const [csvSummary, setCsvSummary] = useState<CsvImportSummary | null>(null);
+  // Grades read from a chosen file, waiting for the teacher to press "Import". They are NOT part of
+  // the table's real values until then (so Submit Grades can never send them by accident).
+  // student row id -> the grade from the file, and the grade the student has now ('' = none).
+  const [pendingImport, setPendingImport] = useState<Record<string, { grade: string; before: string }>>({});
+  const pendingCount = Object.keys(pendingImport).length;
+  const endImportReview = () => {
+    setPendingImport({});
+    setCsvSummary(null);
+  };
+  const applyImport = () => {
+    setGradesData((prev) =>
+      prev.map((s) => (String(s.id) in pendingImport && s.status !== 'approved' ? { ...s, grade: pendingImport[String(s.id)].grade } : s))
+    );
+    showAlert({
+      message: `${pendingCount} grade${pendingCount !== 1 ? 's were' : ' was'} imported into the table. ${pendingCount !== 1 ? 'They are' : 'It is'} not submitted yet: check the grades, then click Submit Grades to send them for admin approval.`,
+      type: 'success',
+    });
+    endImportReview();
+  };
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [historyGradeId, setHistoryGradeId] = useState<string | null>(null);
   const [historyEntries, setHistoryEntries] = useState<any[]>([]);
@@ -230,8 +253,9 @@ export default function TeacherGrades() {
               }),
             });
             return await res.json();
-          } catch {
-            return { success: false };
+          } catch (err) {
+            // Network down / server stopped / non-JSON reply: say so instead of a bare "failed"
+            return { success: false, error: friendlyError(err, 'We could not save this grade. Please try again.') };
           }
         })
       );
@@ -240,9 +264,11 @@ export default function TeacherGrades() {
         const reason = failed.find(r => r.error)?.error;
         showAlert({ message: `${failed.length} grade(s) failed to save.${reason ? ` ${reason}` : ''}`, type: 'warning' });
         await fetchGradesData();
+        endImportReview();
       } else {
         showAlert({ message: 'Grades submitted for admin approval!', type: 'success' });
         await fetchGradesData();
+        endImportReview();
       }
     } catch (error) {
       console.error('Error saving grades:', error);
@@ -267,37 +293,25 @@ export default function TeacherGrades() {
       showAlert({ message: 'The file appears to be empty.', type: 'warning' });
       return;
     }
-    const { start, numberCol, gradeCol } = findGradeColumns(rows);
-
-    const byStudentNumber = new Map(gradesData.map((s) => [s.studentId, s]));
-    const unmatched: string[] = [];
-    const outOfRange: string[] = [];
-    const updates = new Map<number, string>();
-
-    for (let i = start; i < rows.length; i++) {
-      const studentNumber = (rows[i][numberCol] || '').trim();
-      const gradeStr = (rows[i][gradeCol] || '').trim();
-      if (!studentNumber) continue;
-      const student = byStudentNumber.get(studentNumber);
-      if (!student) {
-        unmatched.push(studentNumber);
-        continue;
-      }
-      if (student.status === 'approved') continue;
-      const numeric = Number(gradeStr);
-      if (gradeStr === '' || !Number.isInteger(numeric) || numeric < 0 || numeric > 100) {
-        outOfRange.push(`${studentNumber} (${gradeStr || '—'})`);
-        continue;
-      }
-      updates.set(student.id, numeric.toString());
+    const plan = planGradeImport(rows, gradesData);
+    if (!plan.found) {
+      showAlert({
+        message: `We could not find the LRN and grade columns in this file. The sheet needs a column named LRN (or Student Number) and a column named Grade (or Total Grade / Final Grade).${plan.seenColumns.length ? ` Columns found: ${plan.seenColumns.join(', ')}.` : ''}`,
+        type: 'warning',
+      });
+      return;
     }
+    const pending: Record<string, { grade: string; before: string }> = Object.fromEntries(
+      plan.updates.map((u) => [String(u.id), { grade: u.grade, before: u.before }])
+    );
+    const { unmatched, outOfRange, blank, locked } = plan;
 
-    if (updates.size > 0) {
-      setGradesData((prev) =>
-        prev.map((s) => (updates.has(s.id) ? { ...s, grade: updates.get(s.id)! } : s))
-      );
-    }
-    setCsvSummary({ matched: updates.size, unmatched, outOfRange });
+    // Preview only: the table's real grades change when the teacher presses Import
+    setPendingImport(pending);
+    setCsvSummary({ matched: Object.keys(pending).length, unmatched, outOfRange, blank, locked });
+    // Make sure the rows to import are on screen: no search/filter hiding them, first page
+    tc.clearFilters();
+    tc.setPage(1);
   };
 
   const handleExportExcel = async () => {
@@ -360,23 +374,26 @@ export default function TeacherGrades() {
   };
 
   const flatGrades = useMemo<FlatGradeRow[]>(() =>
-    gradesData.map(g => ({
-      ...g,
-      statusLabel: g.status || (g.grade ? 'unsaved' : ''),
-    })),
-    [gradesData]
+    gradesData.map(g => {
+      const grade = pendingImport[String(g.id)]?.grade ?? g.grade; // preview shows the file's grade
+      return { ...g, grade, statusLabel: g.status || (grade ? 'unsaved' : '') };
+    }),
+    [gradesData, pendingImport]
   );
 
+  const isImported = useCallback((id: string | number) => String(id) in pendingImport, [pendingImport]);
   const tc = useTableControls(flatGrades, {
     searchFields: ['name', 'studentId'],
     defaultSort: { key: 'name', dir: 'asc' },
     pageSize: 25,
+    pinFirst: (row) => isImported(row.id),
   });
 
   // Reset table state when class changes
   useEffect(() => {
     tc.clearFilters();
     tc.setPage(1);
+    endImportReview();
   }, [selectedClassId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!teacher) return null;
@@ -469,8 +486,8 @@ export default function TeacherGrades() {
                     <Button
                       size="sm"
                       onClick={handleSaveGrades}
-                      disabled={isSavingGrades || gradingLocked}
-                      title={gradingLocked ? 'Grading period is locked' : undefined}
+                      disabled={isSavingGrades || gradingLocked || pendingCount > 0}
+                      title={gradingLocked ? 'Grading period is locked' : pendingCount > 0 ? 'Click Import (or Cancel) for the file first' : undefined}
                       className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
                     >
                       {isSavingGrades ? (
@@ -522,13 +539,24 @@ export default function TeacherGrades() {
           ) : (
             <>
               {csvSummary && (
-                <div className="flex items-start gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-start gap-3 text-sm bg-blue-50 border-2 border-blue-400 rounded-lg px-3 py-2.5">
                   <Upload className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <div className="flex-1 text-blue-800">
-                    <p>
-                      Imported <strong>{csvSummary.matched}</strong> grade{csvSummary.matched !== 1 ? 's' : ''} into the table below.
-                      Review the values, then click Submit Grades (top right) to save.
-                    </p>
+                    {csvSummary.matched > 0 ? (
+                      <p>
+                        <strong>{csvSummary.matched}</strong> grade{csvSummary.matched !== 1 ? 's' : ''} from the file {csvSummary.matched !== 1 ? 'are' : 'is'} ready to import.
+                        {' '}{csvSummary.matched !== 1 ? 'They are' : 'It is'} listed first and highlighted in blue below, with the current grade.
+                        {' '}Click <strong>Import</strong> to put {csvSummary.matched !== 1 ? 'them' : 'it'} in the table, or Cancel to leave the table as it is.
+                        {' '}Nothing is saved or submitted yet.
+                      </p>
+                    ) : (
+                      <p>No grades could be imported from this file.</p>
+                    )}
+                    {csvSummary.blank > 0 && (
+                      <p className="text-blue-700/80 mt-1">
+                        {csvSummary.blank} student{csvSummary.blank !== 1 ? 's' : ''} in the file {csvSummary.blank !== 1 ? 'have' : 'has'} no grade yet. {csvSummary.blank !== 1 ? 'They stay' : 'It stays'} as {csvSummary.blank !== 1 ? 'they are' : 'it is'}.
+                      </p>
+                    )}
                     {csvSummary.unmatched.length > 0 && (
                       <p className="text-amber-700 mt-1">
                         Not found in this class: {csvSummary.unmatched.join(', ')}
@@ -539,14 +567,28 @@ export default function TeacherGrades() {
                         Skipped (grade must be a whole number 0-100): {csvSummary.outOfRange.join(', ')}
                       </p>
                     )}
+                    {csvSummary.locked.length > 0 && (
+                      <div className="text-amber-800 mt-1">
+                        <p className="flex items-center gap-1 font-medium"><Lock className="w-3.5 h-3.5" /> Not imported: already approved, so the grade is final</p>
+                        <ul className="list-disc pl-5">
+                          {csvSummary.locked.map((l) => (
+                            <li key={l.studentId}>{l.name} ({l.studentId}): approved grade is {l.current}, the file has {l.file}</li>
+                          ))}
+                        </ul>
+                        <p className="text-xs mt-0.5">Only the admin can return an approved grade for editing (Grade Approvals › Return to teacher).</p>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setCsvSummary(null)}
-                    className="text-blue-400 hover:text-blue-700 active:scale-90 transition-[color,transform] duration-150 ease-out text-xs"
-                  >
-                    Dismiss
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {csvSummary.matched > 0 && (
+                      <Button type="button" size="sm" onClick={applyImport} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Import {csvSummary.matched} grade{csvSummary.matched !== 1 ? 's' : ''}
+                      </Button>
+                    )}
+                    <Button type="button" size="sm" variant="outline" onClick={endImportReview}>
+                      {csvSummary.matched > 0 ? 'Cancel' : 'Close'}
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -595,8 +637,13 @@ export default function TeacherGrades() {
                       tc.rows.map(student => {
                         const cfg = student.status ? STATUS_CONFIG[student.status] : null;
                         const isApproved = student.status === 'approved';
+                        const wasImported = isImported(student.id);
+                        const before = pendingImport[String(student.id)]?.before;
                         return (
-                          <tr key={student.id} className={cfg ? cfg.rowClass : 'hover:bg-gray-50'}>
+                          <tr
+                            key={student.id}
+                            className={wasImported ? 'bg-blue-50 shadow-[inset_4px_0_0_0_#2563eb]' : cfg ? cfg.rowClass : 'hover:bg-gray-50'}
+                          >
                             <td className="px-4 py-2.5 pl-4 text-sm font-medium text-gray-900">{student.name}</td>
                             <td className="px-4 py-2.5">
                               <span className="font-mono text-[12px] text-gray-500">{student.studentId}</span>
@@ -615,9 +662,12 @@ export default function TeacherGrades() {
                                     value={student.grade}
                                     onChange={e => updateGrade(student.id, e.target.value)}
                                     disabled={gradingLocked}
+                                    readOnly={wasImported}
                                     className={`text-center h-8 text-sm ${
                                       gradingLocked
                                         ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                        : wasImported
+                                          ? 'bg-white border-blue-500 ring-2 ring-blue-400 font-bold text-blue-900'
                                         : student.status === 'rejected'
                                           ? 'bg-red-50 text-red-900'
                                           : student.status === 'pending'
@@ -636,6 +686,12 @@ export default function TeacherGrades() {
                                     </span>
                                   )}
                                 </div>
+                              )}
+                              {wasImported && !isApproved && (
+                                <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-blue-700">
+                                  <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">To import</span>
+                                  {before === student.grade ? 'no change' : before ? `replaces ${before}` : 'new grade'}
+                                </p>
                               )}
                             </td>
                             <td className="px-4 py-2.5">

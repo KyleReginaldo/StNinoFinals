@@ -28,3 +28,12 @@ export function lrnEditError(
   if ((lrn ?? '').trim() === (savedLrn ?? '').trim()) return null;
   return lrnError(lrn, gradeLevel);
 }
+
+/**
+ * Comparison key for matching an LRN/student number from a file against the system's:
+ * ignores spaces and leading zeros ("000000000611" and "611" are the same learner).
+ */
+export function lrnKey(value: string | null | undefined): string {
+  const v = (value ?? '').trim();
+  return /^\d+$/.test(v) ? v.replace(/^0+(?=\d)/, '') : v;
+}
