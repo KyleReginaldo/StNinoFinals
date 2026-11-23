@@ -11,6 +11,17 @@ export interface TableControlsConfig<T> {
   searchFields: (keyof T & string)[];
   defaultSort?: SortState;
   pageSize?: number;
+  /** Rows for which this returns true are always listed first (e.g. freshly imported rows). */
+  pinFirst?: (row: T) => boolean;
+}
+
+/** Stable partition: matching rows first, everything else after, each keeping its current order. */
+export function pinFirst<T>(rows: T[], isPinned?: (row: T) => boolean): T[] {
+  if (!isPinned) return rows;
+  const pinned: T[] = [];
+  const rest: T[] = [];
+  for (const row of rows) (isPinned(row) ? pinned : rest).push(row);
+  return pinned.length ? [...pinned, ...rest] : rows;
 }
 
 export interface TableControls<T> {
@@ -76,8 +87,8 @@ export function useTableControls<T extends Record<string, any>>(
       });
     }
 
-    return rows;
-  }, [data, search, filters, sort, config.searchFields]);
+    return pinFirst(rows, config.pinFirst);
+  }, [data, search, filters, sort, config.searchFields, config.pinFirst]);
 
   const totalCount = data.length;
   const filteredCount = processed.length;
